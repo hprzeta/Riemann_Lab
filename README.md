@@ -37,31 +37,48 @@ Ce projet combine :
     ├── exports/figures/                 # Graphiques PNG/HTML
     └── logs/                            # Journaux d'exécution
 
-🛠️ Outils et bibliothèques
-Catégorie	Outils	Priorité
-Calcul haute précision	mpmath, sympy, Pari/GP	🔴 Haute
-Calcul vectoriel	numpy, scipy	🔴 Haute
-Visualisation	matplotlib, plotly, seaborn	🔴 Haute
-Gestion données	pandas, pyarrow	🟡 Moyenne
-Logging/Monitoring	loguru, tqdm, memory_profiler	🟡 Moyenne
-Parallélisation	joblib, dask, ray	🟡 Moyenne
-IA complémentaire	transformers, torch	🟢 Optionnelle
-Preuves formelles	Lean 4	🟢 Optionnelle
-Environnement complet	SageMath	🟢 Optionnelle
-🚀 Alias de configuration (.bashrc)
-Alias	Commande	Usage
-zeta	cd ~/projet_zeta && source zeta_env/bin/activate	⭐ Activer l'environnement
-zeta-jupyter	cd ~/projet_zeta/notebooks && source ~/projet_zeta/zeta_env/bin/activate && jupyter lab	📓 Interface moderne
-zeta-notebook	cd ~/projet_zeta/notebooks && source ~/projet_zeta/zeta_env/bin/activate && jupyter notebook	📓 Interface classique
-zeta-spyder	source ~/projet_zeta/zeta_env/bin/activate && export QT_API=pyqt5 && spyder	🐍 IDE scientifique
-zeta-code	code ~/projet_zeta	💻 IDE général
-zeta-data	cd /mnt/data	💾 Données
-zeta-docs	cd ~/projet_zeta/docs	📚 Documentation
-zeta-logs	tail -f /mnt/data/logs/demo_zeta.log	📋 Monitoring
-zeta-monitor	~/projet_zeta/scripts/monitor.sh	📊 Performance
-📊 Résultats des tests
+
+# 📐 Projet Zêta : Exploration de l'Hypothèse de Riemann
+
+## 🛠️ Outils et bibliothèques
+
+| Catégorie              | Outils                         | Priorité       |
+|------------------------|--------------------------------|----------------|
+| Calcul haute précision | mpmath, sympy, Pari/GP         | 🔴 Haute       |
+| Calcul vectoriel       | numpy, scipy                   | 🔴 Haute       |
+| Visualisation          | matplotlib, plotly, seaborn    | 🔴 Haute       |
+| Gestion données        | pandas, pyarrow                | 🟡 Moyenne     |
+| Logging/Monitoring     | loguru, tqdm, memory_profiler  | 🟡 Moyenne     |
+| Parallélisation        | joblib, dask, ray              | 🟡 Moyenne     |
+| IA complémentaire      | transformers, torch            | 🟢 Optionnelle |
+| Preuves formelles      | Lean 4                         | 🟢 Optionnelle |
+| Environnement complet  |  SageMath                      | 🟢 Optionnelle |
+
+## 🚀 Alias de configuration (`.bashrc`)
+
+| Alias          | Commande                                                                                  | Usage                   |
+|----------------|-------------------------------------------------------------------------------------------|-------------------------|
+| `zeta`         | `cd ~/projet_zeta && source zeta_env/bin/activate`                                        | Activer l'environnement |
+| `zeta-jupyter` | `cd ~/projet_zeta/notebooks && source ~/projet_zeta/zeta_env/bin/activate && jupyter lab` | Jupyter Lab             |
+| `zeta-spyder`  | `source ~/projet_zeta/zeta_env/bin/activate && export QT_API=pyqt5 && spyder`             | Spyder                  |
+| `zeta-code`    | `code ~/projet_zeta`                                                                      | VS Code                 |
+| `zeta-data`    | `cd /mnt/data`                                                                            | Données                 |
+| `zeta-logs`    | `tail -f /mnt/data/logs/demo_zeta.log`                                                    | Logs                    |
+
+## 🧪 Exécution
+
+```bash
+# Activer l'environnement
+zeta
+
+# Lancer le script
+cd ~/projet_zeta/src/calculs
+python demo_complete.py
+
+
+## 📊 Résultats des tests
+
 Sortie console
-text
 
 2026-04-07 23:09:28.610 | INFO  | === Démarrage de la démonstration ===
 2026-04-07 23:09:28.650 | INFO  | Précision mpmath configurée à 50 décimales
@@ -77,13 +94,15 @@ RÉSULTATS DES CALCULS
 ζ(3.0) = 1.2020569031595942853997381615114499907649862923405
 ζ(0.5) = -1.4603545088095868128894991525152980124672293310126
 
-Fichiers générés
+## 🔧 Fichiers générés
+
 Fichier	Chemin
 CSV	/mnt/data/exports/csv/resultats_zeta.csv
 Log	/mnt/data/logs/demo_zeta.log
 PNG	/mnt/data/exports/figures/visualisation_matplotlib.png
 HTML	/mnt/data/exports/figures/visualisation_plotly.html
-🧪 Exécution
+
+## 🧪 Exécution
 bash
 
 # 1. Activer l'environnement
@@ -93,14 +112,12 @@ zeta
 cd ~/projet_zeta/src/calculs
 python demo_complete.py
 
-📚 Références
+## 📚 Références
 
     Hypothèse de Riemann - Wikipedia
-
     mpmath documentation
-
     Ollama - LLMs locaux
 
-📜 Licence
+## 📜 Licence
 
 Projet de recherche personnel - Libre d'utilisation et de modification.
