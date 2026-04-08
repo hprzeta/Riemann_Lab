@@ -1,11 +1,13 @@
-# 📐 Projet Zêta : Exploration de l'Hypothèse de Riemann
+# 🧮 ζ(s) Projet Zêta : Exploration de l'Hypothèse de Riemann
 
 > *"Les zéros non triviaux de la fonction zêta de Riemann ont tous une partie réelle égale à 1/2."*  
 > — Bernhard Riemann (1859)
 
 ## 🎯 Objectif du projet
 
-Ce projet a pour but d'explorer numériquement et symboliquement la **fonction zêta de Riemann** ζ(s), pierre angulaire de la théorie des nombres. L'**Hypothèse de Riemann** (non démontrée à ce jour) affirme que tous les zéros non triviaux de ζ(s) se trouvent sur la droite critique **Re(s) = 1/2**.
+Ce projet a pour but d'explorer numériquement et symboliquement la **fonction zêta de Riemann** ζ(s), 
+pierre angulaire de la théorie des nombres. 
+L'**Hypothèse de Riemann** (non démontrée à ce jour) affirme que tous les zéros non triviaux de ζ(s) se trouvent sur la droite critique **Re(s) = 1/2**.
 
 Ce projet combine :
 - Calculs haute précision
@@ -13,9 +15,8 @@ Ce projet combine :
 - Intelligence artificielle locale (LLM)
 - Preuves formelles (Lean 4)
 
-## 📁 Structure du projet
+## 📁 Structure du projet Démo
 
-```text
 /home/riemann/
 ├── projet_zeta/                         # Dossier principal
 │   ├── zeta_env/                        # Environnement virtuel Python
@@ -37,7 +38,6 @@ Ce projet combine :
     ├── exports/figures/                 # Graphiques PNG/HTML
     └── logs/                            # Journaux d'exécution
 
-```
 
 ## 🛠️ Outils et bibliothèques
 
@@ -55,20 +55,20 @@ Ce projet combine :
 | Environnement complet  |  SageMath                      | 🟢 Optionnelle |
  ---------------------------------------------------------------------------
 
-## 🚀 Alias de configuration (`.bashrc`)
+## 🚀 Alias de configuration facultatif (`.bashrc`)
 
- ----------------------------------------------------------------------------------------
-| Alias        | Commande                                                  | Usage       |
-|--------------|-----------------------------------------------------------|-------------|
-| zeta         | cd ~/projet_zeta && source zeta_env/bin/activate          | Activer ENv |
-| zeta-jupyter | cd ~/projet_zeta/notebooks && | Jupyter Lab               |             |
-|              | source ~/projet_zeta/zeta_env/bin/activate && jupyter lab | Jupyter     |
-| zeta-spyder  | source ~/projet_zeta/zeta_env/bin/activate &&             | Spyder      |
-|              | export QT_API=pyqt5 && spyder                             | Jupyter     |
-| zeta-code    | code ~/projet_zeta                                        | VS Code     |
-| zeta-data    | cd /mnt/data                                              | Données     |
-| `eta-logs    | tail -f /mnt/data/logs/demo_zea.log                       | Logs        |
- ----------------------------------------------------------------------------------------
+ --------------------------------------------------------------------------------------------------
+| Alias        | Commande                                                  | Usage                 |
+|--------------|-----------------------------------------------------------|-----------------------|
+| zeta         | cd ~/projet_zeta && source zeta_env/bin/activate          | Activer Environnement |
+| zeta-jupyter | cd ~/projet_zeta/notebooks && | Jupyter Lab               |                       |
+|              | source ~/projet_zeta/zeta_env/bin/activate && jupyter lab | Jupyter               |
+| zeta-spyder  | source ~/projet_zeta/zeta_env/bin/activate &&             |                       |
+|              | export QT_API=pyqt5 && spyder                             | Spyder                |
+| zeta-code    | code ~/projet_zeta                                        | VS Code               |
+| zeta-data    | cd /mnt/data                                              | Données               |
+| `eta-logs    | tail -f /mnt/data/logs/demo_zea.log                       | Logs                  |
+ --------------------------------------------------------------------------------------------------
  
 ## 🧪 Exécution
 
@@ -76,32 +76,10 @@ Ce projet combine :
 bash
 # Activer l'environnement
 zeta
-
 # Lancer le script
 cd ~/projet_zeta/src/calculs
 python demo_complete.py
-
 ```
-
-## 📊 Résultats des tests
-
-============================================================
-SORTIE LOG DE TRAITEMENT
-============================================================
-
-2026-04-07 23:09:28.610 | INFO  | === Démarrage de la démonstration ===
-2026-04-07 23:09:28.650 | INFO  | Précision mpmath configurée à 50 décimales
-2026-04-07 23:09:29.273 | INFO  | Lecture : /mnt/data/datasets/calculs/nombres_a_tester.txt
-2026-04-07 23:09:29.274 | INFO  | Lu 10 nombres
-2026-04-07 23:09:29.311 | INFO  | Traitement séquentiel terminé en 0.0376s
-2026-04-07 23:09:29.312 | INFO  | Temps total : 0.7023s
-
-============================================================
-RÉSULTATS DES CALCULS
-============================================================
-ζ(2.0) = 1.6449340668482264364724151666460251892189499012068
-ζ(3.0) = 1.2020569031595942853997381615114499907649862923405
-ζ(0.5) = -1.4603545088095868128894991525152980124672293310126
 
 ## 🔧 Fichiers générés
 
@@ -113,27 +91,35 @@ RÉSULTATS DES CALCULS
 | PNG  | /mnt/data/exports/figures/visualisation_matplotlib.png |
 | HTML | /mnt/data/exports/figures/visualisation_plotly.html    |
  ---------------------------------------------------------------
+
+## 📊 Résultats des tests Démo
+
+============================================================
+SORTIE LOG DE TRAITEMENT
+============================================================
+
+![Fig](file:///mnt/data/exports/figures/demo_zeta.log.png)
+
+============================================================
+RÉSULTATS DES CALCULS
+============================================================
+
+![Fig](file:///mnt/data/exports/figures/resulats_zeta.csv.png)
+
+
+============================================================
+GRAPHIQUE 2 D
+============================================================
  
-## 🧪 Exécution
-
-```text
-bash
-
-# 1. Activer l'environnement
-zeta
-
-# 2. Lancer le script
-cd ~/projet_zeta/src/calculs
-python demo_complete.py
-```
-
+ ![Fig](file:///mnt/data/exports/figures/visualisation_matplotlib.png)
+ 
+ 
 ## 📚 Références
 
 - [Hypothèse de Riemann - Wikipedia](https://fr.wikipedia.org/wiki/Hypoth%C3%A8se_de_Riemann)
 - [Fonction zêta de Riemann - MathWorld](https://mathworld.wolfram.com/RiemannZetaFunction.html)
 - [mpmath documentation](https://mpmath.org/)
 - [Ollama - LLMs locaux](https://ollama.com/)
-- [Documentation Python](https://docs.python.org/fr/3/)
 - [GitHub - Projet Zêta](https://github.com/hprzeta/Riemann_Lab)
 
 ## 📜 Licence
