@@ -1,0 +1,20 @@
+# Environnement virtuel
+zeta_env/
+__pycache__/
+*.pyc
+
+# Données volumineuses
+/mnt/data/
+*.log
+
+# IDE
+.vscode/
+.spyder-py3/
+
+# Fichiers temporaires
+*.tmp
+*.bak
+.DS_Store
+
+# Notebooks
+.ipynb_checkpoints/
