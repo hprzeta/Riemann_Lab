@@ -98,20 +98,20 @@ python demo_complete.py
 SORTIE LOG DE TRAITEMENT
 ============================================================
 
-![Fig](file:///mnt/data/exports/figures/demo_zeta.log.png)
+![Log de traitement](images/demo_zeta.log.png.png)
 
 ============================================================
 RÉSULTATS DES CALCULS
 ============================================================
 
-![Fig](file:///mnt/data/exports/figures/resulats_zeta.csv.png)
+![Résultats](images/resultats_zeta.csv.png)
 
 
 ============================================================
 GRAPHIQUE 2 D
 ============================================================
  
- ![Fig](file:///mnt/data/exports/figures/visualisation_matplotlib.png)
+ ![graphique](images/visualisation_matplotlib.png)
  
  
 ## 📚 Références
