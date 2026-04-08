@@ -95,14 +95,12 @@ python demo_complete.py
 
 ## 📊 Résultats des tests Démo
 
+![Log de traitement](images/demo_zeta_log.png)
 
-![Log de traitement](images/demo_zeta.png)
-
-![Résultats](images/resultats_zeta.png)
+![Résultats](images/resultats_zeta_csv.png)
  
 ![graphique](images/visualisation_matplotlib.png)
- 
- 
+  
 ## 📚 Références
 
 - [Hypothèse de Riemann - Wikipedia](https://fr.wikipedia.org/wiki/Hypoth%C3%A8se_de_Riemann)
