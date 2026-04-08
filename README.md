@@ -17,6 +17,7 @@ Ce projet combine :
 
 ## 📁 Structure du projet Démo
 
+```text
 /home/riemann/
 ├── projet_zeta/                         # Dossier principal
 │   ├── zeta_env/                        # Environnement virtuel Python
@@ -37,7 +38,7 @@ Ce projet combine :
     ├── exports/csv/                     # Résultats CSV
     ├── exports/figures/                 # Graphiques PNG/HTML
     └── logs/                            # Journaux d'exécution
-
+```
 
 ## 🛠️ Outils et bibliothèques
 
@@ -94,24 +95,12 @@ python demo_complete.py
 
 ## 📊 Résultats des tests Démo
 
-============================================================
-SORTIE LOG DE TRAITEMENT
-============================================================
 
-![Log de traitement](images/demo_zeta.log.png.png)
+![Log de traitement](images/demo_zeta.png)
 
-============================================================
-RÉSULTATS DES CALCULS
-============================================================
-
-![Résultats](images/resultats_zeta.csv.png)
-
-
-============================================================
-GRAPHIQUE 2 D
-============================================================
+![Résultats](images/resultats_zeta.png)
  
- ![graphique](images/visualisation_matplotlib.png)
+![graphique](images/visualisation_matplotlib.png)
  
  
 ## 📚 Références
