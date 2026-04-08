@@ -37,8 +37,7 @@ Ce projet combine :
     ├── exports/figures/                 # Graphiques PNG/HTML
     └── logs/                            # Journaux d'exécution
 
-
-# 📐 Projet Zêta : Exploration de l'Hypothèse de Riemann
+```
 
 ## 🛠️ Outils et bibliothèques
 
@@ -73,7 +72,8 @@ Ce projet combine :
  
 ## 🧪 Exécution
 
-```bash
+```text
+bash
 # Activer l'environnement
 zeta
 
@@ -81,6 +81,7 @@ zeta
 cd ~/projet_zeta/src/calculs
 python demo_complete.py
 
+```
 
 ## 📊 Résultats des tests
 
@@ -115,6 +116,7 @@ RÉSULTATS DES CALCULS
  
 ## 🧪 Exécution
 
+```text
 bash
 
 # 1. Activer l'environnement
@@ -123,6 +125,7 @@ zeta
 # 2. Lancer le script
 cd ~/projet_zeta/src/calculs
 python demo_complete.py
+```
 
 ## 📚 Références
 
