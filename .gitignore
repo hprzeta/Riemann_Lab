@@ -4,8 +4,8 @@ __pycache__/
 *.pyc
 
 # Données volumineuses
-/mnt/data/
-*.log
+# /mnt/data/
+# *.log
 
 # IDE
 .vscode/

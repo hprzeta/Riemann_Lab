@@ -95,14 +95,15 @@ python demo_complete.py
 
 ## 📊 Résultats des tests Démo
 
-![Log de traitement](images/demo_zeta_log.png)
+![Log de traitement](images/demo_zeta.png)
 
-![Résultats](images/resultats_zeta_csv.png)
+
+![Résultats](images/resultats_zeta.png)
+
  
-![graphique](images/visualisation_matplotlib.png)
+![Graphique](images/visualisation_matplotlib.png)
   
 ## 📚 Références
-
 - [Hypothèse de Riemann - Wikipedia](https://fr.wikipedia.org/wiki/Hypoth%C3%A8se_de_Riemann)
 - [Fonction zêta de Riemann - MathWorld](https://mathworld.wolfram.com/RiemannZetaFunction.html)
 - [mpmath documentation](https://mpmath.org/)
@@ -110,5 +111,4 @@ python demo_complete.py
 - [GitHub - Projet Zêta](https://github.com/hprzeta/Riemann_Lab)
 
 ## 📜 Licence
-
 Projet de recherche personnel - Libre d'utilisation et de modification.
