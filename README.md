@@ -48,7 +48,6 @@ Parallélisation	joblib, dask, ray	🟡 Moyenne
 IA complémentaire	transformers, torch	🟢 Optionnelle
 Preuves formelles	Lean 4	🟢 Optionnelle
 Environnement complet	SageMath	🟢 Optionnelle
-
 🚀 Alias de configuration (.bashrc)
 Alias	Commande	Usage
 zeta	cd ~/projet_zeta && source zeta_env/bin/activate	⭐ Activer l'environnement
@@ -60,10 +59,10 @@ zeta-data	cd /mnt/data	💾 Données
 zeta-docs	cd ~/projet_zeta/docs	📚 Documentation
 zeta-logs	tail -f /mnt/data/logs/demo_zeta.log	📋 Monitoring
 zeta-monitor	~/projet_zeta/scripts/monitor.sh	📊 Performance
-
 📊 Résultats des tests
-
 Sortie console
+text
+
 2026-04-07 23:09:28.610 | INFO  | === Démarrage de la démonstration ===
 2026-04-07 23:09:28.650 | INFO  | Précision mpmath configurée à 50 décimales
 2026-04-07 23:09:29.273 | INFO  | Lecture du fichier : /mnt/data/datasets/calculs/nombres_a_tester.txt
@@ -84,8 +83,9 @@ CSV	/mnt/data/exports/csv/resultats_zeta.csv
 Log	/mnt/data/logs/demo_zeta.log
 PNG	/mnt/data/exports/figures/visualisation_matplotlib.png
 HTML	/mnt/data/exports/figures/visualisation_plotly.html
-
 🧪 Exécution
+bash
+
 # 1. Activer l'environnement
 zeta
 
@@ -104,4 +104,3 @@ python demo_complete.py
 📜 Licence
 
 Projet de recherche personnel - Libre d'utilisation et de modification.
-
