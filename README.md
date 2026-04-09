@@ -279,10 +279,10 @@ python zeta_ia.py
 ## 📊 Résultats des tests Démo
 
 <p><strong>Log de traitement</strong><br>
-<img src="images/demo_zeta.png" style="width: 100%; max-width: 100%; height: auto;"></p>
+<img src="images/zeta_demoExc.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 
 <p><strong>Résultats calcul ζ(s) </strong><br>
-<img src="images/resultats_zeta.png" style="width: 100%; max-width: 100%; height: auto;"></p>
+<img src="images/zeta_resulCal.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 
 <p><strong>Graphiques 2D statique via Matplot : Module |ζ(s)| en fonction de s (partie réelle)</strong><br>
 <img src="images/zeta_matplotRel.png" style="width: 100%; max-width: 100%; height: auto;"></p>
