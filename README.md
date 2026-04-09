@@ -287,10 +287,7 @@ python zeta_ia.py
 <p><strong>Graphiques 2D statique via Matplot : Module |ζ(s)| en fonction de s (partie réelle)</strong><br>
 <img src="images/visualisation_matplotlib_zeta_Re.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 
-<p><strong>Graphiques 2D interactive via Plotly : Module |ζ(0.5 + it)| en fonction de t (partie imaginaire) sur droite critique</strong><br>
-<img src="images/visualisation_plotly_zeta_Img.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 
-  
 ## 📚 Références
 - [Hypothèse de Riemann - Wikipedia](https://fr.wikipedia.org/wiki/Hypoth%C3%A8se_de_Riemann)
 - [Fonction zêta de Riemann - MathWorld](https://mathworld.wolfram.com/RiemannZetaFunction.html)
