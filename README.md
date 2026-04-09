@@ -15,7 +15,21 @@ Ce projet combine :
 - Intelligence artificielle locale (LLM)
 - Preuves formelles (Lean 4)
 
-## 📁 Structure du projet Démo
+
+## 💡 Récapitulatif de ma configuration matérielle
+
+ -----------------------------------------------
+| Composant    | Détail                 | État  |
+|--------------|------------------------|-------|
+| Disque 1 To  | 3+183+1,1+651 ≈ 908 Go | ✅ OK |
+|--------------|----------------------- |-------|
+| RAM	8 Go   | 7,6 Gi (soit 8 Go)     | ✅ OK |
+|--------------|------------------------|-------|
+| GPU GTX 960M | nvidia-smi (4 Go VRAM) | ✅ OK |
+|--------------|------------------------|-------|
+| Intel Core i7| i7-7500U (2,7-3,5 GHz) | ✅ OK |
+
+## 📁 Structure du projet Démo Zêta 
 
 ```text
 /home/riemann/
@@ -40,7 +54,7 @@ Ce projet combine :
     └── logs/                            # Journaux d'exécution
 ```
 
-## 🛠️ Outils et bibliothèques
+## 🛠️ Outils et bibliothèques utilisés
 
  --------------------------------------------------------------------------
 | Catégorie              | Outils                         | Priorité       |
@@ -56,30 +70,202 @@ Ce projet combine :
 | Environnement complet  |  SageMath                      | 🟢 Optionnelle |
  ---------------------------------------------------------------------------
 
-## 🚀 Alias de configuration facultatif (`.bashrc`)
+## 📦 Processus d'installation et outils complémentaires
+
+1. Création de l'environnement virtuel et activation
+```text
+cd ~
+mkdir projet_zeta
+cd projet_zeta
+python3 -m venv zeta_env
+source zeta_env/bin/activate
+```
+2. Création de l'arborescence complète du projet
+```text
+# Créer l'arborescence complète
+cd ~/projet_zeta
+
+mkdir -p src/{calculs,ia,utils,tests}
+mkdir -p scripts
+mkdir -p notebooks
+mkdir -p config
+mkdir -p docs
+
+# Créer les fichiers __init__.py
+touch src/__init__.py
+touch src/calculs/__init__.py
+touch src/ia/__init__.py
+touch src/utils/__init__.py
+
+# Structure sur lapartien des donnees /mnt/data
+mkdir -p /mnt/data/{datasets/{zeros,calculs,references},models_ia,rapports/{pdf,doc,markdown},
+logs/{calculs,ia,monitoring},monitoring/{cpu,gpu,ram,graphs},exports/{csv,json,figures}}
+
+# Changer les propriétaires
+sudo chown -R $USER:$USER /mnt/data
+```
+
+3. Installation du Système de base
+```text
+sudo apt update
+sudo apt install python3 python3-pip python3-venv python3-dev build-essential curl wget -y
+sudo apt install libopenblas-dev liblapack-dev -y
+sudo apt install pari-gp -y
+sudo apt install htop nvtop -y
+sudo apt install lm-sensors
+```
+
+4. Installation des bibliothèques scientifiques optimisées
+```text
+bash
+
+pip3 install numpy scipy matplotlib jupyter numba sympy mpmath
+```
+
+5. Outils complémentaires pour la Gestion des données et logs
+```text
+bash
+
+pip install pandas          # Manipulation CSV, DataFrames
+pip install pyarrow         # Format Parquet (plus rapide que CSV)
+pip install loguru          # Logging avancé
+```
+
+6. Outils complémentaires pour le Monitoring et débogage
+```text
+bash
+
+pip install tqdm            # Barres de progression pour calculs longs
+pip install memory_profiler # Profilage mémoire
+pip install line_profiler   # Profilage ligne par ligne
+```
+
+7. Outils complémentaires pour l'IA et Machine Learning (complément à Ollama)
+```text
+bash
+
+pip install transformers    # Modèles Hugging Face
+pip install torch           # PyTorch (si compatible GPU)
+pip install sentence-transformers  # Embeddings pour analyse
+```
+
+8. Outils complémentaires pour la Visualisation avancée
+```text
+bash
+
+pip install seaborn         # Statistiques visuelles
+pip install bokeh           # Dashboards interactifs
+```
+
+9. Outils complémentaires pour le Calcul parallèle distribué (si calculs très longs)
+```text
+bash
+
+pip install dask            # Calcul parallèle sur grand volume
+pip install ray             # Framework distribué
+```
+
+10. Outils complémentaires pour la vérification de preuves formelles
+```text
+bash
+curl -sSfL https://github.com/leanprover/elan/releases/download/v3.0.0/elan-x86_64-unknown-linux-gnu.tar.gz | tar xz
+./elan-init -y --default-toolchain stable
+source ~/.profile
+```
+
+11. Outils complémentaires pour l'intégration d'IA locale (LLM)
+```text
+bash
+curl -fsSL https://ollama.com/install.sh | sh
+sudo systemctl status ollama
+```
+
+12. Télecharger des Modèles IA spécialisés
+```text
+bash
+
+# Modèle spécialisé en maths 
+ollama pull mathstral
+
+# Alternative plus légère et rapide
+ollama pull phi3:mini
+```
+
+13. Outils complémentaires pour interaction avec l'IA depuis Python
+```text
+bash
+
+pip install requests
+```
+
+14. Outils complémentaires Environnent de développement (IDE Spyder )
+```text
+bash
+
+pip install spyder
+```
+
+
+## 🚀 Alias pratiques facultatif dans (`.bashrc`)
 
  --------------------------------------------------------------------------------------------------
 | Alias        | Commande                                                  | Usage                 |
 |--------------|-----------------------------------------------------------|-----------------------|
+| zeta-proj    | cd ~/projet_zeta/                                         | Dossier du projet     |
 | zeta         | cd ~/projet_zeta && source zeta_env/bin/activate          | Activer Environnement |
 | zeta-jupyter | cd ~/projet_zeta/notebooks && | Jupyter Lab               |                       |
-|              | source ~/projet_zeta/zeta_env/bin/activate && jupyter lab | Jupyter               |
+|              | source ~/projet_zeta/zeta_env/bin/activate && jupyter lab | IDE Jupyter           |
 | zeta-spyder  | source ~/projet_zeta/zeta_env/bin/activate &&             |                       |
-|              | export QT_API=pyqt5 && spyder                             | Spyder                |
-| zeta-code    | code ~/projet_zeta                                        | VS Code               |
+|              | export QT_API=pyqt5 && spyder                             | IDE Spyder            |
+| zeta-code    | code ~/projet_zeta                                        |                       |
+| zeta-python  | source ~/projet_zeta/zeta_env/bin/activate &&             | Console Python3 code  |
+|              | cd ~/projet_zeta/src/calculs'                             |                       |
 | zeta-data    | cd /mnt/data                                              | Données               |
-| `eta-logs    | tail -f /mnt/data/logs/demo_zea.log                       | Logs                  |
+| zeta-docs    | cd ~/projet_zeta/docs'                                    | Documents             |
+| zeta-logs    | tail -f /mnt/data/logs/demo_zeta.log                      | Logs                  |
+| zeta-monitor | cd ~/projet_zeta/scripts/monitor.sh"                      | Performance           |
  --------------------------------------------------------------------------------------------------
- 
+
+```text
+bash
+
+echo '
+# Projet Zêta - alias supplémentaires
+
+alias zeta-docs="cd ~/projet_zeta/docs"
+alias zeta-proj="cd ~/projet_zeta/"
+alias zeta-data="cd /mnt/data"
+alias zeta-logs="tail -f /mnt/data/logs/mon_projet.log"
+alias zeta-monitor="~/projet_zeta/scripts/monitor.sh"
+alias zeta-notebook="cd ~/projet_zeta/notebooks && jupyter notebook"
+alias zeta-spyder="source ~/projet_zeta/zeta_env/bin/activate && spyder"
+alias zeta-jupyter="cd ~/projet_zeta/notebooks && source ~/projet_zeta/zeta_env/bin/activate && jupyter lab"
+alias zeta-python="cd ~/projet_zeta/src/calculs" 
+alias zeta-code="source ~/projet_zeta/zeta_env/bin/activate && code ~/projet_zeta" 
+' >> ~/.bashrc
+
+source ~/.bashrc
+```
+
 ## 🧪 Exécution
 
 ```text
 bash
 # Activer l'environnement
 zeta
-# Lancer le script
+# Lancer le script de demo ζ(s)
 cd ~/projet_zeta/src/calculs
 python demo_complete.py
+```
+
+```text
+bash
+# Exécution du model IA locale
+ollama run mathstral
+
+# Lancer prompe IA : Test réponse quelle est la valeur de ζ(2)
+cd ~/projet_zeta/src/ia
+python zeta_ia.py
 ```
 
 ## 🔧 Fichiers générés

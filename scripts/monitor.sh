@@ -10,3 +10,7 @@ nvidia-smi --query-gpu=utilization.gpu,memory.used --format=csv
 echo ""
 echo "=== RAM ==="
 free -h
+echo -"=== Disque==="
+df -h | grep -E "sda[0-9]"
+
+
