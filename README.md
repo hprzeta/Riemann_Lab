@@ -265,7 +265,7 @@ cd ~/projet_zeta/src/ia
 python zeta_ia.py
 ```
 
-## 🔧 Fichiers générés
+## 🔧 Fichiers générés dans /mnt/data
 
  ---------------------------------------------------------------
 | Type | Chemin                                                 | 
