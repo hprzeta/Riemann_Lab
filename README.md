@@ -5,11 +5,11 @@
 
 ## 🎯 Objectif du projet
 
-Ce projet a pour but d'explorer numériquement et symboliquement la **fonction zêta de Riemann** ζ(s), 
+Ce modeste projet a pour but d'explorer numériquement et symboliquement la **fonction zêta de Riemann** ζ(s), 
 pierre angulaire de la théorie des nombres. 
 L'**Hypothèse de Riemann** (non démontrée à ce jour) affirme que tous les zéros non triviaux de ζ(s) se trouvent sur la droite critique **Re(s) = 1/2**.
 
-Ce projet combine :
+Le projet combine :
 - Calculs haute précision
 - Visualisations 2D/3D
 - Intégration intelligence artificielle locale (LLM)
@@ -276,7 +276,7 @@ python zeta_ia.py
 | HTML | /mnt/data/exports/figures/visualisation_plotly.html    |
  ---------------------------------------------------------------
 
-## 📊 Résultats des tests Démo
+## 📊 Résultats des tests Démo ζ(s)
 
 <p><strong>Rapport Traitement d'exécution</strong><br>
 <img src="images/zeta_demoExc.png" style="width: 100%; max-width: 100%; height: auto;"></p>
@@ -287,7 +287,7 @@ python zeta_ia.py
 <p><strong>Graphiques 2D statique via Matplot : Module |ζ(s)| en fonction de s (partie réelle)</strong><br>
 <img src="images/zeta_matplotRel.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 
-<p><strong>Graphique Plotly interactif</strong><br>
+<p><strong>Graphique Plotly interactive</strong><br>
 <img src="images/zeta_plotlyImg.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 
 ## 📚 Références
