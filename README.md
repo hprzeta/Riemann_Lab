@@ -12,7 +12,7 @@ L'**Hypothèse de Riemann** (non démontrée à ce jour) affirme que tous les z�
 Ce projet combine :
 - Calculs haute précision
 - Visualisations 2D/3D
-- Intégraion intelligence artificielle locale (LLM)
+- Intégration intelligence artificielle locale (LLM)
 - Preuves formelles (Lean 4)
 
 
@@ -204,7 +204,7 @@ pip install spyder
 ```
 
 
-## 🚀 Alias pratiques facultatif dans (`.bashrc`)
+## 🚀 Alias pratiques facultatifs (`.bashrc`)
 
  --------------------------------------------------------------------------------------------------
 | Alias        | Commande                                                  | Usage                 |
@@ -281,11 +281,14 @@ python zeta_ia.py
 <p><strong>Log de traitement</strong><br>
 <img src="images/demo_zeta.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 
-<p><strong>Résultats</strong><br>
+<p><strong>Résultats calcul ζ(s) </strong><br>
 <img src="images/resultats_zeta.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 
-<p><strong>Graphique</strong><br>
-<img src="images/visualisation_matplotlib.png" style="width: 100%; max-width: 100%; height: auto;"></p>
+<p><strong>Graphiques 2D statique via Matplot : Module |ζ(s)| en fonction de s (partie réelle)</strong><br>
+<img src="images/visualisation_matplotlib_zetaRe.png" style="width: 100%; max-width: 100%; height: auto;"></p>
+
+<p><strong>Graphiques 2D interactive via Plotly : Module |ζ(0.5 + it)| en fonction de t (partie imaginaire) sur droite critique</strong><br>
+<img src="images/visualisation_plotly_zetaImg.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 
   
 ## 📚 Références

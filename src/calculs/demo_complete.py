@@ -204,7 +204,9 @@ def generer_visualisations(df, output_dir="/mnt/data/exports/figures"):
     - matplotlib (🔴 Priorité Haute) : Graphiques 2D statiques
     - plotly (🔴 Priorité Haute) : Graphiques 3D interactifs (HTML)
     """
+    # Créer le dossier de sortie
     os.makedirs(output_dir, exist_ok=True)
+    logger.info(f"Dossier de sortie des figures : {output_dir}")
     
     # Filtrer les résultats valides
     df_valid = df[df['reussite'] == True].copy()
@@ -251,29 +253,42 @@ def generer_visualisations(df, output_dir="/mnt/data/exports/figures"):
     ax2.grid(True)
     
     plt.tight_layout()
-    plt.savefig(f"{output_dir}/visualisation_matplotlib.png", dpi=150)
-    logger.info(f"Graphique matplotlib sauvegardé dans {output_dir}/visualisation_matplotlib.png")
+    
+    # Sauvegarde du graphique matplotlib
+    png_path = os.path.join(output_dir, "visualisation_matplotlib.png")
+    plt.savefig(png_path, dpi=150)
+    logger.info(f"✅ Graphique matplotlib sauvegardé : {png_path}")
     plt.show()
     
     # ========== Graphique 2 : plotly (interactif) ==========
     # plotly : Graphiques interactifs (zoom, survol, etc.)
     # Sauvegarde en HTML pour visualisation dans le navigateur
+    logger.info("=" * 50)
+    logger.info("Génération du graphique plotly...")
+    
     try:
         import plotly.graph_objects as go
+        logger.info("✅ plotly.graph_objects importé avec succès")
         
         # Préparer les données pour la bande critique (Re(s)=1/2)
         imaginaires = []
         modules = []
         
         for _, row in df_valid.iterrows():
-            if row['imag'] and row['imag'] > 0:
+            if row['imag'] is not None and row['imag'] > 0:
                 imaginaires.append(row['imag'])
                 try:
-                    modules.append(abs(complex(str(row['zeta_s']).replace('i', 'j'))))
-                except:
+                    # Convertir la chaîne complexe en nombre complexe
+                    zeta_str = str(row['zeta_s']).replace('i', 'j')
+                    val = abs(complex(zeta_str))
+                    modules.append(val)
+                except Exception as e:
+                    logger.warning(f"Erreur de conversion pour {row['s']}: {e}")
                     modules.append(0)
         
-        if imaginaires and modules:
+        logger.info(f"Données plotly : {len(imaginaires)} points trouvés (partie imaginaire > 0)")
+        
+        if len(imaginaires) >= 1:
             fig_plotly = go.Figure()
             fig_plotly.add_trace(go.Scatter(
                 x=imaginaires,
@@ -288,13 +303,32 @@ def generer_visualisations(df, output_dir="/mnt/data/exports/figures"):
                 yaxis_title='|ζ(0.5 + it)|',
                 template='plotly_dark'
             )
-            fig_plotly.write_html(f"{output_dir}/visualisation_plotly.html")
-            logger.info(f"Graphique plotly sauvegardé dans {output_dir}/visualisation_plotly.html")
-    except ImportError:
-        logger.warning("Plotly non installé, saute cette visualisation")
+            
+            # Sauvegarde du fichier HTML
+            html_path = os.path.join(output_dir, "visualisation_plotly.html")
+            fig_plotly.write_html(html_path)
+            
+            # Vérifier que le fichier a bien été créé
+            if os.path.exists(html_path):
+                file_size = os.path.getsize(html_path)
+                logger.info(f"✅✅✅ Graphique plotly sauvegardé avec succès !")
+                logger.info(f"   📁 Chemin : {html_path}")
+                logger.info(f"   📊 Taille : {file_size} octets")
+            else:
+                logger.error(f"❌ Échec : le fichier {html_path} n'a pas été créé")
+        else:
+            logger.warning(f"⚠️ Pas assez de données pour plotly : {len(imaginaires)} points")
+            logger.info("   Pour générer le graphique plotly, ajoutez des nombres complexes comme 0.5+14j")
+            
+    except ImportError as e:
+        logger.error(f"❌ Erreur d'import plotly : {e}")
+        logger.info("   Solution: pip install plotly --upgrade")
     except Exception as e:
-        logger.warning(f"Erreur avec plotly : {e}")
+        logger.error(f"❌ Erreur inattendue avec plotly : {e}")
+        import traceback
+        logger.error(traceback.format_exc())
     
+    logger.info("=" * 50)
     return fig
 
 
@@ -317,6 +351,8 @@ def main():
     os.makedirs("/mnt/data/exports/csv", exist_ok=True)
     os.makedirs("/mnt/data/exports/figures", exist_ok=True)
     os.makedirs("/mnt/data/logs", exist_ok=True)
+    
+    logger.info("Dossiers créés/vérifiés avec succès")
     
     # 1. Lecture des données
     fichier_input = "/mnt/data/datasets/calculs/nombres_a_tester.txt"
