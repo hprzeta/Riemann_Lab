@@ -21,7 +21,6 @@ Ce projet combine :
  -----------------------------------------------
 | Composant    |Détail                  | État  |
 |--------------|------------------------|-------|
-| Composant    | Détail                 | État  |
 | Disque 1 To  | 3+183+1,1+651 ≈ 908 Go | ✅ OK |
 | RAM	8 Go   | 7,6 Gi (soit 8 Go)     | ✅ OK |
 | GPU GTX 960M | nvidia-smi (4 Go VRAM) | ✅ OK |
@@ -212,13 +211,12 @@ pip install spyder
 |--------------|-----------------------------------------------------------|-----------------------|
 | zeta-proj    | cd ~/projet_zeta/                                         | Dossier du projet     |
 | zeta         | cd ~/projet_zeta && source zeta_env/bin/activate          | Activer Environnement |
-| zeta-jupyter | cd ~/projet_zeta/notebooks && | Jupyter Lab               |                       |
-|              | source ~/projet_zeta/zeta_env/bin/activate && jupyter lab | IDE Jupyter           |
-| zeta-spyder  | source ~/projet_zeta/zeta_env/bin/activate &&             |                       |
-|              | export QT_API=pyqt5 && spyder                             | IDE Spyder            |
-| zeta-code    | code ~/projet_zeta                                        |                       |
-| zeta-python  | source ~/projet_zeta/zeta_env/bin/activate &&             | Console Python3 code  |
-|              | cd ~/projet_zeta/src/calculs'                             |                       |
+| zeta-jupyter | cd ~/projet_zeta/notebooks && | Jupyter Lab               | IDE Jupyter           |
+|              | source ~/projet_zeta/zeta_env/bin/activate && jupyter lab |                       |
+| zeta-spyder  | source ~/projet_zeta/zeta_env/bin/activate &&             | IDE Spyder            |
+|              | export QT_API=pyqt5 && spyder                             |                       |
+| zeta-code    | code ~/projet_zeta                                        | IDE Vs Code           |
+| zeta-python  | cd ~/projet_zeta/src/calculs'                             | Via Python3 consol    |
 | zeta-data    | cd /mnt/data                                              | Données               |
 | zeta-docs    | cd ~/projet_zeta/docs'                                    | Documents             |
 | zeta-logs    | tail -f /mnt/data/logs/demo_zeta.log                      | Logs                  |
