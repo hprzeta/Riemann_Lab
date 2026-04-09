@@ -288,7 +288,7 @@ def generer_visualisations(df, output_dir="/mnt/data/exports/figures"):
     
     # Sauvegarde du graphique matplotlib
     png_path = os.path.join(output_dir, "visualisation_matplotlib.png")
-    plt.savefig(png_path, dpi=150, bbox_inches='tight')  # bbox_inches='tight' coupe les blancs
+    plt.savefig(png_path, dpi=300, bbox_inches='tight')  # bbox_inches='tight' coupe les blancs
     logger.info(f"✅ Graphique matplotlib sauvegardé : {png_path}")
     plt.show()
     
