@@ -278,13 +278,13 @@ python zeta_ia.py
 ## 📊 Résultats des tests Démo
 
 <p><strong>Log de traitement</strong><br>
-<img src="images/demo_zeta.png" style="width: 400px; max-width: 100%; height: auto;"></p>
+<img src="images/demo_zeta.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 
 <p><strong>Résultats</strong><br>
-<img src="images/resultats_zeta.png" style="width: 600px; max-width: 100%; height: auto;"></p>
+<img src="images/resultats_zeta.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 
 <p><strong>Graphique</strong><br>
-<img src="images/visualisation_matplotlib.png" style="width: 800px; max-width: 100%; height: auto;"></p>
+<img src="images/visualisation_matplotlib.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 
   
 ## 📚 Références
