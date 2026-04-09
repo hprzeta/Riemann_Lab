@@ -249,7 +249,7 @@ def generer_visualisations(df, output_dir="/mnt/data/exports/figures"):
     ax2.bar(range(len(df_valid)), df_valid['temps_calcul'], color='green')
     ax2.set_xlabel('Indice du calcul')
     ax2.set_ylabel('Temps (s)')
-    ax2.set_title('Performance des calculs')
+    ax2.set_title('Performance des calculs des ζ(s)')
     ax2.grid(True)
     
     plt.tight_layout()
