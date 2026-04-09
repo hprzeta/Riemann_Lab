@@ -19,11 +19,14 @@ Ce projet combine :
 ## 💡 Récapitulatif de ma configuration matérielle
 
  -----------------------------------------------
+| Composant    |Détail                  | État  |
+|--------------|------------------------|-------|
 | Composant    | Détail                 | État  |
 | Disque 1 To  | 3+183+1,1+651 ≈ 908 Go | ✅ OK |
 | RAM	8 Go   | 7,6 Gi (soit 8 Go)     | ✅ OK |
 | GPU GTX 960M | nvidia-smi (4 Go VRAM) | ✅ OK |
 | Intel Core i7| i7-7500U (2,7-3,5 GHz) | ✅ OK |
+ -----------------------------------------------
 
 ## 📁 Structure du projet Démo Zêta 
 
