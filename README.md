@@ -285,7 +285,7 @@ python zeta_ia.py
 <img src="images/resultats_zeta.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 
 <p><strong>Graphiques 2D statique via Matplot : Module |ζ(s)| en fonction de s (partie réelle)</strong><br>
-<img src="images/visualisation_matplotlib_zetaR.png" style="width: 100%; max-width: 100%; height: auto;"></p>
+<img src="images/visualisation_matplotlib_.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 
 
 ## 📚 Références
