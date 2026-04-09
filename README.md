@@ -287,8 +287,11 @@ python zeta_ia.py
 <p><strong>Graphiques 2D statique via Matplot : Module |ζ(s)| en fonction de s (partie réelle)</strong><br>
 <img src="images/zeta_matplotRel.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 
-<p><strong>Graphiques 2D intéractive via Plotly : Module |ζ(0.5 + it)| en fonction de t (partie imaginaire)</strong><br>
-<img src="images/zeta_plotlyImg.png" style="width: 100%; max-width: 100%; height: auto;"></p>
+<p><strong>Graphiques 2D interactive via Plotly : Module |ζ(0.5 + it)| en fonction de t (partie imaginaire)</strong><br>
+<a href="images/visualisation_plotly.html" target="_blank">
+  <img src="images/zeta_plotlyImg.png" style="width: 100%; max-width: 100%; height: auto;">
+</a>
+</p>
 
 
 ## 📚 Références

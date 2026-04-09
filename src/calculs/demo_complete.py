@@ -226,10 +226,8 @@ def generer_visualisations(df, output_dir="/mnt/data/exports/figures"):
     df_valid['real'] = df_valid['s'].apply(lambda x: extraire_parties(x)[0])
     df_valid['imag'] = df_valid['s'].apply(lambda x: extraire_parties(x)[1])
     
-    # ========== Graphique 1 : matplotlib (2D) ==========
-    # matplotlib : Bibliothèque de base pour les graphiques
-    # subplots : Crée plusieurs graphiques côte à côte
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 5))
+    # ========== Graphique 1 : matplotlib (2D) - Module pour les réels purs ==========
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 5))
     
     # Graphique 1 : Module de ζ(s) pour les réels purs
     reels_valides = df_valid[df_valid['imag'] == 0]
@@ -245,24 +243,56 @@ def generer_visualisations(df, output_dir="/mnt/data/exports/figures"):
     ax1.set_title('Module de ζ(s) pour s réel')
     ax1.grid(True)
     
-    # Graphique 2 : Temps de calcul par point
-    ax2.bar(range(len(df_valid)), df_valid['temps_calcul'], color='green')
-    ax2.set_xlabel('Indice du calcul')
+    # ========== Graphique 2 : Temps de calcul par point avec couleurs ==========
+    # Créer une liste de couleurs : rouge pour les complexes, bleu pour les réels
+    couleurs = []
+    indices_complexes = []
+    for i, (_, row) in enumerate(df_valid.iterrows()):
+        if row['imag'] is not None and row['imag'] != 0:
+            couleurs.append('red')      # Nombre complexe (partie imaginaire de ζ(s) ≠ 0)
+            indices_complexes.append(i)
+        else:
+            couleurs.append('royalblue')   # Nombre réel (partie imaginaire de ζ(s) = 0)
+    
+    # Créer le graphique à barres avec les couleurs
+    bars = ax2.bar(range(len(df_valid)), df_valid['temps_calcul'], color=couleurs)
+    
+    # Ajouter une légende personnalisée
+    from matplotlib.patches import Patch
+    legend_elements = [
+        Patch(facecolor='red', label='Nombres complexes (partie imaginaire de ζ(s)  ≠ 0)'),
+        Patch(facecolor='royalblue', label='Nombres réels (partie imaginaire de ζ(s)  = 0)')
+    ]
+    ax2.legend(handles=legend_elements, loc='upper right', ncol=1, framealpha=0.9)
+    
+    ax2.set_xlabel('Indice du calcul de chaque ζ(s)')
     ax2.set_ylabel('Temps (s)')
-    ax2.set_title('Performance des calculs des ζ(s)')
-    ax2.grid(True)
+    ax2.set_title('Performance des calculs des ζ(s) (rouge = complexes)')
+    ax2.grid(True, axis='y', linestyle='--', alpha=0.7)
+    
+    # Optionnel : ajouter les valeurs sur les barres (pour les complexes)
+    for i in indices_complexes:
+        hauteur = df_valid.iloc[i]['temps_calcul']
+        ax2.text(i, hauteur + 0.0001, f'{hauteur:.4f}s', 
+                 ha='center', va='bottom', fontsize=8, color='red')
     
     plt.tight_layout()
+    # Valeurs progressives à tester :
+
+    # Décalage marge Version 1 : un peu plus à gauche
+    #plt.subplots_adjust(left=0.07, right=0.93, wspace=0.25)
+    # Décalage marge Version 2 : encore plus à gauche
+    plt.subplots_adjust(left=0.05, right=0.95, wspace=0.2)
+     # Décalage marge Version 3 : très agressive
+     #plt.subplots_adjust(left=0.03, right=0.97, wspace=0.15)
     
     # Sauvegarde du graphique matplotlib
     png_path = os.path.join(output_dir, "visualisation_matplotlib.png")
-    plt.savefig(png_path, dpi=150)
+    plt.savefig(png_path, dpi=150, bbox_inches='tight')  # bbox_inches='tight' coupe les blancs
     logger.info(f"✅ Graphique matplotlib sauvegardé : {png_path}")
     plt.show()
     
     # ========== Graphique 2 : plotly (interactif) ==========
-    # plotly : Graphiques interactifs (zoom, survol, etc.)
-    # Sauvegarde en HTML pour visualisation dans le navigateur
     logger.info("=" * 50)
     logger.info("Génération du graphique plotly...")
     
@@ -278,7 +308,6 @@ def generer_visualisations(df, output_dir="/mnt/data/exports/figures"):
             if row['imag'] is not None and row['imag'] > 0:
                 imaginaires.append(row['imag'])
                 try:
-                    # Convertir la chaîne complexe en nombre complexe
                     zeta_str = str(row['zeta_s']).replace('i', 'j')
                     val = abs(complex(zeta_str))
                     modules.append(val)
@@ -308,7 +337,6 @@ def generer_visualisations(df, output_dir="/mnt/data/exports/figures"):
             html_path = os.path.join(output_dir, "visualisation_plotly.html")
             fig_plotly.write_html(html_path)
             
-            # Vérifier que le fichier a bien été créé
             if os.path.exists(html_path):
                 file_size = os.path.getsize(html_path)
                 logger.info(f"✅✅✅ Graphique plotly sauvegardé avec succès !")
@@ -318,7 +346,6 @@ def generer_visualisations(df, output_dir="/mnt/data/exports/figures"):
                 logger.error(f"❌ Échec : le fichier {html_path} n'a pas été créé")
         else:
             logger.warning(f"⚠️ Pas assez de données pour plotly : {len(imaginaires)} points")
-            logger.info("   Pour générer le graphique plotly, ajoutez des nombres complexes comme 0.5+14j")
             
     except ImportError as e:
         logger.error(f"❌ Erreur d'import plotly : {e}")
@@ -330,7 +357,6 @@ def generer_visualisations(df, output_dir="/mnt/data/exports/figures"):
     
     logger.info("=" * 50)
     return fig
-
 
 def main():
     """
