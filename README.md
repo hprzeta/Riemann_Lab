@@ -288,12 +288,7 @@ python zeta_ia.py
 <img src="images/zeta_matplotRel.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 
 <p><strong>Graphique Plotly interactif</strong><br>
-<a href="https://hpzeta.github.io/Riemann_Lab/images/visualisation_plotly.html" target="_blank">
-  <img src="images/zeta_plotlyImg.png" style="width: 100%; max-width: 100%; height: auto;">
-</a>
-<br>
-<em>🔗 Cliquez sur l'image pour ouvrir la version interactive</em>
-</p>
+<img src="images/zeta_plotlyImg.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 
 ## 📚 Références
 - [Hypothèse de Riemann - Wikipedia](https://fr.wikipedia.org/wiki/Hypoth%C3%A8se_de_Riemann)
