@@ -277,13 +277,15 @@ python zeta_ia.py
 
 ## 📊 Résultats des tests Démo
 
-![Log de traitement](images/demo_zeta.png){: width="400px"}
+<p><strong>Log de traitement</strong><br>
+<img src="images/demo_zeta.png" style="width: 400px; max-width: 100%; height: auto;"></p>
 
+<p><strong>Résultats</strong><br>
+<img src="images/resultats_zeta.png" style="width: 600px; max-width: 100%; height: auto;"></p>
 
-![Résultats](images/resultats_zeta.png){: width="600px"}
+<p><strong>Graphique</strong><br>
+<img src="images/visualisation_matplotlib.png" style="width: 800px; max-width: 100%; height: auto;"></p>
 
- 
-![Graphique](images/visualisation_matplotlib.png){: width="800px"}
   
 ## 📚 Références
 - [Hypothèse de Riemann - Wikipedia](https://fr.wikipedia.org/wiki/Hypoth%C3%A8se_de_Riemann)
