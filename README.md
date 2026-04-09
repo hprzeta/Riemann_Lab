@@ -12,7 +12,7 @@ L'**Hypothèse de Riemann** (non démontrée à ce jour) affirme que tous les z�
 Ce projet combine :
 - Calculs haute précision
 - Visualisations 2D/3D
-- Intelligence artificielle locale (LLM)
+- Intégraion intelligence artificielle locale (LLM)
 - Preuves formelles (Lean 4)
 
 
@@ -291,9 +291,10 @@ python zeta_ia.py
 ## 📚 Références
 - [Hypothèse de Riemann - Wikipedia](https://fr.wikipedia.org/wiki/Hypoth%C3%A8se_de_Riemann)
 - [Fonction zêta de Riemann - MathWorld](https://mathworld.wolfram.com/RiemannZetaFunction.html)
+- [GitHub - Projet Zêta et IA](https://github.com/Deskuma/riemann-hypothesis-ai)
+- [Images de Zêta - Mathématiques en couleurs ](https://graphes-fonctions-holomorphes.toile-libre.org/FoncHol/zeta.html)
 - [mpmath documentation](https://mpmath.org/)
 - [Ollama - LLMs locaux](https://ollama.com/)
-- [GitHub - Projet Zêta](https://github.com/hprzeta/Riemann_Lab)
 
 ## 📜 Licence
 Projet de recherche personnel - Libre d'utilisation et de modification.
