@@ -17,8 +17,8 @@ Le projet combine :
 
 
 ## 💡 Récapitulatif de ma configuration matérielle
- ------------------------------------------------
-|  Ubuntu 24.04.4 LTS                            | 
+
+| Machine Ubuntu 24.04.4 LTS                     | 
  ------------------------------------------------
 | Composant    |Détail                   | État  |
 |--------------|-------------------------|-------|
