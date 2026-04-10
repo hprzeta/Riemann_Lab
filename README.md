@@ -292,8 +292,9 @@ python zeta_ia.py
   <img src="images/zeta_plotlyImg.png" style="width: 100%; max-width: 100%; height: auto;">
 </a>
 <br>
-<em>🔗 Cliquez sur l'image pour ouvrir la version interactive (Plotly)</em>
+<em>🔗 Cliquez sur l'image pour ouvrir la version interactive (Plotly) et  visualiser les imaginaires (it) de |ζ(0.5 + it) </em>
 </p>
+
 ## 📚 Références
 - [Hypothèse de Riemann - Wikipedia](https://fr.wikipedia.org/wiki/Hypoth%C3%A8se_de_Riemann)
 - [Fonction zêta de Riemann - MathWorld](https://mathworld.wolfram.com/RiemannZetaFunction.html)
