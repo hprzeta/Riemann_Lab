@@ -17,6 +17,6 @@ def question_ia(prompt):
 # Test
 reponse = question_ia("Explique l'hypothèse de Riemann simplement")
 print(reponse)
-print("-" * 50)'
+print("-" * 50)
 reponse = question_ia("Calcule une valeur approchée de ζ(2) avec une précision de 6 décimales et explique la méthode.")
 print(reponse)
