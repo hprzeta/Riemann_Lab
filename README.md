@@ -276,14 +276,14 @@ tmux -V  # Vérifie la version
 ## 🎯 Comparaison de LLM pour ma GPU (NVIDIA GTX 960 + 5 VRAM )
  Selon votre configuration, choisez d’autre modèle plus adaptés.
 
- --------------------------------------------------
-| Modèle pour Ollama     | Taille | Priorités      |
-|------------------------|--------|----------------|
-| qwen2.5-coder:7b       | 7B     | 🔴 Haute       |
-| deepseek-math:7b       | 7B     | 🔴 Haute       |
-| llama3.1:8b (Q4)       | 8B     | 🔴 Haute       |
-| mixtral:8x7b (Q2_K)    | 46B    | 🟡 Moyenne     |
- --------------------------------------------------
+ --------------------------------------------------------
+| Modèle pour Ollama     | Taille | Force Maths | VRAM   |
+|------------------------|--------|-------------|--------
+| qwen2.5-coder:7b       | 7B     | Haute       |~4-5 Go |
+| deepseek-math:7b       | 7B     | Extrême     |~4-5 Go |
+| llama3.1:8b (Q4)       | 8B     | Haute       |~5 Go   |
+| mixtral:8x7b (Q2_K)    | 46B    | Très Haute  |~5 Go   |
+ --------------------------------------------------------
 
 ## 📦 Processus d'installation du projet via script 
 Ce processus d'installation manuelle peut être lancé  en automatique . 
