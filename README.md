@@ -236,17 +236,7 @@ ollama pull deepseek-coder:6.7b
 # Modèle(3): Alternative Basique légère et rapide 
 ollama pull phi3:mini
 ```
-## 🎯 Comparaison d'autre modèle de LLM pour une GPU (NVIDIA GTX 960 + 5 VRAM  )
-Selon votre configuration vous pouvez choisir d’autre modèle plus adaptés.
- -------------------------------------------------------------------------------------------------- 
-| Modèle pour Ollama  | Taille  | Force maths/code | VRAM/RAM usage (Q4)       | Vitesse estimée   |
-|---------------------|----------------------------|---------------------------|-------------------| 
-| qwen2.5-coder:7b    | 7B      | Très haute       | ~4-5 Go VRAM / 6-7 Go RAM | 15-25 tok/s       |
-| deepseek-math:7b    | 7B      | Extrême          | ~4.5 Go VRAM / 7 Go RAM   | 12-20 tok/s       |
-| llama3.1:8b (Q4)    | 8B      | Haute            | 5 Go VRAM / 7-8 Go RAM    | 10-18 tok/s       | 
-| mixtral:8x7b (Q2_K) | 46B eff | Très haute       | ~5 Go VRAM / 8 Go RAM     | 8-15 tok/s (lent) |
- -------------------------------------------------------------------------------------------------- 
- 
+
 13. Outils complémentaires pour interaction avec l'IA depuis Python
 ```text
 bash
@@ -283,6 +273,18 @@ sudo apt install tmux -y
 tmux -V  # Vérifie la version
 ```
 
+## 🎯 Comparaison de LLM pour ma GPU (NVIDIA GTX 960 + 5 VRAM )
+ Selon votre configuration, choisez d’autre modèle plus adaptés.
+
+ -------------------------------------------------------------------------------------------------- 
+| Modèle pour Ollama  | Taille  | Force maths/code | VRAM/RAM usage (Q4)       | Vitesse estimée   |
+|---------------------|----------------------------|---------------------------|-------------------| 
+| qwen2.5-coder:7b    | 7B      | Très haute       | ~4-5 Go VRAM / 6-7 Go RAM | 15-25 tok/s       |
+| deepseek-math:7b    | 7B      | Extrême          | ~4.5 Go VRAM / 7 Go RAM   | 12-20 tok/s       |
+| llama3.1:8b (Q4)    | 8B      | Haute            | 5 Go VRAM / 7-8 Go RAM    | 10-18 tok/s       | 
+| mixtral:8x7b (Q2_K) | 46B eff | Très haute       | ~5 Go VRAM / 8 Go RAM     | 8-15 tok/s (lent) |
+ -------------------------------------------------------------------------------------------------- 
+  
 ## 📦 Processus d'installation du projet via script 
 Ce processus d'installation manuelle peut être lancé  en automatique . 
 Dans le dossier ├── projet_zeta/scripts/ : Copier et lancer ces scripts.
