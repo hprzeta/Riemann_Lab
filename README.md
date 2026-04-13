@@ -303,7 +303,7 @@ Dans le dossier ├── projet_zeta/scripts/ : Copier et lancer ces scripts.
 | mixtral:8x7b (Q2_K)    | 46B    | Très Haute  |~5 Go   |
  --------------------------------------------------------
 
-## 🚀 Alias pratiques facultatifs (`.bashrc`)
+## 🚀 Alias d'usage pratiques facultatifs (`.bashrc`)
 
  --------------------------------------------------------------------------------------------------
 | Alias        | Commande                                                  | Usage                 |
@@ -340,7 +340,6 @@ alias zeta-jupyter="cd ~/projet_zeta/notebooks && source ~/projet_zeta/zeta_env/
 alias zeta-python="cd ~/projet_zeta/src/calculs" 
 alias zeta-code="source ~/projet_zeta/zeta_env/bin/activate && code ~/projet_zeta" 
 ' >> ~/.bashrc
-
 source ~/.bashrc
 ```
 
@@ -348,6 +347,7 @@ source ~/.bashrc
 
 ```text
 bash
+
 # Activer l'environnement
 zeta
 # Lancer le script de demo ζ(s)
@@ -357,6 +357,7 @@ python demo_complete.py
 
 ```text
 bash
+
 # Exécution du model IA locale
 ollama run mathstral
 
