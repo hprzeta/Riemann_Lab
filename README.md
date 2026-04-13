@@ -298,7 +298,7 @@ tmux -V  # Vérifie la version
 | deepseek-math:7b    | 7B      | Extrême          | 
 | llama3.1:8b (Q4)    | 8B      | Haute            |
 | mixtral:8x7b (Q2_K) | 46B eff | Très haute       | 
- --------------------------------------------------
+ ---------------------------------------------------
 
 ## 📦 Processus d'installation du projet via script 
 Ce processus d'installation manuelle peut être lancé  en automatique . 
