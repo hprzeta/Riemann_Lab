@@ -6,7 +6,7 @@
 ## 🎯 Objectif du projet
 
 Ce modeste projet a pour but d'explorer numériquement et symboliquement la **fonction zêta de Riemann** ζ(s).
-Pierre angulaire de la théorie des nombres,l'**Hypothèse de Riemann** (non démontrée à ce jour) affirme que tous les zéros non triviaux de ζ(s) se trouvent sur la droite critique **Re(s) = 1/2**.
+Pierre angulaire de la théorie des nombres, l'**Hypothèse de Riemann** (non démontrée à ce jour) affirme que tous les zéros non triviaux de ζ(s) se trouvent sur la droite critique **Re(s) = 1/2**.
 
 Le projet combine :
 - Calculs haute précision
@@ -71,19 +71,27 @@ Le projet est implémenté par une solution Linux **Ubuntu 24.04.4 LTS** sur une
 
 ## 📦 Processus d'installation manuelle et outils complémentaires
 
-1. Création de l'environnement virtuel et activation
+1. Installation du Système de base
 ```text
-cd ~
-mkdir projet_zeta
-cd projet_zeta
-python3 -m venv zeta_env
-source zeta_env/bin/activate
+bash
+
+sudo apt update
+sudo apt install python3 python3-pip python3-venv python3-dev build-essential curl wget -y
+sudo apt install libopenblas-dev liblapack-dev -y
+sudo apt install pari-gp -y
+sudo apt install htop nvtop -y
+sudo apt install lm-sensors
 ```
+
 2. Création de l'arborescence complète du projet
 ```text
-# Créer l'arborescence complète
-cd ~/projet_zeta
+bash
 
+# Créer l'arborescence complète
+cd ~
+mkdir projet_zeta
+
+cd ~/projet_zeta
 mkdir -p src/{calculs,ia,utils,tests}
 mkdir -p scripts
 mkdir -p notebooks
@@ -104,15 +112,15 @@ logs/{calculs,ia,monitoring},monitoring/{cpu,gpu,ram,graphs},exports/{csv,json,f
 sudo chown -R $USER:$USER /mnt/data
 ```
 
-3. Installation du Système de base
+3. Création de l'environnement virtuel et activation
 ```text
-sudo apt update
-sudo apt install python3 python3-pip python3-venv python3-dev build-essential curl wget -y
-sudo apt install libopenblas-dev liblapack-dev -y
-sudo apt install pari-gp -y
-sudo apt install htop nvtop -y
-sudo apt install lm-sensors
+bash
+
+cd ~/projet_zeta
+python3 -m venv zeta_env
+source zeta_env/bin/activate
 ```
+
 
 4. Installation des bibliothèques scientifiques optimisées
 ```text
@@ -167,6 +175,7 @@ pip install ray             # Framework distribué
 10. Outils complémentaires pour la vérification de preuves formelles
 ```text
 bash
+
 curl -sSfL https://github.com/leanprover/elan/releases/download/v3.0.0/elan-x86_64-unknown-linux-gnu.tar.gz | tar xz
 ./elan-init -y --default-toolchain stable
 source ~/.profile
@@ -257,6 +266,7 @@ pip3 install jupyter jupyterlab
 16. Outils complémentaires d'environnent de développement (IDE Vscode )
 ```text
 bash
+
 wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
 sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/
 sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
@@ -267,6 +277,7 @@ sudo apt install code
 16. Outils complémentaires Multi Terminal (Tmux )
 ```text
 bash
+
 sudo apt update
 sudo apt install tmux -y
 tmux -V  # Vérifie la version
