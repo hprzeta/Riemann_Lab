@@ -5,9 +5,8 @@
 
 ## 🎯 Objectif du projet
 
-Ce projet a pour but d'explorer numériquement et symboliquement la **fonction zêta de Riemann** ζ(s), 
-pierre angulaire de la théorie des nombres. 
-L'**Hypothèse de Riemann** (non démontrée à ce jour) affirme que tous les zéros non triviaux de ζ(s) se trouvent sur la droite critique **Re(s) = 1/2**.
+Ce modeste projet a pour but d'explorer numériquement et symboliquement la **fonction zêta de Riemann** ζ(s).
+Pierre angulaire de la théorie des nombres,l'**Hypothèse de Riemann** (non démontrée à ce jour) affirme que tous les zéros non triviaux de ζ(s) se trouvent sur la droite critique **Re(s) = 1/2**.
 
 Le projet combine :
 - Calculs haute précision
@@ -18,10 +17,10 @@ Le projet combine :
 
 ## 💡 Configuration matérielle et logiciel
 
-Le projet est réalisé sur une solution  basique **Ubuntu 24.04.4 LTS**
+Le projet est réalisé sur une solution  **Ubuntu 24.04.4 LTS**
 
  ---------------------------------------------------
-| Composant    |Détail                      | État  |
+| Composant    | Détails aux réels          | État  |
 |--------------|----------------------------|-------|
 | Disque 1 To  | 3 partitions ≈ 908 Go      | ✅ OK |
 | RAM	8 Go   | 7,6 Gi (soit 8 Go)         | ✅ OK |
@@ -273,7 +272,7 @@ sudo apt install tmux -y
 tmux -V  # Vérifie la version
 ```
 
-## 🎯 Comparaison de LLM pour ma GPU (NVIDIA GTX 960 + 5 VRAM )
+## 🎯 Comparaison d'autre LLM pour GPU (NVIDIA GTX 960 + 5 VRAM )
  Selon votre configuration, choisez d’autre modèle plus adaptés.
 
  --------------------------------------------------------
