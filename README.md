@@ -289,7 +289,8 @@ tmux -V  # Vérifie la version
 | Preuves formelles      | Lean 4                         | 🟢 Optionnelle |
 | Environnement complet  | SageMath                       | 🟢 Optionnelle |
  ---------------------------------------------------------------------------
-
+ hhh
+ 
  --------------------------------------------------
 | Modèle pour Ollama  | Taille  | Force maths/code | 
 |---------------------|----------------------------|
