@@ -16,12 +16,13 @@ Le projet combine :
 - Preuves formelles (Lean 4)
 
 
-## 💡 Récapitulatif de ma configuration matérielle
+## 💡 Configuration matérielle et logiciel
 
+Le projet est réalisé sur une solution  basique Ubuntu 24.04.4 LTS
  ---------------------------------------------------
-| Composant    |Détail (Ubuntu 24.04.4 LTS) | État  |
+| Composant    |Détail                      | État  |
 |--------------|----------------------------|-------|
-| Disque 1 To  | 73+183+1,1+651 ≈ 908 Go    | ✅ OK |
+| Disque 1 To  | 3 partitions ≈ 908 Go      | ✅ OK |
 | RAM	8 Go   | 7,6 Gi (soit 8 Go)         | ✅ OK |
 | GPU GTX 960M | nvidia-smi (4 Go VRAM)     | ✅ OK |
 | Intel Core i7| i7-7500U (2,7-3,5 GHz)     | ✅ OK |
@@ -65,10 +66,10 @@ Le projet combine :
 | Parallélisation        | joblib, dask, ray              | 🟡 Moyenne     |
 | IA complémentaire      | transformers, torch            | 🟢 Optionnelle |
 | Preuves formelles      | Lean 4                         | 🟢 Optionnelle |
-| Environnement complet  |  SageMath                      | 🟢 Optionnelle |
+| Environnement complet  | SageMath                       | 🟢 Optionnelle |
  ---------------------------------------------------------------------------
 
-## 📦 Processus d'installation et outils complémentaires
+## 📦 Processus d'installation manuelle et outils complémentaires
 
 1. Création de l'environnement virtuel et activation
 ```text
@@ -117,7 +118,7 @@ sudo apt install lm-sensors
 ```text
 bash
 
-pip3 install numpy scipy matplotlib jupyter numba sympy mpmath
+pip3 install numpy scipy matplotlib numba sympy mpmath
 ```
 
 5. Outils complémentaires pour la Gestion des données et logs
@@ -171,23 +172,78 @@ curl -sSfL https://github.com/leanprover/elan/releases/download/v3.0.0/elan-x86_
 source ~/.profile
 ```
 
-11. Outils complémentaires pour l'intégration d'IA locale (LLM)
+11. Outils complémentaires pour l'intégration d'IA en locale (LLM via Ollama)
 ```text
 bash
+
+# Créer le dossier pour Ollama
+sudo mkdir -p /mnt/data/models_ia/ollama
+
+# Donner les droits à votre utilisateur
+sudo chown -R $USER:$USER /mnt/data/models_ia/ollama
+
+# Définir la variable d'environnement
+export OLLAMA_MODELS=/mnt/data/models_ia/ollama
+
+# La rendre permanente
+echo 'export OLLAMA_MODELS=/mnt/data/models_ia/ollama' >> ~/.bashrc
+source ~/.bashrc
+
+# Install Ollama
 curl -fsSL https://ollama.com/install.sh | sh
 sudo systemctl status ollama
+
+# Config de service Ollama
+sudo tee /etc/systemd/system/ollama.service > /dev/null << 'EOF'
+[Unit]
+Description=Ollama Service
+After=network-online.target
+
+[Service]
+Type=simple
+User=riemann
+Group=riemann
+ExecStart=/usr/local/bin/ollama serve
+Restart=always
+RestartSec=3
+Environment="HOME=/home/riemann"
+Environment="OLLAMA_MODELS=/mnt/data/models_ia/ollama"
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable ollama
+sudo systemctl start ollama
+
+# Allias: (En cas de besoin de démarrage manuelle d'ollama)s
+echo 'alias ollama-serve="OLLAMA_MODELS=/mnt/data/models_ia/ollama ollama serve"' >> ~/.bashrc
+source ~/.bashrc
 ```
 
-12. Télecharger des Modèles IA spécialisés
+12. Téléchargement de Modèles IA spécialisés
 ```text
 bash
 
-# Modèle spécialisé en maths 
+# Modèle(1): Haute spécialisé en maths 
 ollama pull mathstral
 
-# Alternative plus légère et rapide
+# Modèle(2): Alternative Moyenne-haute (Orienté code/math)
+ollama pull deepseek-coder:6.7b
+
+# Modèle(3): Alternative Basique légère et rapide 
 ollama pull phi3:mini
 ```
+## 🎯 Comparaison d'autre modèle de LLM pour une GPU (NVIDIA GTX 960 + 5 VRAM  )
+Selon votre configuration vous pouvez choisir d’autre modèle plus adapté
+
+| Modèle pour Ollama  | Taille  | Force maths/code | VRAM/RAM usage (Q4)       | Vitesse estimée   | Pourquoi                          |
+| ------------------- | ------- | ---------------- | ------------------------- | ------------------------------------------------------| 
+| qwen2.5-coder:7b    | 7B      | Très haute       | ~4-5 Go VRAM / 6-7 Go RAM | 15-25 tok/s       | Sup à Mathstral MATH (78% vs 72%) |
+| deepseek-math:7b    | 7B      | Extrême          | ~4.5 Go VRAM / 7 Go RAM   | 12-20 tok/s       | Spécialisé maths pures (80%+ MATH)|
+| llama3.1:8b (Q4)    | 8B      | Haute            | 5 Go VRAM / 7-8 Go RAM    | 10-18 tok/s       | Généraliste,robuste,raisonnement  |
+| mixtral:8x7b (Q2_K) | 46B eff | Très haute       | ~5 Go VRAM / 8 Go RAM     | 8-15 tok/s (lent) | simples sur problèmes complexes   |
 
 13. Outils complémentaires pour interaction avec l'IA depuis Python
 ```text
@@ -196,12 +252,42 @@ bash
 pip install requests
 ```
 
-14. Outils complémentaires Environnent de développement (IDE Spyder )
+14. Outils complémentaires d'environnent de développement (IDE Spyder )
 ```text
 bash
 
 pip install spyder
 ```
+15. Outils complémentaires d'environnent de développement (IDE Jupiter /JupyterLAb )
+```text
+bash
+pip3 install jupyter jupyterlab
+```
+16. Outils complémentaires d'environnent de développement (IDE Vscode )
+```text
+bash
+wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
+sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/
+sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
+rm -f packages.microsoft.gpg
+sudo apt update
+sudo apt install code
+```
+16. Outils complémentaires Multi Terminal (Tmux )
+```text
+bash
+sudo apt update
+sudo apt install tmux -y
+tmux -V  # Vérifie la version
+```
+
+## 📦 Processus d'installation du projet via script 
+Ce processus d'installation manuelle peut être lancé  en automatique . 
+Dans le dossier ├── projet_zeta/scripts/ : Copier et lancer ces scripts.
+
+- Installation complète projet zêta( Étape 1-10) : **install_zeta_complete.sh**
+- Installation IA LLM Ollama (Étape 11) : **setup_ollama_final.sh**
+
 
 
 ## 🚀 Alias pratiques facultatifs (`.bashrc`)
@@ -220,7 +306,8 @@ pip install spyder
 | zeta-data    | cd /mnt/data                                              | Données               |
 | zeta-docs    | cd ~/projet_zeta/docs'                                    | Documents             |
 | zeta-logs    | tail -f /mnt/data/logs/demo_zeta.log                      | Logs                  |
-| zeta-monitor | cd ~/projet_zeta/scripts/monitor.sh"                      | Performance           |
+| zeta-monitor | cd ~/projet_zeta/scripts/monitor.sh                       | Performance           |
+| zeta-tmux    | tmux attach -t zeta || tmux new -s zeta                   | Multi-terminal Tmux   |
  --------------------------------------------------------------------------------------------------
 
 ```text
