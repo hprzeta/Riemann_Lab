@@ -18,7 +18,7 @@ Le projet combine :
 
 ## 💡 Configuration matérielle et logiciel
 
-Le projet est réalisé sur une solution  basique Ubuntu 24.04.4 LTS
+Le projet est réalisé sur une solution  basique **Ubuntu 24.04.4 LTS**
 
  ---------------------------------------------------
 | Composant    |Détail                      | État  |
@@ -276,15 +276,29 @@ tmux -V  # Vérifie la version
 ## 🎯 Comparaison de LLM pour ma GPU (NVIDIA GTX 960 + 5 VRAM )
  Selon votre configuration, choisez d’autre modèle plus adaptés.
 
- -------------------------------------------------------------------------------------------------- 
-| Modèle pour Ollama  | Taille  | Force maths/code | VRAM/RAM usage (Q4)       | Vitesse estimée   |
-|---------------------|----------------------------|---------------------------|-------------------| 
-| qwen2.5-coder:7b    | 7B      | Très haute       | ~4-5 Go VRAM / 6-7 Go RAM | 15-25 tok/s       |
-| deepseek-math:7b    | 7B      | Extrême          | ~4.5 Go VRAM / 7 Go RAM   | 12-20 tok/s       |
-| llama3.1:8b (Q4)    | 8B      | Haute            | 5 Go VRAM / 7-8 Go RAM    | 10-18 tok/s       | 
-| mixtral:8x7b (Q2_K) | 46B eff | Très haute       | ~5 Go VRAM / 8 Go RAM     | 8-15 tok/s (lent) |
- -------------------------------------------------------------------------------------------------- 
-  
+ --------------------------------------------------------------------------
+| Catégorie              | Outils                         | Priorité       |
+|------------------------|--------------------------------|----------------|
+| Calcul haute précision | mpmath, sympy, Pari/GP         | 🔴 Haute       |
+| Calcul vectoriel       | numpy, scipy                   | 🔴 Haute       |
+| Visualisation          | matplotlib, plotly, seaborn    | 🔴 Haute       |
+| Gestion données        | pandas, pyarrow                | 🟡 Moyenne     |
+| Logging/Monitoring     | loguru, tqdm, memory_profiler  | 🟡 Moyenne     |
+| Parallélisation        | joblib, dask, ray              | 🟡 Moyenne     |
+| IA complémentaire      | transformers, torch            | 🟢 Optionnelle |
+| Preuves formelles      | Lean 4                         | 🟢 Optionnelle |
+| Environnement complet  | SageMath                       | 🟢 Optionnelle |
+ ---------------------------------------------------------------------------
+
+ ------------------------------------------------------------------------------
+| Modèle pour Ollama  | Taille  | Force maths/code | VRAM/RAM usage (Q4)       | 
+|---------------------|----------------------------|---------------------------|
+| qwen2.5-coder:7b    | 7B      | Très haute       | ~4-5 Go VRAM / 6-7 Go RAM | 
+| deepseek-math:7b    | 7B      | Extrême          | ~4.5 Go VRAM / 7 Go RAM   | 
+| llama3.1:8b (Q4)    | 8B      | Haute            | 5 Go VRAM / 7-8 Go RAM    |
+| mixtral:8x7b (Q2_K) | 46B eff | Très haute       | ~5 Go VRAM / 8 Go RAM     | 
+ ------------------------------------------------------------------------------
+
 ## 📦 Processus d'installation du projet via script 
 Ce processus d'installation manuelle peut être lancé  en automatique . 
 Dans le dossier ├── projet_zeta/scripts/ : Copier et lancer ces scripts.
