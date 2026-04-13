@@ -287,8 +287,8 @@ tmux -V  # Vérifie la version
 Ce processus d'installation manuelle peut être lancé  en automatique . 
 Dans le dossier ├── projet_zeta/scripts/, copier ces scripts puis lancer dans votre terminal.
 
-- Installation zêta Basis complète ( Étape 1-10) : **install_zeta_complete.sh**
-- Installation zêta IA LLM Ollama  (Étape 11) : **setup_ollama_final.sh**
+- Installation zêta Basis complète ( Étape 1-10) : **./install_zeta_complete.sh**
+- Installation zêta IA LLM Ollama  (Étape 11) : **./setup_ollama_final.sh**
 
 
 ## 🎯 Comparaison d'autre LLM pour ( GPU NVIDIA GTX 960 + 5 VRAM )
@@ -396,6 +396,11 @@ python zeta_ia.py
 <em>🔗 Cliquez sur l'image pour ouvrir la version interactive (Plotly) et  visualiser les imaginaires (it) de |ζ(0.5 + it) </em>
 </p>
 
+<p><strong>Rapport IA  : Ollama IA test de cacul de |ζ(s)|</strong><br>
+<img src="images/zeta_ia1.png" style="width: 100%; max-width: 100%; height: auto;">
+<br>
+<img src="images/zeta_ia2.png" style="width: 100%; max-width: 100%; height: auto;"></p>
+</p>
 
 ## 🗺️ Feuille de route – 4 étapes pour approfondir ζ(s)
 
