@@ -15,9 +15,9 @@ Le projet combine :
 - Preuves formelles (Lean 4)
 
 
-## 💡 Configuration matérielle et logiciel
+## 💡 Configuration matérielle et logicielle
 
-Le projet est réalisé sur une solution  **Ubuntu 24.04.4 LTS**
+Le projet est implémenté par une solution Linux **Ubuntu 24.04.4 LTS** sur une configuration matérielle ultra légère.
 
  ---------------------------------------------------
 | Composant    | Détails aux réels          | État  |
@@ -272,7 +272,15 @@ sudo apt install tmux -y
 tmux -V  # Vérifie la version
 ```
 
-## 🎯 Comparaison d'autre LLM pour GPU (NVIDIA GTX 960 + 5 VRAM )
+## 📦 Processus d'automatisation  
+Ce processus d'installation manuelle peut être lancé  en automatique . 
+Dans le dossier ├── projet_zeta/scripts/ : Copier et lancer ces scripts.
+
+- Installation complète projet zêta( Étape 1-10) : **install_zeta_complete.sh**
+- Installation IA LLM Ollama (Étape 11) : **setup_ollama_final.sh**
+
+
+## 🎯 Comparaison d'autre LLM pour ( GPU NVIDIA GTX 960 + 5 VRAM )
  Selon votre configuration, choisez d’autre modèle plus adaptés.
 
  --------------------------------------------------------
@@ -283,15 +291,6 @@ tmux -V  # Vérifie la version
 | llama3.1:8b (Q4)       | 8B     | Haute       |~5 Go   |
 | mixtral:8x7b (Q2_K)    | 46B    | Très Haute  |~5 Go   |
  --------------------------------------------------------
-
-## 📦 Processus d'installation du projet via script 
-Ce processus d'installation manuelle peut être lancé  en automatique . 
-Dans le dossier ├── projet_zeta/scripts/ : Copier et lancer ces scripts.
-
-- Installation complète projet zêta( Étape 1-10) : **install_zeta_complete.sh**
-- Installation IA LLM Ollama (Étape 11) : **setup_ollama_final.sh**
-
-
 
 ## 🚀 Alias pratiques facultatifs (`.bashrc`)
 
