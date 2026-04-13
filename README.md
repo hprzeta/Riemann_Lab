@@ -277,22 +277,17 @@ tmux -V  # Vérifie la version
  Selon votre configuration, choisez d’autre modèle plus adaptés.
 
  --------------------------------------------------------------------------
-| Catégorie              | Outils                         | Priorité       |
+| Modèle pour Ollama     | Taille  | Priorité       |
 |------------------------|--------------------------------|----------------|
-| Calcul haute précision | mpmath, sympy, Pari/GP         | 🔴 Haute       |
-| Calcul vectoriel       | numpy, scipy                   | 🔴 Haute       |
-| Visualisation          | matplotlib, plotly, seaborn    | 🔴 Haute       |
-| Gestion données        | pandas, pyarrow                | 🟡 Moyenne     |
-| Logging/Monitoring     | loguru, tqdm, memory_profiler  | 🟡 Moyenne     |
-| Parallélisation        | joblib, dask, ray              | 🟡 Moyenne     |
-| IA complémentaire      | transformers, torch            | 🟢 Optionnelle |
-| Preuves formelles      | Lean 4                         | 🟢 Optionnelle |
-| Environnement complet  | SageMath                       | 🟢 Optionnelle |
+| qwen2.5-coder:7b       | 7B     | 🔴 Haute       |
+| deepseek-math:7b       | 7B     | 🔴 Haute       |
+| llama3.1:8b (Q4)       | 8B     | 🔴 Haute       |
+| mixtral:8x7b (Q2_K)    | 46B    | 🟡 Moyenne     |
  ---------------------------------------------------------------------------
  hhh
  
  --------------------------------------------------
-| Modèle pour Ollama  | Taille  | Force maths/code | 
+|                     |         | Force maths/code | 
 |---------------------|----------------------------|
 | qwen2.5-coder:7b    | 7B      | Très haute       | 
 | deepseek-math:7b    | 7B      | Extrême          | 
