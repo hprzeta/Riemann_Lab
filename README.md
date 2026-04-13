@@ -285,10 +285,10 @@ tmux -V  # Vérifie la version
 
 ## 📦 Processus d'automatisation  
 Ce processus d'installation manuelle peut être lancé  en automatique . 
-Dans le dossier ├── projet_zeta/scripts/ : Copier et lancer ces scripts.
+Dans le dossier ├── projet_zeta/scripts/, copier ces scripts puis lancer dans votre terminal.
 
-- Installation complète projet zêta( Étape 1-10) : **install_zeta_complete.sh**
-- Installation IA LLM Ollama (Étape 11) : **setup_ollama_final.sh**
+- Installation zêta Basis complète ( Étape 1-10) : **install_zeta_complete.sh**
+- Installation zêta IA LLM Ollama  (Étape 11) : **setup_ollama_final.sh**
 
 
 ## 🎯 Comparaison d'autre LLM pour ( GPU NVIDIA GTX 960 + 5 VRAM )
