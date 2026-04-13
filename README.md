@@ -290,14 +290,14 @@ tmux -V  # Vérifie la version
 | Environnement complet  | SageMath                       | 🟢 Optionnelle |
  ---------------------------------------------------------------------------
 
- ------------------------------------------------------------------------------
-| Modèle pour Ollama  | Taille  | Force maths/code | VRAM/RAM usage (Q4)       | 
-|---------------------|----------------------------|---------------------------|
-| qwen2.5-coder:7b    | 7B      | Très haute       | ~4-5 Go VRAM / 6-7 Go RAM | 
-| deepseek-math:7b    | 7B      | Extrême          | ~4.5 Go VRAM / 7 Go RAM   | 
-| llama3.1:8b (Q4)    | 8B      | Haute            | 5 Go VRAM / 7-8 Go RAM    |
-| mixtral:8x7b (Q2_K) | 46B eff | Très haute       | ~5 Go VRAM / 8 Go RAM     | 
- ------------------------------------------------------------------------------
+ --------------------------------------------------
+| Modèle pour Ollama  | Taille  | Force maths/code | 
+|---------------------|----------------------------|
+| qwen2.5-coder:7b    | 7B      | Très haute       | 
+| deepseek-math:7b    | 7B      | Extrême          | 
+| llama3.1:8b (Q4)    | 8B      | Haute            |
+| mixtral:8x7b (Q2_K) | 46B eff | Très haute       | 
+ --------------------------------------------------
 
 ## 📦 Processus d'installation du projet via script 
 Ce processus d'installation manuelle peut être lancé  en automatique . 
