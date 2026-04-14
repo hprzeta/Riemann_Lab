@@ -17,7 +17,7 @@ Le projet combine :
 
 ## 💡 Configuration matérielle et logicielle
 
-Le projet est implémenté par une solution Linux **Ubuntu 24.04.4 LTS** sur une configuration matérielle ultra légère.
+Le projet est implémenté avec une solution Linux **Ubuntu 24.04.4 LTS** sur une configuration matérielle ultra-légère.
 
  ---------------------------------------------------
 | Composant    | Détails aux réels          | État  |
@@ -252,21 +252,26 @@ bash
 pip install requests
 ```
 
-14. Outils complémentaires d'environnent de développement (IDE Spyder )
+14. Outils complémentaires d'environnent de développement 
 ```text
 bash
 
+# (IDE Spyder )
 pip install spyder
 ```
-15. Outils complémentaires d'environnent de développement (IDE Jupiter /JupyterLAb )
-```text
-bash
-pip3 install jupyter jupyterlab
-```
-16. Outils complémentaires d'environnent de développement (IDE Vscode )
+
 ```text
 bash
 
+# (IDE Jupiter /JupyterLAb )
+pip3 install jupyter jupyterlab
+```
+
+```text
+bash
+
+# (IDE Vscode )
+sudo apt update
 wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
 sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/
 sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
@@ -274,21 +279,24 @@ rm -f packages.microsoft.gpg
 sudo apt update
 sudo apt install code
 ```
-16. Outils complémentaires Multi Terminal (Tmux )
+
+16. Outils complémentaires Multi Terminal 
 ```text
 bash
 
+# (Terminal mutiple )
 sudo apt update
 sudo apt install tmux -y
-tmux -V  # Vérifie la version
+tmux -V           # Vérifie la version
 ```
 
 ## 📦 Processus d'automatisation  
-Ce processus d'installation manuelle peut être lancé  en automatique . 
+Ce processus d'installation manuelle pas à pas peut être lancé en automatique . 
 Dans le dossier ├── projet_zeta/scripts/, copier ces scripts puis lancer dans votre terminal.
 
-- Installation zêta Basis complète ( Étape 1-10) : **./install_zeta_complete.sh**
-- Installation zêta IA LLM Ollama  (Étape 11) : **./setup_ollama_final.sh**
+- Installation zêta Basis complète ( Étapes 1-10) : **./install_zeta_complete.sh**
+- Installation zêta IA LLM Ollama  ( Étape 11) : **./setup_ollama_final.sh**
+
 
 
 ## 🎯 Comparaison d'autre LLM pour ( GPU NVIDIA GTX 960 + 5 VRAM )

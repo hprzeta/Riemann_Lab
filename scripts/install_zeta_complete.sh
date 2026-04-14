@@ -120,7 +120,7 @@ print_success "Système de base installé"
 print_step "4" "Installation des bibliothèques scientifiques"
 
 pip install --upgrade pip 2>/dev/null
-pip install numpy scipy matplotlib jupyter jupyterlab numba sympy mpmath 2>/dev/null
+pip install numpy scipy matplotlib numba sympy mpmath 2>/dev/null
 
 print_success "Bibliothèques scientifiques installées"
 
@@ -193,9 +193,25 @@ else
 fi
 
 # ============================================================================
-# ÉTAPE 11 : Vérification finale et alias
+# ÉTAPE 11 : Installer des IDE (Spyder, Jupiter & JupyterLab, Vscode)
 # ============================================================================
-print_step "11" "Configuration finale"
+print_step "11" "Installation des IDE  (Spyder, Jupiter & JupyterLab, Vscode) "
+
+pip install spyder jupyter jupyterlab  2>/dev/null
+sudo apt update
+wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
+sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/
+sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
+rm -f packages.microsoft.gpg
+sudo apt update
+sudo apt install code
+
+
+
+# ============================================================================
+# ÉTAPE 12 : Vérification finale et alias
+# ============================================================================
+print_step "12" "Configuration finale"
 
 # Ajouter un alias pour activer l'environnement
 grep -q "alias zeta=" ~/.bashrc || echo 'alias zeta="cd ~/projet_zeta && source zeta_env/bin/activate"' >> ~/.bashrc
@@ -222,6 +238,8 @@ if command -v ollama &> /dev/null; then
 else
     print_info "Ollama non installé (déjà fait précédemment)"
 fi
+
+
 
 # Affichage final
 echo -e "\n${GREEN}╔════════════════════════════════════════════════════════════════╗${NC}"

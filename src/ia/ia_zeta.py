@@ -19,6 +19,6 @@ def question_ia(prompt):
 # print(reponse)
 print("-" * 50) 
 # reponse = question_ia("Calcule une valeur approchée de ζ(2) avec une précision de 6 décimales et explique la méthode.")
-reponse = question_ia("Calcule une valeur approchée de ζ(2) avec une précision de 6 décimales et affiche juste  le temps de  passer au calculs et le resulat en francais sans aucun detail de plus. Utlise l'affiche grec du symbole zeta(2) .")
+reponse = question_ia("Calcule une valeur approchée de ζ(2) avec une précision de 6 décimales et affiche juste  le temps de  passer aux calculs et le résultat en franc ais sans aucun détail de plus. Ut lise l'affiche grec du symbole zêta(2) .")
 print(reponse)
 print("-" * 50) 
