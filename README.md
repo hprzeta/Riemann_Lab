@@ -3,6 +3,9 @@
 > *"Les zéros non triviaux de la fonction zêta de Riemann ont tous une partie réelle égale à 1/2."*  
 > — Bernhard Riemann (1859)
 
+[![GitHub Issues](https://img.shields.io/github/issues-raw/hprzeta/Riemann_Lab/open)](https://github.com/hprzeta/Riemann_Lab/projects/1)
+[![GitHub Project](https://img.shields.io/badge/Project-Kanban-green)](https://github.com/hprzeta/Riemann_Lab/projects/1)
+
 ## 🎯 Objectif du projet
 
 Ce modeste projet a pour but d'explorer numériquement et symboliquement la **fonction zêta de Riemann** ζ(s).
@@ -280,7 +283,7 @@ sudo apt update
 sudo apt install code
 ```
 
-16. Outils complémentaires Multi Terminal 
+15. Outils complémentaires Multi Terminal 
 ```text
 bash
 
@@ -292,7 +295,7 @@ tmux -V           # Vérifie la version
 
 ## 📦 Processus d'automatisation  
 Ce processus d'installation manuelle pas à pas peut être lancé en automatique . 
-Dans le dossier ├── projet_zeta/scripts/, copier ces scripts puis lancer dans votre terminal.
+Dans le dossier projet_zeta/scripts/, copier ces scripts puis lancer dans votre terminal.
 
 - Installation zêta Basis complète ( Étapes 1-10) : **./install_zeta_complete.sh**
 - Installation zêta IA LLM Ollama  ( Étape 11) : **./setup_ollama_final.sh**
