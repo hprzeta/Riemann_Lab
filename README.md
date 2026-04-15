@@ -3,7 +3,7 @@
 > *"Les zéros non triviaux de la fonction zêta de Riemann ont tous une partie réelle égale à 1/2."*  
 > — Bernhard Riemann (1859)
 
-[![GitHub Issues](https://img.shields.io/github/issues-raw/hprzeta/Riemann_Lab/open)](https://github.com/users/hprzeta/projects/1)
+[![GitHub Issues](https://img.shields.io/github/issues-raw/hprzeta/Riemann_Lab/open)](https://github.com/issues/assigned)
 [![GitHub Project](https://img.shields.io/badge/Project-Kanban-green)](https://github.com/users/hprzeta/projects/1)
 
 ## 🎯 Objectif du projet
