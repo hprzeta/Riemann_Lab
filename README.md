@@ -23,7 +23,7 @@ Le projet combine :
 
 ## 💡 Configuration matérielle et logicielle
 
-Le projet est implémenté avec une solution Linux **Ubuntu 24.04.4 LTS** sur une configuration matérielle ultra-légère.
+Le projet est implémenté autour d'une solution Linux **Ubuntu 24.04.4 LTS** pour une configuration matérielle ultra-légère.
 
  ---------------------------------------------------
 | Composant    | Détails aux réels          | État  |
@@ -297,7 +297,7 @@ tmux -V           # Vérifie la version
 ```
 
 ## 📦 Processus d'automatisation  
-Ce processus d'installation manuelle pas à pas peut être lancé en automatique . 
+Ce processus d'installation manuelle peut être lancé en automatique . 
 Dans le dossier projet_zeta/scripts/, copier ces scripts puis lancer dans votre terminal.
 
 - Installation zêta Basis complète ( Étapes 1-10) : **./install_zeta_complete.sh**
@@ -306,7 +306,7 @@ Dans le dossier projet_zeta/scripts/, copier ces scripts puis lancer dans votre 
 
 
 ## 🎯 Comparaison d'autre LLM pour ( GPU NVIDIA GTX 960 + 5 VRAM )
- Selon votre configuration, choisez d’autre modèle plus adaptés.
+ Selon votre configuration, choisez d’autre modèle LLM IA plus adaptés.
 
  --------------------------------------------------------
 | Modèle pour Ollama     | Taille | Force Maths | VRAM   |
@@ -391,7 +391,7 @@ python zeta_ia.py
 | HTML | /mnt/data/exports/figures/visualisation_plotly.html    |
  ---------------------------------------------------------------
 
-## 📊 Résultats des tests Démo ζ(s)
+## 📊 Résultats des tests Démo de fonctionnement  ζ(s)
 
 <p><strong>Rapport Traitement d'exécution</strong><br>
 <img src="images/zeta_demoExc.png" style="width: 100%; max-width: 100%; height: auto;"></p>
