@@ -7,6 +7,7 @@
 |-------|--------|
 | ![GitHub Issues](https://img.shields.io/github/issues/hprzeta/Riemann_Lab) | Issues ouvertes |
 | ![GitHub Closed Issues](https://img.shields.io/github/issues-closed/hprzeta/Riemann_Lab) | Issues fermées |
+| ![GitHub Assigned](https://img.shields.io/github/issues-raw/hprzeta/Riemann_Lab/)](https://github.com/issues/assigned) | Issues Assignés |
 | ![GitHub Project](https://img.shields.io/badge/Project-Kanban-blue) | [Voir le Kanban](https://github.com/users/hprzeta/projects/1) |
 
 ## 🎯 Objectif du projet
