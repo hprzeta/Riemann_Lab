@@ -3,8 +3,11 @@
 > *"Les zéros non triviaux de la fonction zêta de Riemann ont tous une partie réelle égale à 1/2."*  
 > — Bernhard Riemann (1859)
 
-[![GitHub Issues](https://img.shields.io/github/issues-raw/hprzeta/Riemann_Lab/open)](https://github.com/issues/assigned)
-[![GitHub Project](https://img.shields.io/badge/Project-Kanban-green)](https://github.com/users/hprzeta/projects/1)
+| Badge | Statut |
+|-------|--------|
+| ![GitHub Issues](https://img.shields.io/github/issues/hprzeta/Riemann_Lab) | Issues ouvertes |
+| ![GitHub Closed Issues](https://img.shields.io/github/issues-closed/hprzeta/Riemann_Lab) | Issues fermées |
+| ![GitHub Project](https://img.shields.io/badge/Project-Kanban-blue) | [Voir le Kanban](https://github.com/users/hprzeta/projects/1) |
 
 ## 🎯 Objectif du projet
 
@@ -436,8 +439,7 @@ Chaque étape sera suivie via **GitHub Projects** (tableau Kanban) et documenté
 ## 📚 Références
 - [Hypothèse de Riemann - Wikipedia](https://fr.wikipedia.org/wiki/Hypoth%C3%A8se_de_Riemann)
 - [Fonction zêta de Riemann - MathWorld](https://mathworld.wolfram.com/RiemannZetaFunction.html)
-- [GitHub - Projet Zêta et IA](https://github.com/Deskuma/riemann-hypothesis-ai)
-- [Images de Zêta - Mathématiques en couleurs ](https://graphes-fonctions-holomorphes.toile-libre.org/FoncHol/zeta.html)
+- [Images de Zêta - Avec "Les Mathématiques en couleurs" ](https://graphes-fonctions-holomorphes.toile-libre.org/FoncHol/zeta.html)
 - [mpmath documentation](https://mpmath.org/)
 - [Ollama - LLMs locaux](https://ollama.com/)
 
