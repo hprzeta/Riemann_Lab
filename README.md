@@ -1,473 +1,146 @@
-# 🧮 ζ(s) Projet Zêta : Exploration de l'Hypothèse de Riemann
-
-> *"Les zéros non triviaux de la fonction zêta de Riemann ont tous une partie réelle égale à 1/2."*  
-> — Bernhard Riemann (1859)
-
-| Badge | Statut |
-|-------|--------|
-| ![GitHub Issues](https://img.shields.io/github/issues/hprzeta/Riemann_Lab) | Issues ouvertes |
-| ![GitHub Closed Issues](https://img.shields.io/github/issues-closed/hprzeta/Riemann_Lab) | Issues fermées |
-| ![GitHub Issues personnelles](https://img.shields.io/badge/issues-personnelles-blue) | [Mes issues assignées](https://github.com/issues?q=is%3Aopen+assignee%3Ahprzeta) |
-| ![GitHub Project](https://img.shields.io/badge/Project-Kanban-blue) | [Voir le Kanban](https://github.com/users/hprzeta/projects/1) |
-## 🎯 Objectif du projet
-
-Ce modeste projet a pour but d'explorer numériquement et symboliquement la **fonction zêta de Riemann** ζ(s).
-Pierre angulaire de la théorie des nombres, l'**Hypothèse de Riemann** (non démontrée à ce jour) affirme que tous les zéros non triviaux de ζ(s) se trouvent sur la droite critique **Re(s) = 1/2**.
-
-Le projet combine :
-- Calculs haute précision
-- Visualisations 2D/3D
-- Intégration intelligence artificielle locale (LLM)
-- Preuves formelles (Lean 4)
-
-
-## 💡 Configuration matérielle et logicielle
-
-Le projet est implémenté autour d'une solution Linux **Ubuntu 24.04.4 LTS** pour une configuration matérielle ultra-légère.
-
- ---------------------------------------------------
-| Composants   | Détails aux réels          | État  |
-|--------------|----------------------------|-------|
-| Disque 1 To  | 3 partitions ≈ 908 Go      | ✅ OK |
-| RAM	8 Go   | 7,6 Gi (soit 8 Go)         | ✅ OK |
-| GPU GTX 960M | nvidia-smi (4 Go VRAM)     | ✅ OK |
-| Intel Core i7| i7-7500U (2,7-3,5 GHz)     | ✅ OK |
- ----------------------------------------------------
-
-## 📁 Structure générale du projet Démo Zêta 
-
-```text
-/home/riemann/
-├── projet_zeta/                         # Dossier principal
-│   ├── zeta_env/                        # Environnement virtuel Python
-│   ├── src/                             # Code source
-│   │   ├── calculs/                     # Calculs sur la fonction zêta
-│   │   │   └── demo_complete.py         # Démonstration complète
-│   │   ├── ia/                          # Modèles d'IA locaux
-│   │   ├── utils/                       # Utilitaires
-│   │   └── visualisation/               # Graphisues 
-│   │   └── monitoring/                  # Logs systèmes
-│   │   └── tests/                       # Tests unitaires
-│   ├── scripts/                         # Scripts exécutables
-│   ├── notebooks/                       # Jupyter notebooks
-│   ├── lean_projects/                   # Projets Lean 4
-│   ├── config/                          # Fichiers de configuration
-│   ├── docs/                            # Documentation locale
-│   └── .vscode/                         # Configuration VS Code
-└── /mnt/data/                           # Données volumineuses
-    ├── datasets/calculs/                # Fichiers d'entrée
-    ├── exports/csv/                     # Résultats CSV
-    ├── exports/figures/                 # Graphiques PNG/HTML
-    └── logs/                            # Journaux d'exécution
-```
-## 📂 Organisation du code source dans (src/)
-
-Tous les fichiers Python sont organisés de façon modulaire dans `src/` par domaine :
-
-| Avantage |	Explication |
-|----------|----------------|
-| Modularité |	Chaque fonctionnalité est isolée et réutilisable |
-| Testabilité |	Tests unitaires faciles à écrire module par module |
-| Import propre |	from src.calculs.zeros_finder import compute_zeros |
-| Documentation |	Chaque module peut avoir son propre docstring |
-| CI/CD |	Plus facile à intégrer avec GitHub Actions |
-
-| Module | Rôle |
-|--------|------|
-| `src/calculs/` | Algorithmes sur ζ(s), recherche des zéros |
-| `src/visualisation/` | Graphiques statiques et interactifs |
-| `src/ia/` | Interface Ollama et génération de conjectures |
-| `src/monitoring/` | Logs, CPU/RAM/GPU, benchmarking |
-| `src/utils/` | Configuration, I/O fichiers, décorateurs |
-| `src/tests/` | Tests unitaires |
-
-**Exécution** : `python -m src.main` ou `./scripts/run_computation.sh`
-
-
-## 🛠️ Outils et bibliothèques utilisés
-
- --------------------------------------------------------------------------
-| Catégorie              | Outils                         | Priorité       |
-|------------------------|--------------------------------|----------------|
-| Calcul haute précision | mpmath, sympy, Pari/GP         | 🔴 Haute       |
-| Calcul vectoriel       | numpy, scipy                   | 🔴 Haute       |
-| Visualisation          | matplotlib, plotly, seaborn    | 🔴 Haute       |
-| Gestion données        | pandas, pyarrow                | 🟡 Moyenne     |
-| Logging/Monitoring     | loguru, tqdm, memory_profiler  | 🟡 Moyenne     |
-| Parallélisation        | joblib, dask, ray              | 🟡 Moyenne     |
-| IA complémentaire      | transformers, torch            | 🟢 Optionnelle |
-| Preuves formelles      | Lean 4                         | 🟢 Optionnelle |
-| Environnement complet  | SageMath                       | 🟢 Optionnelle |
- ---------------------------------------------------------------------------
-
-## 📦 Processus d'installation manuelle et outils complémentaires
-
-1. Installation du Système de base
-```text
-bash
-
-sudo apt update
-sudo apt install python3 python3-pip python3-venv python3-dev build-essential curl wget -y
-sudo apt install libopenblas-dev liblapack-dev -y
-sudo apt install pari-gp -y
-sudo apt install htop nvtop -y
-sudo apt install lm-sensors
-```
-
-2. Création de l'arborescence complète du projet
-```text
-bash
-
-# Créer l'arborescence complète
-cd ~
-mkdir projet_zeta
-
-cd ~/projet_zeta
-mkdir -p src/{calculs,ia,utils,tests,visualisation,monitoring}
-mkdir -p scripts
-mkdir -p notebooks
-mkdir -p config
-mkdir -p docs
-
-# Créer les fichiers __init__.py
-touch src/__init__.py
-touch src/calculs/__init__.py
-touch src/ia/__init__.py
-touch src/utils/__init__.py
-ouch src/visualisation/__init__.py
-ouch src/monitoring/__init__.py
-
-# Structure sur lapartien des donnees /mnt/data
-mkdir -p /mnt/data/{datasets/{zeros,calculs,references},models_ia,rapports/{pdf,doc,markdown},
-logs/{calculs,ia,monitoring},monitoring/{cpu,gpu,ram,graphs},exports/{csv,json,figures}}
-
-# Changer les propriétaires
-sudo chown -R $USER:$USER /mnt/data
-```
-
-3. Création de l'environnement virtuel et activation
-```text
-bash
-
-cd ~/projet_zeta
-python3 -m venv zeta_env
-source zeta_env/bin/activate
-```
-
-
-4. Installation des bibliothèques scientifiques optimisées
-```text
-bash
-
-pip3 install numpy scipy matplotlib numba sympy mpmath
-```
-
-5. Outils complémentaires pour la Gestion des données et logs
-```text
-bash
-
-pip install pandas          # Manipulation CSV, DataFrames
-pip install pyarrow         # Format Parquet (plus rapide que CSV)
-pip install loguru          # Logging avancé
-```
-
-6. Outils complémentaires pour le Monitoring et débogage
-```text
-bash
-
-pip install tqdm            # Barres de progression pour calculs longs
-pip install memory_profiler # Profilage mémoire
-pip install line_profiler   # Profilage ligne par ligne
-```
-
-7. Outils complémentaires pour l'IA et Machine Learning (complément à Ollama)
-```text
-bash
-
-pip install transformers    # Modèles Hugging Face
-pip install torch           # PyTorch (si compatible GPU)
-pip install sentence-transformers  # Embeddings pour analyse
-```
-
-8. Outils complémentaires pour la Visualisation avancée
-```text
-bash
-
-pip install seaborn         # Statistiques visuelles
-pip install bokeh           # Dashboards interactifs
-```
-
-9. Outils complémentaires pour le Calcul parallèle distribué (si calculs très longs)
-```text
-bash
-
-pip install dask            # Calcul parallèle sur grand volume
-pip install ray             # Framework distribué
-```
-
-10. Outils complémentaires pour la vérification de preuves formelles
-```text
-bash
-
-curl -sSfL https://github.com/leanprover/elan/releases/download/v3.0.0/elan-x86_64-unknown-linux-gnu.tar.gz | tar xz
-./elan-init -y --default-toolchain stable
-source ~/.profile
-```
-
-11. Outils complémentaires pour l'intégration d'IA en locale (LLM via Ollama)
-```text
-bash
-
-# Créer le dossier pour Ollama
-sudo mkdir -p /mnt/data/models_ia/ollama
-
-# Donner les droits à votre utilisateur
-sudo chown -R $USER:$USER /mnt/data/models_ia/ollama
-
-# Définir la variable d'environnement
-export OLLAMA_MODELS=/mnt/data/models_ia/ollama
-
-# La rendre permanente
-echo 'export OLLAMA_MODELS=/mnt/data/models_ia/ollama' >> ~/.bashrc
-source ~/.bashrc
-
-# Install Ollama
-curl -fsSL https://ollama.com/install.sh | sh
-sudo systemctl status ollama
-
-# Config de service Ollama
-sudo tee /etc/systemd/system/ollama.service > /dev/null << 'EOF'
-[Unit]
-Description=Ollama Service
-After=network-online.target
-
-[Service]
-Type=simple
-User=riemann
-Group=riemann
-ExecStart=/usr/local/bin/ollama serve
-Restart=always
-RestartSec=3
-Environment="HOME=/home/riemann"
-Environment="OLLAMA_MODELS=/mnt/data/models_ia/ollama"
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-sudo systemctl daemon-reload
-sudo systemctl enable ollama
-sudo systemctl start ollama
-
-# Allias: (En cas de besoin de démarrage manuelle d'ollama)s
-echo 'alias ollama-serve="OLLAMA_MODELS=/mnt/data/models_ia/ollama ollama serve"' >> ~/.bashrc
-source ~/.bashrc
-```
-
-12. Téléchargement de Modèles IA spécialisés
-```text
-bash
-
-# Modèle(1): Haute spécialisé en maths 
-ollama pull mathstral
-
-# Modèle(2): Alternative Moyenne-haute (Orienté code/math)
-ollama pull deepseek-coder:6.7b
-
-# Modèle(3): Alternative Basique légère et rapide 
-ollama pull phi3:mini
-```
-
-13. Outils complémentaires pour interaction avec l'IA depuis Python
-```text
-bash
-
-pip install requests
-```
-
-14. Outils complémentaires d'environnent de développement 
-```text
-bash
-
-# (IDE Spyder )
-pip install spyder
-```
-
-```text
-bash
-
-# (IDE Jupiter /JupyterLAb )
-pip3 install jupyter jupyterlab
-```
-
-```text
-bash
-
-# (IDE Vscode )
-sudo apt update
-wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
-sudo install -o root -g root -m 644 packages.microsoft.gpg /etc/apt/trusted.gpg.d/
-sudo sh -c 'echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/trusted.gpg.d/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" > /etc/apt/sources.list.d/vscode.list'
-rm -f packages.microsoft.gpg
-sudo apt update
-sudo apt install code
-```
-
-15. Outils complémentaires Multi Terminal 
-```text
-bash
-
-# (Terminal mutiple )
-sudo apt update
-sudo apt install tmux -y
-tmux -V           # Vérifie la version
-```
-
-## 📦 Processus d'automatisation  
-Ce processus d'installation manuelle peut être lancé en automatique . 
-Copier ces scripts dans le dossier ~projet_zeta/scripts/, puis lancer dans votre terminal.
-
-- Installation zêta Basis complète ( Étapes 1-10) : **./install_zeta_complete.sh**
-- Installation zêta IA LLM Ollama  ( Étape 11) : **./setup_ollama_final.sh**
-
-
-## 🎯 Comparaison d'autre LLM pour ( GPU NVIDIA GTX 960 + 5 VRAM )
- Selon la configuration de votre carte GPU, choisez d’autre modèle LLM IA plus adaptés en VRAM.
-
- --------------------------------------------------------
-| Modèle pour Ollama     | Taille | Force Maths | VRAM   |
-|------------------------|--------|-------------|--------
-| qwen2.5-coder:7b       | 7B     | Haute       |~4-5 Go |
-| deepseek-math:7b       | 7B     | Extrême     |~4-5 Go |
-| llama3.1:8b (Q4)       | 8B     | Haute       |~5 Go   |
-| mixtral:8x7b (Q2_K)    | 46B    | Très Haute  |~5 Go   |
- --------------------------------------------------------
-
-## 🚀 Alias d'usage pratiques facultatifs (`.bashrc`)
-
- --------------------------------------------------------------------------------------------------
-| Alias        | Commande                                                  | Usage                 |
-|--------------|-----------------------------------------------------------|-----------------------|
-| zeta-proj    | cd ~/projet_zeta/                                         | Dossier du projet     |
-| zeta         | cd ~/projet_zeta && source zeta_env/bin/activate          | Activer Environnement |
-| zeta-jupyter | cd ~/projet_zeta/notebooks && | Jupyter Lab               | IDE Jupyter           |
-|              | source ~/projet_zeta/zeta_env/bin/activate && jupyter lab |                       |
-| zeta-spyder  | source ~/projet_zeta/zeta_env/bin/activate &&             | IDE Spyder            |
-|              | export QT_API=pyqt5 && spyder                             |                       |
-| zeta-code    | code ~/projet_zeta                                        | IDE Vs Code           |
-| zeta-python  | cd ~/projet_zeta/src/calculs'                             | Via Python3 consol    |
-| zeta-data    | cd /mnt/data                                              | Données               |
-| zeta-docs    | cd ~/projet_zeta/docs'                                    | Documents             |
-| zeta-logs    | tail -f /mnt/data/logs/demo_zeta.log                      | Logs                  |
-| zeta-monitor | cd ~/projet_zeta/scripts/monitor.sh                       | Performance           |
-| zeta-tmux    | tmux attach -t zeta || tmux new -s zeta                   | Multi-terminal Tmux   |
- --------------------------------------------------------------------------------------------------
-
-```text
-bash
-
-echo '
-# Projet Zêta - alias supplémentaires
-
-alias zeta-docs="cd ~/projet_zeta/docs"
-alias zeta-proj="cd ~/projet_zeta/"
-alias zeta-data="cd /mnt/data"
-alias zeta-logs="tail -f /mnt/data/logs/mon_projet.log"
-alias zeta-monitor="~/projet_zeta/scripts/monitor.sh"
-alias zeta-notebook="cd ~/projet_zeta/notebooks && jupyter notebook"
-alias zeta-spyder="source ~/projet_zeta/zeta_env/bin/activate && spyder"
-alias zeta-jupyter="cd ~/projet_zeta/notebooks && source ~/projet_zeta/zeta_env/bin/activate && jupyter lab"
-alias zeta-python="cd ~/projet_zeta/src/calculs" 
-alias zeta-code="source ~/projet_zeta/zeta_env/bin/activate && code ~/projet_zeta" 
-' >> ~/.bashrc
-source ~/.bashrc
-```
-
-## 🧪 Exécution
-
-```text
-bash
-
-# Activer l'environnement
-zeta
-# Lancer le script de demo ζ(s)
-cd ~/projet_zeta/src/calculs
-python demo_complete.py
-```
-
-```text
-bash
-
-# Exécution du model IA locale
-ollama run mathstral
-
-# Lancer prompe IA : Test réponse quelle est la valeur de ζ(2)
-cd ~/projet_zeta/src/ia
-python zeta_ia.py
-```
-
-## 🔧 Fichiers générés dans /mnt/data
-
- ---------------------------------------------------------------
-| Type | Chemin                                                 | 
-|------|--------------------------------------------------------|
-| CSV  | /mnt/data/exports/csv/resultats_zeta.csv               |
-| LOG  | /mnt/data/logs/demo_zeta.log                           |
-| PNG  | /mnt/data/exports/figures/visualisation_matplotlib.png |
-| HTML | /mnt/data/exports/figures/visualisation_plotly.html    |
- ---------------------------------------------------------------
-
-## 📊 Résultats des tests Démo d'exploration de ζ(s)
-
-<p><strong>Rapport Traitement d'exécution</strong><br>
-<img src="images/zeta_demoExc.png" style="width: 100%; max-width: 100%; height: auto;"></p>
-
-<p><strong>Log Résultats calcul ζ(s)  .csv </strong><br>
-<img src="images/zeta_resultatsCal.png" style="width: 100%; max-width: 100%; height: auto;"></p>
-
-<p><strong>Graphiques 2D statique via Matplot : Module |ζ(s)| en fonction de Re(s) -réelle de ζ(s)</strong><br>
-<img src="images/zeta_matplotRel.png" style="width: 100%; max-width: 100%; height: auto;"></p>
-
-<p><strong>Graphique 2D intercative via Plotly : Module |ζ(0.5 + it)| en fonction de Img(it) -imaginaire de ζ(s)</strong><br>
-<a href="https://hprzeta.github.io/Riemann_Lab/images/visualisation_plotly.html" target="_blank">
-  <img src="images/zeta_plotlyImg.png" style="width: 100%; max-width: 100%; height: auto;">
-</a>
-<br>
-<em>🔗 Cliquez sur l'image pour ouvrir la version interactive (Plotly) et visualiser les imaginaires (it) de |ζ(0.5 + it) </em>
-</p>
-
-<p><strong>Rapport IA  : Ollama IA test de cacul de |ζ(s)|</strong><br>
-<img src="images/zeta_ia1.png" style="width: 100%; max-width: 100%; height: auto;">
-<br>
-<img src="images/zeta_ia2.png" style="width: 100%; max-width: 100%; height: auto;"></p>
-</p>
-
-## 🗺️ Feuille de route – 4 étapes pour approfondir l'étude de ζ(s)
-
-L’objectif est de dépasser la simple démonstration et de construire une **véritable plateforme de recherche** autour de l’hypothèse de Riemann.  
-Chaque étape sera suivie via **GitHub Projects** (tableau Kanban) et documentée en détail dans le **Wiki** du dépôt.
-
-| Étape | Thème principal | Objectifs clés |
-|-------|----------------|----------------|
-| **1** | 🔢 Calcul haute précision & vérification | Calculer les 1000 premiers zéros non triviaux avec `mpmath` ; les comparer à la base LMFDB ; implémenter la fonction ζ(s) de Riemann. |
-| **2** | 📊 Visualisations avancées & statistiques | Cartes de phase, surfaces 3D interactives, écarts entre zéros consécutifs (corrélations de Montgomery). |
-| **3** | 🤖 IA locale & conjectures | Utiliser `mathstral` (Ollama) pour prédire la position des zéros ; générer automatiquement des formules symboliques. |
-| **4** | 📜 Preuves formelles (Lean 4) | Formaliser le prolongement analytique et l’équation fonctionnelle ; démontrer l’absence de zéro sur Re(s)=1. |
-
-### 📌 Comment je notifie l’avancement ?
-
-- **GitHub Projects** : chaque tâche (ex: « Calcul des 500 premiers zéros ») devient une *issue* déplacée dans les colonnes `Todo → In progress → Done`.  
-- **Wiki** : une page par résultat (ex: « Liste des zéros calculés », « Graphiques d’écarts », « Tests de l’IA ») avec explications, captures et liens vers les fichiers CSV/HTML.  
-- **README** : un badge ou un petit tableau récapitulatif sera mis à jour à chaque fin d’étape.
-
-> 👉 En visitant ce dépôt, tu peux donc **voir d’un coup d’œil** ce qui est fait (Projects), **lire les détails** (Wiki) et **relancer les scripts** toi-même.
-
-## 📚 Références
-- [Hypothèse de Riemann - Wikipedia](https://fr.wikipedia.org/wiki/Hypoth%C3%A8se_de_Riemann)
-- [Fonction zêta de Riemann - MathWorld](https://mathworld.wolfram.com/RiemannZetaFunction.html)
-- [Images de Zêta - Avec "Les Mathématiques en couleurs" ](https://graphes-fonctions-holomorphes.toile-libre.org/FoncHol/zeta.html)
-- [mpmath documentation](https://mpmath.org/)
-- [Ollama - LLMs locaux](https://ollama.com/)
-
-## 📜 Licence
-Projet de recherche personnel - Libre d'utilisation et de modification.
+<html><head></head><body><h2>Théorie rapide</h2>
+<h3>1- La fonction $$\zeta(s)$$  zêta de Riemann</h3>
+<p><strong>Définition:</strong></p>
+<p>$$\zeta(s) = \sum_{n=1}^{\infty} \tfrac{1}{n^s}$$</p>
+<p>Où $S= \left( \sigma + it\right)$, est un <strong>nombre complexe</strong>  tel que ($\sigma$ = partie réelle, $t$  = partie imaginaire)<br>
+avec $\sigma$, $t$ $\in \mathbb{R}$ et $i$ = Imaginaire pure tel que <strong>$i^2$=−1</strong></p>
+<blockquote>
+<p>Définie pour $\text{Re}(s) &gt; 1$, puis étendue par prolongement analytique.</p>
+</blockquote>
+<blockquote>
+<p>Exemple concret : Si s=2  (réel) :</p>
+</blockquote>
+<blockquote>
+<p>$\zeta(2) = 1 + \frac{1}{4} + \frac{1}{9} + \frac{1}{16} + \cdots = \tfrac{6}{(\pi)^2} \approx 1.6449$</p>
+</blockquote>
+<blockquote>
+<p>C'est le célèbre problème de Bâle résolu par Euler en 1734.</p>
+</blockquote>
+<blockquote>
+<p>Euler a montré que $\zeta(s)=0$  pour $s$= −2,−4,−6,…  (zéros triviaux).</p>
+</blockquote>
+<blockquote>
+<p>Mais Riemann a découvert d'autres zéros mystérieux .</p>
+</blockquote>
+<hr>
+<h3>La Droite Critique et les Zéros Non-Triviaux</h3>
+<p>Les zéros non triviaux de $\zeta(s)$ se situent dans la <strong>bande critique</strong> :</p>
+<p>$$0 &lt; \text{Re}(s) &lt; 1$$</p>
+<blockquote>
+<p>Hypothèse de Riemann : Tous ces zéros vérifient $\text{Re}(s) = \tfrac{1}{2}$ — C'est la <em>droite critique</em>.</p>
+</blockquote>
+<blockquote>
+<p>$\zeta(s)$ sur la  droite critique s'écrit :  $\zeta \left(\tfrac{1}{2} + it\right)$</p>
+</blockquote>
+<hr>
+<h3>2- La fonction $$Z(t)$$ de Hardy-Riemann</h3>
+<p><strong>Définition:</strong></p>
+<p>$$Z(t) = e^{i\theta(t)} \cdot \zeta \left(\tfrac{1}{2} + it\right) \in \mathbb{R}$$</p>
+<h3>Propriétés fondamentales</h3>
+
+Propriété | Énoncé
+-- | --
+Réalité | $Z(t) \in \mathbb{R}$ pour tout $t \in \mathbb{R}$
+Zéros | $Z(t) = 0 \iff \zeta \left(\tfrac{1}{2}+it\right) = 0$
+
+
+<p>Pour trouver les zéros Non-Triviaux:</p>
+<blockquote>
+<p>La fonction  <strong>$Z(t)$</strong> est définie pour travailler sur la droite critique $\text{σ} = \tfrac{1}{2}$</p>
+</blockquote>
+<blockquote>
+<p>Plus pratique à exploiter, où <strong>$θ(t)$</strong> est choisi pour que <strong>$Z(t)$</strong> soit réelle quand
+$\zeta \left(\frac{1}{2}+it\right)$  est sur la droite critique .</p>
+</blockquote>
+<ul>
+<li>$Z(t)$ est <strong>réelle</strong>, ce qui permet de capter les <strong>changements de signe</strong>.</li>
+<li>Chaque changement de signe $\leftrightarrow$ un zéro de $\zeta$ sur la droite critique.</li>
+<li>Du coup, au lieu de chercher quand un nombre complexe vaut zéro (ce qui est dur), on cherche
+quand <strong>$Z(t)$</strong> change de signe — ce qui est beaucoup plus simple à calculer et à visualiser.</li>
+</ul>
+<blockquote>
+<p>Grâce à la propriété de réalité, on peut détecter les zéros par <strong>changement de signe</strong> :
+si $Z(a) &gt; 0$ et $Z(b) &lt; 0$, le <strong>Théorème des Valeurs Intermédiaires (TVI)</strong> garantit l'existence d'un zéro dans l'intervalle $]a, b[$.</p>
+</blockquote>
+<hr>
+<h3>3- La fonction $\theta(t)$  thêta de Riemann-Siegel</h3>
+<p><strong>Définition :</strong></p>
+<p>$$\theta(t) = \text{Im}\ \left[\ln \Gamma\ \left(\sigma + it\right)\right] - \frac{t}{2}\ln(\pi)$$</p>
+<p><strong>Rôle :</strong> c'est la « phase » de $\zeta\ \left(\tfrac{1}{2} + it\right)$.</p>
+<p>La fonction <strong>θ(t)</strong> est simplement un angle (une phase) qui dépend d'un nombre réel t.</p>
+<p>Autrement dit, <strong>θ(t)</strong> mesure de combien l'angle a tourné à l'instant t.</p>
+<p>On l'utilise pour "redresser" la fonction zêta et la rendre plus facile à analyser.</p>
+<blockquote>
+<p>En multipliant $\zeta$ par $e^{i\theta}$, on annule la partie imaginaire et on obtient une fonction <strong>réelle</strong> $Z(t)$.</p>
+</blockquote>
+> [▶ Ouvrir l'animation interactive](https://hprzeta.github.io/Riemann_Lab/animation_theta.html)
+
+<iframe src="https://hprzeta.github.io/Riemann_Lab/animation_theta.html" width="100%" height="420" frameborder="0"></iframe>
+<p><strong>Interprétation :</strong></p>
+<ul>
+<li><strong>À gauche</strong> — $\zeta!\left(\tfrac{1}{2}+it\right)$ est un vecteur oblique dans $\mathbb{C}$ : partie réelle + partie imaginaire (rouge).</li>
+<li><strong>À droite</strong> — après multiplication par $e^{i\theta(t)}$, le vecteur pivote exactement du bon angle et atterrit sur l'axe réel. Im = <strong>0</strong>.</li>
+<li>En jouant sur le curseur $\theta$, on voit que $Z(t)$ reste <strong>toujours réel</strong>, quelle que soit la phase initiale.</li>
+</ul>
+<blockquote>
+<p><strong>En une phrase :</strong> $\theta(t)$ est la phase naturelle de $\zeta$ ; multiplier par $e^{i\theta}$ contra-rotationne ce vecteur d'exactement cet angle, ce qui annule l'inclinaison et produit une fonction réelle $Z(t)$.</p>
+</blockquote>
+&lt;/details&gt;
+<blockquote>
+<p><strong>$\theta(t)$</strong> permet de réécrire la fonction <strong>$\zeta \left(\frac{1}{2}+it\right)$</strong> de Riemann sous une forme plus simple
+puisque <strong>$\theta(t)$</strong> "enlève la rotation" du nombre complexe <strong>$\zeta$</strong> qui tourne à mesure que <strong>$\theta(t)$</strong> augmente avec
+<strong>$t$</strong>.</p>
+</blockquote>
+<blockquote>
+<p>Exemple concret:</p>
+</blockquote>
+<blockquote>
+<p>$\zeta \left(\frac{1}{2} + it\right) = e^{-i\theta(t)} \cdot Z(t)$</p>
+</blockquote>
+<p><strong>Notation1 :</strong>  $$\text{Im}\ \left[\ln \Gamma\ \left(\sigma + it\right)\right]$$ dans <strong>$$\theta(t)$$</strong></p>
+<ul>
+<li>$\Gamma$ — fonction Gamma (généralisation de la factorielle aux réels)</li>
+<li>$\text{Im}[...]$ — partie imaginaire d'un nombre complexe</li>
+<li>$\ln$ —  logarithme de la fonction Gamma</li>
+</ul>
+<p>Cette notation est la partie imaginaire d'un logarithme de Gamma où la fonction
+$\Gamma$ est une généralisation de la factorielle !.</p>
+<blockquote>
+<p>Exemple concret : Si $\Gamma$ =1, 2, 3, 4  (réel) :</p>
+</blockquote>
+<blockquote>
+<p>$\Gamma(1)$ = 1, $\Gamma(2)$ = 1, $\Gamma(3)$ = 2, $\Gamma(4)$ = 6 ...</p>
+</blockquote>
+<blockquote>
+<p>En gros, $\Gamma(n)= (n−1)!$ pour les entiers.</p>
+</blockquote>
+<p>Mais ici, on l'évalue en un nombre complexe : $\sigma$ + $it$.</p>
+<blockquote>
+<p>Capture la rotation due à la fonction Gamma.</p>
+</blockquote>
+<p><strong>Notation2 :</strong> $$\frac{t}{2}\ln\pi$$  dans <strong>$$\theta(t)$$</strong></p>
+<ul>
+<li>Une correction logarithmique</li>
+</ul>
+<blockquote>
+<p>Corrige la dérive de phase liée à π. Ce terme soustrait une quantité qui grandit doucement avec t. Il compense la "croissance" naturelle de la phase $\theta(t)$ quand t augmente.</p>
+</blockquote>
+<hr>
+<h2>🔗 Lien crucial : Factorielle ↔ Gamma ↔ Zêta de Riemann</h2>
+<h3>La relation fondamentale</h3>
+<p>$$\boxed{\Gamma(n+1) = n! \quad \text{pour } n \in \mathbb{N}}$$</p>
+<h3>Pourquoi Γ et pas ! pour les complexes ?</h3>
+<p>La factorielle $n!$ n'est définie que pour $n$ entier positif. <strong>Euler</strong> a trouvé la fonction $\Gamma(z)$ qui :</p>
+<ol>
+<li><strong>Interpolle</strong> la factorielle : $\Gamma(n+1) = n!$</li>
+<li><strong>Prolonge</strong> aux nombres complexes (sauf pôles en $0, -1, -2, \ldots$)</li>
+<li><strong>Apparaît</strong> dans l'équation fonctionnelle de $\zeta(s)$ !</li>
+</ol>
+<hr>
+<h3>Dans l'équation fonctionnelle de $\zeta(s)$</h3>
+<p>$$\pi^{-s/2} \Gamma\left(\frac{s}{2}\right) \zeta(s) = \pi^{-(1-s)/2} \Gamma\left(\frac{1-s}{2}\right) \zeta(1-s)$$</p>
+<p><strong>Le rôle de Γ</strong> : "Complète" $\zeta(s)$ pour donner la symétrie parfaite $\xi(s) = \xi(1-s)$.</p>
+<hr>
+<h3>La fonction ξ complétée</h3>
+<p>$$\xi(s) = \underbrace{\frac{1}{2} s(s-1)}<em>{\text{élimine pôles}} \underbrace{\pi^{-s/2} \Gamma\left(\frac{s}{2}\right)}</em>{\text{facteur "gamma"}} \zeta(s)$$</p>
+<p>C'est ce facteur gamma qui <strong>"tord"</strong> le plan complexe pour révéler la symétrie cachée de Riemann !</p></body></html>
