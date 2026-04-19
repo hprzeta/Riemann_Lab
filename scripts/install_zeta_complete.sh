@@ -3,6 +3,8 @@
 # ============================================================================
 # Script d'installation complet pour le projet Zêta
 # Version sans set -e - continue même en cas d'erreur
+# AUTEUR : hprzeta- Exploration de l'Hypothèse de Riemann
+# DATE : 2026
 # ============================================================================
 
 # Couleurs pour l'affichage
@@ -62,7 +64,7 @@ print_success "Environnement virtuel créé et activé"
 print_step "2" "Création de l'arborescence du projet"
 
 # Structure sur ~/projet_zeta
-mkdir -p src/{calculs,ia,utils,tests} 2>/dev/null
+mkdir -p src/{calculs,ia,utils,tests,visualisation,monitoring} 2>/dev/null
 mkdir -p scripts 2>/dev/null
 mkdir -p notebooks 2>/dev/null
 mkdir -p config 2>/dev/null

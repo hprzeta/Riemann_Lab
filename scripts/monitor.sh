@@ -1,4 +1,12 @@
 #!/bin/bash
+
+# ============================================================================
+# Script de monitoring complet pour le projet Zêta
+# AUTEUR : hprzeta- Exploration de l'Hypothèse de Riemann
+# DATE : 2026
+# ============================================================================
+
+
 echo "=== SURVEILLANCE DU CALCUL ==="
 echo "Heure : $(date)"
 echo ""

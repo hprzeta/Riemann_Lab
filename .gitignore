@@ -1,6 +1,7 @@
 # Environnement virtuel
 zeta_env/
 __pycache__/
+__init__.py
 *.pyc
 
 # Données volumineuses

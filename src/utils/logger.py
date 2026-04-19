@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Gestionnaire de logs"""
+
+"""
+Gestionnaire de logs simple
+AUTEUR : hprzeta- Exploration de l'Hypothèse de Riemann
+DATE : 2026
+"""
 import logging
 import os
 from datetime import datetime

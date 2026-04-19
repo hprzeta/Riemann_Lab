@@ -24,14 +24,14 @@ OUTILS UTILISÉS :
 - sympy       : (Non utilisé ici) Pour calcul symbolique
 - seaborn     : (Non utilisé ici) Pour statistiques visuelles
 
-AUTEUR : Projet Zêta - Exploration de l'Hypothèse de Riemann
+AUTEUR : hprzeta- Exploration de l'Hypothèse de Riemann
 DATE : 2026
 """
 
 import os
 import sys
 import time
-from pathlib import Path
+# from pathlib import Path
 
 # ============================================================================
 # 1. LOGGING avec loguru (🟡 Priorité Moyenne)
@@ -70,7 +70,7 @@ logger.info(f"Précision mpmath configurée à {mp.dps} décimales")
 # 3. IMPORT DES AUTRES BIBLIOTHÈQUES
 # ============================================================================
 # numpy (🔴 Priorité Haute) : Calculs vectoriels et matrices
-import numpy as np
+#import numpy as np
 
 # matplotlib (🔴 Priorité Haute) : Visualisations 2D
 import matplotlib.pyplot as plt

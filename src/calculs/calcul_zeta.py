@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+"""
+AUTEUR : hprzeta- Exploration de l'Hypothèse de Riemann
+DATE : 2026
+"""
 from mpmath import zeta, mp
 
 # Précision élevée pour les calculs scientifiques

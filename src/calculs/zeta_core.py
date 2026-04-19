@@ -1,5 +1,10 @@
 #!/usr/bin/env python3
-"""Fonctions de base pour la fonction zêta de Riemann"""
+"""
+Fonctions de base pour la fonction zêta de Riemann
+AUTEUR : hprzeta- Exploration de l'Hypothèse de Riemann
+DATE : 2026
+"""
+
 from mpmath import zeta, mp,zetazero
 
 # Précision par défaut

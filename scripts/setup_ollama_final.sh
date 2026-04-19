@@ -3,6 +3,8 @@
 # ============================================================================
 # Script d'installation d'Ollama - Version ultra robuste pour le projet Zêta
 # Version sans set -e - continue même en cas d'erreur
+# AUTEUR : hprzeta- Exploration de l'Hypothèse de Riemann
+# DATE : 2026
 # ============================================================================
 
 GREEN='\033[0;32m'

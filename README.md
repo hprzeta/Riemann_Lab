@@ -26,7 +26,7 @@ Le projet combine :
 Le projet est implémenté autour d'une solution Linux **Ubuntu 24.04.4 LTS** pour une configuration matérielle ultra-légère.
 
  ---------------------------------------------------
-| Composant    | Détails aux réels          | État  |
+| Composants   | Détails aux réels          | État  |
 |--------------|----------------------------|-------|
 | Disque 1 To  | 3 partitions ≈ 908 Go      | ✅ OK |
 | RAM	8 Go   | 7,6 Gi (soit 8 Go)         | ✅ OK |
@@ -34,7 +34,7 @@ Le projet est implémenté autour d'une solution Linux **Ubuntu 24.04.4 LTS** po
 | Intel Core i7| i7-7500U (2,7-3,5 GHz)     | ✅ OK |
  ----------------------------------------------------
 
-## 📁 Structure du projet Démo Zêta 
+## 📁 Structure générale du projet Démo Zêta 
 
 ```text
 /home/riemann/
@@ -45,6 +45,8 @@ Le projet est implémenté autour d'une solution Linux **Ubuntu 24.04.4 LTS** po
 │   │   │   └── demo_complete.py         # Démonstration complète
 │   │   ├── ia/                          # Modèles d'IA locaux
 │   │   ├── utils/                       # Utilitaires
+│   │   └── visualisation/               # Graphisues 
+│   │   └── monitoring/                  # Logs systèmes
 │   │   └── tests/                       # Tests unitaires
 │   ├── scripts/                         # Scripts exécutables
 │   ├── notebooks/                       # Jupyter notebooks
@@ -58,6 +60,29 @@ Le projet est implémenté autour d'une solution Linux **Ubuntu 24.04.4 LTS** po
     ├── exports/figures/                 # Graphiques PNG/HTML
     └── logs/                            # Journaux d'exécution
 ```
+## 📂 Organisation du code source dans (src/)
+
+Tous les fichiers Python sont organisés de façon modulaire dans `src/` par domaine :
+
+| Avantage |	Explication |
+|----------|----------------|
+| Modularité |	Chaque fonctionnalité est isolée et réutilisable |
+| Testabilité |	Tests unitaires faciles à écrire module par module |
+| Import propre |	from src.calculs.zeros_finder import compute_zeros |
+| Documentation |	Chaque module peut avoir son propre docstring |
+| CI/CD |	Plus facile à intégrer avec GitHub Actions |
+
+| Module | Rôle |
+|--------|------|
+| `src/calculs/` | Algorithmes sur ζ(s), recherche des zéros |
+| `src/visualisation/` | Graphiques statiques et interactifs |
+| `src/ia/` | Interface Ollama et génération de conjectures |
+| `src/monitoring/` | Logs, CPU/RAM/GPU, benchmarking |
+| `src/utils/` | Configuration, I/O fichiers, décorateurs |
+| `src/tests/` | Tests unitaires |
+
+**Exécution** : `python -m src.main` ou `./scripts/run_computation.sh`
+
 
 ## 🛠️ Outils et bibliothèques utilisés
 
@@ -98,7 +123,7 @@ cd ~
 mkdir projet_zeta
 
 cd ~/projet_zeta
-mkdir -p src/{calculs,ia,utils,tests}
+mkdir -p src/{calculs,ia,utils,tests,visualisation,monitoring}
 mkdir -p scripts
 mkdir -p notebooks
 mkdir -p config
@@ -109,6 +134,8 @@ touch src/__init__.py
 touch src/calculs/__init__.py
 touch src/ia/__init__.py
 touch src/utils/__init__.py
+ouch src/visualisation/__init__.py
+ouch src/monitoring/__init__.py
 
 # Structure sur lapartien des donnees /mnt/data
 mkdir -p /mnt/data/{datasets/{zeros,calculs,references},models_ia,rapports/{pdf,doc,markdown},
@@ -298,15 +325,14 @@ tmux -V           # Vérifie la version
 
 ## 📦 Processus d'automatisation  
 Ce processus d'installation manuelle peut être lancé en automatique . 
-Dans le dossier projet_zeta/scripts/, copier ces scripts puis lancer dans votre terminal.
+Copier ces scripts dans le dossier ~projet_zeta/scripts/, puis lancer dans votre terminal.
 
 - Installation zêta Basis complète ( Étapes 1-10) : **./install_zeta_complete.sh**
 - Installation zêta IA LLM Ollama  ( Étape 11) : **./setup_ollama_final.sh**
 
 
-
 ## 🎯 Comparaison d'autre LLM pour ( GPU NVIDIA GTX 960 + 5 VRAM )
- Selon votre configuration, choisez d’autre modèle LLM IA plus adaptés.
+ Selon la configuration de votre carte GPU, choisez d’autre modèle LLM IA plus adaptés en VRAM.
 
  --------------------------------------------------------
 | Modèle pour Ollama     | Taille | Force Maths | VRAM   |
@@ -391,7 +417,7 @@ python zeta_ia.py
 | HTML | /mnt/data/exports/figures/visualisation_plotly.html    |
  ---------------------------------------------------------------
 
-## 📊 Résultats des tests Démo de fonctionnement  ζ(s)
+## 📊 Résultats des tests Démo d'exploration de ζ(s)
 
 <p><strong>Rapport Traitement d'exécution</strong><br>
 <img src="images/zeta_demoExc.png" style="width: 100%; max-width: 100%; height: auto;"></p>
@@ -399,15 +425,15 @@ python zeta_ia.py
 <p><strong>Log Résultats calcul ζ(s)  .csv </strong><br>
 <img src="images/zeta_resultatsCal.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 
-<p><strong>Graphiques 2D statique via Matplot : Module |ζ(s)| en fonction de s (partie réelle)</strong><br>
+<p><strong>Graphiques 2D statique via Matplot : Module |ζ(s)| en fonction de Re(s) -réelle de ζ(s)</strong><br>
 <img src="images/zeta_matplotRel.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 
-<p><strong>Graphique 2D intercative via Plotly : Module |ζ(0.5 + it)| en fonction de t (partie imaginaire)</strong><br>
+<p><strong>Graphique 2D intercative via Plotly : Module |ζ(0.5 + it)| en fonction de Img(it) -imaginaire de ζ(s)</strong><br>
 <a href="https://hprzeta.github.io/Riemann_Lab/images/visualisation_plotly.html" target="_blank">
   <img src="images/zeta_plotlyImg.png" style="width: 100%; max-width: 100%; height: auto;">
 </a>
 <br>
-<em>🔗 Cliquez sur l'image pour ouvrir la version interactive (Plotly) et  visualiser les imaginaires (it) de |ζ(0.5 + it) </em>
+<em>🔗 Cliquez sur l'image pour ouvrir la version interactive (Plotly) et visualiser les imaginaires (it) de |ζ(0.5 + it) </em>
 </p>
 
 <p><strong>Rapport IA  : Ollama IA test de cacul de |ζ(s)|</strong><br>
@@ -416,7 +442,7 @@ python zeta_ia.py
 <img src="images/zeta_ia2.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 </p>
 
-## 🗺️ Feuille de route – 4 étapes pour approfondir ζ(s)
+## 🗺️ Feuille de route – 4 étapes pour approfondir l'étude de ζ(s)
 
 L’objectif est de dépasser la simple démonstration et de construire une **véritable plateforme de recherche** autour de l’hypothèse de Riemann.  
 Chaque étape sera suivie via **GitHub Projects** (tableau Kanban) et documentée en détail dans le **Wiki** du dépôt.
