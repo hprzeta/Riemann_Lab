@@ -470,4 +470,4 @@ Chaque étape sera suivie via **GitHub Projects** (tableau Kanban) et documenté
 - [Ollama - LLMs locaux](https://ollama.com/)
 
 ## 📜 Licence
-Projet de recherche personnel - Libre d'utilisation et de modification.
+Projet de recherche personnel - hprzeta - Libre d'utilisation et de modification.
