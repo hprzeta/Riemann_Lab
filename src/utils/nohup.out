@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "/home/riemann/projet_zeta/zeta_env/lib/python3.12/site-packages/matplotlib/backend_bases.py", line 1152, in _on_timer
+    ret = func(*args, **kwargs)
+          ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riemann/projet_zeta/zeta_env/lib/python3.12/site-packages/matplotlib/animation.py", line 1450, in _step
+    still_going = super()._step(*args)
+                  ^^^^^^^^^^^^^^^^^^^^
+  File "/home/riemann/projet_zeta/zeta_env/lib/python3.12/site-packages/matplotlib/animation.py", line 1138, in _step
+    self._draw_next_frame(framedata, self._blit)
+  File "/home/riemann/projet_zeta/zeta_env/lib/python3.12/site-packages/matplotlib/animation.py", line 1157, in _draw_next_frame
+    self._draw_frame(framedata)
+  File "/home/riemann/projet_zeta/zeta_env/lib/python3.12/site-packages/matplotlib/animation.py", line 1789, in _draw_frame
+    self._drawn_artists = self._func(framedata, *self._args)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/riemann/projet_zeta/src/utils/cpu_temp_monitor.py", line 258, in update
+    ax_temp.collections.clear()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'ArtistList' object has no attribute 'clear'

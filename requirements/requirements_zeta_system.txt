@@ -118,6 +118,7 @@ python3-software-properties
 python3-speechd
 python3-sss
 python3-systemd
+python3-tk:amd64
 python3-typing-extensions
 python3-tz
 python3-update-manager
