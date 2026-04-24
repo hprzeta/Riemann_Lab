@@ -1,25 +1,667 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Riemann Lab — hprzeta</title>
-  <meta http-equiv="refresh" content="0; url=animation_theta.html">
-  <style>
-    body {
-      font-family: sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      background: #0d1117;
-      color: #e6edf3;
-    }
-    a { color: #58a6ff; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Riemann Lab — hprzeta</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080b0f;
+    --bg2: #0d1219;
+    --gold: #c9a84c;
+    --gold2: #e8c97a;
+    --dim: #4a5568;
+    --text: #d4cfc8;
+    --text2: #8a8278;
+    --green: #4ade80;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --border: rgba(201,168,76,0.15);
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'EB Garamond', Georgia, serif;
+    font-size: 18px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Glow orb */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -200px;
+    right: -200px;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(201,168,76,0.06) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 0 2rem; }
+
+  /* ── HEADER ── */
+  header {
+    padding: 5rem 0 3rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .label::before {
+    content: '';
+    display: inline-block;
+    width: 24px;
+    height: 1px;
+    background: var(--gold);
+  }
+
+  h1 {
+    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 400;
+    line-height: 1.1;
+    color: #f0ebe2;
+    margin-bottom: 0.5rem;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--gold2);
+  }
+
+  .subtitle {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: var(--text2);
+    margin-top: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 3px 10px;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    font-size: 11px;
+    color: var(--text2);
+  }
+  .badge.gold { border-color: rgba(201,168,76,0.4); color: var(--gold); }
+
+  /* ── EQUATION BAND ── */
+  .eq-band {
+    padding: 2.5rem 0;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .eq-scroll {
+    display: flex;
+    gap: 4rem;
+    animation: scroll-eq 30s linear infinite;
+    white-space: nowrap;
+  }
+
+  .eq-scroll span {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--dim);
+    flex-shrink: 0;
+  }
+
+  .eq-scroll span.hi { color: rgba(201,168,76,0.5); }
+
+  @keyframes scroll-eq {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* ── MAIN CARD ── */
+  .hero-card {
+    margin: 3rem 0;
+    padding: 2.5rem;
+    border: 1px solid var(--border);
+    background: var(--bg2);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-card::before {
+    content: 'ζ';
+    position: absolute;
+    right: -0.5rem;
+    top: -1rem;
+    font-size: 12rem;
+    font-family: 'EB Garamond', serif;
+    color: rgba(201,168,76,0.04);
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .hero-card h2 {
+    font-size: 1.1rem;
+    font-weight: 400;
+    color: #f0ebe2;
+    margin-bottom: 1rem;
+  }
+
+  .hero-card p {
+    color: var(--text2);
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+    max-width: 580px;
+  }
+
+  .btn-row { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.4rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    background: transparent;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn:hover { background: var(--gold); color: var(--bg); }
+  .btn.ghost { border-color: var(--dim); color: var(--text2); }
+  .btn.ghost:hover { border-color: var(--text2); color: var(--text); background: transparent; }
+
+  /* ── PROGRESS ── */
+  section.progress { margin: 3rem 0; }
+
+  .section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .steps { display: grid; gap: 1px; border: 1px solid var(--border); }
+
+  .step {
+    padding: 1.5rem 2rem;
+    background: var(--bg2);
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 1.5rem;
+    align-items: start;
+    position: relative;
+    transition: background 0.2s;
+  }
+  .step:hover { background: rgba(201,168,76,0.03); }
+  .step + .step { border-top: 1px solid var(--border); }
+
+  .step-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+    padding-top: 3px;
+    min-width: 24px;
+  }
+
+  .step-body h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #f0ebe2;
+    margin-bottom: 0.3rem;
+  }
+
+  .step-body p {
+    font-size: 0.875rem;
+    color: var(--text2);
+    line-height: 1.5;
+  }
+
+  .step-stat {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-align: right;
+    padding-top: 3px;
+  }
+
+  .status-done { color: var(--green); }
+  .status-wip { color: var(--amber); }
+  .status-todo { color: var(--dim); }
+
+  .pill {
+    display: inline-block;
+    padding: 2px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    border-radius: 2px;
+    margin-top: 4px;
+  }
+  .pill.done { background: rgba(74,222,128,0.1); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
+  .pill.wip { background: rgba(251,191,36,0.1); color: var(--amber); border: 1px solid rgba(251,191,36,0.2); }
+  .pill.todo { background: rgba(74,85,104,0.2); color: var(--dim); border: 1px solid rgba(74,85,104,0.3); }
+
+  /* ── STATS ── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    margin: 3rem 0;
+    border: 1px solid var(--border);
+  }
+
+  .stat {
+    padding: 1.5rem;
+    background: var(--bg2);
+    text-align: center;
+  }
+  .stat + .stat { border-left: 1px solid var(--border); }
+
+  .stat-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2rem;
+    font-weight: 500;
+    color: var(--gold2);
+    display: block;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--text2);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+  }
+
+  /* ── ZEROS PREVIEW ── */
+  .zeros-table {
+    margin: 3rem 0;
+  }
+
+  .mono-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    border: 1px solid var(--border);
+  }
+
+  .mono-table thead tr {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .mono-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    color: var(--gold);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 400;
+  }
+
+  .mono-table td {
+    padding: 0.6rem 1rem;
+    color: var(--text2);
+    border-bottom: 1px solid rgba(201,168,76,0.05);
+  }
+
+  .mono-table td:first-child { color: var(--dim); }
+  .mono-table td:nth-child(2) { color: var(--text); font-size: 11px; }
+  .mono-table td:last-child { color: var(--green); }
+  .mono-table tbody tr:hover td { background: rgba(201,168,76,0.03); }
+  .mono-table tbody tr:last-child td { border-bottom: none; font-style: italic; color: var(--dim); }
+
+  /* ── LINKS ── */
+  .links-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    margin: 3rem 0;
+    border: 1px solid var(--border);
+  }
+
+  .link-card {
+    padding: 1.5rem;
+    background: var(--bg2);
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    transition: background 0.2s;
+    position: relative;
+  }
+  .link-card:hover { background: rgba(201,168,76,0.05); }
+  .link-card + .link-card { border-left: 1px solid var(--border); }
+  .link-card:nth-child(n+3) { border-top: 1px solid var(--border); }
+  .link-card:nth-child(3) { border-left: none; }
+
+  .link-card .lc-icon {
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .link-card .lc-title {
+    font-size: 0.95rem;
+    color: #f0ebe2;
+    font-weight: 500;
+  }
+
+  .link-card .lc-desc {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text2);
+    line-height: 1.4;
+  }
+
+  .link-card .lc-arrow {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    font-size: 0.8rem;
+    color: var(--dim);
+    transition: color 0.2s, transform 0.2s;
+  }
+  .link-card:hover .lc-arrow { color: var(--gold); transform: translate(2px, -2px); }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2.5rem 0;
+    margin-top: 4rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  footer p {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+  }
+
+  footer a { color: var(--gold); text-decoration: none; }
+  footer a:hover { color: var(--gold2); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  header, .hero-card, .steps, .stats, .mono-table, .links-grid {
+    animation: fade-up 0.6s ease both;
+  }
+  .hero-card { animation-delay: 0.1s; }
+  .steps { animation-delay: 0.2s; }
+  .stats { animation-delay: 0.3s; }
+
+  @media (max-width: 600px) {
+    .stats { grid-template-columns: 1fr; }
+    .stat + .stat { border-left: none; border-top: 1px solid var(--border); }
+    .links-grid { grid-template-columns: 1fr; }
+    .link-card + .link-card { border-left: none; border-top: 1px solid var(--border); }
+    .link-card:nth-child(3) { border-top: 1px solid var(--border); }
+    .step { grid-template-columns: auto 1fr; }
+    .step-stat { display: none; }
+  }
+</style>
 </head>
 <body>
-  <p>Redirection vers <a href="animation_theta.html">animation θ(t)</a>...</p>
+
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header>
+    <div class="label">Exploration numérique</div>
+    <h1>Riemann <em>Lab</em></h1>
+    <p style="margin-top:1rem; color:var(--text2); font-size:0.95rem; max-width:560px;">
+      Exploration computationnelle de l'Hypothèse de Riemann — calcul des zéros non triviaux
+      de ζ(s) sur la droite critique Re(s) = ½.
+    </p>
+    <div class="subtitle">
+      <span class="badge gold">Python · mpmath</span>
+      <span class="badge">Ubuntu 24.04</span>
+      <span class="badge">206 zéros validés</span>
+    </div>
+  </header>
+
+  <!-- EQUATION SCROLL -->
+  <div class="eq-band">
+    <div class="eq-scroll">
+      <span class="hi">ζ(s) = Σ 1/nˢ</span>
+      <span>·</span>
+      <span>Re(s) = ½</span>
+      <span>·</span>
+      <span class="hi">Z(t) = e^(iθ(t)) · ζ(½+it) ∈ ℝ</span>
+      <span>·</span>
+      <span>θ(t) = Im[ln Γ(¼+it/2)] - t/2·ln(π)</span>
+      <span>·</span>
+      <span class="hi">ζ(2) = π²/6 ≈ 1.6449</span>
+      <span>·</span>
+      <span>N(T) ≈ T/2π · ln(T/2πe)</span>
+      <span>·</span>
+      <span class="hi">ζ(s) = Σ 1/nˢ</span>
+      <span>·</span>
+      <span>Re(s) = ½</span>
+      <span>·</span>
+      <span class="hi">Z(t) = e^(iθ(t)) · ζ(½+it) ∈ ℝ</span>
+      <span>·</span>
+      <span>θ(t) = Im[ln Γ(¼+it/2)] - t/2·ln(π)</span>
+      <span>·</span>
+      <span class="hi">ζ(2) = π²/6 ≈ 1.6449</span>
+      <span>·</span>
+      <span>N(T) ≈ T/2π · ln(T/2πe)</span>
+      <span>·</span>
+    </div>
+  </div>
+
+  <!-- HERO CARD -->
+  <div class="hero-card">
+    <h2>Visualisation interactive — θ(t) de Riemann-Siegel</h2>
+    <p>Animation de la fonction de phase θ(t) et de son rôle dans la détection des zéros
+       de ζ(½+it) par changement de signe de Z(t).</p>
+    <div class="btn-row">
+      <a href="animation_theta.html" class="btn">▶ Ouvrir l'animation</a>
+      <a href="https://github.com/hprzeta/Riemann_Lab" class="btn ghost" target="_blank">GitHub →</a>
+      <a href="https://github.com/hprzeta/Riemann_Lab/wiki" class="btn ghost" target="_blank">Wiki →</a>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat">
+      <span class="stat-val">206</span>
+      <span class="stat-label">zéros validés</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val">10⁻¹⁵</span>
+      <span class="stat-label">précision max</span>
+    </div>
+    <div class="stat">
+      <span class="stat-val">432</span>
+      <span class="stat-label">t max atteint</span>
+    </div>
+  </div>
+
+  <!-- ETAPES -->
+  <section class="progress">
+    <div class="section-title">Avancement du projet</div>
+    <div class="steps">
+
+      <div class="step">
+        <span class="step-num">01</span>
+        <div class="step-body">
+          <h3>Calcul des zéros non triviaux</h3>
+          <p>Méthode Z de Hardy + affinage Illinois (mpmath 50 décimales).
+             206 zéros validés, overflow à t ≈ 432.</p>
+          <div class="pill wip">En cours d'optimisation</div>
+        </div>
+        <div class="step-stat status-wip">
+          206 / 1000<br>
+          <span style="color:var(--dim); font-size:10px;">zéros</span>
+        </div>
+      </div>
+
+      <div class="step">
+        <span class="step-num">02</span>
+        <div class="step-body">
+          <h3>Visualisations avancées</h3>
+          <p>Graphiques 2D/3D interactifs — Z(t), distribution des espacements,
+             droite critique, plan complexe.</p>
+          <div class="pill wip">Animation θ(t) en ligne</div>
+        </div>
+        <div class="step-stat status-wip">
+          Partiel
+        </div>
+      </div>
+
+      <div class="step">
+        <span class="step-num">03</span>
+        <div class="step-body">
+          <h3>Intelligence artificielle locale</h3>
+          <p>Intégration Ollama + Mathstral pour l'analyse des patterns
+             dans la distribution des zéros.</p>
+          <div class="pill wip">Exploratoire</div>
+        </div>
+        <div class="step-stat status-wip">
+          WIP
+        </div>
+      </div>
+
+      <div class="step">
+        <span class="step-num">04</span>
+        <div class="step-body">
+          <h3>Preuves formelles Lean 4</h3>
+          <p>Formalisation des résultats numériques en preuves mathématiques
+             vérifiées par Lean 4.</p>
+          <div class="pill todo">Non démarré</div>
+        </div>
+        <div class="step-stat status-todo">
+          ○
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ZEROS PREVIEW -->
+  <div class="zeros-table">
+    <div class="section-title">Premiers zéros calculés</div>
+    <table class="mono-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Partie imaginaire t</th>
+          <th>|ζ(½+it)|</th>
+          <th>vs LMFDB</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>14.134725141734693</td><td>1.23e-14</td><td class="status-done">✓ 0.00e+00</td></tr>
+        <tr><td>2</td><td>21.022039638771556</td><td>2.45e-14</td><td class="status-done">✓ 0.00e+00</td></tr>
+        <tr><td>3</td><td>25.010857580145688</td><td>3.67e-14</td><td class="status-done">✓ 0.00e+00</td></tr>
+        <tr><td>4</td><td>30.424876125859513</td><td>4.89e-14</td><td class="status-done">✓ 0.00e+00</td></tr>
+        <tr><td>5</td><td>32.935061587739190</td><td>5.12e-14</td><td class="status-done">✓ 0.00e+00</td></tr>
+        <tr><td>6</td><td>37.586178158825671</td><td>6.34e-14</td><td class="status-done">✓ 7.11e-15</td></tr>
+        <tr><td colspan="4">… 200 zéros supplémentaires jusqu'à t ≈ 432 —
+          <a href="https://github.com/hprzeta/Riemann_Lab/blob/main/docs/zeros_partiels_206.csv"
+             style="color:var(--gold); text-decoration:none;">zeros_partiels_206.csv ↗</a>
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- LINKS -->
+  <div class="section-title">Ressources</div>
+  <div class="links-grid">
+    <a href="animation_theta.html" class="link-card">
+      <span class="lc-icon">◎</span>
+      <span class="lc-title">Animation θ(t)</span>
+      <span class="lc-desc">Visualisation interactive de la fonction de phase de Riemann-Siegel</span>
+      <span class="lc-arrow">↗</span>
+    </a>
+    <a href="https://github.com/hprzeta/Riemann_Lab/wiki" target="_blank" class="link-card">
+      <span class="lc-icon">📖</span>
+      <span class="lc-title">Wiki du projet</span>
+      <span class="lc-desc">Théorie, méthodes, interprétation des résultats, guide Git</span>
+      <span class="lc-arrow">↗</span>
+    </a>
+    <a href="https://github.com/hprzeta/Riemann_Lab/tree/main/src" target="_blank" class="link-card">
+      <span class="lc-icon">{ }</span>
+      <span class="lc-title">Code source</span>
+      <span class="lc-desc">Python · mpmath · Plotly · Ollama — dossier /src</span>
+      <span class="lc-arrow">↗</span>
+    </a>
+    <a href="https://github.com/hprzeta/Riemann_Lab/issues" target="_blank" class="link-card">
+      <span class="lc-icon">⚠</span>
+      <span class="lc-title">Issues ouvertes</span>
+      <span class="lc-desc">Overflow à t≈432, optimisation du pas de balayage</span>
+      <span class="lc-arrow">↗</span>
+    </a>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>hprzeta · Riemann Lab · avril 2026</p>
+    <p>
+      <a href="https://github.com/hprzeta/Riemann_Lab" target="_blank">GitHub</a>
+      &nbsp;·&nbsp;
+      <a href="https://lmfdb.org/zeros/zeta/" target="_blank">LMFDB</a>
+      &nbsp;·&nbsp;
+      <a href="https://github.com/hprzeta/Riemann_Lab/wiki" target="_blank">Wiki</a>
+    </p>
+  </footer>
+
+</div>
+
 </body>
 </html>
