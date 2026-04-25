@@ -27,6 +27,16 @@ POURQUOI Z(t) ET PAS Re(ζ) ?
 ✅  Z(t) = Re(e^(iθ) · ζ(½+it)) — la multiplication par e^(iθ) "annule
     la rotation" du nombre complexe ζ. Z(t) est réellement stable,
     Illinois converge proprement, pas d'overflow.
+
+ORGANISATION DES FICHIERS
+══════════════════════════
+Chaque lancement crée un dossier dédié :
+    calculs/
+    └── T{T_MAX}_{AAAAMMJJ_HHMMSS}/
+        ├── zeros_zeta_T{T_MAX}_{AAAAMMJJ_HHMMSS}.csv       ← résultats finaux
+        ├── zeros_zeta_T{T_MAX}_{AAAAMMJJ_HHMMSS}.log       ← journal complet
+        ├── zeros_zeta_T{T_MAX}_{AAAAMMJJ_HHMMSS}.png       ← graphiques
+        └── zeros_intermediaire_T{T_MAX}_{AAAAMMJJ_HHMMSS}.csv  ← sauvegardes
 """
 
 # ── Bibliothèques standard ──────────────────────────────────────────────────
@@ -35,7 +45,7 @@ import math
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 
 # ── Bibliothèques scientifiques ─────────────────────────────────────────────
 import numpy as np
@@ -47,30 +57,17 @@ from loguru import logger
 import psutil
 
 
-# ── Configuration des logs ──────────────────────────────────────────────────
-logger.remove()
-logger.add(
-    "zeros_zeta.log",
-    rotation="100 MB",
-    retention="30 days",
-    format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
-    level="DEBUG"
-)
-logger.add(sys.stderr, level="INFO")
-
-
 # ═══════════════════════════════════════════════════════════════════════════
 #  SECTION 1 — SAISIE INTERACTIVE
 # ═══════════════════════════════════════════════════════════════════════════
 
-def saisir_parametres() -> tuple:
+def saisir_parametres() -> Tuple[float, float, str, Path]:
     """
-    Demande les paramètres de calcul via la console Spyder.
-    Retourne (T_MAX, STEP, HORODATAGE).
+    Demande les paramètres de calcul via la console.
+    Retourne (T_MAX, STEP, HORODATAGE, DOSSIER).
 
-    Affiche la formule de Riemann–von Mangoldt pour guider l'utilisateur :
-        N(T) ≈ T/(2π) · ln(T/2πe)
-    qui estime le nombre de zéros jusqu'à la hauteur T.
+    Crée automatiquement le dossier de sortie :
+        calculs/T{T_MAX}_{AAAAMMJJ_HHMMSS}/
     """
     print()
     print("=" * 60)
@@ -110,20 +107,49 @@ def saisir_parametres() -> tuple:
     # ── Estimation théorique ───────────────────────────────────────────────
     n_attendus = int(T_MAX / (2 * math.pi) * math.log(T_MAX / (2 * math.pi * math.e)))
 
+    # ── Horodatage capturé UNE FOIS ───────────────────────────────────────
+    HORODATAGE = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    # ── Création du dossier de sortie ─────────────────────────────────────
+    # Structure : calculs/T{T_MAX}_{HORODATAGE}/
+    # Exemple   : calculs/T1000_20260425_143217/
+    nom_dossier = f"T{T_MAX:.0f}_{HORODATAGE}"
+    DOSSIER = Path("calculs") / nom_dossier
+    DOSSIER.mkdir(parents=True, exist_ok=True)
+
     print()
     print("  ┌─ Résumé des paramètres ──────────────────────────┐")
     print(f"  │  T_MAX          = {T_MAX:<10.1f}                    │")
     print(f"  │  STEP           = {STEP:<10.4f}                    │")
     print(f"  │  Zéros attendus ≈ {n_attendus:<6d}                       │")
     print(f"  │  Précision      = {mp.dps} décimales (mpmath)      │")
+    print(f"  │  Dossier        = {str(DOSSIER):<36s}  │")
     print("  └──────────────────────────────────────────────────┘")
     print()
 
-    # ── Horodatage capturé UNE FOIS ───────────────────────────────────────
-    # strftime("%Y%m%d_%H%M%S") formate : 20260424_143217
-    HORODATAGE = datetime.now().strftime("%Y%m%d_%H%M%S")
+    return T_MAX, STEP, HORODATAGE, DOSSIER
 
-    return T_MAX, STEP, HORODATAGE
+
+def configurer_logger(T_MAX: float, HORODATAGE: str, DOSSIER: Path):
+    """
+    Configure le logger APRÈS la saisie, pour écrire dans le bon dossier.
+    Le fichier log est nommé : zeros_zeta_T{T_MAX}_{HORODATAGE}.log
+    """
+    logger.remove()  # Supprime le handler par défaut
+
+    chemin_log = DOSSIER / f"zeros_zeta_T{T_MAX:.0f}_{HORODATAGE}.log"
+
+    logger.add(
+        str(chemin_log),
+        rotation="100 MB",
+        retention="30 days",
+        format="{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}",
+        level="DEBUG"
+    )
+    logger.add(sys.stderr, level="INFO")
+
+    logger.info(f"📁 Dossier de sortie : {DOSSIER.resolve()}")
+    logger.info(f"📄 Fichier log       : {chemin_log.name}")
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -140,13 +166,6 @@ def theta(t: float) -> float:
     Rôle :
         En multipliant ζ(½+it) par exp(iθ(t)), on annule la partie
         imaginaire et on obtient une fonction RÉELLE Z(t).
-
-    Composantes :
-        Im[ln Γ(¼ + it/2)]  — capture la rotation due à la fonction Gamma
-                               Γ = généralisation de la factorielle aux complexes
-                               Γ(n) = (n-1)!  pour les entiers positifs
-        (t/2)·ln(π)         — correction logarithmique qui compense
-                               la dérive de phase quand t augmente
     """
     return float(
         mp.im(loggamma(mp.mpf("0.25") + mp.mpc(0, t) / 2))
@@ -164,18 +183,6 @@ def Z(t: float) -> float:
     Propriétés fondamentales :
         1. Z(t) ∈ ℝ  pour tout t ∈ ℝ   ← réelle !
         2. Z(t) = 0  ⟺  ζ(½+it) = 0   ← mêmes zéros que ζ
-
-    Grâce à la propriété 1, on peut détecter les zéros par changement
-    de signe : si Z(a) > 0 et Z(b) < 0, le TVI garantit un zéro dans ]a,b[.
-
-    CORRECTION DU BUG CLASSIQUE :
-        ❌  zeta(0.5+1j*t).real
-            → simple partie réelle de ζ, PAS la fonction Z
-            → oscille sans structure, génère faux changements de signe
-            → Newton diverge → overflow GMP à t ≈ 432
-
-        ✅  (exp(iθ) · ζ(½+it)).real
-            → vraie Z de Hardy, stable, Illinois converge proprement
     """
     valeur_complexe = mp.exp(mp.mpc(0, theta(t))) * zeta(mp.mpc("0.5", t))
     return float(valeur_complexe.real)
@@ -184,23 +191,13 @@ def Z(t: float) -> float:
 def affiner_zero(t_gauche: float, t_droite: float, tol: float = 1e-20) -> float:
     """
     Localise précisément un zéro de Z(t) dans l'intervalle [t_gauche, t_droite].
-
-    Méthode Illinois (variante de la bisection) :
-        - Robuste   : converge toujours si Z change de signe dans l'intervalle
-        - Rapide    : convergence super-linéaire (mieux que la bisection pure)
-        - Travaille sur Z(t) réelle, PAS sur ζ complexe → pas d'overflow
-
-    Paramètres :
-        t_gauche, t_droite : bornes de l'intervalle (changement de signe détecté)
-        tol                : tolérance (1e-20 ≈ 20 décimales exactes)
-
-    Retourne None si l'affinage échoue (intervalle sans zéro réel).
+    Méthode Illinois (variante de la bisection).
     """
     try:
         t0 = findroot(
-            lambda t: Z(float(t)),    # Z retourne un float → stable
-            (t_gauche, t_droite),     # intervalle d'encadrement
-            solver="illinois",        # méthode robuste pour zéros simples
+            lambda t: Z(float(t)),
+            (t_gauche, t_droite),
+            solver="illinois",
             tol=tol,
             maxsteps=150
         )
@@ -215,10 +212,7 @@ def affiner_zero(t_gauche: float, t_droite: float, tol: float = 1e-20) -> float:
 # ═══════════════════════════════════════════════════════════════════════════
 
 def log_resources():
-    """
-    Enregistre CPU et RAM via psutil.
-    Appelé tous les 100 zéros et toutes les 100 unités de t.
-    """
+    """Enregistre CPU et RAM via psutil."""
     cpu = psutil.cpu_percent(interval=0.1)
     mem = psutil.virtual_memory()
     logger.info(
@@ -227,28 +221,26 @@ def log_resources():
     )
 
 
-def save_intermediate(zeros: List[float], horodatage: str):
+def save_intermediate(zeros: List[float], T_MAX: float, horodatage: str, dossier: Path):
     """
-    Sauvegarde intermédiaire CSV tous les 100 zéros.
-    Permet de récupérer les résultats en cas de crash.
-
-    Nom : zeros_intermediaire_<HORODATAGE>.csv
+    Sauvegarde intermédiaire CSV tous les 100 zéros dans le dossier du lancement.
+    Nom : calculs/T{T_MAX}_{HORODATAGE}/zeros_intermediaire_T{T_MAX}_{HORODATAGE}.csv
     """
     df = pd.DataFrame({
-        "n":               range(1, len(zeros) + 1),
+        "n":                 range(1, len(zeros) + 1),
         "partie_imaginaire": zeros,
-        "sauvegarde_le":   datetime.now().isoformat()
+        "sauvegarde_le":     datetime.now().isoformat()
     })
-    chemin = Path(f"zeros_intermediaire_{horodatage}.csv")
+    chemin = dossier / f"zeros_intermediaire_T{T_MAX:.0f}_{horodatage}.csv"
     df.to_csv(chemin, index=False)
-    logger.info(f"💾 Sauvegarde intermédiaire : {len(zeros)} zéros → {chemin}")
+    logger.info(f"💾 Sauvegarde intermédiaire : {len(zeros)} zéros → {chemin.name}")
 
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  SECTION 4 — ALGORITHME PRINCIPAL
 # ═══════════════════════════════════════════════════════════════════════════
 
-def calculer_zeros(T_MAX: float, STEP: float, horodatage: str) -> List[float]:
+def calculer_zeros(T_MAX: float, STEP: float, horodatage: str, dossier: Path) -> List[float]:
     """
     Balayage de la droite critique pour trouver les zéros de ζ(½+it).
 
@@ -257,22 +249,17 @@ def calculer_zeros(T_MAX: float, STEP: float, horodatage: str) -> List[float]:
     │  PASSE 1 – DÉTECTION                                           │
     │  On évalue Z(t) à intervalles réguliers (pas = STEP).         │
     │  Si Z(t−STEP) · Z(t) < 0 → changement de signe → zéro !      │
-    │  (Théorème des Valeurs Intermédiaires)                         │
     │                                                                 │
     │  PASSE 2 – AFFINAGE                                            │
     │  On localise le zéro précisément par la méthode Illinois.      │
-    │  On vérifie ensuite : |ζ(½ + it₀)| < 1e-10                    │
-    │  pour rejeter les faux positifs.                               │
+    │  On vérifie : |ζ(½ + it₀)| < 1e-10 pour rejeter les faux pos. │
     └─────────────────────────────────────────────────────────────────┘
-
-    Risque : si deux zéros sont dans le même intervalle STEP,
-    on n'en détectera qu'un. Réduire STEP diminue ce risque.
     """
-    T_MIN  = 10.0   # Le 1er zéro est à t ≈ 14.13, on commence à 10
+    T_MIN  = 10.0
     zeros  = []
 
     t      = T_MIN
-    Z_prev = Z(t)   # Premier point de référence — float ✅
+    Z_prev = Z(t)
     n_steps = int((T_MAX - T_MIN) / STEP)
 
     print(f"\n  Balayage de t={T_MIN} à t={T_MAX} avec pas={STEP}")
@@ -283,22 +270,12 @@ def calculer_zeros(T_MAX: float, STEP: float, horodatage: str) -> List[float]:
     for _ in tqdm(range(n_steps), desc="  Recherche", unit="pas", ncols=70):
 
         t += STEP
-        Z_curr = Z(t)   # Z() retourne un float → comparaison < 0 fonctionne ✅
+        Z_curr = Z(t)
 
-        # ── Détection : changement de signe ? ─────────────────────────────
-        # Z_prev * Z_curr < 0  ↔  l'un est positif, l'autre négatif
-        # → la courbe a croisé zéro entre les deux points (TVI)
         if Z_prev * Z_curr < 0:
-
-            # ── Affinage précis par Illinois ──────────────────────────────
             t_zero = affiner_zero(t - STEP, t)
 
             if t_zero is not None:
-
-                # ── Vérification finale — est-ce vraiment un zéro de ζ ? ─
-                # On calcule |ζ(½ + it₀)| directement.
-                # Un vrai zéro doit avoir |ζ| ≈ 0 numériquement.
-                # Seuil 1e-10 : rejet des faux positifs (erreurs d'arrondi).
                 residu = float(abs(zeta(mp.mpc("0.5", t_zero))))
 
                 if residu < 1e-10:
@@ -311,9 +288,8 @@ def calculer_zeros(T_MAX: float, STEP: float, horodatage: str) -> List[float]:
                         f"✅ Zéro #{len(zeros)} : t = {t_zero:.10f} | |ζ| = {residu:.2e}"
                     )
 
-                    # ── Sauvegarde + monitoring tous les 100 zéros ────────
                     if len(zeros) % 100 == 0:
-                        save_intermediate(zeros, horodatage)
+                        save_intermediate(zeros, T_MAX, horodatage, dossier)
                         log_resources()
 
                 else:
@@ -326,7 +302,6 @@ def calculer_zeros(T_MAX: float, STEP: float, horodatage: str) -> List[float]:
 
         Z_prev = Z_curr
 
-        # ── Monitoring RAM/CPU tous les 100 pas de t ──────────────────────
         if int(t) % 100 == 0 and abs(t - round(t)) < STEP:
             log_resources()
 
@@ -338,17 +313,7 @@ def calculer_zeros(T_MAX: float, STEP: float, horodatage: str) -> List[float]:
 # ═══════════════════════════════════════════════════════════════════════════
 
 def verifier_premiers_zeros(zeros: List[float]):
-    """
-    Compare les premiers zéros calculés avec les valeurs de référence LMFDB.
-
-    Les 10 premiers zéros sont connus avec plusieurs centaines de décimales.
-    Un bon calcul doit donner un écart < 1e-8 (limite de la double précision).
-
-    Seuils de qualité :
-        écart < 1e-8  → ✅ correct
-        écart < 1e-4  → ⚠️  approximatif
-        écart > 1e-4  → ❌ erreur
-    """
+    """Compare les premiers zéros calculés avec les valeurs de référence LMFDB."""
     references = [
         14.134725141734693,
         21.022039638771555,
@@ -384,19 +349,13 @@ def verifier_premiers_zeros(zeros: List[float]):
 #  SECTION 6 — SAUVEGARDE CSV
 # ═══════════════════════════════════════════════════════════════════════════
 
-def sauvegarder(zeros: List[float], T_MAX: float, horodatage: str) -> pd.DataFrame:
+def sauvegarder(zeros: List[float], T_MAX: float, horodatage: str, dossier: Path) -> pd.DataFrame:
     """
-    Sauvegarde finale des zéros en CSV.
-
-    Nom du fichier : zeros_zeta_T<T_MAX>_<AAAAMMJJ_HHMMSS>.csv
-    Exemple        : zeros_zeta_T1000_20260424_143217.csv
-
-    Avantages :
-        • Tri alphabétique = tri chronologique
-        • Plusieurs T_MAX différents ne s'écrasent pas
-        • Plusieurs lancements du même jour ne s'écrasent pas
+    Sauvegarde finale des zéros en CSV dans le dossier du lancement.
+    Nom : zeros_zeta_T{T_MAX}_{HORODATAGE}.csv
     """
     nom_fichier = f"zeros_zeta_T{T_MAX:.0f}_{horodatage}.csv"
+    chemin = dossier / nom_fichier
 
     df = pd.DataFrame({
         "n":                 range(1, len(zeros) + 1),
@@ -407,10 +366,9 @@ def sauvegarder(zeros: List[float], T_MAX: float, horodatage: str) -> pd.DataFra
         "calcule_le":        horodatage,
     })
 
-    chemin = Path(nom_fichier)
     df.to_csv(chemin, index=False)
     print(f"\n  💾  {len(zeros)} zéros sauvegardés → {chemin.resolve()}")
-    logger.info(f"💾 Sauvegarde finale : {len(zeros)} zéros → {chemin}")
+    logger.info(f"💾 Sauvegarde finale : {len(zeros)} zéros → {chemin.name}")
     return df
 
 
@@ -418,20 +376,10 @@ def sauvegarder(zeros: List[float], T_MAX: float, horodatage: str) -> pd.DataFra
 #  SECTION 7 — VISUALISATION
 # ═══════════════════════════════════════════════════════════════════════════
 
-def visualiser(zeros: List[float], T_MAX: float, horodatage: str):
+def visualiser(zeros: List[float], T_MAX: float, horodatage: str, dossier: Path):
     """
-    Génère deux graphiques et les sauvegarde en PNG.
-
-    Graphique 1 — Distribution des espacements entre zéros consécutifs
-        Contexte : la conjecture de Montgomery (1973) prédit que cette
-        distribution suit celle des valeurs propres de matrices aléatoires
-        unitaires (GUE = Gaussian Unitary Ensemble).
-        Connexion profonde avec la physique quantique des matrices aléatoires !
-        Formule de l'espacement moyen : 2π / ln(T/2π)
-
-    Graphique 2 — Zéros sur la droite critique Re(s) = ½
-        Visualise directement l'Hypothèse de Riemann :
-        tous les points devraient être alignés sur Re(s) = 0.5.
+    Génère deux graphiques et les sauvegarde dans le dossier du lancement.
+    Nom : zeros_zeta_T{T_MAX}_{HORODATAGE}.png
     """
     if len(zeros) < 2:
         print("  ⚠️  Moins de 2 zéros — pas de graphique.")
@@ -439,6 +387,7 @@ def visualiser(zeros: List[float], T_MAX: float, horodatage: str):
 
     ecarts  = np.diff(zeros)
     nom_png = f"zeros_zeta_T{T_MAX:.0f}_{horodatage}.png"
+    chemin  = dossier / nom_png
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
     fig.suptitle(
@@ -478,9 +427,9 @@ def visualiser(zeros: List[float], T_MAX: float, horodatage: str):
     axes[1].grid(True, alpha=0.3)
 
     plt.tight_layout()
-    plt.savefig(nom_png, dpi=150)
-    print(f"  📈  Graphique sauvegardé → {Path(nom_png).resolve()}")
-    logger.info(f"📈 Graphique : {nom_png}")
+    plt.savefig(str(chemin), dpi=150)
+    print(f"  📈  Graphique sauvegardé → {chemin.resolve()}")
+    logger.info(f"📈 Graphique : {chemin.name}")
     plt.show()
 
 
@@ -492,39 +441,44 @@ def main():
     """
     Orchestration complète :
         1. Configuration mpmath (50 décimales)
-        2. Saisie interactive des paramètres
-        3. Calcul des zéros (Z de Hardy + Illinois)
-        4. Vérification vs LMFDB
-        5. Sauvegarde CSV
-        6. Visualisation PNG
-        7. Rapport final
+        2. Saisie interactive + création du dossier calculs/T{xxx}_{date}/
+        3. Configuration du logger dans ce dossier
+        4. Calcul des zéros (Z de Hardy + Illinois)
+        5. Vérification vs LMFDB
+        6. Sauvegarde CSV dans le dossier
+        7. Visualisation PNG dans le dossier
+        8. Rapport final
     """
     # ── Configuration précision mpmath ────────────────────────────────────
-    mp.dps   = 50     # 50 décimales (double précision standard ≈ 15 décimales)
+    mp.dps    = 50
     mp.pretty = True
 
     debut = time.time()
 
+    # ── 1. Saisie interactive + création dossier ──────────────────────────
+    T_MAX, STEP, HORODATAGE, DOSSIER = saisir_parametres()
+
+    # ── 2. Logger dans le dossier du lancement ────────────────────────────
+    configurer_logger(T_MAX, HORODATAGE, DOSSIER)
+
     logger.info("=" * 60)
     logger.info("🚀 DÉBUT DU CALCUL DES ZÉROS NON TRIVIAUX DE ζ(s)")
     logger.info("=" * 60)
-
-    # ── 1. Saisie interactive ──────────────────────────────────────────────
-    T_MAX, STEP, HORODATAGE = saisir_parametres()
     logger.info(f"Paramètres : T_MAX={T_MAX}, STEP={STEP}")
 
-    # ── 2. Calcul des zéros ────────────────────────────────────────────────
-    zeros = calculer_zeros(T_MAX, STEP, HORODATAGE)
+    # ── 3. Calcul des zéros ────────────────────────────────────────────────
+    zeros = calculer_zeros(T_MAX, STEP, HORODATAGE, DOSSIER)
 
     duree = time.time() - debut
 
-    # ── 3. Rapport de synthèse ────────────────────────────────────────────
+    # ── 4. Rapport de synthèse ────────────────────────────────────────────
     print()
     print("=" * 60)
     print(f"  RÉSULTATS  —  {len(zeros)} zéros trouvés")
     print("=" * 60)
     print(f"  T_MAX     = {T_MAX:.1f}")
     print(f"  Durée     = {duree/60:.1f} min  ({duree:.0f} secondes)")
+    print(f"  Dossier   = {DOSSIER.resolve()}")
     if zeros:
         print(f"  1er zéro  : t = {zeros[0]:.10f}")
         print(f"  Dernier   : t = {zeros[-1]:.10f}")
@@ -534,20 +488,20 @@ def main():
 
     logger.info(f"✅ CALCUL TERMINÉ — {len(zeros)} zéros en {duree/60:.1f} min")
 
-    # ── 4. Vérification LMFDB ─────────────────────────────────────────────
+    # ── 5. Vérification LMFDB ─────────────────────────────────────────────
     verifier_premiers_zeros(zeros)
 
-    # ── 5. Sauvegarde CSV ──────────────────────────────────────────────────
+    # ── 6. Sauvegarde CSV ──────────────────────────────────────────────────
     if zeros:
-        sauvegarder(zeros, T_MAX, HORODATAGE)
+        sauvegarder(zeros, T_MAX, HORODATAGE, DOSSIER)
 
-    # ── 6. Graphiques ──────────────────────────────────────────────────────
+    # ── 7. Graphiques ──────────────────────────────────────────────────────
     if zeros:
-        visualiser(zeros, T_MAX, HORODATAGE)
+        visualiser(zeros, T_MAX, HORODATAGE, DOSSIER)
 
     print()
     print("=" * 60)
-    print("  Calcul terminé.")
+    print(f"  Tous les fichiers sont dans : {DOSSIER.resolve()}")
     print("=" * 60)
 
 

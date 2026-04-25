@@ -409,7 +409,7 @@ python zeta_ia.py
 ## 🔧 Fichiers générés dans /mnt/data
 
  ---------------------------------------------------------------
-| Type | Chemin                                                 | 
+| Type | Chemin de traitement                                   | 
 |------|--------------------------------------------------------|
 | CSV  | /mnt/data/exports/csv/resultats_zeta.csv               |
 | LOG  | /mnt/data/logs/demo_zeta.log                           |
@@ -420,26 +420,26 @@ python zeta_ia.py
 ## 📊 Résultats des tests Démo d'exploration de ζ(s)
 
 <p><strong>Rapport Traitement d'exécution</strong><br>
-<img src="images/zeta_demoExc.png" style="width: 100%; max-width: 100%; height: auto;"></p>
+<img src="images/T10Demo/zeta_demoExc.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 
 <p><strong>Log Résultats calcul ζ(s)  .csv </strong><br>
-<img src="images/zeta_resultatsCal.png" style="width: 100%; max-width: 100%; height: auto;"></p>
+<img src="images/T10Demo/zeta_demoresultatsCal.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 
 <p><strong>Graphiques 2D statique via Matplot : Module |ζ(s)| en fonction de Re(s) -réelle de ζ(s)</strong><br>
-<img src="images/zeta_matplotRel.png" style="width: 100%; max-width: 100%; height: auto;"></p>
+<img src="images/T10Demo/zeta_demomatplotRel.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 
 <p><strong>Graphique 2D intercative via Plotly : Module |ζ(0.5 + it)| en fonction de Img(it) -imaginaire de ζ(s)</strong><br>
-<a href="https://hprzeta.github.io/Riemann_Lab/images/visualisation_plotly.html" target="_blank">
-  <img src="images/zeta_plotlyImg.png" style="width: 100%; max-width: 100%; height: auto;">
+<a href="https://hprzeta.github.io/Riemann_Lab/images/T10Demo/zeta_demovisualisation_plotly.html" target="_blank">
+  <img src="images/T10Demo/zeta_plotlyImg.png" style="width: 100%; max-width: 100%; height: auto;">
 </a>
 <br>
 <em>🔗 Cliquez sur l'image pour ouvrir la version interactive (Plotly) et visualiser les imaginaires (it) de |ζ(0.5 + it) </em>
 </p>
 
 <p><strong>Rapport IA  : Ollama IA test de cacul de |ζ(s)|</strong><br>
-<img src="images/zeta_ia1.png" style="width: 100%; max-width: 100%; height: auto;">
+<img src="images/T10Demo/zeta_demoia1.png" style="width: 100%; max-width: 100%; height: auto;">
 <br>
-<img src="images/zeta_ia2.png" style="width: 100%; max-width: 100%; height: auto;"></p>
+<img src="images/T10Demo/zeta_demoia2.png" style="width: 100%; max-width: 100%; height: auto;"></p>
 </p>
 
 ## 🗺️ Feuille de route – 4 étapes pour approfondir l'étude de ζ(s)
