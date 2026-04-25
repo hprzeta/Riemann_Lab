@@ -430,7 +430,7 @@ python zeta_ia.py
 
 <p><strong>Graphique 2D intercative via Plotly : Module |ζ(0.5 + it)| en fonction de Img(it) -imaginaire de ζ(s)</strong><br>
 <a href="https://hprzeta.github.io/Riemann_Lab/images/T10Demo/zeta_demovisualisation.html" target="_blank">
-  <img src="images/T10Demo/zeta_plotlyImg.png" style="width: 100%; max-width: 100%; height: auto;">
+  <img src="images/T10Demo/zeta_demoplotlyImg.png" style="width: 100%; max-width: 100%; height: auto;">
 </a>
 <br>
 <em>🔗 Cliquez sur l'image pour ouvrir la version interactive (Plotly) et visualiser les imaginaires (it) de |ζ(0.5 + it) </em>
