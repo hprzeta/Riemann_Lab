@@ -410,6 +410,51 @@
   }
   .link-card:hover .lc-arrow { color: var(--gold); transform: translate(2px, -2px); }
 
+  /* ── COURS ── */
+  .cours-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    margin: 3rem 0;
+    border: 1px solid var(--border);
+  }
+  .cours-card {
+    padding: 1.25rem 1.5rem;
+    background: var(--bg2);
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    transition: background 0.2s;
+    position: relative;
+    border-left: 1px solid var(--border);
+  }
+  .cours-card:first-child { border-left: none; }
+  .cours-card:nth-child(n+4) { border-top: 1px solid var(--border); }
+  .cours-card:nth-child(4) { border-left: none; }
+  .cours-card:hover { background: rgba(201,168,76,0.05); }
+  .cours-card .cc-level {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--dim);
+    text-transform: uppercase;
+  }
+  .cours-card .cc-title { font-size: 0.9rem; color: #f0ebe2; font-weight: 500; }
+  .cours-card .cc-desc {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--text2);
+    line-height: 1.4;
+  }
+  .cours-card .cc-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    margin-top: 0.4rem;
+  }
+  .status-active { color: var(--green); }
+  .status-soon   { color: var(--amber); }
+
   /* ── FOOTER ── */
   footer {
     border-top: 1px solid var(--border);
@@ -618,6 +663,53 @@
         </td></tr>
       </tbody>
     </table>
+  </div>
+
+  <!-- COURS -->
+  <div class="section-title">Cours — Apprendre ζ(s)</div>
+  <div class="wrap">
+    <p style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:1.5rem;">
+      Parcours structuré du niveau zéro à l'expert — chaque niveau produit un module Python réutilisable.
+      Méthode : théorie → formule → animation → code.
+    </p>
+  </div>
+  <div class="cours-grid">
+    <a href="https://github.com/hprzeta/Riemann_Lab/wiki/%F0%9F%93%8B-methode" target="_blank" class="cours-card">
+      <span class="cc-level">Méthode</span>
+      <span class="cc-title">📋 Méthode générale</span>
+      <span class="cc-desc">Hiérarchie des prérequis, ressources, outils cartes mentales</span>
+      <span class="cc-status status-active">● disponible</span>
+    </a>
+    <a href="https://github.com/hprzeta/Riemann_Lab/wiki/%F0%9F%94%A2-niveau-0-prerequis" target="_blank" class="cours-card">
+      <span class="cc-level">Niveau 0</span>
+      <span class="cc-title">🔢 Prérequis</span>
+      <span class="cc-desc">Complexes · Trigonométrie · Formule d'Euler · Cercle unité</span>
+      <span class="cc-status status-active">● session 1 disponible</span>
+    </a>
+    <a href="animation_theta.html" class="cours-card">
+      <span class="cc-level">Animation</span>
+      <span class="cc-title">◎ θ(t) de Riemann-Siegel</span>
+      <span class="cc-desc">Visualisation interactive de la fonction de phase — connexion avec Z(t)</span>
+      <span class="cc-status status-active">● disponible</span>
+    </a>
+    <a href="https://github.com/hprzeta/Riemann_Lab/wiki/%F0%9F%93%88-niveau-1-series" target="_blank" class="cours-card">
+      <span class="cc-level">Niveau 1</span>
+      <span class="cc-title">📈 Séries et convergence</span>
+      <span class="cc-desc">Séries numériques · DL · Série de Dirichlet ζ(s) = Σ 1/nˢ</span>
+      <span class="cc-status status-soon">◌ à venir</span>
+    </a>
+    <a href="https://github.com/hprzeta/Riemann_Lab/wiki/%F0%9F%8C%80-niveau-2-analyse-complexe" target="_blank" class="cours-card">
+      <span class="cc-level">Niveau 2</span>
+      <span class="cc-title">🌀 Analyse complexe</span>
+      <span class="cc-desc">Holomorphie · Cauchy · Résidus · Fonctions méromorphes</span>
+      <span class="cc-status status-soon">◌ à venir</span>
+    </a>
+    <a href="https://github.com/hprzeta/Riemann_Lab/wiki/%C3%B6-niveau-4-zeta" target="_blank" class="cours-card">
+      <span class="cc-level">Niveau 4</span>
+      <span class="cc-title">ζ La fonction zêta</span>
+      <span class="cc-desc">Définition · Équation fonctionnelle · Z de Hardy · HR</span>
+      <span class="cc-status status-soon">◌ à venir</span>
+    </a>
   </div>
 
   <!-- LINKS -->
