@@ -16,11 +16,20 @@ def plot_zeros_distribution(zeros: list, comparison=None):
         logger.warning("Pas assez de zéros pour générer les graphiques")
         return
     
+    from pathlib import Path
+
+    mnt_path = Path("/mnt/data/exports/figures")
+    fallback_path = Path(__file__).parent.parent.parent / "images" / "exports"
+    save_dir = mnt_path if mnt_path.exists() else fallback_path
+    save_dir.mkdir(parents=True, exist_ok=True)
+    output_file = save_dir / "zeros_distribution.png"
+
     gaps = np.diff(zeros)
     plt.figure(figsize=(10, 6))
     plt.hist(gaps, bins=50, edgecolor='black')
     plt.xlabel("Écart entre zéros consécutifs Δt")
     plt.ylabel("Fréquence")
     plt.title(f"Distribution des écarts – {len(zeros)} zéros")
-    plt.savefig("/mnt/data/exports/figures/zeros_distribution.png", dpi=150)
+    plt.savefig(output_file, dpi=150)
+    logger.info(f"Graphique sauvegardé : {output_file}")
     plt.show()
