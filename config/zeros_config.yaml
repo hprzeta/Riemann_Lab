@@ -2,11 +2,11 @@
 # AUTEUR : hprzeta- Exploration de l'Hypothèse de Riemann
 # DATE : 2026
 
-T_max: 1000.0           # Limite supérieure de recherche (t)
-step: 0.1               # Pas initial (équilibre vitesse/précision)
-tol: 1e-12              # Tolérance pour l'affinage Newton
-max_iter: 50            # Max itérations Newton
-expected_zeros: 1000    # Pour validation
+T_max: 10000.0          # Limite supérieure de recherche (t) — validée v2 (10 142 zéros)
+step: 0.05              # Pas utilisé en v2 (équilibre vitesse/précision)
+tol: 1e-12              # Tolérance pour l'affinage Illinois
+max_iter: 150           # Max itérations Illinois (v2)
+expected_zeros: 10142   # Zéros validés à T=10000 (Riemann-von Mangoldt confirmé)
 lmfdb_check: true       # Vérification avec base LMFDB
 save_csv: true
 save_plots: true
