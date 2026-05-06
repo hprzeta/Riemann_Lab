@@ -44,16 +44,22 @@ Le projet est implémenté autour d'une solution Linux **Ubuntu 24.04.4 LTS** po
 │   │   ├── calculs/                     # Calculs sur la fonction zêta
 │   │   │   └── demo_complete.py         # Démonstration complète
 │   │   ├── ia/                          # Modèles d'IA locaux
-│   │   ├── utils/                       # Utilitaires
-│   │   └── visualisation/               # Graphisues 
+│   │   ├── utils/                       # Utilitaires .py
+│   │   └── visualisation/               # Graphiques 
 │   │   └── monitoring/                  # Logs systèmes
 │   │   └── tests/                       # Tests unitaires
-│   ├── scripts/                         # Scripts exécutables
+│   ├── scripts/                         # Scripts exécutables .sh
 │   ├── notebooks/                       # Jupyter notebooks
 │   ├── lean_projects/                   # Projets Lean 4
-│   ├── config/                          # Fichiers de configuration
-│   ├── docs/                            # Documentation locale
-│   └── .vscode/                         # Configuration VS Code
+│   ├── config/                          # Fichiers de configuration .conf . yaml
+│   ├── requirements/                    # Sauvegarde des paquets installés
+│   ├── docs/                            # Document Publication (Web) locale
+│   │   ├── csv/                         # Publication Résultats CSV 
+│   │   ├── images/                      # Publication Résultats graphiques 
+│   │   └── tests/                       # Publication Résultats logs
+│   ├── csv/                             # Résultats Fichiers CSV Github
+│   ├── images/                          # Résultats Fichiers images Github
+│   └──logs/                             # Résultats Fichiers logs Github
 └── /mnt/data/                           # Données volumineuses
     ├── datasets/calculs/                # Fichiers d'entrée
     ├── exports/csv/                     # Résultats CSV
@@ -127,7 +133,11 @@ mkdir -p src/{calculs,ia,utils,tests,visualisation,monitoring}
 mkdir -p scripts
 mkdir -p notebooks
 mkdir -p config
-mkdir -p docs
+mkdir -p requirements
+mkdir -p docs/{csv,images,logs,archives}
+mkdir -p images
+mkdir -p csv
+mkdir -p logs
 
 # Créer les fichiers __init__.py
 touch src/__init__.py
@@ -370,16 +380,18 @@ echo '
 # Projet Zêta - alias supplémentaires
 
 alias zeta-docs="cd ~/projet_zeta/docs"
-alias zeta-proj="cd ~/projet_zeta/"
+alias zeta="cd ~/projet_zeta && source zeta_env/bin/activate"
 alias zeta-data="cd /mnt/data"
 alias zeta-logs="tail -f /mnt/data/logs/mon_projet.log"
 alias zeta-monitor="~/projet_zeta/scripts/monitor.sh"
 alias zeta-notebook="cd ~/projet_zeta/notebooks && jupyter notebook"
 alias zeta-spyder="source ~/projet_zeta/zeta_env/bin/activate && spyder"
 alias zeta-jupyter="cd ~/projet_zeta/notebooks && source ~/projet_zeta/zeta_env/bin/activate && jupyter lab"
+alias zeta-tmux="tmux attach -t zeta || tmux new -s zeta"
 alias zeta-python="cd ~/projet_zeta/src/calculs" 
 alias zeta-code="source ~/projet_zeta/zeta_env/bin/activate && code ~/projet_zeta" 
 ' >> ~/.bashrc
+
 source ~/.bashrc
 ```
 

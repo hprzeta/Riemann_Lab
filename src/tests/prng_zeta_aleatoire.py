@@ -2,8 +2,8 @@
 """
 Calcul des zéros de Riemann et générateur PRNG basé sur leurs espacements
 
-Auteur : hprzeta
-Date : 2026
+AUTEUR : hprzeta- Exploration de l'Hypothèse de Riemann
+DATE : 2026
 """
 
 from mpmath import *

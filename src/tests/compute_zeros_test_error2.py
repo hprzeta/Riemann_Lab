@@ -5,7 +5,8 @@ Calcul des zéros non triviaux de ζ(s) sur la droite critique Re(s) = 1/2
 ────────────────────────────────────────────────────────────────────────────
 Méthode   : Fonction Z de Hardy  +  affinage Illinois (bisection améliorée)
 Précision : mpmath (50 décimales par défaut)
-Auteur : hprzeta
+AUTEUR : hprzeta- Exploration de l'Hypothèse de Riemann
+DATE : 2026
 ────────────────────────────────────────────────────────────────────────────
 
 THÉORIE RAPIDE

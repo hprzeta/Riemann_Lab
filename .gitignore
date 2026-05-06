@@ -17,6 +17,8 @@ __init__.py
 *.bak
 .DS_Store
 
+# IA
+.claude
 # Notebooks
 .ipynb_checkpoints/
 Riemann_Lab.wiki

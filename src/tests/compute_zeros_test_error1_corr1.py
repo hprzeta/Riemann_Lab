@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 """
 Calcul des zéros de ζ(s) - Version corrigée pour débutants
-Auteur : hprzeta
+AUTEUR : hprzeta- Exploration de l'Hypothèse de Riemann
+DATE : 2026
 """
 
 import sys
