@@ -11,18 +11,18 @@
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 <script>
-// Rendu manuel pour les en-têtes de tableau
-document.addEventListener('DOMContentLoaded', function() {
-    if (typeof katex !== 'undefined') {
-        const opts = { throwOnError: false, displayMode: false };
-        
-        const elT = document.getElementById('math-t');
-        if (elT) katex.render('t', elT, opts);
-        
-        const elZeta = document.getElementById('math-zeta');
-        if (elZeta) katex.render('\\left|\\zeta\\left(\\tfrac{1}{2}+iu\\right)\\right|', elZeta, opts);
-    }
-});
+  document.addEventListener('DOMContentLoaded', function() {
+    renderMathInElement(document.body, {
+      delimiters: [
+        { left: '$$', right: '$$', display: true },
+        { left: '$', right: '$', display: false },
+        { left: '\\(', right: '\\)', display: false },
+        { left: '\\[', right: '\\]', display: true }
+      ],
+      ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+      throwOnError: false
+    });
+  });
 </script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -650,8 +650,8 @@ document.addEventListener('DOMContentLoaded', function() {
     <thead>
       <tr>
         <th>#</th>
-        <th>Partie imaginaire <span id="math-t"></span></th>
-        <th><span id="math-zeta"></span></th>
+        <th>Partie imaginaire \(t\)</th>
+        <th>\(\left|\zeta\left(\tfrac{1}{2}+it\right)\right|\)</th>
         <th>vs LMFDB</th>
       </tr>
     </thead>
