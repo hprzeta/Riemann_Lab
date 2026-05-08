@@ -10,7 +10,20 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    renderMathInElement(document.body, {
+      delimiters: [
+        { left: '$$', right: '$$', display: true },
+        { left: '$', right: '$', display: false },
+        { left: '\\(', right: '\\)', display: false },
+        { left: '\\[', right: '\\]', display: true }
+      ],
+      ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+      throwOnError: false
+    });
+  });
+</script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -657,7 +670,7 @@
     </table>
   </div>
 
-  <div class="section-title">Cours — Apprendre <span>\(\zeta(s)\)</span></div>
+  <div class="section-title">Cours — Apprendre <span>$\zeta(s)$</span></div>
   <div class="wrap">
     <p style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:1.5rem;">
       Parcours structuré du niveau zéro à l'expert — chaque niveau produit un module Python réutilisable.
@@ -756,21 +769,5 @@
   </footer>
 
 </div>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    renderMathInElement(document.body, {
-      delimiters: [
-        { left: '$$', right: '$$', display: true },
-        { left: '$', right: '$', display: false },
-        { left: '\\(', right: '\\)', display: false },
-        { left: '\\[', right: '\\]', display: true }
-      ],
-      ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
-      throwOnError: false
-    });
-  });
-</script>
-
 </body>
 </html>
