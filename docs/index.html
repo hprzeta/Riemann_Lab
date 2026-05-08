@@ -6,18 +6,17 @@
 <title>Riemann Lab — hprzeta</title>
 
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<!-- Charger l'auto-render -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  const opts = { throwOnError: false };
-
-  katex.render('t', document.getElementById('katex-t'), opts);
-  katex.render('\\left|\\zeta\\left(\\tfrac{1}{2}+it\\right)\\right|', document.getElementById('katex-zeta'), opts);
-});
-</script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+    onload="renderMathInElement(document.body, {
+        delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false}
+        ],
+        throwOnError: false
+    });"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -644,8 +643,8 @@ document.addEventListener('DOMContentLoaded', function () {
     <thead>
       <tr>
         <th>#</th>
-        <th>Partie imaginaire <span id="katex-t"></span></th>
-        <th><span id="katex-zeta"></span></th>
+        <th>Partie imaginaire $t$</th>
+        <th>$\left|\zeta\left(\tfrac{1}{2}+it\right)\right|$</th>
         <th>vs LMFDB</th>
       </tr>
     </thead>
