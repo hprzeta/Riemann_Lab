@@ -10,7 +10,14 @@
 
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const opts = { throwOnError: false };
 
+  katex.render('t', document.getElementById('katex-t'), opts);
+  katex.render('\\left|\\zeta\\left(\\tfrac{1}{2}+it\\right)\\right|', document.getElementById('katex-zeta'), opts);
+});
+</script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -634,14 +641,14 @@
   <div class="zeros-table">
     <div class="section-title">Premiers zéros calculés</div>
     <table class="mono-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Partie imaginaire <span>\(t\)</span></th>
-          <th><span>\(|\zeta(\tfrac{1}{2}+it)|\)</span></th>
-          <th>vs LMFDB</th>
-        </tr>
-      </thead>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Partie imaginaire <span id="katex-t"></span></th>
+        <th><span id="katex-zeta"></span></th>
+        <th>vs LMFDB</th>
+      </tr>
+    </thead>
       <tbody>
         <tr><td>1</td><td>14.134725141734693</td><td>1.23e-14</td><td class="status-done">✓ 0.00e+00</td></tr>
         <tr><td>2</td><td>21.022039638771556</td><td>2.45e-14</td><td class="status-done">✓ 0.00e+00</td></tr>
