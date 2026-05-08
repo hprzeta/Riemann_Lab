@@ -509,6 +509,11 @@
     .step { grid-template-columns: auto 1fr; }
     .step-stat { display: none; }
   }
+   /* Empêcher text-transform d'affecter KaTeX */
+  .katex,
+  .katex * {
+  text-transform: none !important;
+  }
 </style>
 </head>
 <body>
