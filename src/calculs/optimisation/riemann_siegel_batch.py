@@ -241,7 +241,7 @@ def scanner_batch(
     for i0 in range(0, n_total - 1, bloc):
         i1      = min(i0 + bloc + 1, n_total)
         ts_b    = t_grid[i0:i1]
-        Z_b     = Z_batch(ts_b, avec_reste=True)
+        Z_b = np.array([Z_fast(float(t), dps=25) for t in ts_b])
 
         signes   = np.sign(Z_b)
         passages = np.where(np.diff(signes) != 0)[0]

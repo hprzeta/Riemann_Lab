@@ -1,0 +1,81 @@
+=================================================================
+  JOURNAL D'EXÉCUTION — compute_zeros_v3.py
+  Projet : Hypothèse de Riemann — hprzeta
+=================================================================
+
+  [1] HORODATAGE
+      Date/heure début : 20260516_230419
+      Date/heure fin   : 20260516_234929
+      Durée totale     : 45.25 min  (2715.0s)
+
+  [2] PARAMÈTRES D'EXÉCUTION
+      T_MIN            = 14.0
+      T_MAX            = 10000.0
+      STEP (RS)        = 0.1  (adaptatif → 2π / (3·ln(T_MAX/2π)))
+      TOL_AFFINAGE     = 1e-12
+      DPS_AFFINAGE     = 35 décimales
+      N_WORKERS        = 4
+      Méthode détect.  = Riemann-Siegel (Z_RS)
+      Méthode affinage = Illinois (mpmath.findroot)
+      Validation       = Turing-Backlund (N(T))
+
+  [3] RÉSULTATS NUMÉRIQUES
+      Zéros trouvés    = 8679
+      N attendus (Weyl)= 10142
+      Vitesse moyenne  = 3.20 zéros/s
+      t₁  (1er zéro)  = 21.02203963877156
+      t_n (dernier)   = 9998.85039708967452
+      Espacement min  = 0.097620
+      Espacement max  = 12.285327
+      Espacement moy  = 1.149784
+
+  [4] VÉRIFICATION LMFDB (20 premiers zéros)
+      Score            = 0/20/20 zéros à < 10⁻¹⁰
+      #  1  calculé=21.02203963877156  écart=6.89e+00  ⚠️ 
+      #  2  calculé=25.01085758014569  écart=3.99e+00  ⚠️ 
+      #  3  calculé=30.42487612585952  écart=5.41e+00  ⚠️ 
+      #  4  calculé=32.93506158773919  écart=2.51e+00  ⚠️ 
+      #  5  calculé=37.58617815882567  écart=4.65e+00  ⚠️ 
+      #  6  calculé=40.91871901214750  écart=3.33e+00  ⚠️ 
+      #  7  calculé=43.32707328091500  écart=2.41e+00  ⚠️ 
+      #  8  calculé=48.00515088116716  écart=4.68e+00  ⚠️ 
+      #  9  calculé=49.77383247767230  écart=1.77e+00  ⚠️ 
+      # 10  calculé=52.97032147771446  écart=3.20e+00  ⚠️ 
+      # 11  calculé=56.44624769706343  écart=3.48e+00  ⚠️ 
+      # 12  calculé=59.34704400260235  écart=2.90e+00  ⚠️ 
+      # 13  calculé=60.83177852460981  écart=1.48e+00  ⚠️ 
+      # 14  calculé=65.11254404808162  écart=4.28e+00  ⚠️ 
+      # 15  calculé=67.07981052949417  écart=1.97e+00  ⚠️ 
+      # 16  calculé=69.54640171117389  écart=2.47e+00  ⚠️ 
+      # 17  calculé=72.06715767448190  écart=2.52e+00  ⚠️ 
+      # 18  calculé=75.70469069908394  écart=3.64e+00  ⚠️ 
+      # 19  calculé=77.14484006887481  écart=1.44e+00  ⚠️ 
+      # 20  calculé=79.33737502024937  écart=2.19e+00  ⚠️ 
+
+  [5] VALIDATION TURING-BACKLUND
+      Statut global    = ❌ INCOMPLET
+      Zéros manquants  = 4808
+
+               T    Calculés    Attendus     Delta  Statut
+      ──────────  ──────────  ──────────  ────────  ───────────────
+         1686.42         867        1232      +365  ❌ MANQUE 365
+         3374.43        2169        2838      +669  ❌ MANQUE 669
+         5795.56        4339        5374     +1035  ❌ MANQUE 1035
+         7961.65        6509        7786     +1277  ❌ MANQUE 1277
+         9998.85        8679       10141     +1462  ❌ MANQUE 1462
+
+  [6] FICHIERS GÉNÉRÉS
+      CSV    → calculs/v3_T10000_20260516_230419/zeros_v3_T10000_20260516_230419.csv
+      PNG    → calculs/v3_T10000_20260516_230419/zeros_v3_T10000_20260516_230419.png
+      LOG    → calculs/v3_T10000_20260516_230419/execution_v3_T10000_20260516_230419.log
+
+  [7] ENVIRONNEMENT
+      Python           = 3.12.3
+      OS               = Linux 6.17.0-29-generic
+      mpmath           = 1.3.0
+      CPU              = 4 cœurs logiques
+      RAM totale       = 8.2 GB
+
+=================================================================
+  Fin du journal — 2026-05-16 23:49:29
+=================================================================

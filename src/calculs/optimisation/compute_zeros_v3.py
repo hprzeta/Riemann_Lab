@@ -45,7 +45,7 @@ from mpmath import mp
 
 # ── Modules d'optimisation ───────────────────────────────────────────────────
 from theta_rapide      import theta_fast, Z_fast
-from riemann_siegel    import Z_RS, scanner_segment
+from riemann_siegel_batch import Z_batch
 from turing_validation import valider_turing, N_attendu
 from parallel_scanner  import calculer_zeros_parallele, dedupliquer
 
@@ -217,7 +217,7 @@ def step_adaptatif(T_MAX: float) -> float:
     """
     espacement_moyen = 2 * math.pi / math.log(T_MAX / (2 * math.pi))
     step_theorique   = espacement_moyen / 5.0
-    return min(round(step_theorique, 3), 0.10)   # plafond de sécurité absolu
+    return min(round(step_theorique, 3), 0.02)   # plafond de sécurité absolu
 
 
 def ecrire_log(

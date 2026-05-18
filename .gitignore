@@ -19,6 +19,7 @@ __init__.py
 
 # IA
 .claude
+
 # Notebooks
 .ipynb_checkpoints/
 Riemann_Lab.wiki
