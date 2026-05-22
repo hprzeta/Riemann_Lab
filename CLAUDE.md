@@ -203,3 +203,6 @@ git push origin master
    ```
 2. Fix lien PDF cassé dans le wiki + `git push origin master`
 3. Objectif 2 — Agent IA : Claude Code 101 → MCP → Subagents (Anthropic Skilljar)
+
+---
+*Dernière mise à jour : 22 mai 2026 — 208 lignes*

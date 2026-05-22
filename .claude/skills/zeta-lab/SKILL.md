@@ -178,4 +178,7 @@ Délimiteurs : `$...$` inline, `$$...$$` display — partout dans le wiki et ind
 | Odlyzko & Schönhage 1988 | https://doi.org/10.1090/S0002-9947-1988-0936813-0 |
 | Turing 1953 | https://doi.org/10.1112/plms/s3-3.1.99 |
 | Titchmarsh — Theory of ζ | https://archive.org/details/theoryofriemann00titc |
-| Rapport PDF v2→v3 | `pdf/optimisation/analyse_problemes_v2_v3_phase0_20260511-5.pdf` |
+| Rapport PDF v2→v3 | `pdf/optimisation/analyse_problemes_v2_v3_phase0.pdf` |
+
+---
+*Dernière mise à jour : 22 mai 2026 — 184 lignes*

@@ -363,3 +363,6 @@ $$
 | Validation Turing | ✅ COMPLET (aucun manquant) |
 | Méthode détection | Riemann-Siegel vectorisé (Z_batch) |
 | Méthode affinage | Illinois (35 dps, tol $10^{-12}$) |
+
+---
+*Dernière mise à jour : 22 mai 2026 — 368 lignes*

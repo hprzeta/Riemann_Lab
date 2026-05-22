@@ -483,3 +483,6 @@ Chaque étape sera suivie via **GitHub Projects** (tableau Kanban) et documenté
 
 ## 📜 Licence
 Projet de recherche personnel - hprzeta - Libre d'utilisation et de modification.
+
+---
+*Dernière mise à jour : 22 mai 2026 — 488 lignes*

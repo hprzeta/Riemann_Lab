@@ -344,3 +344,6 @@ pip install cupy-cuda12x --break-system-packages
 | `tqdm` | Barres de progression | Interface |
 | `sympy` | Exploration symbolique seulement | Hors prod. |
 | `psutil` | Monitoring CPU/RAM | Diagnostic |
+
+---
+*Dernière mise à jour : 22 mai 2026 — 349 lignes*
