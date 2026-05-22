@@ -34,7 +34,7 @@ Le projet est implémenté autour d'une solution Linux **Ubuntu 24.04.4 LTS** po
 | Intel Core i7| i7-7500U (2,7-3,5 GHz)     | ✅ OK |
  ----------------------------------------------------
 
-## 📁 Structure générale du projet Démo Zêta 
+## 📁 Structure générale du projet Démo Zêta (Arbre évolutif)
 
 ```text
 /home/riemann/
