@@ -1,184 +1,265 @@
 ---
-name: zeta-lab
-description: >
-  Laboratoire zêta de Riemann — exploration numérique, symbolique et graphique
-  de ζ(s) et de l'Hypothèse de Riemann. Se déclenche sur : "calcule les zéros",
-  "trace zeta", "vérifie cette formule", "fonction Z de Hardy", "espacement des
-  zéros", "PRNG zêta", "hypothèse de Riemann", "zêta de Riemann", "HR", "ζ(",
-  "Z(t)", "θ(t)", "Riemann-Siegel", "LMFDB", "nombres premiers",
-  "compute_zeros", "Illinois", "Turing-Backlund", "N(T)", "Phase C", "libmpfr",
-  "batch_gpu", "batch_cpu", "CuPy", "affinage", "zéros non-triviaux".
-version: 0.2.0
-date: 2026-05-19
+name: riemann-lab
+description: |
+  Assistant spécialisé pour le projet GitHub `Riemann_Lab` de hprzeta — recherche et vulgarisation autour de la fonction zêta de Riemann et de l'hypothèse de Riemann.
+
+  Utiliser ce skill dès que l'utilisateur travaille sur :
+  - Du contenu mathématique en **français** sur ζ(s), θ(t), Z(t), la fonction Xi, les zéros non-triviaux, l'HdR
+  - Du LaTeX/KaTeX destiné au **GitHub Wiki** ou à la page HTML `index.html` du projet
+  - Du **code Python** pour calculer, visualiser ou explorer ζ(s) numériquement
+  - Des **commits Git**, des messages de branches, ou du contenu pour la branche `Riemann_Lab_IA`
+  - Toute tâche liée aux fichiers du dépôt `Riemann_Lab` (docs/, wiki, index.html)
+
+  Déclencher aussi pour : rédaction de cours, formatage Markdown GFM, corrections KaTeX, animations HTML/JS, intégration iframe dans le wiki.
 ---
 
-# Zeta-Lab — Laboratoire Riemann (v0.2.0)
+# Riemann Lab Skill
 
-## État d'avancement au 19 mai 2026
+Assistant expert pour le projet **Riemann_Lab** — une initiative pédagogique et de recherche
+sur la fonction zêta de Riemann (ζ) et l'hypothèse de Riemann (HdR), développée en français.
 
-| Étape | Statut | Résultat |
-|---|---|---|
-| v1 — mpmath.zetazero() | ✅ Terminé | Preuve de concept |
-| v2 — Hardy-Z + Illinois 50 dps | ✅ Terminé | **10 142 zéros en 21h** |
-| v3 — RS + parallèle + Turing | ✅ Opérationnel | ~3.59 z/s (×5.3 vs v2) |
-| GPU GTX 960M — CuPy | ✅ Activé | bursts 30–50% (détection) |
-| Phase C — Illinois en C/libmpfr | 🔜 En cours | branche `Riemann_Lab_C` |
+---
 
-## Contexte du projet
+## 1. Contexte du projet
 
-```
-Chercheur  : hprzeta
-GitHub     : https://github.com/hprzeta/Riemann_Lab
-Branche    : Riemann_Lab_IA (Python) | Riemann_Lab_C (C/libmpfr)
-Dossier    : ~/projet_zeta/src/calculs/optimisation/
-Wiki       : ~/projet_zeta/Riemann_Lab.wiki/ (branche master)
-Python     : ~/projet_zeta/zeta_env/ (Python 3.12)
-Objectif   : 10 000 zéros non-triviaux de ζ(s) sur Re(s) = ½, puis HdR
-```
-
-## Règles de réponse
-
-- Toujours en **français**
-- Adapter le niveau : expliquer depuis la base, monter en complexité
-- Code Python exécutable et testé ; commentaires en français
-- Vérifier les résultats contre **LMFDB** quand possible
-- Signaler si un résultat est potentiellement un faux positif / erreur numérique
-- Pour le wiki : **KaTeX uniquement** — `\text{Re}` et non `\operatorname{Re}`
-- Rapports de transition vN→vN+1 : format `.md` + PDF via `pdflatex`
-
-## Stack technique
-
-```
-Python 3.12 — numpy, mpmath, scipy, matplotlib, loguru, tqdm, pandas
-GPU         — NVIDIA GTX 960M, 4 GB VRAM, CUDA 12.2 / Compute 5.0, CuPy cupy-cuda12x
-LLM locaux  — Ollama sur /mnt/data : mathstral, deepseek-coder, qwen3:4b
-Env vars    — OLLAMA_MODELS=/mnt/data/ollama, OLLAMA_CUDA=1
-```
-
-## Architecture v3 — modules opérationnels
-
-| Module | Rôle | Gain |
-|---|---|---|
-| `theta_rapide.py` | θ(t) via Stirling asymptotique | ×10 vs loggamma |
-| `riemann_siegel.py` | Z(t) formule RS | ×50 vs mpmath.zeta |
-| `riemann_siegel_batch.py` | Z(t) vectorisé NumPy/CuPy, fallback 3 niveaux | batch |
-| `parallel_scanner.py` | Multiprocessing.Pool, 4 workers | ×4 |
-| `turing_validation.py` | N(T) Turing-Backlund, complétude | validation |
-| `benchmark_15min.py` | bench `--mode cpu/batch_cpu/batch_gpu` | mesure |
-| `compute_zeros_v3.py` | Orchestrateur principal | intégration |
-
-## Benchmarks (16 mai 2026 — séquentiel, après reboot NVIDIA)
-
-| Mode | Zéros / 15 min | Vitesse | Gain vs CPU scalaire |
-|---|---|---|---|
-| CPU scalaire | ~604 | 0.67 z/s | référence |
-| **BATCH_CPU** | **3 231** | **3.59 z/s** | **×5.3** |
-| BATCH_GPU | 3 051 | 3.39 z/s | ×5.1 |
-
-**Goulot d'étranglement :** Illinois en mpmath = 80–90% du temps total.
-La GPU n'accélère que la détection Z(t) (10–20%). → Phase C : porter Illinois en C/libmpfr.
-
-## Formules critiques — NE JAMAIS SE TROMPER
-
-### N(T) — formule exacte de Riemann-von Mangoldt
-```
-N(T) = T/(2π) · ln(T/2πe)    ← le 'e' est OBLIGATOIRE
-```
-Sans `e` : erreur −28% à T=10 000, −64% à T=100 000.
-
-### STEP sécurisé (évite les zéros manquants)
-```
-STEP = min(2π / (5·ln(T_max/2π)), 0.10)
-```
-
-### Formule de Riemann-Siegel
-```
-Z(t) = 2·Σ_{n=1}^{N} cos(θ(t) − t·ln n) / √n + R(t),   N = ⌊√(t/2π)⌋
-```
-
-### θ(t) asymptotique (Stirling)
-```
-θ(t) = (t/2)·ln(t/2π) − t/2 − π/8 + 1/(48t) + 7/(5760t³) + O(t⁻⁵)
-```
-
-### Précision adaptative
-```
-Détection     : 0 dps (float64 NumPy)
-Z_fast(t)     : 35 dps (mpmath)
-Illinois final : 50 dps (mpmath)
-```
-
-## Données de référence — 10 premiers zéros
-
-| n | γ_n (LMFDB) | γ_n calculé (v2/v3) | Écart |
-|---|---|---|---|
-| 1 | 14.134725141734693 | 14.134725141734693 | < 1e-14 |
-| 2 | 21.022039638771555 | 21.022039638771556 | < 1e-14 |
-| 3 | 25.010857580145688 | 25.010857580145688 | < 1e-14 |
-| 4 | 30.424876125859513 | 30.424876125859512 | < 1e-14 |
-
-**Résultat principal :** 10 142 zéros jusqu'à T=9 998.85, méthode Hardy-Z + Illinois, 50 dps.
-
-## Workflow standard
-
-### Calcul des zéros
-```bash
-cd ~/projet_zeta/src/calculs/optimisation/
-source ~/projet_zeta/zeta_env/bin/activate
-python compute_zeros_v3.py --tmax 10000 --mode batch_cpu
-```
-
-### Validation Turing-Backlund
-```python
-from turing_validation import valider_turing, N_attendu
-N_th = N_attendu(T)  # N(T) = T/(2π)·ln(T/2πe)
-rapport = valider_turing(zeros_trouves, T)
-# Vérifier : delta = N_th - len(zeros) → MANQUE si delta>0, SURPLUS si delta<0
-```
-
-### Rapport de transition
-Avant chaque version vN→vN+1 : générer `.md` + PDF `pdflatex` avec structure :
-- Date, titre "Analyse des problèmes vN→vN+1"
-- Par problème : cause mathématique + formules + tableaux + solution
-- Tableau récapitulatif global
-- Section "Questions ouvertes"
-
-## Bibliothèques
-
-```python
-# Calcul de précision
-from mpmath import mp, zeta, siegeltheta, siegelz, zetazero
-mp.dps = 50  # 50 décimales
-
-# Vectorisation
-import numpy as np
-import cupy as cp  # GPU — vérifier cp.cuda.is_available()
-
-# Modules projet
-from theta_rapide import theta_fast, Z_fast
-from riemann_siegel_batch import Z_batch
-from turing_validation import valider_turing, N_attendu
-from parallel_scanner import calculer_zeros_parallele
-```
-
-## KaTeX (wiki GitHub)
-
-```
-❌ \operatorname{Re}   →   ✅ \text{Re}
-❌ \operatorname{Im}   →   ✅ \text{Im}
-```
-Délimiteurs : `$...$` inline, `$$...$$` display — partout dans le wiki et index.html.
-
-## Références
-
-| Ressource | Lien |
+| Élément | Valeur |
 |---|---|
-| Site projet | https://hprzeta.github.io/Riemann_Lab/ |
-| LMFDB (zéros) | https://lmfdb.org/zeros/zeta/ |
-| Odlyzko & Schönhage 1988 | https://doi.org/10.1090/S0002-9947-1988-0936813-0 |
-| Turing 1953 | https://doi.org/10.1112/plms/s3-3.1.99 |
-| Titchmarsh — Theory of ζ | https://archive.org/details/theoryofriemann00titc |
-| Rapport PDF v2→v3 | `pdf/optimisation/analyse_problemes_v2_v3_phase0.pdf` |
+| Dépôt GitHub | `hprzeta/Riemann_Lab` |
+| Branche de développement | `Riemann_Lab_IA` |
+| Branche de production | `main` |
+| Branche de test | `Riemann_Lab_Test` |
+| GitHub Pages | `/docs` sur `Riemann_Lab_IA` |
+| Fichier principal | `docs/index.html` |
+| Wiki | `Riemann_Lab.wiki.git` (dépôt séparé, branche `master`) |
+| Langue | **Français** (tout contenu, commentaires, commits) |
 
 ---
-*Dernière mise à jour : 22 mai 2026 — 184 lignes*
+
+## 2. Règles KaTeX — CRITIQUES
+
+Le projet utilise **KaTeX** (pas MathJax). Certaines commandes LaTeX standard sont bloquées.
+
+### ❌ Commandes interdites
+```
+\operatorname{Re}   →  utiliser \text{Re}
+\operatorname{Im}   →  utiliser \text{Im}
+\operatorname{...}  →  toujours remplacer par \text{...}
+\bigl\{  \bigr\}    →  utiliser \left\{  \right\}
+\bigl(  \bigr)      →  utiliser \left(  \right)
+T_{10%}             →  utiliser T_{10\%}  (% = commentaire KaTeX !)
+\left\{             →  seul sans \right\} → erreur (souvent causé par % commentaire)
+```
+
+### ⚠️ Pièges spécifiques GitHub KaTeX (découverts en production)
+
+**Piège 1 — Le `%` est un commentaire dans KaTeX**
+```
+❌  $T \in \{T_{10%}, T_{25%}\}$     % → coupe la formule ici !
+✅  $T \in \{T_{10\%}, T_{25\%}\}$   % \% = symbole pourcentage
+```
+Symptôme : erreur `Missing or unrecognized delimiter for \left` alors que
+`\left` semble correct → chercher un `%` non échappé sur la même ligne.
+
+**Piège 2 — `\bigl` / `\bigr` non reconnus**
+```
+❌  \bigl\{  \bigr\}
+✅  \left\{  \right\}   ← toujours utiliser \left / \right
+```
+
+**Piège 3 — `\left\{` sans `\right\}` sur la même ligne**
+GitHub KaTeX exige que `\left` et `\right` soient **sur la même ligne** en mode
+inline `$...$`. Si la formule s'étend sur plusieurs lignes, passer en mode display `$$...$$`.
+
+### ✅ Commandes validées
+```latex
+\text{Re}(s)        % partie réelle
+\text{Im}(s)        % partie imaginaire
+\zeta(s)            % fonction zêta
+\Gamma(s)           % fonction Gamma
+\theta(t)           % fonction thêta de Riemann-Siegel
+Z(t)                % fonction Z de Hardy
+\Xi(s)              % fonction Xi de Riemann
+\pi(x)              % comptage des nombres premiers
+\rho                % zéro non-trivial
+\sigma + it         % écriture standard de s
+```
+
+### Délimiteurs selon le contexte
+
+| Contexte | Délimiteur inline | Délimiteur display |
+|---|---|---|
+| `index.html` (auto-render) | `$...$` | `$$...$$` |
+| GitHub Wiki | `$...$` | `$$...$$` |
+| GitHub Wiki (alternative) | `` `$...$` `` en code | — |
+
+---
+
+## 3. Formatage GitHub Wiki (GFM)
+
+### Structure type d'une page wiki
+```markdown
+# Titre de la page
+
+## Introduction
+Texte en français...
+
+## Formule principale
+
+$$
+\zeta(s) = \sum_{n=1}^{\infty} \frac{1}{n^s}, \quad \text{Re}(s) > 1
+$$
+
+## Interprétation
+...
+
+## Voir aussi
+- [[Lien vers autre page wiki]]
+- [[🔬 Interprétation des résultats]]
+```
+
+### Conventions wiki
+- Noms de pages avec emojis : `🔬-Nom-de-la-page.md`
+- Liens internes : `[[Nom de la page]]`
+- Pas de `\operatorname` (bloqué par le moteur KaTeX de GitHub)
+- Images : hébergées sur la branche `Riemann_Lab_IA`, lien absolu vers `raw.githubusercontent.com`
+
+---
+
+## 4. Formatage HTML (index.html)
+
+Le fichier `docs/index.html` utilise KaTeX avec l'extension **auto-render** et les délimiteurs `$...$`.
+
+### Bannière défilante
+La bannière a son propre système de rendu KaTeX — ne pas mélanger avec l'auto-render global.
+
+```html
+<!-- Rendu KaTeX manuel pour la bannière -->
+katex.render(expression, element, { throwOnError: false });
+```
+
+### Formules dans le corps de page
+Écrire directement `$...$` ou `$$...$$` dans le HTML — l'auto-render s'en charge.
+
+```html
+<p>La fonction zêta est définie par $\zeta(s) = \sum_{n=1}^{\infty} \frac{1}{n^s}$</p>
+```
+
+---
+
+## 5. Code Python — conventions
+
+### Bibliothèques privilégiées
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from mpmath import mp, zeta, siegeltheta, siegelz, zetazero
+```
+
+### Précision numérique
+```python
+mp.dps = 50  # 50 décimales pour les calculs de haute précision
+```
+
+### Fonctions clés disponibles via mpmath
+| Fonction math | Code Python |
+|---|---|
+| ζ(s) | `zeta(s)` |
+| θ(t) | `siegeltheta(t)` |
+| Z(t) | `siegelz(t)` |
+| ρ_n (n-ième zéro) | `zetazero(n)` |
+
+### Style de code
+- Commentaires en **français**
+- Noms de variables mathématiquement significatifs (`sigma`, `t`, `s = sigma + 1j*t`)
+- Toujours vérifier la convergence / zone critique séparément
+
+### Exemple de structure standard
+```python
+import numpy as np
+import matplotlib.pyplot as plt
+from mpmath import mp, zeta, siegelz, siegeltheta
+
+mp.dps = 30  # précision
+
+def calculer_zeros(n_max: int) -> list:
+    """Calcule les n_max premiers zéros non-triviaux de ζ sur la droite critique."""
+    from mpmath import zetazero
+    return [zetazero(n) for n in range(1, n_max + 1)]
+
+def tracer_Z(t_min: float, t_max: float, points: int = 1000):
+    """Trace la fonction Z(t) de Hardy sur [t_min, t_max]."""
+    t_vals = np.linspace(t_min, t_max, points)
+    Z_vals = [float(siegelz(t)) for t in t_vals]
+    
+    plt.figure(figsize=(12, 4))
+    plt.plot(t_vals, Z_vals, 'b-', linewidth=0.8)
+    plt.axhline(0, color='r', linewidth=0.5)
+    plt.xlabel('$t$')
+    plt.ylabel('$Z(t)$')
+    plt.title('Fonction $Z(t)$ de Hardy-Littlewood')
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
+    plt.savefig('Z_function.png', dpi=150)
+    plt.show()
+```
+
+---
+
+## 6. Commits Git — Conventional Commits
+
+Toujours en **anglais** (convention), mais les messages de corps peuvent être en français.
+
+```
+feat(wiki): add page on Riemann-Siegel theta function
+fix(katex): replace \operatorname with \text in wiki pages
+docs(index): update KaTeX auto-render configuration
+style(html): fix scrolling banner rendering
+chore(git): update .gitignore for Python cache files
+```
+
+### Branches
+```bash
+git checkout Riemann_Lab_IA   # développement courant
+git checkout Riemann_Lab_Test # tests avant merge
+git checkout main             # production
+```
+
+---
+
+## 7. Références mathématiques rapides
+
+### Fonction zêta — définitions clés
+
+**Série de Dirichlet** (Re(s) > 1) :
+$$\zeta(s) = \sum_{n=1}^{\infty} \frac{1}{n^s}$$
+
+**Produit eulérien** :
+$$\zeta(s) = \prod_{p \text{ premier}} \frac{1}{1 - p^{-s}}$$
+
+**Équation fonctionnelle** :
+$$\xi(s) = \xi(1-s), \quad \xi(s) = \frac{1}{2}s(s-1)\pi^{-s/2}\Gamma\!\left(\tfrac{s}{2}\right)\zeta(s)$$
+
+**Factorisation sur la droite critique** :
+$$\zeta\!\left(\tfrac{1}{2}+it\right) = e^{-i\theta(t)} Z(t)$$
+
+**Hypothèse de Riemann** : tous les zéros non-triviaux vérifient $\text{Re}(\rho) = \frac{1}{2}$.
+
+---
+
+## 8. Références détaillées
+
+Pour des sujets plus approfondis, consulter :
+- `references/katex-cheatsheet.md` — liste complète des commandes KaTeX validées
+- `references/python-zeta.md` — recettes Python pour calculs avancés
+- `references/wiki-templates.md` — gabarits de pages wiki
+
+---
+
+## 9. Comportement attendu
+
+- Toujours répondre en **français**
+- Toujours vérifier que le LaTeX est **compatible KaTeX** avant de le proposer
+- Pour le wiki GitHub, toujours utiliser `\text{}` et non `\operatorname{}`
+- Pour le HTML, préférer les délimiteurs `$...$` / `$$...$$`
+- Pour Python, utiliser **mpmath** pour la précision numérique, NumPy/Matplotlib pour la visualisation
+- Signaler explicitement si une formule risque de ne pas s'afficher sur GitHub

@@ -190,8 +190,9 @@ git push origin master
 - **`.claude/skills/zeta-lab/references/formules_zeta.md`** — toutes les formules
 - **`.claude/skills/zeta-lab/references/bibliotheques.md`** — toutes les libs
 - LMFDB : https://lmfdb.org/zeros/zeta/
-- Titchmarsh §4.12 : https://archive.org/details/theoryofriemann00titc
-- Turing 1953 : https://doi.org/10.1112/plms/s3-3.1.99
+- Titchmarsh §4.12 : https://sites.math.rutgers.edu/~zeilberg/EM18/TitchmarshZeta.pdf
+- Turing 1953 : https://www-users.cse.umn.edu/~odlyzko/doc/turing.zeta.pdf
+- Odlyzko & Schönhage (1988) : https://www-users.cse.umn.edu/~odlyzko/doc/arch/fast.zeta.eval.pdf
 
 ---
 
