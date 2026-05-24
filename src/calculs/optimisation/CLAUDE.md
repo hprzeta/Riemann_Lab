@@ -68,25 +68,9 @@ Donné [a,b] tel que Z(a)·Z(b) < 0 :
      Sinon             : a ← c, Z(a) *= 0.5  ← correction Illinois
   3. Répéter jusqu'à |b−a| < 1e-12
 Précision cible : PREC = 170 bits (≈ 51 décimales)
-
-
-
 ```
 
 ---
-
-### Phase C — lire aussi
-- `src/calculs/optimisation/CLAUDE.md` — règles Illinois, ctypes, précision adaptative
-- `src/calculs/optimisation/c_modules/CLAUDE.md` — PREC=170, libmpfr, Makefile
-
-### Bases de référence
-- `/home/riemann/.claude/skills/zeta-lab/references/Formules_zeta.md`
-- `/home/riemann/.claude/skills/zeta-lab/references/Bibliotheques.md`
-
-### Skills actifs
-- `/home/riemann/.claude/skills/zeta-lab/SKILL.md`
-- `/home/riemann/.claude/skills/zeta-lab/SKILL_phase_c.md`
-
 
 ## Précision adaptative (règle v3 / v4)
 
@@ -165,18 +149,20 @@ git push origin Riemann_Lab_C
 Format : `.md` + PDF via `pdflatex` (même structure que `analyse_problemes_v2_v3_phase0.pdf`).
 Contenu : cause mathématique, formules, tableaux comparatifs, gains mesurés, questions ouvertes.
 
----
+## Règle de double mise à jour — OBLIGATOIRE
 
-## Mise à jour .md et skills actifs 
-   Toujours enrichir les bases de référence de Formules_zeta et Bibliotheques et les skills actifs SKILL.md  SKILL_phase_c.md suivantes pour t'améliorer 
-   avec toutes les nouvelles formules de corrections trouvées.
-   
-   - `/home/riemann/.claude/skills/zeta-lab/references/Formules_zeta.md`
-   - `/home/riemann/.claude/skills/zeta-lab/references/Bibliotheques.md`
-   - `/home/riemann/.claude/skills/zeta-lab/SKILL.md`
-   - `/home/riemann/.claude/skills/zeta-lab/SKILL_phase_c.md`
-   
-      Push github dans les dépots respectifs .
-      
+> Toujours enrichir les bases de référence et les skills actifs avec
+> toutes les nouvelles formules et corrections trouvées.
+> Pousser sur GitHub dans les dépôts respectifs après chaque mise à jour.
+
+**Fichiers à enrichir systématiquement :**
+- `/home/riemann/.claude/skills/zeta-lab/references/Formules_zeta.md`
+- `/home/riemann/.claude/skills/zeta-lab/references/Bibliotheques.md`
+- `/home/riemann/.claude/skills/zeta-lab/SKILL.md`
+- `/home/riemann/.claude/skills/zeta-lab/SKILL_phase_c.md`
+
+**Quand appliquer :** à chaque découverte de nouvelle formule, correction d'algorithme,
+ou mise à jour d'un `CLAUDE.md` → mettre à jour la correspondance dans le projet ET pousser.
+
 ---
-*Dernière mise à jour : 23 mai 2026 — 108 lignes*
+*Dernière mise à jour : 24 mai 2026 — 168 lignes*
