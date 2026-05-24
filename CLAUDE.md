@@ -20,6 +20,7 @@ GitHub: hprzeta
   └── Riemann_Lab           (main — stable)
   └── Riemann_Lab_IA        (dev — avec IA)
   └── Riemann_Lab_Test      (test — expérimentations)
+  └── Riemann_Lab_C         (dev — avec  C : (Illinois en C/libmpfr))
 ```
 
 ## Stack technique
@@ -47,6 +48,8 @@ GitHub: hprzeta
 git checkout Riemann_Lab_IA
 # Tests
 git checkout Riemann_Lab_Test
+# Développement C optimisation
+git checkout Riemann_Lab_C
 # Stable → main
 git checkout Riemann_Lab && git merge Riemann_Lab_IA
 ```
@@ -58,9 +61,23 @@ git checkout Riemann_Lab && git merge Riemann_Lab_IA
 - arXiv math.NT : état de l'art
 - SageMath docs : sagemath.org
 
+### Phase C — lire aussi
+- `src/calculs/optimisation/CLAUDE.md` — règles Illinois, ctypes, précision adaptative
+- `src/calculs/optimisation/c_modules/CLAUDE.md` — PREC=170, libmpfr, Makefile
+
+### Bases de référence
+- `/home/riemann/.claude/skills/zeta-lab/references/Formules_zeta.md`
+- `/home/riemann/.claude/skills/zeta-lab/references/Bibliotheques.md`
+
+### Skills actifs
+- `/home/riemann/.claude/skills/zeta-lab/SKILL.md`
+- `/home/riemann/.claude/skills/zeta-lab/SKILL_phase_c.md`
+
 ## Priorités actuelles
 
-1. Apprentissage progressif (débutant → intermédiaire)
+1. Apprentissage progressif (débutant → intermédiaire → Expert)
 2. Exploration numérique des zéros de zêta
 3. Construction des modules Python de base
 4. Automatisation future des tâches répétitives
+5. Toujours enrichir les bases de référence de Formules_zeta et Bibliotheques et les skills actifs SKILL.md  SKILL_phase_c.md suivantes pour t'améliorer 
+
