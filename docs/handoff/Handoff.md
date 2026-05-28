@@ -1,8 +1,7 @@
 # Riemann_Lab — Handoff
-> Dernière mise à jour : 24 mai 2026 — hprzeta  
+> Dernière mise à jour : 28 mai 2026 — hprzeta  
 > Branche active : `Riemann_Lab_IA`  
-> Branche C : `Riemann_Lab_C` (renommée depuis `phase-C-core` le 18 mai 2026)  
-> Rapport v3→v4 : `analyse_problemes_v3_v4.pdf` généré le 24 mai 2026
+> Branche C : `Riemann_Lab_C` (renommée depuis `phase-C-core` le 18 mai 2026)
 
 ---
 
@@ -188,8 +187,7 @@ calculs/v3_T{TMAX}_{date}/
 └── execution_v3_T{TMAX}_{date}.log
 
 Rapports PDF (LaTeX via pdflatex) :
-pdf/optimisation/analyse_problemes_v2_v3_phase0.pdf   ← v2→v3 (Phase 0)
-pdf/optimisation/analyse_problemes_v3_v4.pdf          ← v3→v4 (Phase C) ✅ 24 mai 2026
+pdf/optimisation/analyse_problemes_v2_v3_phase0.pdf
 ```
 
 ---
@@ -237,45 +235,129 @@ pdf/optimisation/analyse_problemes_v3_v4.pdf          ← v3→v4 (Phase C) ✅ 
 ## 🔜 Ce qui reste à faire
 
 ### Immédiat — Objectif 1 (10 000 zéros)
-- [x] ~~Finaliser le run `compute_zeros_v3` à T=10 000~~ — **10 142 zéros calculés** ✅
-- [x] ~~Valider la complétude Turing-Backlund~~ — **validé LMFDB** ✅
-- [ ] Comparer avec les tables d'Odlyzko (au-delà des 20 premiers)
+- [ ] Finaliser le run `compute_zeros_v3` à T=10 000 (🟠 en calcul)
+- [ ] Valider la complétude Turing-Backlund sur les 10 142 zéros
+- [ ] Comparer avec les tables d'Odlyzko et la base LMFDB
 - [ ] Ajouter les visualisations Python dans `/docs`
 - [ ] Compléter Partie 2 du wiki (Z(t), zéros non-triviaux)
-- [ ] Fix lien PDF cassé + push wiki (`Phase-Optimisation-_-compute_zeros_v3.md`)
+- [ ] Fix lien PDF cassé + push wiki
 
-### Phase C — Accélération Illinois (version v4)
-- [x] Architecture C définie et documentée dans `SKILL_phase_c.md`
-- [x] `CLAUDE.md` locaux générés (23 mai 2026)
-- [x] Prompt de démarrage Claude Code rédigé : `PROMPT_CLAUDE_CODE_PHASE_C.md`
-- [x] **Rapport v3→v4 généré** : `analyse_problemes_v3_v4.pdf` (14 pages, 24 mai 2026) ✅
-  - 6 problèmes documentés (P1–P6)
-  - Code C complet `illinois_mpfr.c` + Makefile + interface ctypes
-  - Projections : T=100 000 en 1.5–2.5 h après Phase C
+### Phase C — Accélération Illinois (état au 28 mai 2026)
 
-**Problèmes identifiés et documentés (v3→v4) :**
+> **Contexte de travail :** En parallèle de Claude, GPT-4.5 (via Copilot / Teams professionnel)
+> a été utilisé pour consolider l'état et produire 9 PDF de cadrage + 2 prompts opérationnels.
+> Les décisions ci-dessous résultent de cette collaboration multi-LLM.
 
-| # | Sévérité | Problème | Statut |
-|---|---|---|---|
-| P1 | 🔴 HAUTE | Illinois mpmath = 80–90 % du temps | En cours → Phase C |
-| P2 | 🔴 HAUTE | CUDA fork() invalide dans multiprocessing | En cours → v4 |
-| P3 | 🟡 MOYENNE | Contention BLAS tests concurrents (×2.1) | ✅ Résolu |
-| P4 | 🟢 FAIBLE | GPU 0 % liste nvtop (burst 50 ms < échant. 2 s) | ✅ Résolu |
-| P5 | 🟢 FAIBLE | nvtop crash Intel HD + prime-select nvidia | ✅ Résolu |
-| P6 | 🟢 FAIBLE | CLAUDE.md global écrasé accidentellement | ✅ Résolu |
+#### Ce qui est validé ✅
 
-**Prochaines actions Phase C :**
-- [ ] Vérifier prérequis : `sudo apt install libmpfr-dev libgmp-dev` + `mpfr-config --version ≥ 4.0`
-- [ ] Créer `c_modules/` et implémenter dans l'ordre :
-  1. `z_function.h / z_function.c` — θ(t) Stirling + Z(t) RS en double
-  2. `illinois_mpfr.h / illinois_mpfr.c` — Illinois en libmpfr PREC=170 bits
-  3. `Makefile` → cible `illinois_mpfr.so`
-  4. `test_illinois.py` — validation 10 premiers zéros vs LMFDB (tolérance < 1e-10)
-- [ ] Fix fork+CUDA dans `parallel_scanner.py` (init CuPy post-fork via `initializer=`)
-- [ ] Benchmark Illinois C vs Illinois mpmath sur 100 zéros → gain attendu ×5–10
-- [ ] Intégrer dans `compute_zeros_v4.py` avec fallback automatique mpmath si `.so` absent
-- [ ] Phase Arb → `python-flint`, version partielle Odlyzko-Schönhage
-- [ ] Pousser `analyse_problemes_v3_v4.pdf` dans `pdf/optimisation/` sur GitHub
+- [x] `c_modules` compile : `make clean && make` → `illinois_mpfr.so` OK
+- [x] `test_illinois.py` passe sur 10 premiers zéros **en mode hybride**
+- [x] `benchmark_illinois.py` : gain isolé C/libmpfr **×48.73** sur t≈500–638
+- [x] `compute_zeros_v4.py` tourne sur T=80, T=300, T=650
+- [x] Turing-Backlund complet sur T=80/T=300/T=650 — 0 zéro manquant
+- [x] LMFDB : 19/20 premiers zéros < 1e-10 (zéro #20 ≈ 8.06e-10)
+
+#### Problème central identifié ⚠️
+
+**`Illinois_C` pur = 0 % sur tous les runs v4.** Cause mesurée :
+
+```
+gamma_c produit par illinois_mpfr.so est éloigné du vrai zéro :
+  moyenne  |gamma_c − gamma_vrai| ≈ 9.17e-03
+  médiane  |delta|                ≈ 8.35e-03
+  max      |delta|                ≈ 2.53e-02
+  plus petit abs(Z(gamma_c))      ≈ 5.30e-04  (seuil = 1e-8 → toujours rejeté)
+```
+
+**Cause probable :** `Z_mpfr` dans `z_function.c` calcule une fonction différente de $Z(t)$
+exact (erreur dans `theta_mpfr`, signe $(-1)^{N-1}$, ou termes $C_0, C_1$).
+Illinois converge vers un zéro de cette mauvaise fonction → écart systématique ~0.01.
+
+**Règle absolue :** ne PAS assouplir le seuil 1e-8. Corriger la source du biais.
+
+#### Deux correctifs à appliquer dans l'ordre 🔜
+
+**Étape 1 — Voie B / v5 : corriger le biais Z_mpfr (prérequis mathématique)**
+
+> Prompt opérationnel : `src/ia/prompts/prompt_claude_code_phase_c_voie_b_v5.md`  
+> (aussi dans le wiki sous `PROMPT_CLAUDE_CODE_PHASE_C.md`)
+
+- [ ] Créer `diagnostic_zmpfr_vs_mpmath.py` → CSV comparatif :
+      `t, Z_double, Z_mpfr, mpmath_siegelz, abs_diff, gamma_c, gamma_true, delta_gamma`
+- [ ] Auditer `z_function.c` : `theta_double`, `theta_mpfr`, signe `(-1)^(N-1)`, termes RS C0+C1
+- [ ] Créer `compute_zeros_v5.py` / `z_function_v2.c` expérimental (sans casser v4)
+- [ ] Critère : `abs(Z(gamma_c)) < 1e-8` sur proportion significative → Illinois_C pur > 0 %
+
+**Étape 2 — v4.1 : corriger l'architecture (après validation voie B)**
+
+> Prompt opérationnel : `src/ia/prompts/PROMPT_CLAUDE_CODE_V4_INTEGRATION.md`
+
+5 erreurs architecturales identifiées dans v4 à corriger dans `compute_zeros_v4_1.py` :
+
+| Erreur | Impact | Correction |
+|---|---|---|
+| Détection via `mpmath.siegelz` | ×50 lenteur | → `Z_batch()` partout |
+| Parallélisme abandonné | ×4 lenteur | → `calculer_zeros_parallele()` 4 workers |
+| `Z_double` du .so en détection | faux fallbacks | → ne charger que `illinois_mpfr` |
+| Fallback mpmath sur tout le domaine | Illinois_C→mpmath à 100% | → seuil `T_SEUIL = 300.0` |
+| `.so` absent → dégradation silencieuse | bugs invisibles | → `raise FileNotFoundError` |
+
+**Seuil mathématiquement justifié :**
+$$N = \lfloor\sqrt{t/2\pi}\rfloor \implies t < 300 \Rightarrow N < 7 \text{ termes (imprécis)}, \quad t \geq 300 \Rightarrow N \geq 7 \text{ (fiable)}$$
+
+Répartition attendue sur T=10 000 :
+```
+illinois_C      : ~10 055 zéros (99%)  — gain ×39
+mpmath_petit_t  :     ~87 zéros  (<1%) — t < 300, légitime
+mpmath_fallback :       ~0 zéros  (0%) — ne doit pas apparaître
+```
+
+#### Prompt combiné à donner à Claude Code
+
+```
+Lis src/ia/prompts/prompt_claude_code_phase_c_voie_b_v5.md.
+Travaille uniquement sur la branche Riemann_Lab_C.
+Ne casse pas compute_zeros_v4.py validé.
+
+Phase 1 (voie B) :
+  Crée diagnostic_zmpfr_vs_mpmath.py, audite z_function.c,
+  propose un patch v5 pour réduire le biais Z_mpfr vs mpmath.siegelz.
+
+Phase 2 (v4.1) — seulement si Phase 1 valide (Illinois_C pur > 0%) :
+  Applique les 5 corrections architecturales de PROMPT_CLAUDE_CODE_V4_INTEGRATION.md :
+  - Détection via Z_batch() partout (interdit : mpmath.siegelz en détection)
+  - Parallélisme 4 workers (parallel_scanner.py)
+  - Seuil T_SEUIL_ILLINOIS_C = 300.0 (mathématiquement justifié)
+  - Arrêt immédiat si .so absent
+  - Créer compute_zeros_v4_1.py (ne pas modifier v4.py)
+
+Critères de succès : 20/20 LMFDB < 1e-10, Turing complet, Illinois_C pur > 50%.
+```
+
+#### Critères de succès avant T=10 000
+
+1. `make clean && make` OK
+2. `test_illinois.py` OK (10/10)
+3. `benchmark_illinois.py` OK
+4. `Illinois_C` pur > 0 % sur run T=650
+5. Turing-Backlund complet
+6. LMFDB 20/20 < 1e-10
+7. Puis T=1000, **ensuite seulement T=10 000**
+
+#### 9 PDF de cadrage produits (session GPT-4.5 / Copilot)
+
+| PDF | Thème | Message clé |
+|---|---|---|
+| 01 | Cartographie diagnostic | Conserver l'historique, ne pas repartir de zéro |
+| 02 | Migration / Brain Vault / RAG | Structure hprzeta-lab, recovery, données validées |
+| 03 | Checklist Linux avant migration | Linux, Git, GPU, Python, Ollama, partitions |
+| 04 | Scripts post-audit | Extraction légère archive audit, mini-audit Git |
+| 05 | Complément Git / priorités | Branches confirmées, Riemann_Lab_C contient c_modules |
+| 06 | Lexique IA & Brain Vault | Vault, RAG, Skills, agents, grounding, provenance |
+| 07 | Pavé primalité | Nombres premiers, produit eulérien, ψ(x), formule explicite |
+| 08 | CryptoZeta | RSA, ECC, post-quantique, hash, recovery |
+| 09 | Synthèse journée Phase C v4 voie B | v4 hybride validé T=650 ; Illinois C pur non validé |
+| 10 | Résumé 9 PDF + prompt v5 | Passerelle → Claude Code voie B/v5 |
 
 ### Objectif 2 — Agent IA autonome
 - [ ] Cours Anthropic Skilljar : Claude Code 101 → Claude Code in Action (intégration `~/projet_zeta/src/`)
@@ -531,7 +613,6 @@ Délimiteurs : `$...$` inline, `$$...$$` display — dans `index.html` ET le wik
 | Site du projet | https://hprzeta.github.io/Riemann_Lab/ |
 | Code source | https://github.com/hprzeta/Riemann_Lab/tree/Riemann_Lab_IA/src |
 | Rapport PDF v2→v3 | `pdf/optimisation/analyse_problemes_v2_v3_phase0.pdf` |
-| **Rapport PDF v3→v4** | **`pdf/optimisation/analyse_problemes_v3_v4.pdf`** ← ✅ 24 mai 2026 |
 | LMFDB (tables de référence) | https://lmfdb.org/zeros/zeta/ |
 | Odlyzko & Schönhage 1988 | https://doi.org/10.1090/S0002-9947-1988-0936813-0 |
 | Turing 1953 | https://doi.org/10.1112/plms/s3-3.1.99 |
@@ -541,64 +622,43 @@ Délimiteurs : `$...$` inline, `$$...$$` display — dans `index.html` ET le wik
 
 ## 🚀 Prochaine session — reprendre ici
 
-> **État au 24 mai 2026 :**
-> 10 142 zéros calculés et validés (T ≈ 9 998.85) sur `zeros_zeta_T10000_20260424_205325.csv`.
-> Rapport v3→v4 généré : `analyse_problemes_v3_v4.pdf` (14 pages, 24 mai 2026).
-> 6 problèmes P1–P6 documentés — P3/P4/P5/P6 résolus, P1/P2 en cours (Phase C).
-> Stack Ollama : 3 modèles installés sur `/mnt/data` (mathstral, deepseek-coder, qwen3:4b).
-> `.bashrc` validé : `OLLAMA_MODELS` + `OLLAMA_CUDA=1` + tous les alias `zeta-*`.
-> Branches Git : convention `Riemann_Lab_*` — `Riemann_Lab_C` prête pour la Phase C.
-> **CLAUDE.md corrigé** : global `~/.claude/CLAUDE.md` séparé du projet `~/projet_zeta/CLAUDE.md`.
-> Prompt Phase C prêt : `PROMPT_CLAUDE_CODE_PHASE_C.md`.
+> **État au 28 mai 2026 :**
+> - `compute_zeros_v4.py` validé sur T=80/T=300/T=650, Illinois_C→mpmath à 100%
+> - Biais `Z_mpfr` identifié et mesuré (delta moyen ~9e-3)
+> - 9 PDF + 2 prompts opérationnels produits avec GPT-4.5 (Copilot/Teams)
+> - Rapport de synthèse Claude : voie B/v5 en prérequis de v4.1
+> - Fichiers prompts disponibles dans `src/ia/prompts/` sur branche `Riemann_Lab_C`
 
 **Reprendre avec :**
 
-1. ✅ Déployer les 4 `CLAUDE.md` (téléchargés depuis Claude.ai le 23 mai) :
-   ```bash
-   cp CLAUDE_global_dot-claude.md ~/.claude/CLAUDE.md
-   cp CLAUDE_projet_zeta.md ~/projet_zeta/CLAUDE.md
-   cp CLAUDE_optimisation.md ~/projet_zeta/src/calculs/optimisation/CLAUDE.md
-   mkdir -p ~/projet_zeta/src/calculs/optimisation/c_modules/
-   cp CLAUDE_c_modules.md ~/projet_zeta/src/calculs/optimisation/c_modules/CLAUDE.md
-   ```
-
-2. Pousser le rapport v3→v4 sur GitHub :
-   ```bash
-   cp analyse_problemes_v3_v4.pdf ~/projet_zeta/pdf/optimisation/
-   cd ~/projet_zeta
-   git checkout Riemann_Lab_IA
-   git add pdf/optimisation/analyse_problemes_v3_v4.pdf
-   git commit -m "docs(pdf): add v3->v4 analysis report - Phase C Illinois C/libmpfr"
-   git push origin Riemann_Lab_IA
-   ```
-
-3. Vérifier prérequis Phase C et démarrer :
-   ```bash
-   mpfr-config --version   # doit retourner >= 4.0
-   gcc --version
-   git checkout Riemann_Lab_C
-   cd ~/projet_zeta/src/calculs/optimisation/c_modules/
-   # Implémenter illinois_mpfr.c (voir SKILL_phase_c.md + rapport v3→v4)
-   ```
-
-4. Lancer Claude Code avec le prompt Phase C :
+1. **Lancer la Phase C voie B sur Claude Code** (priorité absolue) :
    ```bash
    cd ~/projet_zeta/
    source zeta_env/bin/activate
    git checkout Riemann_Lab_C
    claude
-   # Coller le contenu de PROMPT_CLAUDE_CODE_PHASE_C.md
+   # → coller le prompt combiné ci-dessus (section Phase C)
    ```
 
-5. Fix wiki :
-   - Corriger lien PDF dans `Phase-Optimisation-_-compute_zeros_v3.md` → pointer vers `analyse_problemes_v3_v4.pdf`
-   - `git push wiki` (branche `master`)
+2. **Vérifier que les prompts sont bien en place** sur la branche `Riemann_Lab_C` :
+   ```bash
+   ls src/ia/prompts/
+   # doit contenir :
+   # prompt_claude_code_phase_c_voie_b_v5.md
+   # PROMPT_CLAUDE_CODE_V4_INTEGRATION.md
+   ```
 
-6. `ollama pull deepseek-math:7b` + `ollama pull phi3:mini` — compléter la stack LLM
+3. **Rapport v3→v4** — à générer APRÈS validation Illinois_C pur :
+   Format : `.md` + PDF via `pdflatex` (même structure que `analyse_problemes_v2_v3_phase0.pdf`)  
+   Chemin : `pdf/optimisation/analyse_problemes_v3_v4.pdf`
 
-7. Connecter MCP **Context7** dans Claude Code avant de démarrer la Phase C
+4. **Fix wiki** : corriger lien PDF cassé dans `Phase-Optimisation-_-compute_zeros_v3.md` + `git push wiki`
+
+5. `ollama pull deepseek-math:7b` + `ollama pull phi3:mini` — compléter la stack LLM
+
+6. Connecter MCP **Context7** dans Claude Code avant de démarrer
 
 <!-- Mettre à jour cette section avant de fermer Claude -->
 
 ---
-*Dernière mise à jour : 24 mai 2026 — 604 lignes*
+*Dernière mise à jour : 28 mai 2026 — 664 lignes*
