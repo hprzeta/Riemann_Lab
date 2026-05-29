@@ -195,3 +195,64 @@ double illinois_mpfr(double a_d, double b_d, double tol) {
 
     return result;
 }
+
+/* =========================================================================
+ * illinois_mpfr_cb — Illinois en double avec callback Python pour Z(t)
+ *
+ * Voie B : élimine le biais RS C0+C1 (~1e-3) en remplaçant Z_mpfr par
+ * un callback fourni par Python = float(mpmath.siegelz(t)).
+ *
+ * Arithmétique en double (pas mpfr) : le callback retourne déjà ~35 dps
+ * converti en double (15-17 chiffres significatifs). Illinois en double
+ * est suffisant pour atteindre |b−a| < 1e-12 sur les vrais zéros.
+ *
+ * Entrée : a_d, b_d — bornes de l'intervalle (zfunc(a)*zfunc(b) < 0)
+ * Entrée : tol      — tolérance sur |b−a|
+ * Entrée : zfunc    — pointeur de fonction Python (ctypes.CFUNCTYPE)
+ * Sortie : double — partie imaginaire du zéro, précision ~1e-14
+ * ========================================================================= */
+double illinois_mpfr_cb(double a_d, double b_d, double tol, z_func_t zfunc) {
+    double a  = a_d, b = b_d;
+    double Za = zfunc(a);            /* évaluation initiale via callback Python */
+    double Zb = zfunc(b);
+
+    /* vérification du changement de signe — précondition de l'algorithme */
+    if (Za * Zb >= 0.0) return (a + b) / 2.0;
+
+    /* cas dégénéré : une borne est déjà quasi-zéro.
+     * La sécante déplace c de seulement |Zi|/|Zj| * (b-a) → stagnation garantie.
+     * Exemple : |Za| < 1e-11 * |Zb| → a est ~10¹¹x plus proche du zéro que b.
+     * Retourner directement la meilleure borne évite 100 appels Python inutiles. */
+    double abs_Za = fabs(Za), abs_Zb = fabs(Zb);
+    if (abs_Za < abs_Zb * 1e-10) return a;   /* a est quasi-le-zéro */
+    if (abs_Zb < abs_Za * 1e-10) return b;   /* b est quasi-le-zéro */
+
+    for (int iter = 0; iter < MAX_ITER; iter++) {
+        /* critère d'arrêt : intervalle plus petit que la tolérance */
+        if (fabs(b - a) < tol) break;
+
+        double den = Zb - Za;
+        if (fabs(den) < 1e-300) break;              /* sécurité : dénominateur nul */
+
+        /* sécante : c = b − Z(b)·(b−a)/(Z(b)−Z(a)) */
+        double c  = b - Zb * (b - a) / den;
+        double Zc = zfunc(c);                        /* appel callback Python */
+
+        /* mise à jour de l'intervalle */
+        if (Za * Zc < 0.0) {
+            /* zéro dans [a, c] : b ← c */
+            b  = c;
+            Zb = Zc;
+        } else {
+            /* zéro dans [c, b] : a ← c + correction Illinois (Za *= 0.5)
+             * Cette correction évite la stagnation quand le même côté est
+             * choisi plusieurs fois — heuristique éprouvée (Dowell 1971) */
+            a  = c;
+            Za = Zc;
+            Za *= 0.5;
+        }
+    }
+
+    /* retourner la borne avec le plus petit résidu (plus robuste que le milieu) */
+    return (fabs(Za) < fabs(Zb)) ? a : b;
+}
