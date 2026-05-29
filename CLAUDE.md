@@ -1,5 +1,5 @@
 # Riemann_Lab — Instructions pour Claude
-> Mis à jour : **24 mai 2026** — Phase C en cours ✅
+> Mis à jour : **29 mai 2026** — Phase C Voie B validée ✅
 
 ---
 
@@ -13,7 +13,7 @@ Long terme : agent IA autonome de recherche mathématique (Objectif 2).
 
 ---
 
-## État actuel — Phase C en cours 🔧
+## État actuel — Phase C Voie B validée ✅
 
 | Jalon | Valeur |
 |---|---|
@@ -22,8 +22,62 @@ Long terme : agent IA autonome de recherche mathématique (Objectif 2).
 | Durée v3 | 2h46min (×7.6 vs v2 qui durait 21h) |
 | Validation Turing | ✅ COMPLET — 0 zéro manquant |
 | LMFDB | ✅ 19/20 zéros à < 10⁻¹⁰ |
-| Phase C | 🔧 `illinois_mpfr.c` compilé ✅ — test validation en cours |
+| Phase C Voie B | ✅ `compute_zeros_v5.py` — Illinois_C pur 100% |
+| Commit voie B | `b8018c0` — poussé sur `Riemann_Lab_C` |
 | Branche active | `Riemann_Lab_C` |
+
+### Fichiers Phase C validés (commit b8018c0)
+- `compute_zeros_v5.py` — orchestrateur v5, wrapper mpmath.siegelz
+- `illinois_mpfr.c/.h` — modifiés, callback Python/C `illinois_mpfr_cb`
+- `illinois_pyZ.py` — wrapper Python pour Z_mpfr via mpmath.siegelz
+- `test_illinois_v5.py` — validation Voie B (20/20 convergences)
+- `docs/phase_c_voie_b_v5_plan.md` — rapport livrable
+
+### Résultats validés Voie B
+```
+Run T=80  : Illinois_C pur 100%, Turing COMPLET, LMFDB 19/20, 25.8s
+Run T=300 : Illinois_C pur 100%, Turing COMPLET, LMFDB 19/20, 138/138 zéros
+biais Z   : < 1e-13 (vs ~9e-3 avant voie B)
+```
+
+### Goulot identifié
+`mpmath.siegelz` en détection séquentielle → ~311ms/pas pour t > 3000.
+Run T=650 complet ~30 min. → Résolu par v4.1 (Z_batch vectorisé).
+
+---
+
+## 🤖 Gestion autonome du contexte — RÈGLES OBLIGATOIRES
+
+Claude Code surveille en permanence le pourcentage affiché en bas :
+`XX% · YYmin restantes · ZZ% until auto-compact`
+
+| Seuil | Action automatique SANS attendre d'instruction |
+|---|---|
+| **50%** | `git add -A && git commit -m "wip: checkpoint auto [description]"` |
+| **70%** | `git push origin [branche]` + créer `docs/session_checkpoint_YYYYMMDD.md` |
+| **80%** | Arrêt complet — ne plus lancer de nouvelles tâches |
+| **"11% until auto-compact"** | STOP immédiat — push + rapport court + exit |
+
+### Règle auto-compact
+**Auto-compact** = Claude Code résume automatiquement l'historique quand le contexte
+est plein. Ce résumé est imparfait → risque d'oublier des contraintes ou répéter du travail.
+→ Toujours committer et pousser AVANT d'atteindre auto-compact.
+
+### Règle des runs longs
+- Ne jamais lancer un run > T=300 si le contexte dépasse 40%
+- Ne jamais lancer T=10000 dans la même session qu'un gros développement
+- Préférer plusieurs petites sessions plutôt qu'une longue session à risque
+
+### Checkpoint automatique (format)
+```bash
+git add -A
+git commit -m "wip: checkpoint auto $(date +%H%M) — [ce qui est fait]"
+git push origin Riemann_Lab_C
+```
+Puis créer `docs/session_checkpoint_YYYYMMDD_HHMM.md` :
+- ce qui est fait
+- ce qui reste à faire
+- commande exacte pour reprendre
 
 ---
 
@@ -80,7 +134,6 @@ Z(t) = cos(θ)·Re[ζ(½+it)] − sin(θ)·Im[ζ(½+it)]    ← 1 seul appel zet
 findroot(lambda x: Z_fast(float(x), dps=35), (t_a, t_b),
          solver="illinois", tol=1e-12, maxsteps=80)
 ```
-`tol=1e-12` cohérent avec 35 dps. `tol=1e-20` à 35 dps = IMPOSSIBLE.
 
 ### Précision adaptative (règle v3)
 | Opération | dps |
@@ -96,6 +149,18 @@ plt.savefig("fichier.png", dpi=150)
 plt.close()    # TOUJOURS — jamais plt.show() en production (bloquant)
 ```
 
+### Seuil Illinois C (voie B)
+```python
+T_SEUIL_ILLINOIS_C = 300.0
+# t < 300  → N < 7 termes RS → mpmath fallback légitime (~87 zéros sur 10142)
+# t ≥ 300  → N ≥ 7 termes RS → Illinois C pur fiable
+```
+
+### Z_mpfr — leçon voie B (29 mai 2026)
+Le biais Z_mpfr (~1e-3) n'est PAS un bug de code — c'est une limitation RS :
+RS tronqué à C0+C1 → précision max ~1e-3. Solution : wrapper mpmath.siegelz.
+`mpc_zeta` est ABSENT dans libmpc 1.3.1 — ne pas chercher à l'utiliser.
+
 ---
 
 ## Structure du projet
@@ -104,53 +169,50 @@ plt.close()    # TOUJOURS — jamais plt.show() en production (bloquant)
 /home/riemann/projet_zeta/
 ├── zeta_env/                         # venv Python 3.12
 ├── src/calculs/optimisation/         # code production
-│   ├── compute_zeros_v3.py           # orchestrateur principal ✅
+│   ├── compute_zeros_v3.py           # orchestrateur Phase 0 ✅
+│   ├── compute_zeros_v4.py           # Phase C hybride ✅ (NE PAS MODIFIER)
+│   ├── compute_zeros_v5.py           # Phase C Voie B ✅ (Illinois_C pur 100%)
 │   ├── theta_rapide.py               # θ(t) Stirling
 │   ├── riemann_siegel_batch.py       # Z(t) vectorisé numpy/CuPy
 │   ├── parallel_scanner.py           # 4 workers multiprocessing
 │   ├── turing_validation.py          # N(T) Backlund
-│   ├── benchmark_15min.py
-│   └── c_modules/                    # Phase C ← NOUVEAU
+│   └── c_modules/                    # Phase C
 │       ├── illinois_mpfr.c           # Illinois en libmpfr PREC=170 ✅
 │       ├── illinois_mpfr.h
-│       ├── illinois_mpfr.so          # compilé ✅ (zéro warning)
+│       ├── illinois_mpfr.so          # compilé ✅
+│       ├── illinois_pyZ.py           # wrapper Python Z_mpfr → mpmath ✅
 │       ├── z_function.c              # θ(t) + Z(t) en double
 │       ├── z_function.h
+│       ├── test_illinois_v5.py       # validation Voie B 20/20 ✅
 │       ├── Makefile
-│       ├── test_illinois.py          # validation en cours
 │       └── CLAUDE.md                 # règles C locales
-├── calculs/v3_T10000_20260521_133316/  # outputs Phase 0
-│   ├── zeros_v3_T10000_20260521_133316.csv   # 10 142 zéros
-│   ├── zeros_v3_T10000_20260521_133316.png
-│   └── execution_v3_T10000_20260521_133316.log
-├── .mcp.json                         # MCP GitHub connecté (26 tools)
+├── src/ia/prompts/                   # prompts Claude Code
+│   ├── prompt_claude_code_phase_c_voie_b_v5.md
+│   └── PROMPT_CLAUDE_CODE_V4_INTEGRATION.md
+├── docs/
+│   ├── phase_c_voie_b_v5_plan.md    # rapport Voie B ✅
+│   └── handoff/Handoff.md           # état projet (aussi dans wiki)
+├── .mcp.json                         # MCP GitHub connecté
 ├── CLAUDE.md                         # ce fichier ⭐
 └── Riemann_Lab.wiki/                 # wiki cloné (branche master)
-
-GitHub : hprzeta/Riemann_Lab
-  ├── Riemann_Lab_IA    ← Python, wiki, docs ⭐
-  ├── Riemann_Lab_C     ← Phase C (Illinois en C) ← ACTIF
-  ├── Riemann_Lab_Test  ← expérimentations
-  └── main              ← production stable
 ```
 
 ---
 
-## Stack technique RÉELLE
+## Stack technique
 
 | Lib | Usage | Note |
 |---|---|---|
 | `mpmath` | zêta haute précision, Illinois, loggamma | Cœur du calcul |
 | `numpy` | Z(t) vectorisé, phases RS, détection signes | CPU batch |
 | `cupy` | Z(t) GPU (GTX 960M, CUDA 12.2) | `cupy-cuda12x` |
-| `multiprocessing` | 4 workers (pas joblib — incompatible GMP) | Fork-safe |
-| `pandas` | sauvegarde/chargement CSV zéros | I/O |
-| `matplotlib` | Z(t), espacements, droite critique | Visualisation |
-| `loguru` | journal d'exécution | Logging |
-| `tqdm` | barres de progression | Interface |
+| `multiprocessing` | 4 workers (pas joblib) | Fork-safe |
+| `libmpfr` | PREC=170 bits dans illinois_mpfr.c | Phase C |
+| `libmpc` | installé v1.3.1 — `mpc_zeta` ABSENT | Ne pas utiliser |
 
 > **⚠️ Exclu :** SageMath, outils propriétaires.
-> **⚠️ Ne pas utiliser joblib avec mpmath** — GMP a un état global non thread-safe → corruption mémoire.
+> **⚠️ Ne pas utiliser joblib avec mpmath** — GMP non thread-safe.
+> **⚠️ mpc_zeta absent** dans libmpc 1.3.1 — utiliser wrapper mpmath.
 
 ---
 
@@ -160,89 +222,63 @@ GitHub : hprzeta/Riemann_Lab
 |---|---|
 | CPU | Intel i7, 4 cœurs |
 | RAM | 8 GB + 16 GB swap |
-| GPU calcul | NVIDIA GeForce GTX 960M — 4 GB VRAM, CUDA 12.2, Compute 5.0 |
-| GPU affichage | Intel HD Graphics 620 |
+| GPU | NVIDIA GTX 960M — 4 GB VRAM, CUDA 12.2 |
 
 **Activation GPU :** `sudo prime-select nvidia && sudo reboot`
-**nvtop :** lire le graphe historique du haut (fiable) — pas la colonne GPU% par processus (bursts 50ms invisibles à 2s d'échantillonnage).
-**CUDA + fork :** `cudaErrorInitializationError` dans les workers = comportement attendu → bascule CPU numpy automatique.
 
 ---
 
 ## Workflow Git
 
 ```bash
-# Activation environnement
 source ~/projet_zeta/zeta_env/bin/activate
 export PYTHONPATH="${PYTHONPATH}:${HOME}/projet_zeta/src"
 
 # Branches
 git checkout Riemann_Lab_IA    # Python, wiki, docs ⭐
-git checkout Riemann_Lab_C     # Module C, libmpfr
-git checkout Riemann_Lab_Test  # Tests ponctuels
+git checkout Riemann_Lab_C     # Phase C (Illinois en C) ← ACTIF
 
-# Convention commits (Conventional Commits — messages en anglais)
-git commit -m "feat(phase0): ..."
-git commit -m "fix(katex): ..."
-git commit -m "docs(wiki): ..."
-
-# Wiki (dépôt séparé)
+# Wiki (dépôt séparé — TOUS les .md vont ici)
 cd ~/projet_zeta/Riemann_Lab.wiki/
 git push origin master
+
+# Convention commits
+git commit -m "feat(phase-c): ..."
+git commit -m "fix(z_function): ..."
+git commit -m "docs(handoff): ..."
+git commit -m "wip: checkpoint auto HHMM — [description]"
 ```
+
+⚠️ **Handoff.md ne va JAMAIS dans le repo principal** — wiki uniquement.
 
 ---
 
 ## Fichiers de contexte complémentaires
 
-> Claude Code lit ce fichier en premier. Les fichiers ci-dessous sont des ressources
-> complémentaires à lire selon le contexte actif.
-
-### Phase C — lire aussi
-- `src/calculs/optimisation/CLAUDE.md` — règles Illinois, ctypes, précision adaptative, workflow Git
-- `src/calculs/optimisation/c_modules/CLAUDE.md` — PREC=170, libmpfr, Makefile, gestion mémoire
-
-### Bases de formules et librairies
-- `/home/riemann/.claude/skills/zeta-lab/references/Formules_zeta.md`
-- `/home/riemann/.claude/skills/zeta-lab/references/Bibliotheques.md`
-
-### Skills actifs
-- `/home/riemann/.claude/skills/zeta-lab/SKILL.md` — skill principal zêta
-- `/home/riemann/.claude/skills/zeta-lab/SKILL_phase_c.md` — skill Phase C (libmpfr, Illinois C)
-- `/home/riemann/.claude/skills/code-review/SKILL.md` — audit code C/Python
-- `/home/riemann/.claude/skills/security-review/SKILL.md` — sécurité ctypes/.so
-
-### Configuration Claude Code (23 mai 2026)
-- MCP GitHub : `~/projet_zeta/.mcp.json` → `@modelcontextprotocol/server-github` (26 tools)
-- Context7 : installé via `/plugin install context7@claude-plugins-official`
-- SSH remote : `git@github.com:hprzeta/Riemann_Lab.git`
-- Token MCP : `claude-code-mcp-github` (fine-grained, expire 21 août 2026)
+- `src/calculs/optimisation/CLAUDE.md` — règles Illinois, ctypes, précision
+- `src/calculs/optimisation/c_modules/CLAUDE.md` — PREC=170, libmpfr, Makefile
+- `Riemann_Lab.wiki/Handoff.md` — état complet session par session ⭐
+- `Riemann_Lab.wiki/Bonnes-Pratiques-Claude-Code.md` — guide gestion tokens
 
 ---
 
-## Références indispensables
+## Références
 
-- **`handoff.md`** dans le wiki — état complet du projet session par session
-- **`.claude/skills/zeta-lab/references/formules_zeta.md`** — toutes les formules
-- **`.claude/skills/zeta-lab/references/bibliotheques.md`** — toutes les libs
 - LMFDB : https://lmfdb.org/zeros/zeta/
 - Titchmarsh §4.12 : https://sites.math.rutgers.edu/~zeilberg/EM18/TitchmarshZeta.pdf
 - Turing 1953 : https://www-users.cse.umn.edu/~odlyzko/doc/turing.zeta.pdf
-- Odlyzko & Schönhage (1988) : https://www-users.cse.umn.edu/~odlyzko/doc/arch/fast.zeta.eval.pdf
 
 ---
 
 ## Prochaines priorités
 
-1. **Phase C** — finaliser `test_illinois.py` avec `mpmath.siegelz` (Option B)
-   - Détection : `mpmath.siegelz` → intervalles garantis
-   - Affinage : `illinois_mpfr` C → précision 170 bits
-   - Objectif : ≥ 9/10 zéros validés vs LMFDB à < 1e-10
-2. **Benchmark** — Illinois C vs `mpmath.findroot` sur 100 zéros → gain ×5–10
-3. **compute_zeros_v4.py** — intégrer `illinois_c` avec fallback mpmath
-4. **Rapport v3→v4** — `.md` + PDF via `pdflatex`
-5. Fix lien PDF cassé dans le wiki + `git push origin master`
-6. Objectif 2 — Agent IA : Claude Code 101 → MCP → Subagents (Anthropic Skilljar)
+1. **v4.1** — combiner Z_batch (détection) + illinois_mpfr_cb (affinage) + 4 workers
+   - Prompt : `src/ia/prompts/PROMPT_CLAUDE_CODE_V4_INTEGRATION.md`
+   - Objectif : > 5 z/s (vs ~1 z/s en v5 séquentiel)
+2. **Run T=650** avec v4.1 → puis T=1000 → puis T=10000
+3. **Rapport v3→v4** — `.md` + PDF via `pdflatex`
+4. Fix lien PDF cassé dans le wiki + `git push origin master`
+5. **Objectif 2** — Agent IA : MCP + Subagents
 
 ---
-*Dernière mise à jour : 24 mai 2026 — 248 lignes*
+*Dernière mise à jour : 29 mai 2026 — 284 lignes*
