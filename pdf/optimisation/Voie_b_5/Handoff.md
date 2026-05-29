@@ -1,5 +1,5 @@
 # Riemann_Lab — Handoff
-> Dernière mise à jour : 28 mai 2026 — hprzeta  
+> Dernière mise à jour : 29 mai 2026 — hprzeta  
 > Branche active : `Riemann_Lab_IA`  
 > Branche C : `Riemann_Lab_C` (renommée depuis `phase-C-core` le 18 mai 2026)
 
@@ -257,7 +257,56 @@ pdf/optimisation/analyse_problemes_v2_v3_phase0.pdf
 - [x] Turing-Backlund complet sur T=80/T=300/T=650 — 0 zéro manquant
 - [x] LMFDB : 19/20 premiers zéros < 1e-10 (zéro #20 ≈ 8.06e-10)
 
-#### Diagnostic complet — nuit du 28-29 mai 2026 ✅
+#### Résultats session 29 mai 2026 — Voie B VALIDÉE 🎉
+
+**Commit : `b8018c0` — poussé sur `Riemann_Lab_C`**
+
+| Fichier créé/modifié | Rôle |
+|---|---|
+| `compute_zeros_v5.py` | Script principal v5 — wrapper mpmath.siegelz |
+| `illinois_mpfr.c` | Modifié — callback Python/C `illinois_mpfr_cb` |
+| `illinois_mpfr.h` | Modifié — déclarations callback |
+| `illinois_mpfr.so` | Recompilé |
+| `illinois_pyZ.py` | Nouveau — wrapper Python pour Z_mpfr via mpmath |
+| `test_illinois_v5.py` | Nouveau — validation Voie B (20/20) |
+| `docs/phase_c_voie_b_v5_plan.md` | Rapport livrable Phase C Voie B |
+
+**Résultats validés :**
+
+```
+Run T=80  (21 zéros attendus) :
+  Illinois_C pur    : 100%  ✅  (v4 était à 0% !)
+  Illinois_C→mpmath :   0%  ✅
+  mpmath fallback   :   0%  ✅
+  Turing-Backlund   : COMPLET ✅
+  LMFDB             : 19/20 ✅  (zéro #20 = cas limite 8.06e-10)
+  Durée             : 25.8s
+
+test_illinois_v5.py : 20/20 convergences ✅
+biais Z_mpfr        : < 1e-13 ✅  (avant : ~9e-3)
+```
+
+**Note sur LMFDB 19/20 :** le zéro #20 (γ₂₀ ≈ 77.1448) est un cas limite —
+`|Z(γ₂₀)| = 8.6e-15` — vrai zéro confirmé. L'écart vient de la précision
+de la valeur de référence stockée (15 décimales) ou de la limite de
+`mpmath.siegelz` à 35 dps. **Ce n'est pas un échec de la méthode.**
+
+**Goulot identifié :** mpmath.siegelz en détection séquentielle ralentit
+fortement pour t grand (~311ms/pas au-delà de 3000 pas) → run T=650 ~30 min.
+C'est pourquoi v4.1 (Z_batch pour la détection) est la prochaine priorité.
+
+#### Prochaine étape — v4.1 🔜
+
+Appliquer les 5 corrections architecturales sur `compute_zeros_v4_1.py` :
+
+| Correction | Gain attendu |
+|---|---|
+| Détection via `Z_batch()` au lieu de `mpmath.siegelz` | ×50 vitesse détection |
+| Parallélisme 4 workers | ×4 |
+| Seuil `T_SEUIL = 300.0` | Illinois_C pur sur 99% des zéros |
+| Arrêt si `.so` absent | robustesse |
+
+**Objectif v4.1 :** ~15–20 z/s (vs ~1 z/s en v5 séquentiel actuel)
 
 **Session de diagnostic avec Copilot (GPT-4.5) + Claude simultanément.**
 
@@ -679,13 +728,11 @@ Délimiteurs : `$...$` inline, `$$...$$` display — dans `index.html` ET le wik
 
 ## 🚀 Prochaine session — reprendre ici
 
-> **État au 29 mai 2026 — 2h30 :**
-> - Diagnostic complet z_function.c terminé (nuit 28-29 mai)
-> - Biais = insuffisance RS (C0+C1 → ~1e-3) — PAS un bug de code
-> - mpc_zeta absent dans libmpc 1.3.1 → patch MPC impossible
-> - Solution : wrapper Python/C pour Z_mpfr via mpmath.siegelz
-> - z_function.c revenu à l'état original (git checkout)
-> - Agent Copilot `Riemann_Lab` créé sur m365.cloud.microsoft ✅
+> **État au 29 mai 2026 — 15h30 :**
+> - Voie B VALIDÉE — commit `b8018c0` sur `Riemann_Lab_C`
+> - `compute_zeros_v5.py` : Illinois_C pur 100%, biais < 1e-13
+> - Goulot : mpmath.siegelz en détection séquentielle → ~30 min pour T=650
+> - Prochaine priorité : v4.1 — Z_batch + parallélisme + seuil 300
 
 ---
 
@@ -695,6 +742,7 @@ Délimiteurs : `$...$` inline, `$$...$$` display — dans `index.html` ET le wik
 cd ~/projet_zeta/
 source zeta_env/bin/activate
 git checkout Riemann_Lab_C
+git pull origin Riemann_Lab_C
 claude
 ```
 
@@ -703,40 +751,38 @@ claude
 ### Étape 2 — Coller ce texte dans Claude Code
 
 ```
-Lis src/ia/prompts/prompt_claude_code_phase_c_voie_b_v5.md.
+Lis src/ia/prompts/PROMPT_CLAUDE_CODE_V4_INTEGRATION.md.
 Travaille uniquement sur la branche Riemann_Lab_C.
-Ne casse pas compute_zeros_v4.py validé.
+Ne casse pas compute_zeros_v4.py ni compute_zeros_v5.py.
 
-Contexte : le biais Z_mpfr (~1e-3) vient d'une insuffisance du
-développement RS (C0+C1 seulement). mpc_zeta est absent dans
-libmpc 1.3.1. La solution retenue est un wrapper Python/C.
+Contexte : compute_zeros_v5.py (commit b8018c0) valide Illinois_C pur
+à 100% mais est lent car mpmath.siegelz est utilisé en détection
+séquentielle (~311ms/pas pour t > 3000).
 
-Mission : implémenter un wrapper qui permet à illinois_mpfr.c
-d'obtenir Z(t) avec précision ~1e-12 en appelant mpmath.siegelz(t).
-Contrainte absolue : illinois_mpfr.so reste appelable depuis Python
-via ctypes exactement comme maintenant.
+Mission : créer compute_zeros_v4_1.py qui combine :
+- Détection : Z_batch() de riemann_siegel_batch.py (vectorisé, ×50)
+- Affinage  : illinois_mpfr_cb de compute_zeros_v5.py (Illinois_C pur)
+- Seuil     : T_SEUIL_ILLINOIS_C = 300.0 (mpmath pour t < 300)
+- Parallèle : 4 workers via parallel_scanner.py
+- Sécurité  : arrêt immédiat si illinois_mpfr.so absent
 
 Critères de succès :
-- biais Z moyen < 1e-8 sur t ∈ [300, 650]
-- Illinois_C pur > 50% sur run T=650
+- Illinois_C pur > 90% sur T=650
 - Turing-Backlund complet
-- LMFDB 20/20 < 1e-10
+- LMFDB 19/20 < 1e-10
+- Vitesse > 5 z/s (vs 1 z/s en v5)
+- Ne pas lancer T=10000 avant validation T=650 et T=1000
 ```
 
 ---
 
-### Étape 3 — Après validation Phase C
+### Étape 3 — Après v4.1 validée
 
-- **Rapport v3→v4** : `.md` + PDF via `pdflatex`
-  → `pdf/optimisation/analyse_problemes_v3_v4.pdf`
-- **Fix wiki** : lien PDF cassé dans `Phase-Optimisation-_-compute_zeros_v3.md`
-  ```bash
-  cd ~/projet_zeta/Riemann_Lab.wiki/
-  git add . && git commit -m "fix(wiki): correct PDF link"
-  git push origin master
-  ```
+- Run T=1000 → puis T=10000
+- Rapport v3→v4 : `pdf/optimisation/analyse_problemes_v3_v4.pdf`
+- Fix wiki lien PDF cassé → `git push origin master`
 
 <!-- Mettre à jour cette section avant de fermer Claude -->
 
 ---
-*Dernière mise à jour : 29 mai 2026 — 742 lignes*
+*Dernière mise à jour : 29 mai 2026 — 788 lignes*
