@@ -23,3 +23,6 @@ __init__.py
 # Notebooks
 .ipynb_checkpoints/
 Riemann_Lab.wiki
+
+# MCP git
+.mcp.json

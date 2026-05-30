@@ -1,6 +1,6 @@
-Lis src/ia/prompts/prompt_claude_code_phase_c_voie_b_v5.md.
-Lis /home/riemann/projet_zeta/pdf/optimisation/Voie_b_5/Handoff.md la prochaine session 
-Lis les PDF de cadrage /home/riemann/projet_zeta/pdf/optimisation/Voie_b_5 si besoin de complément.
+Lis src/ia/prompts/prompt_claude_code_phase_c_voie_b_v5.md (ou qui est dans le dossier projet).
+Lis /home/riemann/projet_zeta/pdf/optimisation/Voie_b_5/md_to_claude/Handoff.md la prochaine session 
+Lis les 12 .md  de cadrage /home/riemann/projet_zeta/pdf/optimisation/Voie_b_5/md_to_claude/ (ou qui sont dans le dossier projet)
 Travaille uniquement sur la branche Riemann_Lab_C.
 Ne casse pas compute_zeros_v4.py validé.
 
