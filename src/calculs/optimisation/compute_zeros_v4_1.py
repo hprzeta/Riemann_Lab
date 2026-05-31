@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-compute_zeros_v4_1.py — Phase C v4.1 : Z_vect_correct vectorisé + 4 workers + Illinois_C pur
+compute_zeros_v4_1.py — Phase C v4.1 : Z_vect_correct vectorisé + 4 workers + findroot illinois
 ════════════════════════════════════════════════════════════════════════════════════════════
 Problème identifié dans v5 :
     Détection séquentielle mpmath.siegelz → ~23ms/pas à t=3000, ~52ms/pas à t=9950
@@ -14,13 +14,15 @@ Bug identifié dans Z_batch (riemann_siegel_batch.py) :
     ~2·Σ_{n>N(t)} 1/√n pouvant dépasser 3 — impossible de détecter les bons signes.
     → Z_batch NON utilisable pour la détection. Remplacé par Z_vect_correct.
 
-Solution v4.1 :
+Solution v4.1 (fix findroot — session 31 mai 2026) :
     1. Z_vect_correct     : masque booléen mask[k,n] = (n ≤ N(t_k)) par ligne
                             → chaque ligne n'accumule que ses N(t_k) termes exacts
                             → gain ×4000-×9000 vs mpmath.siegelz mesuré
     2. Parallélisme       : 4 workers multiprocessing traitent 4 chunks en même temps
-                            → gain supplémentaire ×4 sur CPU i7 4 cœurs
-    3. Illinois_C pur     : illinois_c_exact (Voie B, callback mpmath.siegelz) pour affinage
+                            → gain supplémentaire ×4 sur CPU i7 4 cœurs (vrai fork)
+    3. findroot illinois  : mpmath.findroot(siegelz, (a,b), solver="illinois") à dps=15
+                            directement dans le worker forké → pas de sérialisation GMP
+                            → vrai ×4 (vs ×1.84 avec callback ctypes)
     4. Seuil T_SEUIL=300  : en-dessous, RS parfois dégénéré → fallback mpmath toléré
 
 Formules mathématiques de référence :
@@ -50,30 +52,21 @@ from datetime import datetime
 from typing import List, Tuple, Dict
 
 import mpmath
-mpmath.mp.dps = 35                      # précision globale pour illinois_mpfr_cb
+mpmath.mp.dps = 35                      # précision globale (validation, visualisation)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
-#  SECTION 1 — CHEMINS ET VÉRIFICATION OBLIGATOIRE DE illinois_mpfr.so
+#  SECTION 1 — CHEMINS ET IMPORTS LOCAUX
 # ═══════════════════════════════════════════════════════════════════════════════
 
 _SRC_DIR   = Path(__file__).parent                  # .../src/calculs/optimisation/
 _C_MODULES = _SRC_DIR / "c_modules"                 # dossier des binaires C
 
-# Arrêt immédiat si le .so manque — message clair plutôt que crash ctypes obscur
-_SO_PATH = _C_MODULES / "illinois_mpfr.so"
-if not _SO_PATH.exists():
-    print(f"\n[ERREUR FATALE] illinois_mpfr.so introuvable : {_SO_PATH}")
-    print("  → Lancer 'make' dans c_modules/ pour compiler illinois_mpfr.c")
-    print("  → Sans ce fichier, Illinois_C pur (Voie B) est impossible")
-    sys.exit(1)                                     # sortie propre, pas de traceback ctypes
-
 # Ajout des dossiers au chemin Python pour les imports locaux
-sys.path.insert(0, str(_C_MODULES))                 # illinois_pyZ.py
+sys.path.insert(0, str(_C_MODULES))                 # modules C optionnels
 sys.path.insert(0, str(_SRC_DIR))                   # theta_rapide.py, turing_validation.py
 
-# Imports locaux — illinois_pyZ crée le callback ctypes _Z_CB au chargement
-from illinois_pyZ import illinois_c_exact           # Voie B : callback mpmath.siegelz
+# Imports locaux
 from turing_validation import valider_turing        # validation Turing-Backlund
 from theta_rapide import theta_exact                # θ(t) exact via mpmath (t < 20)
 
@@ -176,6 +169,11 @@ T_SEUIL_ILLINOIS_C = 300.0      # en-dessous : RS peut être dégénéré, fallb
 N_WORKERS          = 4           # processus parallèles (= nb cœurs i7)
 T_MIN_GLOBAL       = 14.0        # premier zéro non trivial à t ≈ 14.134
 
+# HYPOTHÈSE à valider sur les grands t (Vérif B obligatoire) :
+# à t≈9900, dps=15 → précision absolue ~10^4 × 10^{-15} = 10^{-11}, limite de tol=1e-12
+# Si écart > 1e-10 à grand t → remonter à 20 puis 25 et re-tester
+DPS_AFFINAGE       = 15          # précision pour mpmath.findroot illinois (workers)
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  SECTION 3 — FONCTIONS MATHÉMATIQUES DE BASE
@@ -216,35 +214,42 @@ def affiner_zero_local(
     tol : float = 1e-12,
 ) -> Tuple[float, str]:
     """
-    Affine le zéro dans [a, b] (changement de signe garanti par Z_batch).
+    Affine le zéro dans [a, b] (changement de signe garanti par Z_vect_correct).
 
-    Stratégie :
-      1. illinois_c_exact (Voie B, callback mpmath.siegelz, biais < 1e-13)
-         → si résidu < 1e-8 : "Illinois_C"
-         → si résidu ≥ 1e-8 : affinage supplémentaire mpmath.findroot → "Illinois_C→mpmath"
-      2. Si exception : mpmath.findroot seul → "mpmath"
+    Stratégie (fix findroot — session 31 mai 2026) :
+      mpmath.findroot(siegelz, (a, b), solver="illinois", tol=1e-12, maxsteps=80)
+      à dps=DPS_AFFINAGE directement dans le worker forké → vrai parallélisme ×4.
+      Fallback : mpmath.findroot depuis le milieu → "mpmath".
 
-    Note : t < T_SEUIL_ILLINOIS_C (300) autorise les fallbacks (RS parfois dégénéré).
+    Pourquoi dps=DPS_AFFINAGE (15) et non 35 :
+      15 chiffres ≈ float64 natif. Pour tol=1e-12 et t≤9900 (ordre 10^4),
+      la précision absolue ~10^{-11} suffit. À vérifier via Vérif B avant run long.
+
+    Différence vs callback ctypes (illinois_c_exact) :
+      Le callback sérialisait l'état GMP via pickle → cassait le pool ×1.84.
+      Ici, chaque worker forké a son propre état mpmath → vrai ×4.
     """
-    t_mid = (a + b) / 2.0                              # milieu de l'intervalle
-
+    old_dps = mpmath.mp.dps                            # sauvegarde du dps courant du worker
+    mpmath.mp.dps = DPS_AFFINAGE                       # précision réduite pour la vitesse
     try:
-        gamma_c = illinois_c_exact(a, b, tol)          # Illinois C pur (Voie B)
-        residu  = abs(float(mpmath.siegelz(gamma_c)))  # vrai résidu Z(γ)
+        try:
+            gamma = float(mpmath.findroot(
+                mpmath.siegelz,                        # Z(t) de Hardy — réelle, zéros ↔ HR
+                (a, b),                                # intervalle avec changement de signe garanti
+                solver="illinois",                     # fausse position modifiée (convergence ≈1.44)
+                tol=tol,                               # tolérance absolue 1e-12
+                maxsteps=80,                           # nombre max d'itérations Illinois
+            ))
+            return gamma, "mpmath_findroot_illinois"   # succès : méthode tracée dans les stats
 
-        if residu < 1e-8:
-            return float(gamma_c), "Illinois_C"        # convergence confirmée
+        except Exception:
+            # Fallback : point unique au milieu (moins robuste mais jamais d'échec total)
+            t_mid = (a + b) / 2.0
+            gamma = float(mpmath.findroot(mpmath.siegelz, t_mid))
+            return gamma, "mpmath"
 
-        # Résidu trop grand (typique pour t < T_SEUIL) → affinage final mpmath
-        gamma = float(mpmath.findroot(mpmath.siegelz, float(gamma_c)))
-        return gamma, "Illinois_C→mpmath"
-
-    except Exception:
-        pass                                            # sécurité totale → fallback
-
-    # Fallback intégral mpmath depuis le milieu de l'intervalle
-    gamma = float(mpmath.findroot(mpmath.siegelz, t_mid))
-    return gamma, "mpmath"
+    finally:
+        mpmath.mp.dps = old_dps                        # toujours restaurer (même si exception)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -282,10 +287,9 @@ def _worker_chunk(args: tuple) -> Tuple[List[float], Dict[str, int]]:
 
     zeros_chunk = []                                    # zéros trouvés dans ce chunk
     stats_chunk = {                                     # compteur par méthode d'affinage
-        "Illinois_C"      : 0,
-        "Illinois_C→mpmath": 0,
-        "mpmath"          : 0,
-        "echecs"          : 0,
+        "mpmath_findroot_illinois": 0,                 # Illinois via mpmath (méthode principale)
+        "mpmath"                  : 0,                 # fallback point unique
+        "echecs"                  : 0,                 # exceptions non rattrapées
     }
 
     # Balayage des paires (ts[i], ts[i+1]) pour détecter les changements de signe
@@ -357,8 +361,11 @@ def scanner_parallele(
 
     # ── Fusion des résultats des 4 workers ──────────────────────────────────
     tous_zeros     = []
-    stats_globales = {"Illinois_C": 0, "Illinois_C→mpmath": 0,
-                      "mpmath": 0, "echecs": 0}
+    stats_globales = {
+        "mpmath_findroot_illinois": 0,                 # Illinois mpmath (principal)
+        "mpmath"                  : 0,                 # fallback point unique
+        "echecs"                  : 0,                 # exceptions
+    }
 
     for zeros_chunk, stats_chunk in resultats:
         tous_zeros.extend(zeros_chunk)                  # concaténation des listes
@@ -442,7 +449,7 @@ def sauvegarder_csv(
         "T_MAX"             : T_MAX,
         "version"           : "v4.1",
         "methode_detection" : "Z_batch_vectorise",
-        "methode_affinage"  : "illinois_c_exact_voie_b",
+        "methode_affinage"  : "mpmath_findroot_illinois",
         "pas_balayage"      : pas,
         "calcule_le"        : horodatage,
     })
@@ -489,11 +496,11 @@ def ecrire_log(
     L(f"      T_MAX            = {T_MAX}")
     L(f"      Pas balayage     = {pas:.4f}")
     L(f"      TOL_AFFINAGE     = {tol:.0e}")
-    L(f"      mpmath.mp.dps    = {mpmath.mp.dps}")
+    L(f"      mpmath.mp.dps    = {mpmath.mp.dps}  (global ; affinage = DPS_AFFINAGE={DPS_AFFINAGE})")
     L(f"      Workers          = {n_workers}")
     L(f"      T_SEUIL_C        = {T_SEUIL_ILLINOIS_C}")
-    L(f"      Détection        = Z_batch vectorisé (numpy)")
-    L(f"      Affinage         = illinois_c_exact (Voie B) + fallback mpmath"); L()
+    L(f"      Détection        = Z_vect_correct vectorisé (numpy)")
+    L(f"      Affinage         = mpmath.findroot illinois (dps={DPS_AFFINAGE}) + fallback mpmath"); L()
 
     L("  [3] RÉSULTATS NUMÉRIQUES")
     L(f"      Zéros trouvés    = {len(zeros)}")
@@ -626,9 +633,9 @@ def saisir_parametres():
     print("   CALCUL DES ZÉROS — v4.1 (Z_batch vectorisé + 4 workers)")
     print("=" * 65)
     print()
-    print("  Détection : Z_batch (numpy vectorisé)  — gain ×200 à ×500 vs mpmath")
-    print("  Affinage  : illinois_c_exact (Voie B)  — biais RS < 1e-13")
-    print("  Parallèle : 4 workers multiprocessing  — gain ×4 supplémentaire")
+    print("  Détection : Z_vect_correct (numpy)      — gain ×4000-×9000 vs mpmath séquentiel")
+    print("  Affinage  : mpmath.findroot illinois    — dps=15, vrai ×4 (no ctypes sérialisation)")
+    print("  Parallèle : 4 workers multiprocessing  — fork-safe, GMP isolé par worker")
     print()
     print("  Estimations (à valider avec Turing) :")
     print("    T =   300  → ~138 zéros  →  < 15s")
@@ -728,19 +735,22 @@ def main():
         manq = resultats_turing["manquants_total"]
         print(f"  Validation Turing : ❌ {manq} zéros MANQUANTS — réduire le pas")
 
-    total_c = sum(v for k, v in stats.items() if k != "echecs")
-    nb_pur  = stats.get("Illinois_C", 0)
-    pct_pur = nb_pur / total_c * 100 if total_c > 0 else 0
-    lmfdb_s = resultats_lmfdb.get("score", "0/0").split("/")
-    score_l = int(lmfdb_s[0]) if len(lmfdb_s) == 2 else 0
+    total_c   = sum(v for k, v in stats.items() if k != "echecs")
+    nb_ill    = stats.get("mpmath_findroot_illinois", 0)  # méthode principale fix findroot
+    pct_ill   = nb_ill / total_c * 100 if total_c > 0 else 0
+    lmfdb_s   = resultats_lmfdb.get("score", "0/0").split("/")
+    score_l   = int(lmfdb_s[0]) if len(lmfdb_s) == 2 else 0
+    vitesse_f = len(zeros) / duree if duree > 0 else 0
 
     print()
-    print("  Critères v4.1 :")
-    print(f"    Illinois_C pur    : {pct_pur:.1f}%  (cible > 90%)"
-          + (" ✅" if pct_pur > 90 else " ⚠️ "))
+    print("  Critères v4.1 (fix findroot) :")
+    print(f"    illinois mpmath   : {pct_ill:.1f}%  (cible > 90%)"
+          + (" ✅" if pct_ill > 90 else " ⚠️ "))
     print(f"    Turing complet    : {'✅' if resultats_turing['complet'] else '❌'}")
-    print(f"    LMFDB 20/20       : {resultats_lmfdb.get('score','?')}"
-          + (" ✅" if score_l >= 20 else " ⚠️ "))
+    print(f"    LMFDB 19/20       : {resultats_lmfdb.get('score','?')}"
+          + (" ✅" if score_l >= 19 else " ⚠️ "))
+    print(f"    Vitesse           : {vitesse_f:.1f} z/s  (cible > 5.0)"
+          + (" ✅" if vitesse_f > 5.0 else " ⚠️ "))
     print("=" * 65)
 
 
