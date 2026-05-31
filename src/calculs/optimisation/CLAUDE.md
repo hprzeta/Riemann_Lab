@@ -1,85 +1,45 @@
-# CLAUDE.md — src/calculs/optimisation/
-> Contexte local pour Claude Code — Phase C (Illinois en C/libmpfr)
-> Mis à jour : 23 mai 2026
+# src/calculs/optimisation/CLAUDE.md — Instructions Phase C
+> Contexte local Claude Code — optimisation & Phase C (Illinois en C/libmpfr).
+> Règles **stables** ; aucun état de session ici (→ `Handoff.md`).
+> Mis à jour : 31 mai 2026
 
 ---
 
 ## Rôle de ce dossier
 
-Ce dossier contient le **cœur du calcul numérique** du projet Riemann_Lab.
-Actuellement : `compute_zeros_v3.py` + modules Python.
-Phase C en cours : portage de l'affinage Illinois en C/libmpfr → `c_modules/`.
-
----
-
-## État de la branche courante
+Cœur du calcul numérique du projet. Modules Python (`compute_zeros_v*.py`) +
+portage de l'affinage Illinois en C/libmpfr dans `c_modules/`.
 
 ```
-Branche active   : Riemann_Lab_C
-Dossier C        : ~/projet_zeta/src/calculs/optimisation/c_modules/
+Branche C        : Riemann_Lab_C
+Dossier C        : c_modules/  (voir son propre CLAUDE.md)
 Branche Python   : Riemann_Lab_IA (ne pas modifier depuis Riemann_Lab_C)
 ```
 
 ---
 
-## Objectif immédiat — Phase C
+## Pourquoi la Phase C
 
-Porter `illinois_mpfr` de Python/mpmath vers C/libmpfr.
-
-**Pourquoi :** Illinois représente **80–90% du temps total** de calcul.
-La Phase C cible ×5–10 sur ce goulot → ~15–20 z/s au lieu de 3.59 z/s.
-
-**Architecture à construire :**
-```
-c_modules/
-├── illinois_mpfr.c     ← affinage Illinois avec libmpfr (PREC = 170 bits ≈ 51 dps)
-├── illinois_mpfr.h     ← header
-├── z_function.c        ← Z(t) Riemann-Siegel en C (float64 pour la détection)
-├── z_function.h
-├── Makefile            ← compile → illinois_mpfr.so
-└── test_illinois.py    ← validation via ctypes (10 premiers zéros vs LMFDB)
-```
+L'affinage Illinois représente **80–90 % du temps total**. La Phase C cible un gain
+×5–10 sur ce goulot. (Détail du goulot courant et de la prochaine action : `Handoff.md`.)
 
 ---
 
-## Formules critiques — NE JAMAIS SE TROMPER
+## 📍 Formules — SOURCE CANONIQUE
 
-### Z(t) — formule de Riemann-Siegel
-```
-Z(t) = 2 · Σ_{n=1}^{N} cos(θ(t) − t·ln n) / √n  +  R(t)
-N = ⌊√(t/2π)⌋
-```
+> Les formules N(T), θ(t), Z(t), Illinois et la table de précision adaptative sont
+> définies **une seule fois** dans `~/projet_zeta/CLAUDE.md` (chargé en cascade).
+> **Ne pas les recopier ici.** Se référer à ce fichier.
 
-### θ(t) — approximation de Stirling (valide pour t ≥ 20)
-```
-θ(t) = (t/2)·ln(t/2π) − t/2 − π/8 + 1/(48t) + 7/(5760t³) − 31/(80640t⁵)
-```
-
-### N(T) — formule de Riemann-von Mangoldt (EXACTE)
-```
-N(T) = T/(2π) · ln(T/2πe)      ← le 'e' dans 2πe est OBLIGATOIRE
-```
-
-### Illinois — algorithme (méthode de la sécante modifiée)
+Rappel de l'algorithme Illinois (détail local) :
 ```
 Donné [a,b] tel que Z(a)·Z(b) < 0 :
-  1. c = b − Z(b)·(b−a) / (Z(b)−Z(a))       ← sécante
+  1. c = b − Z(b)·(b−a) / (Z(b)−Z(a))        ← sécante
   2. Si Z(a)·Z(c) < 0 : b ← c
-     Sinon             : a ← c, Z(a) *= 0.5  ← correction Illinois
+     Sinon             : a ← c, Z(a) *= 0.5   ← correction Illinois
   3. Répéter jusqu'à |b−a| < 1e-12
-Précision cible : PREC = 170 bits (≈ 51 décimales)
+Précision cible C : PREC = 170 bits (≈ 51 décimales)
 ```
-
----
-
-## Précision adaptative (règle v3 / v4)
-
-| Opération          | Précision          | Implémentation |
-|--------------------|---------------------|----------------|
-| θ(t) détection     | float64 natif       | NumPy / C double |
-| Z(t) détection     | float64 natif       | NumPy / C double |
-| Affinage Illinois  | 170 bits ≈ 51 dps   | libmpfr (Phase C) |
-| Validation finale  | 50 dps              | mpmath Python |
 
 ---
 
@@ -96,19 +56,23 @@ def illinois_c(a: float, b: float, tol: float = 1e-12) -> float:
     return lib.illinois_mpfr(a, b, tol)
 ```
 
-**Fallback obligatoire :** si `illinois_mpfr.so` est absent → revenir à `mpmath.findroot(..., solver='illinois')`.
+**Fallback obligatoire :** si `illinois_mpfr.so` absent → `mpmath.findroot(..., solver='illinois')`.
+**Sécurité :** en mode production, préférer `raise FileNotFoundError` à une dégradation
+silencieuse (un fallback invisible masque les bugs).
 
 ---
 
 ## Validation — données de référence LMFDB
 
-| n | γ_n (LMFDB)            | Tolérance attendue |
-|---|-------------------------|---------------------|
-| 1 | 14.134725141734693      | < 1e-12             |
-| 2 | 21.022039638771555      | < 1e-12             |
-| 3 | 25.010857580145688      | < 1e-12             |
-| 4 | 30.424876125859513      | < 1e-12             |
-| 5 | 32.935061587739189      | < 1e-12             |
+| n | γ_n (LMFDB) | Tolérance |
+|---|---|---|
+| 1 | 14.134725141734693 | < 1e-12 |
+| 2 | 21.022039638771555 | < 1e-12 |
+| 3 | 25.010857580145688 | < 1e-12 |
+| 4 | 30.424876125859513 | < 1e-12 |
+| 5 | 32.935061587739189 | < 1e-12 |
+
+Critères run : Turing-Backlund complet · LMFDB ≥ 19/20 < 1e-10 · Illinois_C pur > 50 %.
 
 ---
 
@@ -121,12 +85,11 @@ mpfr-config --version   # doit retourner ≥ 4.0
 
 ---
 
-## Convention de code C dans ce projet
+## Conventions de code
 
 - Commentaires en **français**
 - Tout `mpfr_init2` → `mpfr_clear` correspondant (pas de fuite mémoire)
-- Constante `PREC 170` définie en haut du fichier
-- Mode d'arrondi : toujours `MPFR_RNDN` (arrondi au plus proche)
+- `PREC 170` en haut du fichier · arrondi toujours `MPFR_RNDN`
 - Pas de `printf` dans les fonctions de calcul (seulement dans `main()` de test)
 - `.so` compilé avec `-O3 -march=native -fPIC`
 
@@ -136,33 +99,27 @@ mpfr-config --version   # doit retourner ≥ 4.0
 
 ```bash
 git checkout Riemann_Lab_C
-# tout le code C va dans c_modules/
 git add c_modules/
-git commit -m "feat(phase-c): illinois_mpfr.c initial implementation"
+git commit -m "feat(phase-c): ..."
 git push origin Riemann_Lab_C
 ```
 
 ---
 
-## Rapport de transition v3→v4 (obligatoire après Phase C)
-
-Format : `.md` + PDF via `pdflatex` (même structure que `analyse_problemes_v2_v3_phase0.pdf`).
-Contenu : cause mathématique, formules, tableaux comparatifs, gains mesurés, questions ouvertes.
-
 ## Règle de double mise à jour — OBLIGATOIRE
 
-> Toujours enrichir les bases de référence et les skills actifs avec
-> toutes les nouvelles formules et corrections trouvées.
-> Pousser sur GitHub dans les dépôts respectifs après chaque mise à jour.
-
-**Fichiers à enrichir systématiquement :**
-- `/home/riemann/.claude/skills/zeta-lab/references/Formules_zeta.md`
-- `/home/riemann/.claude/skills/zeta-lab/references/Bibliotheques.md`
-- `/home/riemann/.claude/skills/zeta-lab/SKILL.md`
-- `/home/riemann/.claude/skills/zeta-lab/SKILL_phase_c.md`
-
-**Quand appliquer :** à chaque découverte de nouvelle formule, correction d'algorithme,
-ou mise à jour d'un `CLAUDE.md` → mettre à jour la correspondance dans le projet ET pousser.
+À chaque nouvelle formule / correction d'algorithme, enrichir AUSSI les bases de référence
+et skills, puis pousser :
+- `~/.claude/skills/zeta-lab/references/Formules_zeta.md`
+- `~/.claude/skills/zeta-lab/references/Bibliotheques.md`
+- `~/.claude/skills/zeta-lab/SKILL.md` · `SKILL_phase_c.md`
 
 ---
-*Dernière mise à jour : 24 mai 2026 — 168 lignes*
+
+## Rapport de transition (après chaque vN→vN+1)
+
+`.md` + PDF via `pdflatex` (structure `analyse_problemes_v2_v3_phase0.pdf`) :
+cause mathématique, formules, tableaux comparatifs, gains mesurés, questions ouvertes.
+
+---
+*Dernière mise à jour : 31 mai 2026 — ~120 lignes (formules dédupliquées → projet CLAUDE.md)*
