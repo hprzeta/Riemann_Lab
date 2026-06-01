@@ -18,7 +18,9 @@ __init__.py
 .DS_Store
 
 # IA
-.claude
+.claude/*
+!.claude/skills/
+!.claude/skills/**
 
 # Notebooks
 .ipynb_checkpoints/
