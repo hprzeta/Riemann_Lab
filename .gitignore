@@ -21,3 +21,4 @@ __init__.py
 .ipynb_checkpoints/
 Riemann_Lab.wiki
 Riemann_Lab.wiki
+.mcp.json
