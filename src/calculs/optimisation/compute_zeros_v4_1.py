@@ -178,10 +178,16 @@ T_SEUIL_ILLINOIS_C = 300.0      # en-dessous : RS peut être dégénéré, fallb
 N_WORKERS          = 4           # processus parallèles (= nb cœurs i7)
 T_MIN_GLOBAL       = 14.0        # premier zéro non trivial à t ≈ 14.134
 
-# HYPOTHÈSE à valider sur les grands t (Vérif B obligatoire) :
-# à t≈9900, dps=15 → précision absolue ~10^4 × 10^{-15} = 10^{-11}, limite de tol=1e-12
-# Si écart > 1e-10 à grand t → remonter à 20 puis 25 et re-tester
-DPS_AFFINAGE       = 15          # précision pour mpmath.findroot illinois (workers)
+# Affinage t < 300 : N < 7 termes RS → illinois_C imprécis, mpmath requis
+DPS_AFFINAGE       = 15          # dps pour mpmath.findroot t < 300 (tol=1e-12 atteint)
+
+# Finition t ≥ 300 : Illinois_C localise gamma_c sur Z_mpfr (biais RS ~1e-3),
+# puis Newton (dérivée analytique siegelz) polit sur la vraie Z(t).
+# Vérif B (2 juin 2026) : écart Illinois_C ≤ 1.7e-2 → dps=25 donne 10 chiffres de marge.
+# À γ≈9999 : besoin de 14 chiffres significatifs → dps=15 insuffisant, dps=25 sûr.
+DPS_POLISH         = 25          # dps Newton polish (marge ≥ 10 chiffres à γ≈10000)
+NEWTON_STEPS       = 5           # max itérations Newton (3 théoriquement suffisants)
+POLISH_DELTA       = 0.05        # garde-fou : Newton bornera dans [gamma_c±DELTA]
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -213,6 +219,52 @@ def N_attendu_local(T: float) -> int:
     return int(x * (math.log(x) - 1.0))                # T/(2π) · [ln(T/2π) − 1]
 
 
+def _newton_polish(gamma_c: float) -> float:
+    """
+    Finition Newton de gamma_c (zéro de Z_mpfr) vers le vrai zéro de mpmath.siegelz.
+
+    Algorithme (dérivée analytique) :
+        x_{n+1} = x_n − Z(x_n) / Z'(x_n)
+        Z'(x)   = mpmath.siegelz(x, derivative=1)  ← analytique, pas de différence finie
+
+    Convergence quadratique depuis ε_0 ≤ 1.7e-2 (Vérif B) :
+        ε_1 ≈ 3e-4  ·  ε_2 ≈ 1e-7  ·  ε_3 ≈ 1e-14   (→ 3 pas suffisent)
+
+    Garde-fou : si x sort de [gamma_c − POLISH_DELTA, gamma_c + POLISH_DELTA],
+    on lève ValueError → l'appelant retombe sur Illinois bornée.
+    dps = DPS_POLISH = 25 : 10 chiffres de marge à γ ≈ 10 000.
+    """
+    lo = gamma_c - POLISH_DELTA                        # borne inférieure du garde-fou
+    hi = gamma_c + POLISH_DELTA                        # borne supérieure du garde-fou
+
+    old_dps       = mpmath.mp.dps
+    mpmath.mp.dps = DPS_POLISH                         # 25 dps = sûr jusqu'à γ ≈ 10 000
+    try:
+        x = mpmath.mpf(gamma_c)                        # point de départ
+        for _ in range(NEWTON_STEPS):                  # 5 itérations max (3 théorique)
+            f  = mpmath.siegelz(x)                     # Z(x) — vraie fonction de Hardy
+            df = mpmath.siegelz(x, derivative=1)       # Z'(x) — dérivée analytique
+
+            if df == 0:                                # zéro plat / paire de zéros proche
+                raise ValueError("Z'=0 au point Newton")
+
+            x_new = x - f / df                         # pas Newton
+
+            if float(x_new) < lo or float(x_new) > hi:# divergence hors bracket
+                raise ValueError(
+                    f"Newton hors bornes : {float(x_new):.8f} ∉ [{lo:.6f}, {hi:.6f}]"
+                )
+            x = x_new
+
+            # Critère de convergence anticipée : |Z(x)| < 10^{−(dps−5)}
+            if abs(f) < mpmath.power(10, -(DPS_POLISH - 5)):
+                break
+
+        return float(x)
+    finally:
+        mpmath.mp.dps = old_dps                        # restauration toujours garantie
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 #  SECTION 4 — WORKER MULTIPROCESSING (fonction top-level, picklable par nom)
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -234,7 +286,8 @@ def _worker_chunk(args: tuple) -> Tuple[List[float], Dict[str, int]]:
         → repère les i tels que Z_vals[i]·Z_vals[i+1] < 0
 
     Étape 3 — Affinage avec seuil T_SEUIL_ILLINOIS_C = 300 :
-        t_mid ≥ 300  → lib.illinois_mpfr(a, b, tol) — C/libmpfr PREC=170 bits (×39)
+        t_mid ≥ 300 → illinois_mpfr(a,b,tol) → gamma_c (localisation rapide sur Z_mpfr)
+                       puis findroot(siegelz, gamma_c±DELTA, dps=DPS_POLISH) → gamma vrai
         t_mid <  300 → mpmath.findroot illinois dps=DPS_AFFINAGE — N < 7 termes, légitime
     """
     t_a, t_b, pas, tol, so_path = args                # déballage des paramètres
@@ -253,9 +306,9 @@ def _worker_chunk(args: tuple) -> Tuple[List[float], Dict[str, int]]:
 
     zeros_chunk = []
     stats_chunk = {
-        "illinois_C"      : 0,   # illinois_mpfr C pour t ≥ 300 (majorité des zéros)
+        "illinois_C_polish": 0,  # illinois_C + finition siegelz dps=30 (t ≥ 300)
         "mpmath_petit_t"  : 0,   # mpmath pour t < 300 (N < 7 termes, légitimement lent)
-        "mpmath_fallback" : 0,   # mpmath si illinois_C hors bornes (rare, ≈ 0)
+        "mpmath_fallback" : 0,   # fallback bracket original si polish échoue (rare)
         "echecs"          : 0,   # exceptions non rattrapées
     }
 
@@ -265,35 +318,70 @@ def _worker_chunk(args: tuple) -> Tuple[List[float], Dict[str, int]]:
             t_mid = (a + b) / 2.0
             try:
                 if t_mid >= T_SEUIL_ILLINOIS_C:
-                    # Illinois C : N ≥ 7 termes RS → précis, gain ×39 vs mpmath dps=35
-                    zero = _lib.illinois_mpfr(a, b, tol)
-                    if a - 1e-10 <= zero <= b + 1e-10:  # sanity check bornes
-                        zeros_chunk.append(zero)
-                        stats_chunk["illinois_C"] += 1
+                    # ── Étape 1 : localisation rapide sur Z_mpfr (C/libmpfr PREC=170) ──
+                    # gamma_c = zéro de Z_mpfr ; écart vs vrai zéro ≤ 1.7e-2 (Vérif B)
+                    gamma_c = _lib.illinois_mpfr(a, b, tol)
+
+                    if a - 1e-10 <= gamma_c <= b + 1e-10:
+                        # ── Étape 2 : finition Newton sur mpmath.siegelz ──────────────
+                        # Dérivée analytique Z'(x) = siegelz(x, derivative=1) ; 3 pas
+                        # → ε : 1.7e-2 → 3e-4 → 1e-7 → 1e-14 (bien sous 1e-10)
+                        # Garde-fou : _newton_polish lève ValueError si hors [±DELTA]
+                        try:
+                            zero = _newton_polish(gamma_c)
+                            zeros_chunk.append(zero)
+                            stats_chunk["illinois_C_polish"] += 1
+                        except Exception:
+                            # Fallback Illinois bornée sur bracket original (cas rare)
+                            old_dps       = mpmath.mp.dps
+                            mpmath.mp.dps = DPS_POLISH
+                            try:
+                                zero = float(mpmath.findroot(
+                                    mpmath.siegelz,
+                                    (a, b),
+                                    solver="illinois",
+                                    tol=1e-12,
+                                    maxsteps=80,
+                                ))
+                                zeros_chunk.append(zero)
+                                stats_chunk["mpmath_fallback"] += 1
+                            finally:
+                                mpmath.mp.dps = old_dps
                     else:
-                        # Résultat hors bornes : fallback mpmath (rare — Turing détectera)
-                        zero = float(mpmath.findroot(mpmath.siegelz, t_mid))
-                        zeros_chunk.append(zero)
-                        stats_chunk["mpmath_fallback"] += 1
+                        # gamma_c hors bornes : fallback direct sur bracket original
+                        old_dps       = mpmath.mp.dps
+                        mpmath.mp.dps = DPS_POLISH
+                        try:
+                            zero = float(mpmath.findroot(
+                                mpmath.siegelz,
+                                (a, b),
+                                solver="illinois",
+                                tol=1e-12,
+                                maxsteps=80,
+                            ))
+                            zeros_chunk.append(zero)
+                            stats_chunk["mpmath_fallback"] += 1
+                        finally:
+                            mpmath.mp.dps = old_dps
                 else:
                     # t < 300 : N < 7 termes RS → illinois_C interne imprécis → mpmath requis
-                    old_dps      = mpmath.mp.dps
-                    mpmath.mp.dps = DPS_AFFINAGE        # dps=15 : suffisant pour tol=1e-12
+                    old_dps       = mpmath.mp.dps
+                    mpmath.mp.dps = DPS_AFFINAGE         # dps=15 : suffisant pour tol=1e-12
                     try:
                         zero = float(mpmath.findroot(
-                            mpmath.siegelz,             # Z(t) de Hardy, vrais zéros garantis
-                            (a, b),                     # intervalle avec changement de signe
-                            solver="illinois",          # fausse position modifiée
-                            tol=tol,                    # tolérance 1e-12
+                            mpmath.siegelz,              # Z(t) de Hardy, vrais zéros garantis
+                            (a, b),                      # intervalle avec changement de signe
+                            solver="illinois",           # fausse position modifiée
+                            tol=tol,                     # tolérance 1e-12
                             maxsteps=80,
                         ))
                         zeros_chunk.append(zero)
                         stats_chunk["mpmath_petit_t"] += 1
                     finally:
-                        mpmath.mp.dps = old_dps         # restauration après l'appel
+                        mpmath.mp.dps = old_dps          # restauration après l'appel
 
             except Exception:
-                stats_chunk["echecs"] += 1              # compte sans crasher le worker
+                stats_chunk["echecs"] += 1               # compte sans crasher le worker
 
     return zeros_chunk, stats_chunk
 
@@ -354,9 +442,9 @@ def scanner_parallele(
     # ── Fusion des résultats des 4 workers ──────────────────────────────────
     tous_zeros     = []
     stats_globales = {
-        "illinois_C"      : 0,   # C/libmpfr pour t ≥ 300
+        "illinois_C_polish": 0,  # illinois_C + finition siegelz dps=30 (t ≥ 300)
         "mpmath_petit_t"  : 0,   # mpmath pour t < 300 (légitime)
-        "mpmath_fallback" : 0,   # mpmath si illinois_C hors bornes (rare)
+        "mpmath_fallback" : 0,   # fallback bracket original (rare)
         "echecs"          : 0,   # exceptions
     }
 
@@ -731,26 +819,26 @@ def main():
         manq = resultats_turing["manquants_total"]
         print(f"  Validation Turing : ❌ {manq} zéros MANQUANTS — réduire le pas")
 
-    total_c   = sum(v for k, v in stats.items() if k != "echecs")
-    nb_illc   = stats.get("illinois_C", 0)             # Illinois C/libmpfr (t ≥ 300)
-    nb_mpt    = stats.get("mpmath_petit_t", 0)         # mpmath (t < 300, légitime)
-    nb_fallbk = stats.get("mpmath_fallback", 0)        # fallback non borné (doit être 0)
-    pct_illc  = nb_illc / total_c * 100 if total_c > 0 else 0
-    lmfdb_s   = resultats_lmfdb.get("score", "0/0").split("/")
-    score_l   = int(lmfdb_s[0]) if len(lmfdb_s) == 2 else 0
-    vitesse_f = len(zeros) / duree if duree > 0 else 0
+    total_c    = sum(v for k, v in stats.items() if k != "echecs")
+    nb_polish  = stats.get("illinois_C_polish", 0)     # illinois_C + finition siegelz (t ≥ 300)
+    nb_mpt     = stats.get("mpmath_petit_t", 0)        # mpmath (t < 300, légitime)
+    nb_fallbk  = stats.get("mpmath_fallback", 0)       # fallback bracket (doit être ≈ 0)
+    pct_polish = nb_polish / total_c * 100 if total_c > 0 else 0
+    lmfdb_s    = resultats_lmfdb.get("score", "0/0").split("/")
+    score_l    = int(lmfdb_s[0]) if len(lmfdb_s) == 2 else 0
+    vitesse_f  = len(zeros) / duree if duree > 0 else 0
 
     print()
-    print("  Critères v4.1 (illinois_C + fallback) :")
-    print(f"    illinois_C (t≥300): {nb_illc:5d}  ({pct_illc:.1f}%)  (cible > 90%)"
-          + (" ✅" if pct_illc > 90 else " ⚠️ "))
-    print(f"    mpmath_petit_t    : {nb_mpt:5d}  (t < 300, légitime)")
-    print(f"    mpmath_fallback   : {nb_fallbk:5d}  (doit être ≈ 0)"
+    print("  Critères v4.1 (illinois_C_polish) :")
+    print(f"    illinois_C_polish (t≥300): {nb_polish:5d}  ({pct_polish:.1f}%)  (cible > 90%)"
+          + (" ✅" if pct_polish > 90 else " ⚠️ "))
+    print(f"    mpmath_petit_t           : {nb_mpt:5d}  (t < 300, légitime)")
+    print(f"    mpmath_fallback          : {nb_fallbk:5d}  (doit être ≈ 0)"
           + (" ✅" if nb_fallbk == 0 else " ⚠️ "))
-    print(f"    Turing complet    : {'✅' if resultats_turing['complet'] else '❌'}")
-    print(f"    LMFDB 19/20       : {resultats_lmfdb.get('score','?')}"
+    print(f"    Turing complet           : {'✅' if resultats_turing['complet'] else '❌'}")
+    print(f"    LMFDB 19/20              : {resultats_lmfdb.get('score','?')}"
           + (" ✅" if score_l >= 19 else " ⚠️ "))
-    print(f"    Vitesse           : {vitesse_f:.1f} z/s  (cible > 5.0)"
+    print(f"    Vitesse                  : {vitesse_f:.1f} z/s  (cible > 5.0)"
           + (" ✅" if vitesse_f > 5.0 else " ⚠️ "))
     print("=" * 65)
 
