@@ -51,7 +51,7 @@ from typing import List, Tuple
 import mpmath
 mpmath.mp.dps = 35   # affinage fallback uniquement
 
-from riemann_siegel_batch import Z_batch
+from riemann_siegel_batch import Z_batch, Z_vect_correct
 from parallel_scanner      import partitionner, dedupliquer
 from turing_validation     import valider_turing, N_attendu
 
@@ -114,9 +114,10 @@ def worker_v4_1(args: tuple) -> Tuple[list, dict, dict]:
         if len(t_array) < 2:
             break
 
-        # Détection vectorisée par Z_batch — RS numpy, correct partout
+        # Détection vectorisée — Z_vect_correct (N(t) par ligne, correct partout)
+        # Z_batch utilise N_max fixe → termes RS parasites pour petit t → bug détection
         with chrono("detection"):
-            Z_vals = Z_batch(t_array)
+            Z_vals = Z_vect_correct(t_array)
             idx    = np.where(np.diff(np.sign(Z_vals)))[0]
 
         for i in idx:
@@ -132,15 +133,23 @@ def worker_v4_1(args: tuple) -> Tuple[list, dict, dict]:
                         zeros_segment.append(zero)
                         stats["illinois_C"] += 1
                     else:
-                        # résultat hors intervalle (très rare) → fallback
+                        # Résultat hors intervalle → fallback bracketed Illinois mpmath
+                        # (ne pas utiliser findroot(siegelz, t_mid) sans bracket : peut diverger)
                         with chrono("mpmath_fallback"):
-                            zero = float(_mp.findroot(_mp.siegelz, t_mid))
+                            zero = float(_mp.findroot(
+                                _mp.siegelz, (a, b),
+                                solver="illinois", tol=1e-12, maxsteps=80,
+                            ))
                         zeros_segment.append(zero)
                         stats["mpmath_fallback"] += 1
                 else:
-                    # t < 300 — N < 7 termes, Illinois C imprécis → mpmath
+                    # t < 300 — N < 7 termes, Illinois C imprécis → mpmath bracketed
                     with chrono("mpmath_petit_t"):
-                        zero = float(_mp.findroot(_mp.siegelz, t_mid))
+                        with _mp.workprec(50):   # ~15 dps — suffit pour N<7 termes RS
+                            zero = float(_mp.findroot(
+                                _mp.siegelz, (a, b),
+                                solver="illinois", tol=tol, maxsteps=80,
+                            ))
                     zeros_segment.append(zero)
                     stats["mpmath_petit_t"] += 1
             except Exception:
