@@ -33,3 +33,4 @@ scripts/assistant_pack_audit_*.txt
 scripts/audit_extract_text*/
 .mcp.json
 Handoff.md
+**/Handoff.md
