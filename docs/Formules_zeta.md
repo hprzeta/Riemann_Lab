@@ -3,6 +3,7 @@
 > Mise à jour : 2 juin 2026 — formules v1/v2/v3 + leçons v4.1 (Z_vect_correct, troncature RS)
 >   + leçons Vérif A/B v4.1 : erreur de position (perturbation 1ᵉʳ ordre) et distinction comptage/position
 >   + leçon v4.2 : finition Newton (ordre 2, dérivée analytique, critère dps vs LMFDB absolu)
+>   + leçon v4.2 mesurée : Newton réfuté (Z' coûteux), goulot = mpmath.siegelz, pas l'algorithme
 
 ---
 
@@ -348,10 +349,21 @@ $$
 \;\to\; \varepsilon_3 \approx 1\times10^{-14}
 $$
 
-**3 pas suffisent** pour passer sous $10^{-10}$, soit 6 évaluations de `siegelz` contre ~27 pour
-Illinois. Le coût total étant $n_{\text{évals}} \times \text{coût/éval}$, attaquer
-$n_{\text{évals}}$ donne un gain $\approx 4.5\times$ **sans toucher au coût par évaluation, donc
-sans perdre un chiffre de précision**. C'est le levier propre.
+**3 pas suffisent** pour passer sous $10^{-10}$, soit ~6 évaluations contre ~27 pour Illinois.
+On pourrait croire à un gain $\approx 4.5\times$. **C'est faux ici** — et la mesure l'a confirmé
+(§6.5.5). Le coût total est $n_{\text{évals}} \times \text{coût/éval}$, mais les deux solveurs
+n'évaluent pas la même chose :
+
+- Illinois n'évalue que $Z$ (1 appel `siegelz` par pas, ~296 ms à $t\approx 9000$) ;
+- Newton évalue $Z$ **et** $Z'$ (2 appels par pas), or $Z'$ est **plus cher** que $Z$ (§6.5.2).
+
+Le produit $n_{\text{évals}} \times \text{coût/éval}$ finit donc comparable. **La réduction du
+nombre d'itérations est réelle mais sans effet**, parce que le coût par évaluation domine et que
+le goulot est la vitesse intrinsèque de `mpmath.siegelz` à grand $t$, **pas** le nombre de pas.
+
+> **Leçon épistémique** : l'analyse d'ordre de convergence ci-dessus était une **prédiction**
+> *a priori*, valable seulement sous l'hypothèse « coût/éval constant et $Z'$ aussi cheap que $Z$ ».
+> Cette hypothèse est **fausse** (§6.5.2) ; la mesure (§6.5.5) prime sur la prédiction.
 
 > **Garde-fou** : Newton n'est **pas borné**. Si le croisement est plat ($Z'$ petit, §5.6) ou
 > sur une paire de zéros proches, l'itéré peut sortir du bracket $[\gamma_c \pm \delta]$. Prévoir
@@ -369,9 +381,15 @@ soustrait deux nombres quasi égaux : **annulation catastrophique** qui détruit
 chiffres significatifs. Une dérivée imprécise abaisse l'ordre effectif de Newton ($2 \to \approx 1.6$,
 comme la sécante) et peut faire **échouer** la convergence à $10^{-14}$.
 
-**Solution** : la dérivée **analytique** `mpmath.siegelz(t, derivative=1)`, calculée exactement
-(elle partage la structure de la somme RS), sans annulation et pour un coût comparable à une
-évaluation de $Z$. C'est elle qui garantit la cascade quadratique en 3 pas du §6.5.1.
+**Solution** : la dérivée **analytique** `mpmath.siegelz(t, derivative=1)` (pas de différence finie).
+Elle est calculée exactement, sans annulation, et **garantit** la cascade quadratique du §6.5.1.
+
+> **⚠️ Mais elle n'est PAS gratuite** (idée fausse corrigée par la mesure, §6.5.5). `siegelz`
+> ne renvoie pas $Z'$ « en bonus » d'un calcul de $Z$ : il le **recalcule** à part. Or
+> $$\zeta'(s) = -\sum_{n\geq 1}\frac{\ln n}{n^{s}}$$
+> porte des **poids logarithmiques** $\ln n$ absents de $\zeta(s)=\sum n^{-s}$. Cette série
+> converge **plus lentement**, donc l'évaluation de $Z'$ est **plus coûteuse** que celle de $Z$,
+> pas comparable. C'est précisément ce qui annule le gain d'itérations de Newton (§6.5.1).
 
 #### 6.5.3 Choix du `dps` — critère LMFDB **absolu** vs chiffres significatifs
 
@@ -398,7 +416,11 @@ $$
 > avant la virgule), donc même `dps=15` paraît suffisant. Le risque n'apparaît qu'au **sommet**.
 > → **Valider tout abaissement de `dps` sur un échantillon $t\approx 9900$–$10\,000$, jamais sur T=1000.**
 
-#### 6.5.4 Heuristique de coût (à confirmer par la mesure)
+#### 6.5.4 Heuristique de coût *a priori* (⚠️ réfutée par la mesure — voir §6.5.5)
+
+> Ce qui suit est la **prédiction** faite avant mesure. Elle s'est révélée **trop optimiste** :
+> elle suppose 6 évaluations toutes au même coût que $Z$, alors que les évaluations de $Z'$ sont
+> plus chères (§6.5.2). Conservée ici pour la traçabilité du raisonnement.
 
 Le coût d'une opération multi-précision croît comme $\text{dps}^2$. En passant de 30 à 25 dps :
 $(25/30)^2 \approx 0.69$. Avec Newton (6 évaluations, ~300 ms/éval à dps=30 et $t\approx 9000$) :
@@ -409,8 +431,44 @@ $$
 \;\Rightarrow\; \sim 3.2\ \text{z/s} \times 4\ \text{workers}
 $$
 
-soit T=10000 en **~50 min** (vs ~5.7 h pour Illinois pur à dps=30). À dps=20 (si validé au sommet) :
-encore ~2.5× plus rapide. **Estimation heuristique** — la mesure réelle sur T=1000 fait foi.
+soit T=10000 en ~50 min. **Prédiction non confirmée** : la mesure donne ~0.4 z/s (§6.5.5).
+
+#### 6.5.5 Résultat **mesuré** — le goulot est `siegelz`, pas l'algorithme (leçon décisive v4.2)
+
+> **Mesure (Vérif B v3, dps=25, $t\approx 9000$)** : Newton + dps=25 donne **0.4 z/s** —
+> **plus lent** que Illinois + polish dps=30 (**0.5 z/s**). La prédiction du §6.5.1/§6.5.4 est
+> **réfutée**. Précision toujours parfaite ($\text{Écart}_P = 0.00$) dans les deux cas.
+
+**Bilan de performance — toutes les options comparées** ($\times 4$ workers, $t\approx 9000$) :
+
+| Approche | z/s ×4 | Précision (vs LMFDB) | Commentaire |
+|---|---|---|---|
+| Illinois_C pur (commit `d9bb267`) | **41** | ~$10^{-4}$ ❌ | racines de $Z_{\text{mpfr}}$, pas LMFDB (§5.6) |
+| Illinois + polish `findroot` dps=30 | 0.5 | $0.00$ ✅ | 27 itér × ~296 ms |
+| Newton + dps=25, 5 pas | 0.4 | $0.00$ ✅ | $Z'$ cher → aucun gain |
+
+**Cause racine confirmée** : à $t\approx 9000$, un appel `siegelz` coûte ~296 ms (somme RS à
+$N=\lfloor\sqrt{t/2\pi}\rfloor \approx 37$ termes, chaque opération multi-précision en $O(\text{dps}^2)$).
+Newton consomme ~2 appels/pas (dont $Z'$, plus cher, §6.5.2). **Le goulot est la vitesse
+intrinsèque de `mpmath.siegelz` à grand $t$, pas le nombre d'itérations.** Réduire les itérations
+ne sert donc à rien : il n'y a **pas d'optimisation algorithmique possible à ce niveau** tant que
+l'affinage final passe par `siegelz`.
+
+**Conséquence — deux livrables, deux régimes** (rappel §11.1, distinction comptage/position) :
+
+| Run | Zéros | Temps ×4 estimé | Usage |
+|---|---|---|---|
+| T=300 | 138 | ~60 s (mesuré, tout en fallback mpmath $t<300$) | test |
+| T=1000 | ~396 | ~16 min | validation complète faisable |
+| T=10000 | ~10 142 | ~7 h | **catalogue de positions $<10^{-10}$ → run de nuit** |
+
+Les **20 premières références LMFDB** ($t<78$) tombent toutes dans la zone de fallback
+`mpmath` ($t<300$) : elles sont **toujours** précises à $<10^{-10}$, sans aucun polish.
+
+> **Décision ouverte** : pour *vérifier HR jusqu'à T=10000*, Illinois_C pur (41 z/s, ~5 min)
+> suffit déjà (comptage Turing, §11.1). Le polish lent (~7 h) n'est requis **que** pour produire
+> un **catalogue de positions** comparables à LMFDB — or ce catalogue existe déjà via v2/v3
+> (CSV 10 142 zéros, 50 dps). À trancher selon le livrable visé, **pas** à subir par défaut.
 
 ---
 
@@ -766,4 +824,4 @@ def affiner_zero(t_gauche: float, t_droite: float, tol: float = 1e-20) -> float:
 
 ---
 
-*Auteur : hprzeta · Dernière mise à jour : 2 juin 2026 — ~768 lignes*
+*Auteur : hprzeta · Dernière mise à jour : 2 juin 2026 — ~826 lignes*
