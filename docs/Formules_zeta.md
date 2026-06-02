@@ -2,6 +2,7 @@
 > Version enrichie — Projet Riemann_Lab · hprzeta
 > Mise à jour : 2 juin 2026 — formules v1/v2/v3 + leçons v4.1 (Z_vect_correct, troncature RS)
 >   + leçons Vérif A/B v4.1 : erreur de position (perturbation 1ᵉʳ ordre) et distinction comptage/position
+>   + leçon v4.2 : finition Newton (ordre 2, dérivée analytique, critère dps vs LMFDB absolu)
 
 ---
 
@@ -319,6 +320,97 @@ ce qui limite le surcoût du raffinage exact.
 **Distinction à ne jamais confondre** : ce raffinage `siegelz` ne sert **qu'à la précision des
 positions** (comparaison LMFDB). Il n'est **pas** nécessaire pour *vérifier* HR jusqu'à $T$ —
 voir §11.1, qui montre que la vérification repose sur le **comptage**, pas sur les positions.
+
+### 6.5 Finition Newton sur le vrai $Z$ — ordre de convergence et précision (leçon v4.2)
+
+> **Mesure clé (validation hybride v4.2)** : la finition `findroot(siegelz)` après pré-affinage
+> C donne $\text{Écart}_P = 0.00$ (vs LMFDB) sur les trois plages $t\approx 350,\,1000,\,9900$ —
+> précision **parfaite**, critère $<10^{-10}$ largement battu. Reste à optimiser la **vitesse**
+> du raffinage, où le bon levier est le **nombre d'évaluations** de `siegelz`, pas le `dps`.
+
+#### 6.5.1 Pourquoi Newton plutôt qu'Illinois pour la finition
+
+La vitesse de convergence d'un solveur se mesure par son **ordre** $p$ : si $\varepsilon_n$ est
+l'erreur au pas $n$, alors $\varepsilon_{n+1} \approx C\,\varepsilon_n^{\,p}$.
+
+| Solveur | Ordre $p$ | Évaluations / pas | Évaluations pour passer $10^{-2} \to 10^{-10}$ |
+|---|---|---|---|
+| Illinois (sécante modifiée) | $\approx 1.44$ | 1 | ~27 |
+| **Newton** | $2$ (quadratique) | 2 ($Z$ et $Z'$) | **~6** (3 pas) |
+
+Partant du point initial fourni par le C, $\varepsilon_0 = 1.7\times10^{-2}$ (§5.6), Newton
+**double le nombre de chiffres exacts à chaque pas** :
+
+$$
+\varepsilon_0 = 1.7\times10^{-2}
+\;\to\; \varepsilon_1 \approx 3\times10^{-4}
+\;\to\; \varepsilon_2 \approx 1\times10^{-7}
+\;\to\; \varepsilon_3 \approx 1\times10^{-14}
+$$
+
+**3 pas suffisent** pour passer sous $10^{-10}$, soit 6 évaluations de `siegelz` contre ~27 pour
+Illinois. Le coût total étant $n_{\text{évals}} \times \text{coût/éval}$, attaquer
+$n_{\text{évals}}$ donne un gain $\approx 4.5\times$ **sans toucher au coût par évaluation, donc
+sans perdre un chiffre de précision**. C'est le levier propre.
+
+> **Garde-fou** : Newton n'est **pas borné**. Si le croisement est plat ($Z'$ petit, §5.6) ou
+> sur une paire de zéros proches, l'itéré peut sortir du bracket $[\gamma_c \pm \delta]$. Prévoir
+> un **fallback Illinois borné** dans ce cas.
+
+#### 6.5.2 Dérivée analytique obligatoire — annulation catastrophique
+
+Newton requiert $Z'(t)$. Une **différence finie** centrée
+
+$$
+Z'(t) \approx \frac{Z(t+h) - Z(t-h)}{2h}
+$$
+
+soustrait deux nombres quasi égaux : **annulation catastrophique** qui détruit ~la moitié des
+chiffres significatifs. Une dérivée imprécise abaisse l'ordre effectif de Newton ($2 \to \approx 1.6$,
+comme la sécante) et peut faire **échouer** la convergence à $10^{-14}$.
+
+**Solution** : la dérivée **analytique** `mpmath.siegelz(t, derivative=1)`, calculée exactement
+(elle partage la structure de la somme RS), sans annulation et pour un coût comparable à une
+évaluation de $Z$. C'est elle qui garantit la cascade quadratique en 3 pas du §6.5.1.
+
+#### 6.5.3 Choix du `dps` — critère LMFDB **absolu** vs chiffres significatifs
+
+> **Piège** : le critère LMFDB est **absolu** ($|\gamma_{\text{calc}} - \gamma_{\text{LMFDB}}| < 10^{-10}$),
+> alors que le `dps` contrôle un nombre de chiffres **significatifs**. Plus $\gamma$ est grand,
+> plus il faut de chiffres pour la **même** précision absolue.
+
+Pour garantir $10^{-10}$ **absolu** à hauteur $\gamma$, il faut un nombre de chiffres significatifs :
+
+$$
+\#\text{chiffres} \;\gtrsim\; \log_{10}(\gamma) \;+\; 10
+$$
+
+À $\gamma \approx 9999$ : $\log_{10}(9999) \approx 4$, donc $\#\text{chiffres} \gtrsim 14$.
+
+| `dps` | Chiffres dispo | Marge au-dessus de $10^{-10}$ absolu à $\gamma\approx 9999$ | Verdict |
+|---|---|---|---|
+| 15 | 15 | ~1 chiffre | ❌ insuffisant (aucune marge pour l'annulation RS interne) |
+| 20 | 20 | ~6 chiffres | ⚠️ à valider sur le sommet $t\approx 9900$ |
+| 25 | 25 | ~11 chiffres | ✅ sûr |
+| 30 | 30 | ~16 chiffres | ✅ confortable |
+
+> **⚠️ Le test sur T=1000 ne révèle PAS ce problème** : à T=1000, $\gamma < 396$ (~3 chiffres
+> avant la virgule), donc même `dps=15` paraît suffisant. Le risque n'apparaît qu'au **sommet**.
+> → **Valider tout abaissement de `dps` sur un échantillon $t\approx 9900$–$10\,000$, jamais sur T=1000.**
+
+#### 6.5.4 Heuristique de coût (à confirmer par la mesure)
+
+Le coût d'une opération multi-précision croît comme $\text{dps}^2$. En passant de 30 à 25 dps :
+$(25/30)^2 \approx 0.69$. Avec Newton (6 évaluations, ~300 ms/éval à dps=30 et $t\approx 9000$) :
+
+$$
+6 \times (300\,\text{ms} \times 0.69) \approx 1.24\ \text{s/zéro}
+\;\Rightarrow\; \sim 0.8\ \text{z/s (1 worker)}
+\;\Rightarrow\; \sim 3.2\ \text{z/s} \times 4\ \text{workers}
+$$
+
+soit T=10000 en **~50 min** (vs ~5.7 h pour Illinois pur à dps=30). À dps=20 (si validé au sommet) :
+encore ~2.5× plus rapide. **Estimation heuristique** — la mesure réelle sur T=1000 fait foi.
 
 ---
 
@@ -674,4 +766,4 @@ def affiner_zero(t_gauche: float, t_droite: float, tol: float = 1e-20) -> float:
 
 ---
 
-*Auteur : hprzeta · Dernière mise à jour : 2 juin 2026 — ~677 lignes*
+*Auteur : hprzeta · Dernière mise à jour : 2 juin 2026 — ~768 lignes*
