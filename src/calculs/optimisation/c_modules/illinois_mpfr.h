@@ -48,4 +48,20 @@ typedef double (*z_func_t)(double t);
  * Usage   : illinois_pyZ.py → illinois_c_exact(a, b, tol) */
 double illinois_mpfr_cb(double a_d, double b_d, double tol, z_func_t zfunc);
 
+/* illinois_refine — affinage Illinois Option B (interface principale)
+ *
+ * Reçoit les bornes ET leurs valeurs Z précalculées par Python (mpmath.siegelz).
+ * Les itérations intermédiaires utilisent Z_mpfr à prec_bits de précision.
+ * Avantage vs illinois_mpfr : l'encadrement initial est ancré sur les vrais
+ * zéros de Riemann (fa/fb fournis par Python), pas les pseudo-zéros RS.
+ *
+ * Entrée : a, b       — bornes avec fa·fb < 0
+ * Entrée : fa, fb     — Z(a), Z(b) calculés par mpmath.siegelz côté Python
+ * Entrée : prec_bits  — précision interne libmpfr (ex: 170)
+ * Entrée : tol        — tolérance sur |b−a| (ex: 1e-12)
+ * Entrée : max_iter   — nombre max d'itérations (ex: 100)
+ * Sortie : double — partie imaginaire du zéro affiné */
+double illinois_refine(double a, double b, double fa, double fb,
+                       int prec_bits, double tol, int max_iter);
+
 #endif /* ILLINOIS_MPFR_H */

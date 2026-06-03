@@ -40,16 +40,25 @@ if not os.path.exists(_so):
     sys.exit(1)
 
 _lib = ctypes.CDLL(_so)
+# Ancienne interface — conservée pour compatibilité
 _lib.illinois_mpfr.restype  = ctypes.c_double
 _lib.illinois_mpfr.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
-_lib.Z_double.restype       = ctypes.c_double
-_lib.Z_double.argtypes      = [ctypes.c_double]
+# Option B — illinois_refine avec fa/fb précalculés par Python
+_lib.illinois_refine.restype  = ctypes.c_double
+_lib.illinois_refine.argtypes = [
+    ctypes.c_double,  # a
+    ctypes.c_double,  # b
+    ctypes.c_double,  # fa = Z(a) depuis mpmath.siegelz
+    ctypes.c_double,  # fb = Z(b) depuis mpmath.siegelz
+    ctypes.c_int,     # prec_bits
+    ctypes.c_double,  # tol
+    ctypes.c_int,     # max_iter
+]
 
-def Z_double(t: float) -> float:
-    return _lib.Z_double(float(t))
-
-def illinois_c(a: float, b: float, tol: float = 1e-12) -> float:
-    return _lib.illinois_mpfr(float(a), float(b), float(tol))
+def illinois_c(a: float, b: float, fa: float, fb: float, tol: float = 1e-12) -> float:
+    """Affinage Illinois Option B — fa/fb fournis par mpmath.siegelz."""
+    return _lib.illinois_refine(float(a), float(b), float(fa), float(fb),
+                                170, float(tol), 100)
 
 
 def trouver_intervalle_mpmath(t_ref: float, delta: float = 0.5) -> tuple | None:
@@ -69,33 +78,30 @@ def trouver_intervalle_mpmath(t_ref: float, delta: float = 0.5) -> tuple | None:
 
 
 def affiner_zero(a: float, b: float, tol: float = 1e-12) -> tuple[float, str]:
-    """Affinage hybride d'un zéro dans l'intervalle [a,b].
+    """Affinage hybride Option B — fa/fb depuis mpmath.siegelz.
 
-    Étape 1 : illinois_mpfr C si Z_double change de signe (pré-affinage rapide).
-    Étape 2 : vérification avec mpmath.siegelz (vraie Z(t) de Riemann).
-    Étape 3 : si le résultat C n'est pas un vrai zéro, affinage complémentaire
-              avec mpmath.findroot depuis le point Illinois C (bonne approximation).
-
-    Fallback direct : si Z_double incohérent, mpmath.findroot depuis le milieu.
+    Étape 1 : fa=Z(a) et fb=Z(b) calculés par mpmath.siegelz (vrais Z de Riemann).
+    Étape 2 : illinois_refine C avec (a, b, fa, fb) — encadrement ancré sur vrais zéros.
+    Étape 3 : vérification |mpmath.siegelz(γ)| < 1e-8.
+    Étape 4 : si non satisfait, affinage complémentaire mpmath.findroot.
 
     Retourne (gamma_calc, méthode_utilisée).
     """
-    za_d = Z_double(a)
-    zb_d = Z_double(b)
+    fa = float(mpmath.siegelz(a))
+    fb = float(mpmath.siegelz(b))
     t_mid = (a + b) / 2.0
 
-    if za_d * zb_d < 0:
-        # Illinois C pré-affine : zéro de Z_mpfr (RS), potentiellement décalé
-        gamma_c = illinois_c(a, b, tol)
+    if fa * fb < 0:
+        # Illinois C Option B — fa/fb ancrés sur mpmath.siegelz (vrais zéros)
+        gamma_c = illinois_c(a, b, fa, fb, tol)
         if abs(float(mpmath.siegelz(gamma_c))) < 1e-8:
-            # Illinois C a trouvé un vrai zéro directement
             return gamma_c, "Illinois C"
         else:
-            # RS imprécis : affinage complémentaire mpmath depuis le résultat C
+            # Biais RS résiduel (t<300) : affinage complémentaire mpmath
             gamma = float(mpmath.findroot(mpmath.siegelz, gamma_c))
             return gamma, "Illinois C→mpmath"
     else:
-        # Z_double incohérent : fallback direct mpmath depuis le milieu de l'intervalle
+        # Intervalle incohérent (ne devrait pas arriver avec mpmath.siegelz pour détection)
         gamma = float(mpmath.findroot(mpmath.siegelz, t_mid))
         return gamma, "mpmath.findroot"
 

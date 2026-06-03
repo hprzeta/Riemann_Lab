@@ -1,24 +1,19 @@
 #!/usr/bin/env python3
-# illinois_pyZ.py — Voie B : callback Python pour illinois_mpfr_cb
+# illinois_pyZ.py — Voie B : wrappers Python pour illinois_mpfr.so
 #
-# Problème : illinois_mpfr.so utilise Z_mpfr (RS + C0+C1) avec biais ~9e-3.
-# Solution : illinois_mpfr_cb accepte un callback z_func_t ; Python fournit
-#            float(mpmath.siegelz(t)) → biais éliminé, précision ~1e-14.
+# Option B (2026-06-03) :
+#   illinois_refine(a, b, fa, fb, ...) — interface principale.
+#   fa/fb fournis par Python (mpmath.siegelz) → biais RS éliminé à l'init.
+#   Les itérations intermédiaires utilisent Z_mpfr (C) — précis pour t≥300.
 #
-# Interface publique :
-#   illinois_c_exact(a, b, tol=1e-12) → float
-#     Illinois C pur avec Z(t) = mpmath.siegelz, sans fallback mpmath.findroot.
+# Aussi disponible : illinois_c_exact via callback (toutes valeurs via mpmath).
 #
-# Contrainte respectée : illinois_mpfr(a, b, tol) (ancienne interface) reste
-# inchangée et accessible via ctypes comme avant.
-#
-# Phase C — Riemann_Lab / hprzeta — 2026-05-29
+# Phase C — Riemann_Lab / hprzeta — 2026-06-03
 
 import ctypes
 import os
 import mpmath
 
-# précision mpmath pour le callback — 35 dps donne ~14-15 chiffres en double
 mpmath.mp.dps = 35
 
 # ── chargement de la bibliothèque ────────────────────────────────────────────
@@ -32,56 +27,65 @@ if not os.path.exists(_SO_PATH):
 
 _lib = ctypes.CDLL(_SO_PATH)
 
-# ── ancienne interface — inchangée (compatibilité ctypes existante) ───────────
+# ── interface principale Option B ─────────────────────────────────────────────
+_lib.illinois_refine.restype  = ctypes.c_double
+_lib.illinois_refine.argtypes = [
+    ctypes.c_double,  # a
+    ctypes.c_double,  # b
+    ctypes.c_double,  # fa
+    ctypes.c_double,  # fb
+    ctypes.c_int,     # prec_bits
+    ctypes.c_double,  # tol
+    ctypes.c_int,     # max_iter
+]
+
+# ── interface callback (voie B alternative) ───────────────────────────────────
 _lib.illinois_mpfr.restype  = ctypes.c_double
 _lib.illinois_mpfr.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
 
-_lib.Z_double.restype  = ctypes.c_double
-_lib.Z_double.argtypes = [ctypes.c_double]
-
-# ── nouvelle interface — Voie B ───────────────────────────────────────────────
-# type C du callback : double (*z_func_t)(double t)
 _Z_FUNC_T = ctypes.CFUNCTYPE(ctypes.c_double, ctypes.c_double)
 
 _lib.illinois_mpfr_cb.restype  = ctypes.c_double
 _lib.illinois_mpfr_cb.argtypes = [
-    ctypes.c_double,   # a_d
-    ctypes.c_double,   # b_d
-    ctypes.c_double,   # tol
-    _Z_FUNC_T,         # zfunc — pointeur de fonction C
+    ctypes.c_double,
+    ctypes.c_double,
+    ctypes.c_double,
+    _Z_FUNC_T,
 ]
 
-# ── callback Python → C ───────────────────────────────────────────────────────
 def _z_mpmath(t: float) -> float:
-    """Évalue la vraie Z(t) de Riemann via mpmath.siegelz.
-    Appelé depuis C (illinois_mpfr_cb) à chaque itération Illinois.
-    Retourne float64 (~15 chiffres) — suffisant pour |b−a| < 1e-12."""
+    """Évalue Z(t) = mpmath.siegelz(t) pour le callback C."""
     return float(mpmath.siegelz(t))
 
-# IMPORTANT : conserver la référence Python vivante tant que le .so est chargé.
-# Un GC prématuré de _Z_CB = segfault dans C.
+# IMPORTANT : conserver la référence Python vivante — GC prématuré = segfault C.
 _Z_CB = _Z_FUNC_T(_z_mpmath)
 
 
-# ── interface publique ────────────────────────────────────────────────────────
+# ── interfaces publiques ──────────────────────────────────────────────────────
+
+def illinois_c_refine(a: float, b: float, fa: float, fb: float,
+                      prec_bits: int = 170, tol: float = 1e-12,
+                      max_iter: int = 100) -> float:
+    """Illinois C Option B — fa/fb fournis par Python.
+
+    Interface principale. fa et fb doivent être calculés par mpmath.siegelz
+    AVANT l'appel (typiquement déjà disponibles depuis le balayage).
+
+    Précondition : fa * fb < 0
+    Retourne : partie imaginaire du zéro affiné (précision ~1e-3 pour t<62000,
+               ~1e-12 pour t très grand où Z_mpfr est précis).
+    """
+    return _lib.illinois_refine(float(a), float(b), float(fa), float(fb),
+                                int(prec_bits), float(tol), int(max_iter))
+
+
 def illinois_c_exact(a: float, b: float, tol: float = 1e-12) -> float:
-    """Illinois C avec Z(t) = mpmath.siegelz — biais RS éliminé.
+    """Illinois C avec callback mpmath.siegelz — toutes valeurs Z via Python.
+
+    Toutes les évaluations Z (y compris les intermédiaires) passent par
+    mpmath.siegelz → précision ~1e-14 même pour t<300.
+    Coût : N appels Python par itération (plus lent qu'illinois_c_refine).
 
     Précondition : mpmath.siegelz(a) * mpmath.siegelz(b) < 0
-    Précision    : ~1e-14 (limite double, largement > 1e-12 cible)
-    Convergence  : ~15-20 appels mpmath.siegelz (Illinois super-linéaire)
-
-    Retourne la partie imaginaire du zéro γ, vrai zéro de ζ(1/2+it).
     """
     return _lib.illinois_mpfr_cb(float(a), float(b), float(tol), _Z_CB)
-
-
-def z_double_c(t: float) -> float:
-    """Z(t) RS + C0+C1 en C double — pour diagnostic/comparaison uniquement."""
-    return _lib.Z_double(float(t))
-
-
-def illinois_c_rs(a: float, b: float, tol: float = 1e-12) -> float:
-    """Illinois C avec Z_mpfr interne (RS + C0+C1) — ancienne interface v4.
-    Biais ~9e-3, utile uniquement pour t > 1000 où RS est suffisamment précis."""
-    return _lib.illinois_mpfr(float(a), float(b), float(tol))

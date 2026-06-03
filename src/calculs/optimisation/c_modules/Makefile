@@ -9,7 +9,8 @@ LIBS   = -lmpfr -lgmp -lm
 all: illinois_mpfr.so
 
 ## cible principale : .so partagé appelé via ctypes depuis Python
-illinois_mpfr.so: illinois_mpfr.c z_function.c
+## Option B : z_function.c retiré — Z_double supprimé (détection côté Python)
+illinois_mpfr.so: illinois_mpfr.c
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LIBS)
 
 ## cible de test : compile + lance la validation Python
