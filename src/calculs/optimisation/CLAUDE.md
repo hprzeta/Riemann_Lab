@@ -1,7 +1,6 @@
 # src/calculs/optimisation/CLAUDE.md — Instructions Phase C
-> Contexte local Claude Code — optimisation & Phase C (Illinois en C/libmpfr).
-> Règles **stables** ; aucun état de session ici (→ `Handoff.md`).
-> Mis à jour : 31 mai 2026
+> **Fichier :** CLAUDE.md - **Dossier :** src/calculs/optimisation/
+> **Branche :** Riemann_Lab_C - **Auteur :** hprzeta - **MAJ :** 2026-06-03
 
 ---
 
@@ -122,4 +121,4 @@ et skills, puis pousser :
 cause mathématique, formules, tableaux comparatifs, gains mesurés, questions ouvertes.
 
 ---
-*Dernière mise à jour : 31 mai 2026 — ~120 lignes (formules dédupliquées → projet CLAUDE.md)*
+*CLAUDE.md - src/calculs/optimisation/ - Riemann_Lab_C - hprzeta - MAJ 2026-06-03 - 124 lignes*

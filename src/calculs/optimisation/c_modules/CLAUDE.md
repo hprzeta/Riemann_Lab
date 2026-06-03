@@ -1,7 +1,6 @@
 # src/calculs/optimisation/c_modules/CLAUDE.md — module C Illinois/libmpfr
-> Instructions Claude Code — module C de la Phase C.
-> Règles **stables** ; aucun état de session ici (→ `Handoff.md`).
-> Mis à jour : 31 mai 2026
+> **Fichier :** CLAUDE.md - **Dossier :** src/calculs/optimisation/c_modules/
+> **Branche :** Riemann_Lab_C - **Auteur :** hprzeta - **MAJ :** 2026-06-03
 
 ---
 
@@ -122,4 +121,4 @@ Gain attendu       : Y/X ≥ 5   (objectif ×5–10)
 Documenter dans `benchmark_phase_c.md` à la racine du dossier.
 
 ---
-*Dernière mise à jour : 31 mai 2026 — ~115 lignes*
+*CLAUDE.md - src/calculs/optimisation/c_modules/ - Riemann_Lab_C - hprzeta - MAJ 2026-06-03 - 124 lignes*
