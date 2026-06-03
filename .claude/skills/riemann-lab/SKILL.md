@@ -18,9 +18,6 @@ description: |
 Assistant expert pour le projet **Riemann_Lab** — une initiative pédagogique et de recherche
 sur la fonction zêta de Riemann (ζ) et l'hypothèse de Riemann (HdR), développée en français.
 
-> Skill lié : pour la **Phase C** (affinage Illinois porté en C/libmpfr), voir le skill
-> `phase-c-illinois`. Formules complètes et recettes Python → section 8.
-
 ---
 
 ## 1. Contexte du projet
@@ -29,7 +26,6 @@ sur la fonction zêta de Riemann (ζ) et l'hypothèse de Riemann (HdR), dévelop
 |---|---|
 | Dépôt GitHub | `hprzeta/Riemann_Lab` |
 | Branche de développement | `Riemann_Lab_IA` |
-| Branche Phase C | `Riemann_Lab_C` |
 | Branche de production | `main` |
 | Branche de test | `Riemann_Lab_Test` |
 | GitHub Pages | `/docs` sur `Riemann_Lab_IA` |
@@ -177,40 +173,41 @@ mp.dps = 50  # 50 décimales pour les calculs de haute précision
 - Noms de variables mathématiquement significatifs (`sigma`, `t`, `s = sigma + 1j*t`)
 - Toujours vérifier la convergence / zone critique séparément
 
-### Règle de visualisation (absolue)
-```python
-plt.savefig("fichier.png", dpi=150)
-plt.close()    # TOUJOURS — jamais plt.show() en production (bloquant)
-```
-
 ### Exemple de structure standard
 ```python
 import numpy as np
 import matplotlib.pyplot as plt
-from mpmath import mp, siegelz
+from mpmath import mp, zeta, siegelz, siegeltheta
 
 mp.dps = 30  # précision
+
+def calculer_zeros(n_max: int) -> list:
+    """Calcule les n_max premiers zéros non-triviaux de ζ sur la droite critique."""
+    from mpmath import zetazero
+    return [zetazero(n) for n in range(1, n_max + 1)]
 
 def tracer_Z(t_min: float, t_max: float, points: int = 1000):
     """Trace la fonction Z(t) de Hardy sur [t_min, t_max]."""
     t_vals = np.linspace(t_min, t_max, points)
     Z_vals = [float(siegelz(t)) for t in t_vals]
-
+    
     plt.figure(figsize=(12, 4))
     plt.plot(t_vals, Z_vals, 'b-', linewidth=0.8)
     plt.axhline(0, color='r', linewidth=0.5)
-    plt.xlabel('$t$'); plt.ylabel('$Z(t)$')
+    plt.xlabel('$t$')
+    plt.ylabel('$Z(t)$')
     plt.title('Fonction $Z(t)$ de Hardy-Littlewood')
-    plt.grid(True, alpha=0.3); plt.tight_layout()
+    plt.grid(True, alpha=0.3)
+    plt.tight_layout()
     plt.savefig('Z_function.png', dpi=150)
-    plt.close()   # jamais plt.show()
+    plt.close()  # ⚠️ jamais plt.show() en production (bloquant → fige le run)
 ```
 
 ---
 
 ## 6. Commits Git — Conventional Commits
 
-Titre en **anglais** (convention) ; le corps peut être en français.
+Toujours en **anglais** (convention), mais les messages de corps peuvent être en français.
 
 ```
 feat(wiki): add page on Riemann-Siegel theta function
@@ -223,7 +220,6 @@ chore(git): update .gitignore for Python cache files
 ### Branches
 ```bash
 git checkout Riemann_Lab_IA   # développement courant
-git checkout Riemann_Lab_C    # Phase C (Illinois en C)
 git checkout Riemann_Lab_Test # tests avant merge
 git checkout main             # production
 ```
@@ -231,6 +227,8 @@ git checkout main             # production
 ---
 
 ## 7. Références mathématiques rapides
+
+### Fonction zêta — définitions clés
 
 **Série de Dirichlet** (Re(s) > 1) :
 $$\zeta(s) = \sum_{n=1}^{\infty} \frac{1}{n^s}$$
@@ -246,33 +244,25 @@ $$\zeta\!\left(\tfrac{1}{2}+it\right) = e^{-i\theta(t)} Z(t)$$
 
 **Hypothèse de Riemann** : tous les zéros non-triviaux vérifient $\text{Re}(\rho) = \frac{1}{2}$.
 
-> Formules détaillées (RS, N(T), STEP, Illinois, Montgomery, lien premiers) → §8.
-
 ---
 
-## 8. Références détaillées (chargées à la demande)
+## 8. Références détaillées
 
-Fichiers présents dans le dossier `references/` de ce skill :
-
-| Fichier | Contenu |
-|---|---|
-| `references/Formules_zeta.md` | Toutes les formules ζ : définitions, équation fonctionnelle, Z(t)/θ(t), N(T) (avec le `e`), Riemann-Siegel + erreur de troncature, STEP adaptatif, Illinois, conjecture de Montgomère/GUE, lien avec les premiers — **avec les règles critiques** (bug Re(ζ) v1, bug N(t) fixe v4.1) |
-| `references/Bibliotheques.md` | Recettes Python par bibliothèque : mpmath (précision adaptative, Illinois), numpy (Z vectorisé), cupy (GPU GTX 960M), multiprocessing (4 workers, pas joblib), pandas, matplotlib, loguru, tqdm, sympy, psutil |
-
-> ⚠️ Maintenir la cohérence : toute nouvelle formule/correction validée doit être
-> répercutée dans `references/Formules_zeta.md` (source unique des formules du projet).
+Pour des sujets plus approfondis, consulter :
+- `references/katex-cheatsheet.md` — liste complète des commandes KaTeX validées
+- `references/python-zeta.md` — recettes Python pour calculs avancés
+- `references/wiki-templates.md` — gabarits de pages wiki
 
 ---
 
 ## 9. Comportement attendu
 
 - Toujours répondre en **français**
-- Toujours vérifier que le LaTeX est **compatible KaTeX** avant de le proposer (voir §2)
-- Pour le wiki GitHub : `\text{}` et non `\operatorname{}`
-- Pour le HTML : délimiteurs `$...$` / `$$...$$`
-- Pour Python : **mpmath** pour la précision, NumPy/Matplotlib pour la visualisation, `plt.close()` jamais `plt.show()`
+- Toujours vérifier que le LaTeX est **compatible KaTeX** avant de le proposer
+- Pour le wiki GitHub, toujours utiliser `\text{}` et non `\operatorname{}`
+- Pour le HTML, préférer les délimiteurs `$...$` / `$$...$$`
+- Pour Python, utiliser **mpmath** pour la précision numérique, NumPy/Matplotlib pour la visualisation
 - Signaler explicitement si une formule risque de ne pas s'afficher sur GitHub
-- État courant du projet → `Riemann_Lab.wiki/Handoff.md` (ne pas dupliquer ici)
 
 ---
-*Dernière mise à jour : 31 mai 2026 — name aligné sur le dossier `riemann-lab/`, §8 corrigée*
+*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 1ᵉʳ juin 2026*

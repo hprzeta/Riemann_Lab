@@ -1,102 +1,123 @@
 ---
-name: security-review
-dossier:/home/riemann/.claude/skills/security-review
-description: >
-  Audit de sécurité et robustesse pour le projet Riemann_Lab. Se déclenche sur :
-  "segfault", "risque de crash", "cette interface est-elle sûre", "vérif sécurité",
-  "security review", "risque .so", "ctypes dangereux", "buffer overflow",
-  "fuite mémoire", "memory leak", "undefined behavior", "UB", "valgrind".
-version: 1.0.0
-date: 2026-05-23
+name: riemann-security-review
+description: |
+  Revue de sécurité pour le projet `Riemann_Lab` de hprzeta — secrets, `.mcp.json`, binaires `.so`, hygiène Git et historique.
+
+  Utiliser ce skill dès que l'utilisateur :
+  - Va committer / pousser et veut éviter d'exposer un secret (token GitHub, clé, mot de passe)
+  - Manipule `.mcp.json`, des variables d'environnement, ou un PAT
+  - Configure ou audite `.gitignore` (notamment entre branches)
+  - Compile ou intègre un binaire `.so` (provenance, recompilation)
+  - Vient de subir un blocage GitHub Push Protection (GH013) ou suspecte une fuite
+  - Fait du ménage multi-branches et veut vérifier qu'aucun secret ne traîne
+
+  Déclencher aussi pour : purge d'historique (git filter-repo), révocation de token, vérification avant publication wiki/site.
 ---
 
-# Security Review — Riemann_Lab
+# Riemann Security Review Skill
 
-## Risques spécifiques à ce projet
+Skill de revue de sécurité spécialisé pour `Riemann_Lab`. Il encode les **incidents réels**
+du projet (token dans `.mcp.json`, `.gitignore` désynchronisé entre branches) pour qu'ils ne
+se reproduisent pas. À passer **avant tout push** touchant la config ou des fichiers sensibles.
 
-### Interface ctypes ↔ C (.so)
+> Auteur : hprzeta · Mise à jour : 1ᵉʳ juin 2026
 
-**Risque #1 — Mauvais type ctypes**
-```python
-# ❌ DANGEREUX — type incorrect → comportement indéfini
-lib.illinois_mpfr.argtypes = [ctypes.c_float, ctypes.c_float, ctypes.c_float]
+---
 
-# ✅ CORRECT
-lib.illinois_mpfr.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
-lib.illinois_mpfr.restype  = ctypes.c_double
-```
+## 1. Règle d'or
 
-**Risque #2 — .so chargé sans vérification d'existence**
-```python
-# ❌ DANGEREUX — segfault si .so absent
-lib = ctypes.CDLL("illinois_mpfr.so")
+**Un secret (token, clé, mot de passe) ne va JAMAIS dans un fichier suivi par Git.**
+Et : **un secret exposé = secret mort** → on le **révoque toujours**, on ne suit jamais
+le lien « unblock-secret » de GitHub.
 
-# ✅ CORRECT — fallback obligatoire
-import os
-so_path = os.path.join(os.path.dirname(__file__), 'illinois_mpfr.so')
-if os.path.exists(so_path):
-    lib = ctypes.CDLL(so_path)
-    USE_C = True
-else:
-    USE_C = False
-    # fallback mpmath
-```
+---
 
-**Risque #3 — Appel avec NaN ou inf**
-```python
-# ❌ DANGEREUX — NaN dans illinois_mpfr → loop infinie ou UB côté C
-illinois_c(float('nan'), 14.3)
+## 2. Checklist secrets — avant chaque push
 
-# ✅ CORRECT — valider avant d'appeler
-import math
-if not (math.isfinite(a) and math.isfinite(b)):
-    raise ValueError(f"illinois_c : entrées non finies a={a}, b={b}")
-```
+1. **Scan rapide des fichiers touchés** :
+   ```bash
+   grep -rInE "token|secret|key|password|ghp_|github_pat" <fichiers à committer>
+   ```
+   Vide = OK. Une occurrence = traiter avant de committer.
+2. **`.mcp.json` doit être ignoré** sur la branche courante :
+   ```bash
+   git check-ignore .mcp.json     # doit renvoyer ".mcp.json"
+   ```
+3. **`git status` AVANT `git add -A`** : ne jamais ajouter en aveugle.
+4. **Vérifier qu'aucun secret n'est déjà suivi** :
+   ```bash
+   git ls-files | grep -i mcp     # doit être VIDE
+   ```
 
-### Code C — libmpfr
+---
 
-**Risque #4 — Division par zéro dans la sécante**
-```c
-// ❌ si Zb == Za → division par zéro
-mpfr_sub(den, Zb, Za, MPFR_RNDN);
-mpfr_div(num, num, den, MPFR_RNDN);  // UB si den == 0
+## 3. Piège majeur — `.gitignore` désynchronisé entre branches
 
-// ✅ tester avant de diviser
-if (mpfr_zero_p(den)) break;  // convergé ou dégénéré
-```
+**Leçon réelle (1ᵉʳ juin)** : `.gitignore` n'est PAS synchronisé entre branches. `.mcp.json`
+était ignoré sur `Riemann_Lab_C`/`Riemann_Lab_IA` mais PAS sur `main` ni `Riemann_Lab_Test`.
 
-**Risque #5 — Boucle infinie si tolérance impossible**
-```c
-// MAX_ITER = 100 doit toujours stopper la boucle
-// Ne jamais utiliser while(1) sans compteur
-```
-
-**Risque #6 — Accès à t hors domaine**
-```c
-// Z(t) via formule RS n'est valide que pour t >= 14 (premier zéro)
-// Pour t < 14 : comportement indéfini (N=0, somme vide)
-if (t < 14.0) { /* erreur */ }
-```
-
-## Checklist de validation avant compilation
-
-- [ ] `mpfr_init2` / `mpfr_clear` : compte = count dans chaque fonction
-- [ ] Chaque `return` est précédé de `mpfr_clears(...)`
-- [ ] `den` testé non-nul avant division
-- [ ] `MAX_ITER` toujours respecté (pas de `while(1)` nu)
-- [ ] Côté Python : `argtypes` et `restype` explicitement déclarés
-- [ ] Côté Python : fallback mpmath si `.so` absent
-- [ ] Côté Python : validation `isfinite(a)` et `isfinite(b)` avant appel
-
-## Outils de diagnostic recommandés
-
+→ Après toute manip multi-branches, vérifier sur **chaque** branche :
 ```bash
-# Détecter fuites mémoire et UB
-valgrind --leak-check=full --track-origins=yes python3 test_illinois.py
-
-# Sanitizers GCC (ajouter au Makefile en mode debug)
-CFLAGS_DEBUG = -fsanitize=address,undefined -g
+for b in Riemann_Lab_IA Riemann_Lab_C Riemann_Lab_Test main; do
+  git checkout "$b" >/dev/null 2>&1
+  echo -n "$b : "; git check-ignore .mcp.json || echo "NON IGNORÉ ⚠️"
+done
 ```
 
 ---
-*Dernière mise à jour : 23 mai 2026*
+
+## 4. Si un secret a déjà été commité
+
+L'ordre compte — le geste n°1 est la révocation, pas la purge :
+
+1. **Révoquer le token** sur GitHub (immédiat — le secret est déjà mort).
+2. Purger l'historique :
+   ```bash
+   git filter-repo --path .mcp.json --invert-paths
+   ```
+3. Vérifier la purge :
+   ```bash
+   git log --all --oneline -- .mcp.json     # doit être VIDE
+   ```
+4. `git push --force` (le blocage GH013 se lève).
+5. Vérifier les **autres branches** (le secret peut y survivre).
+6. Régénérer un token, le remettre dans `.mcp.json` **local** (ignoré).
+
+> Rappel : `.gitignore` empêche les futurs commits mais **ne purge pas le passé**.
+
+---
+
+## 5. Suppression de fichiers — `git rm` ≠ `rm`
+
+- Fichier **suivi** (committé) → `git rm fichier` puis commit.
+- Fichier **non suivi** → `git rm` échoue (`fatal: ... ne correspond à aucun fichier`) → `rm fichier`.
+- **Un fichier non suivi n'est jamais une page wiki / jamais publié** : seul ce qui est
+  committé ET poussé est servi. Pas de panique « public » pour un untracked.
+
+---
+
+## 6. Binaires `.so` — provenance & intégrité
+
+- Recompiler depuis la source du dépôt (`make clean && make`), jamais récupérer un `.so` opaque.
+- Ne PAS committer les `.so` compilés (les ignorer) — ils se régénèrent.
+- Le code doit **refuser de tourner** si le `.so` attendu est absent (pas de fallback silencieux).
+
+---
+
+## 7. Avant publication (wiki / GitHub Pages / mail)
+
+- Aucun chemin/identifiant sensible en clair au-delà de ce qui est déjà public (`hprzeta@protonmail.com` est connu, OK).
+- Pas de token dans les exemples de commandes, prompts, ou captures.
+- Vérifier après push : `git log --oneline -1` + relecture du fichier en ligne.
+
+---
+
+## 8. Format de sortie d'une revue de sécurité
+
+1. **Verdict** : 🟢 sûr à pousser / 🟡 corriger d'abord / 🔴 secret exposé → révoquer MAINTENANT.
+2. **Findings** (fichier, ligne, type de secret) — sans recopier le secret en entier.
+3. **Actions ordonnées** (révocation d'abord, purge ensuite).
+4. **Commandes git de vérification + push** prêtes à coller (avec vrais chemins, pas de placeholder).
+
+---
+*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 1ᵉʳ juin 2026*
