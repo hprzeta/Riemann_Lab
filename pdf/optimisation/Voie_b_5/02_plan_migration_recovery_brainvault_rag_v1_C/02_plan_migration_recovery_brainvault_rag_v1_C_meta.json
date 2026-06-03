@@ -1,0 +1,229 @@
+{
+  "table_of_contents": [
+    {
+      "title": "Riemann_Lab \u2014 Plan de migration, Recovery, Brain\nVault et RAG v1 \u2014 branche C",
+      "heading_level": null,
+      "page_id": 0,
+      "polygon": [
+        [
+          43.943359375,
+          43.580078125
+        ],
+        [
+          534.1396484375,
+          43.580078125
+        ],
+        [
+          534.1396484375,
+          83.62744140625
+        ],
+        [
+          43.943359375,
+          83.62744140625
+        ]
+      ]
+    },
+    {
+      "title": "Plan de migration Git multibranche",
+      "heading_level": null,
+      "page_id": 0,
+      "polygon": [
+        [
+          44.267723083496094,
+          125.806640625
+        ],
+        [
+          292.4552307128906,
+          125.806640625
+        ],
+        [
+          292.4552307128906,
+          140.04632568359375
+        ],
+        [
+          44.267723083496094,
+          140.04632568359375
+        ]
+      ]
+    },
+    {
+      "title": "Brain Vault enrichi",
+      "heading_level": null,
+      "page_id": 0,
+      "polygon": [
+        [
+          44.267723083496094,
+          356.86328125
+        ],
+        [
+          175.8302001953125,
+          355.21875
+        ],
+        [
+          175.8302001953125,
+          371.5462951660156
+        ],
+        [
+          44.267723083496094,
+          371.5462951660156
+        ]
+      ]
+    },
+    {
+      "title": "RAG : filtres de confiance",
+      "heading_level": null,
+      "page_id": 0,
+      "polygon": [
+        [
+          43.65234375,
+          423.466796875
+        ],
+        [
+          223.417724609375,
+          421.822265625
+        ],
+        [
+          223.417724609375,
+          436.3462829589844
+        ],
+        [
+          43.65234375,
+          436.3462829589844
+        ]
+      ]
+    },
+    {
+      "title": "Scripts \u00e0 pr\u00e9parer apr\u00e8s audit syst\u00e8me",
+      "heading_level": null,
+      "page_id": 1,
+      "polygon": [
+        [
+          43.943359375,
+          41.935546875
+        ],
+        [
+          320.2552795410156,
+          41.935546875
+        ],
+        [
+          320.2552795410156,
+          57.04632568359375
+        ],
+        [
+          43.943359375,
+          57.04632568359375
+        ]
+      ]
+    },
+    {
+      "title": "Point de vigilance majeur",
+      "heading_level": null,
+      "page_id": 1,
+      "polygon": [
+        [
+          44.267723083496094,
+          145.1298828125
+        ],
+        [
+          223.93023681640625,
+          143.4853515625
+        ],
+        [
+          223.93023681640625,
+          158.54632568359375
+        ],
+        [
+          43.361328125,
+          158.54632568359375
+        ]
+      ]
+    }
+  ],
+  "page_stats": [
+    {
+      "page_id": 0,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          99
+        ],
+        [
+          "Line",
+          37
+        ],
+        [
+          "TableCell",
+          31
+        ],
+        [
+          "SectionHeader",
+          4
+        ],
+        [
+          "ListItem",
+          4
+        ],
+        [
+          "Table",
+          2
+        ],
+        [
+          "Text",
+          1
+        ],
+        [
+          "Code",
+          1
+        ],
+        [
+          "ListGroup",
+          1
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    },
+    {
+      "page_id": 1,
+      "text_extraction_method": "pdftext",
+      "block_counts": [
+        [
+          "Span",
+          25
+        ],
+        [
+          "Line",
+          13
+        ],
+        [
+          "ListItem",
+          8
+        ],
+        [
+          "SectionHeader",
+          2
+        ],
+        [
+          "ListGroup",
+          2
+        ]
+      ],
+      "block_metadata": {
+        "llm_request_count": 0,
+        "llm_error_count": 0,
+        "llm_tokens_used": 0,
+        "previous_text": "",
+        "previous_type": "",
+        "previous_order": 0
+      }
+    }
+  ],
+  "debug_data_path": "debug_data/02_plan_migration_recovery_brainvault_rag_v1_C"
+}

@@ -51,9 +51,12 @@ from typing import List, Tuple
 import mpmath
 mpmath.mp.dps = 35   # affinage fallback uniquement
 
-from riemann_siegel_batch import Z_batch
+from riemann_siegel_batch import Z_batch, Z_vect_correct
 from parallel_scanner      import partitionner, dedupliquer
 from turing_validation     import valider_turing, N_attendu
+
+# Instrumentation 3+1 phases (detection / illinois_C / mpmath_petit_t / turing)
+from chrono_phases         import chrono, snapshot, agreger, rapport
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -78,7 +81,7 @@ T_SEUIL_ILLINOIS_C = 300.0
 #  SECTION 2 — WORKER MULTIPROCESSING (chargement .so après fork)
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def worker_v4_1(args: tuple) -> Tuple[list, dict]:
+def worker_v4_1(args: tuple) -> Tuple[list, dict, dict]:
     """Worker multiprocessing v4.1.
 
     Charge illinois_mpfr.so APRÈS le fork() → pas de corruption GMP.
@@ -94,8 +97,20 @@ def worker_v4_1(args: tuple) -> Tuple[list, dict]:
 
     # Chargement .so après fork — chaque worker a son propre espace mémoire
     lib = ctypes.CDLL(str(so_path))
+    # Ancienne interface conservée pour compatibilité
     lib.illinois_mpfr.restype  = ctypes.c_double
     lib.illinois_mpfr.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
+    # Option B : illinois_refine reçoit fa/fb précalculés par Python
+    lib.illinois_refine.restype  = ctypes.c_double
+    lib.illinois_refine.argtypes = [
+        ctypes.c_double,  # a
+        ctypes.c_double,  # b
+        ctypes.c_double,  # fa = Z(a) calculé par Z_vect_correct
+        ctypes.c_double,  # fb = Z(b) calculé par Z_vect_correct
+        ctypes.c_int,     # prec_bits (170)
+        ctypes.c_double,  # tol
+        ctypes.c_int,     # max_iter (100)
+    ]
 
     import mpmath as _mp
     _mp.mp.dps = 35
@@ -111,29 +126,45 @@ def worker_v4_1(args: tuple) -> Tuple[list, dict]:
         if len(t_array) < 2:
             break
 
-        # Détection vectorisée par Z_batch — RS numpy, correct partout
-        Z_vals = Z_batch(t_array)
-        idx    = np.where(np.diff(np.sign(Z_vals)))[0]
+        # Détection vectorisée — Z_vect_correct (N(t) par ligne, correct partout)
+        # Z_batch utilise N_max fixe → termes RS parasites pour petit t → bug détection
+        with chrono("detection"):
+            Z_vals = Z_vect_correct(t_array)
+            idx    = np.where(np.diff(np.sign(Z_vals)))[0]
 
         for i in idx:
             a     = float(t_array[i])
             b     = float(t_array[i + 1])
+            fa    = float(Z_vals[i])      # valeur déjà calculée — pas de recalcul
+            fb    = float(Z_vals[i + 1])
             t_mid = (a + b) / 2.0
             try:
                 if t_mid >= T_SEUIL_ILLINOIS_C:
-                    # Illinois C — N ≥ 7 termes RS, affinage 170 bits fiable
-                    zero = lib.illinois_mpfr(a, b, tol)
+                    # Illinois C Option B — fa/fb depuis Z_vect_correct (correct partout)
+                    # Évite la recalcul Z en C qui introduisait le biais ~0.3
+                    with chrono("illinois_C"):
+                        zero = lib.illinois_refine(a, b, fa, fb, 170, tol, 100)
                     if a - 1e-10 <= zero <= b + 1e-10:
                         zeros_segment.append(zero)
                         stats["illinois_C"] += 1
                     else:
-                        # résultat hors intervalle (très rare) → fallback
-                        zero = float(_mp.findroot(_mp.siegelz, t_mid))
+                        # Résultat hors intervalle → fallback bracketed Illinois mpmath
+                        # (ne pas utiliser findroot(siegelz, t_mid) sans bracket : peut diverger)
+                        with chrono("mpmath_fallback"):
+                            zero = float(_mp.findroot(
+                                _mp.siegelz, (a, b),
+                                solver="illinois", tol=1e-12, maxsteps=80,
+                            ))
                         zeros_segment.append(zero)
                         stats["mpmath_fallback"] += 1
                 else:
-                    # t < 300 — N < 7 termes, Illinois C imprécis → mpmath
-                    zero = float(_mp.findroot(_mp.siegelz, t_mid))
+                    # t < 300 — N < 7 termes, Illinois C imprécis → mpmath bracketed
+                    with chrono("mpmath_petit_t"):
+                        with _mp.workprec(50):   # ~15 dps — suffit pour N<7 termes RS
+                            zero = float(_mp.findroot(
+                                _mp.siegelz, (a, b),
+                                solver="illinois", tol=tol, maxsteps=80,
+                            ))
                     zeros_segment.append(zero)
                     stats["mpmath_petit_t"] += 1
             except Exception:
@@ -145,7 +176,7 @@ def worker_v4_1(args: tuple) -> Tuple[list, dict]:
     print(f"  [Worker {worker_id}] {len(zeros_segment)} zéros en {duree:.1f}s  "
           f"| C:{stats['illinois_C']} mp_pt:{stats['mpmath_petit_t']} "
           f"fallback:{stats['mpmath_fallback']}")
-    return zeros_segment, stats
+    return zeros_segment, stats, snapshot()
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -158,10 +189,10 @@ def calculer_zeros_v4_1(
     N_WORKERS : int,
     STEP      : float,
     TOL       : float = 1e-12,
-) -> Tuple[List[float], dict]:
+) -> Tuple[List[float], dict, dict]:
     """Lance N_WORKERS processus sur [T_MIN, T_MAX], fusionne et déduplique.
 
-    Retourne (zeros, stats_aggregées).
+    Retourne (zeros, stats_aggregées, profil_phases_workers).
     """
     segments  = partitionner(T_MIN, T_MAX, N_WORKERS, overlap=STEP * 4)
     args_list = [
@@ -177,16 +208,19 @@ def calculer_zeros_v4_1(
     with multiprocessing.Pool(processes=N_WORKERS) as pool:
         resultats = pool.map(worker_v4_1, args_list)
 
-    # Fusion des listes et des statistiques
+    # Fusion des listes, des statistiques et des profils
     zeros_bruts = []
     stats_total = {"illinois_C": 0, "mpmath_petit_t": 0, "mpmath_fallback": 0}
-    for segment_zeros, segment_stats in resultats:
+    snaps       = []
+    for segment_zeros, segment_stats, segment_snap in resultats:
         zeros_bruts.extend(segment_zeros)
         for k, v in segment_stats.items():
             stats_total[k] = stats_total.get(k, 0) + v
+        snaps.append(segment_snap)
 
+    profil_workers = agreger(snaps)
     zeros = dedupliquer(zeros_bruts, tolerance=0.01)
-    return zeros, stats_total
+    return zeros, stats_total, profil_workers
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -337,7 +371,7 @@ def ecrire_log(chemin_log, horodatage, T_MIN, T_MAX, STEP, N_WORKERS,
     L(f"      T_SEUIL_ILLINOIS_C = {T_SEUIL_ILLINOIS_C}  (N≥7 termes RS)")
     L(f"      illinois_mpfr.so   : {SO_PATH}")
     L(f"      Détection          : Z_batch (RS numpy vectorisé — correct partout)")
-    L(f"      Affinage t≥300     : illinois_mpfr C (×39 vs mpmath)")
+    L(f"      Affinage t≥300     : illinois_refine C Option B — fa/fb depuis Z_vect_correct")
     L(f"      Affinage t<300     : mpmath.findroot (N<7 termes — légitime)")
     L()
 
@@ -466,7 +500,7 @@ def main():
     # ── Calcul parallèle ─────────────────────────────────────────────────────
     print(f"\n  Lancement — {N_WORKERS} workers, STEP={STEP}, "
           f"Illinois C pour t ≥ {T_SEUIL_ILLINOIS_C:.0f}...\n")
-    zeros, stats = calculer_zeros_v4_1(T_MIN, T_MAX, N_WORKERS, STEP, TOL)
+    zeros, stats, profil_workers = calculer_zeros_v4_1(T_MIN, T_MAX, N_WORKERS, STEP, TOL)
     duree = time.time() - debut_global
 
     # ── Rapport ──────────────────────────────────────────────────────────────
@@ -494,7 +528,16 @@ def main():
     resultats_lmfdb  = verifier_lmfdb(zeros, n_check=20)
 
     # ── Validation Turing ────────────────────────────────────────────────────
-    resultats_turing = valider_turing(zeros, dps=30)
+    with chrono("turing"):
+        resultats_turing = valider_turing(zeros, dps=30)
+
+    # ── Profil des phases (localisation du goulot) ───────────────────────────
+    # NB : phases workers (detection/illinois_C/mpmath_*) cumulées sur N_WORKERS ;
+    #      phase 'turing' = process parent seul. Colonnes 'temps_cumul' et
+    #      'ms/appel' sont les indicateurs fiables ; '% mur×W' est indicatif.
+    profil_total = agreger([profil_workers, snapshot()])
+    print()
+    print(rapport(profil_total, duree_run=duree, n_workers=N_WORKERS))
 
     # ── Sauvegarde ───────────────────────────────────────────────────────────
     chemin_csv = sauvegarder_csv(
