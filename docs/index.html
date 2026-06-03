@@ -4,7 +4,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Riemann Lab — hprzeta</title>
+
 <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<!-- Charger KaTeX -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    renderMathInElement(document.body, {
+      delimiters: [
+        { left: '$$', right: '$$', display: true },
+        { left: '$', right: '$', display: false },
+        { left: '\\(', right: '\\)', display: false },
+        { left: '\\[', right: '\\]', display: true }
+      ],
+      ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+      throwOnError: false
+    });
+  });
+</script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -33,7 +52,6 @@
     overflow-x: hidden;
   }
 
-  /* Grid background */
   body::before {
     content: '';
     position: fixed;
@@ -46,7 +64,6 @@
     z-index: 0;
   }
 
-  /* Glow orb */
   body::after {
     content: '';
     position: fixed;
@@ -61,7 +78,6 @@
 
   .wrap { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 0 2rem; }
 
-  /* ── HEADER ── */
   header {
     padding: 5rem 0 3rem;
     border-bottom: 1px solid var(--border);
@@ -122,7 +138,6 @@
   }
   .badge.gold { border-color: rgba(201,168,76,0.4); color: var(--gold); }
 
-  /* ── EQUATION BAND ── */
   .eq-band {
     padding: 2.5rem 0;
     border-bottom: 1px solid var(--border);
@@ -145,12 +160,15 @@
 
   .eq-scroll span.hi { color: rgba(201,168,76,0.5); }
 
+  .eq-scroll .katex { font-size: 13px; color: var(--dim); }
+  .eq-scroll span.hi .katex { color: rgba(201,168,76,0.5); }
+  .eq-scroll .katex-html { white-space: nowrap; }
+
   @keyframes scroll-eq {
     0% { transform: translateX(0); }
     100% { transform: translateX(-50%); }
   }
 
-  /* ── MAIN CARD ── */
   .hero-card {
     margin: 3rem 0;
     padding: 2.5rem;
@@ -206,7 +224,6 @@
   .btn.ghost { border-color: var(--dim); color: var(--text2); }
   .btn.ghost:hover { border-color: var(--text2); color: var(--text); background: transparent; }
 
-  /* ── PROGRESS ── */
   section.progress { margin: 3rem 0; }
 
   .section-title {
@@ -286,7 +303,6 @@
   .pill.wip { background: rgba(251,191,36,0.1); color: var(--amber); border: 1px solid rgba(251,191,36,0.2); }
   .pill.todo { background: rgba(74,85,104,0.2); color: var(--dim); border: 1px solid rgba(74,85,104,0.3); }
 
-  /* ── STATS ── */
   .stats {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -318,7 +334,6 @@
     font-size: 11px;
   }
 
-  /* ── ZEROS PREVIEW ── */
   .zeros-table {
     margin: 3rem 0;
   }
@@ -358,7 +373,6 @@
   .mono-table tbody tr:hover td { background: rgba(201,168,76,0.03); }
   .mono-table tbody tr:last-child td { border-bottom: none; font-style: italic; color: var(--dim); }
 
-  /* ── LINKS ── */
   .links-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -410,7 +424,6 @@
   }
   .link-card:hover .lc-arrow { color: var(--gold); transform: translate(2px, -2px); }
 
-  /* ── COURS ── */
   .cours-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -455,7 +468,6 @@
   .status-active { color: var(--green); }
   .status-soon   { color: var(--amber); }
 
-  /* ── FOOTER ── */
   footer {
     border-top: 1px solid var(--border);
     padding: 2.5rem 0;
@@ -476,7 +488,6 @@
   footer a { color: var(--gold); text-decoration: none; }
   footer a:hover { color: var(--gold2); }
 
-  /* ── ANIMATIONS ── */
   @keyframes fade-up {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
@@ -498,62 +509,64 @@
     .step { grid-template-columns: auto 1fr; }
     .step-stat { display: none; }
   }
+   /* Empêcher text-transform d'affecter KaTeX */
+  .katex,
+  .katex * {
+  text-transform: none !important;
+  }
 </style>
 </head>
 <body>
 
 <div class="wrap">
 
-  <!-- HEADER -->
   <header>
     <div class="label">Exploration numérique</div>
     <h1>Riemann <em>Lab</em></h1>
     <p style="margin-top:1rem; color:var(--text2); font-size:0.95rem; max-width:560px;">
-      Laboratoire d'exploration computationnelle de l'Hypothèse de Riemann — calcul des zéros non triviaux
-      de ζ(s) sur la droite critique Re(s) = ½.
+      Laboratoire d'exploration de l'Hypothèse de Riemann — calcul des zéros non triviaux
+      de \(\zeta(s)\) sur la droite critique \(\operatorname{Re}(s) = \tfrac{1}{2}\).
     </p>
     <div class="subtitle">
+      <span class="badge gold">Ubuntu 24.04</span>
       <span class="badge gold">Python · mpmath</span>
-      <span class="badge">Ubuntu 24.04</span>
-      <span class="badge">206 zéros validés</span>
+      <span class="badge gold">10142 zéros validés</span>
     </div>
   </header>
 
-  <!-- EQUATION SCROLL -->
   <div class="eq-band">
     <div class="eq-scroll">
-      <span class="hi">ζ(s) = Σ 1/nˢ</span>
+      <span class="hi">\(\zeta(s) = \displaystyle\sum_{n=1}^{\infty} \frac{1}{n^s}\)</span>
       <span>·</span>
-      <span>Re(s) = ½</span>
+      <span>\(\operatorname{Re}(s) = \tfrac{1}{2}\)</span>
       <span>·</span>
-      <span class="hi">Z(t) = e^(iθ(t)) · ζ(½+it) ∈ ℝ</span>
+      <span class="hi">\(Z(t) = e^{i\theta(t)}\,\zeta\!\left(\tfrac{1}{2}+it\right) \in \mathbb{R}\)</span>
       <span>·</span>
-      <span>θ(t) = Im[ln Γ(¼+it/2)] - t/2·ln(π)</span>
+      <span>\(\theta(t) = \operatorname{Im}\!\left[\ln\Gamma\!\left(\tfrac{1}{4}+\tfrac{it}{2}\right)\right] - \tfrac{t}{2}\ln\pi\)</span>
       <span>·</span>
-      <span class="hi">ζ(2) = π²/6 ≈ 1.6449</span>
+      <span class="hi">\(\zeta(2) = \dfrac{\pi^2}{6} \approx 1.6449\)</span>
       <span>·</span>
-      <span>N(T) ≈ T/2π · ln(T/2πe)</span>
+      <span>\(N(T) \approx \dfrac{T}{2\pi}\ln\!\dfrac{T}{2\pi e}\)</span>
       <span>·</span>
-      <span class="hi">ζ(s) = Σ 1/nˢ</span>
+      <span class="hi">\(\zeta(s) = \displaystyle\sum_{n=1}^{\infty} \frac{1}{n^s}\)</span>
       <span>·</span>
-      <span>Re(s) = ½</span>
+      <span>\(\operatorname{Re}(s) = \tfrac{1}{2}\)</span>
       <span>·</span>
-      <span class="hi">Z(t) = e^(iθ(t)) · ζ(½+it) ∈ ℝ</span>
+      <span class="hi">\(Z(t) = e^{i\theta(t)}\,\zeta\!\left(\tfrac{1}{2}+it\right) \in \mathbb{R}\)</span>
       <span>·</span>
-      <span>θ(t) = Im[ln Γ(¼+it/2)] - t/2·ln(π)</span>
+      <span>\(\theta(t) = \operatorname{Im}\!\left[\ln\Gamma\!\left(\tfrac{1}{4}+\tfrac{it}{2}\right)\right] - \tfrac{t}{2}\ln\pi\)</span>
       <span>·</span>
-      <span class="hi">ζ(2) = π²/6 ≈ 1.6449</span>
+      <span class="hi">\(\zeta(2) = \dfrac{\pi^2}{6} \approx 1.6449\)</span>
       <span>·</span>
-      <span>N(T) ≈ T/2π · ln(T/2πe)</span>
+      <span>\(N(T) \approx \dfrac{T}{2\pi}\ln\!\dfrac{T}{2\pi e}\)</span>
       <span>·</span>
     </div>
   </div>
 
-  <!-- HERO CARD -->
   <div class="hero-card">
-    <h2>Visualisation interactive — θ(t) de Riemann-Siegel</h2>
-    <p>Animation de la fonction de phase θ(t) et de son rôle dans la détection des zéros
-       de ζ(½+it) par changement de signe de Z(t).</p>
+    <h2>Visualisation interactive — \(\theta(t)\) de Riemann-Siegel</h2>
+    <p>Animation de la fonction de phase \(\theta(t)\) et de son rôle dans la détection des zéros
+       de \(\zeta\!\left(\tfrac{1}{2}+it\right)\) par changement de signe de \(Z(t)\).</p>
     <div class="btn-row">
       <a href="animation_theta.html" class="btn">▶ Ouvrir l'animation</a>
       <a href="https://github.com/hprzeta/Riemann_Lab" class="btn ghost" target="_blank">GitHub →</a>
@@ -561,10 +574,9 @@
     </div>
   </div>
 
-  <!-- STATS -->
   <div class="stats">
     <div class="stat">
-      <span class="stat-val">206/1000</span>
+      <span class="stat-val">10142</span>
       <span class="stat-label">zéros validés</span>
     </div>
     <div class="stat">
@@ -572,12 +584,11 @@
       <span class="stat-label">précision max</span>
     </div>
     <div class="stat">
-      <span class="stat-val">432</span>
+      <span class="stat-val">9998</span>
       <span class="stat-label">t max atteint</span>
     </div>
   </div>
 
-  <!-- ETAPES -->
   <section class="progress">
     <div class="section-title">Avancement du projet</div>
     <div class="steps">
@@ -587,11 +598,11 @@
         <div class="step-body">
           <h3>Calcul des zéros non triviaux</h3>
           <p>Méthode Z de Hardy + affinage Illinois (mpmath 50 décimales).
-             206 zéros validés, overflow à t ≈ 432.</p>
+             10142 zéros validés, après correction d'overflow à t ≈ 432.</p>
           <div class="pill wip">En cours d'optimisation</div>
         </div>
         <div class="step-stat status-wip">
-          206 / 1000<br>
+          10142 / 10142<br>
           <span style="color:var(--dim); font-size:10px;">zéros</span>
         </div>
       </div>
@@ -600,13 +611,17 @@
         <span class="step-num">02</span>
         <div class="step-body">
           <h3>Visualisations avancées</h3>
-          <p>Graphiques 2D/3D interactifs — Z(t), distribution des espacements,
+          <p>Graphiques 2D/3D interactifs — \(Z(t)\), distribution des espacements,
              droite critique, plan complexe.</p>
-          <div class="pill wip">Animation θ(t) en ligne</div>
+          <div class="pill wip">Animation \(\theta(t)\) en ligne</div>
+          <p>
+            <div class="pill wip">\(Z(t)\), distribution des espacements
+              <a href="https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/docs/images/T1000_V2/zeros_zeta_T10000_20260424_205325.png"
+                 style="color:var(--gold); text-decoration:none;">zeros_zeta_T10000↗</a>
+            </div>
+          </p>
         </div>
-        <div class="step-stat status-wip">
-          Partiel
-        </div>
+        <div class="step-stat status-wip">Partiel</div>
       </div>
 
       <div class="step">
@@ -617,9 +632,7 @@
              dans la distribution des zéros.</p>
           <div class="pill wip">Exploratoire</div>
         </div>
-        <div class="step-stat status-wip">
-          WIP
-        </div>
+        <div class="step-stat status-wip">WIP</div>
       </div>
 
       <div class="step">
@@ -630,26 +643,23 @@
              vérifiées par Lean 4.</p>
           <div class="pill todo">Non démarré</div>
         </div>
-        <div class="step-stat status-todo">
-          ○
-        </div>
+        <div class="step-stat status-todo">○</div>
       </div>
 
     </div>
   </section>
 
-  <!-- ZEROS PREVIEW -->
   <div class="zeros-table">
     <div class="section-title">Premiers zéros calculés</div>
     <table class="mono-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Partie imaginaire t</th>
-          <th>|ζ(½+it)|</th>
-          <th>vs LMFDB</th>
-        </tr>
-      </thead>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Partie imaginaire \(t\)</th>
+        <th>\(\left|\zeta\left(\tfrac{1}{2}+it\right)\right|\)</th>
+        <th>vs LMFDB</th>
+      </tr>
+    </thead>
       <tbody>
         <tr><td>1</td><td>14.134725141734693</td><td>1.23e-14</td><td class="status-done">✓ 0.00e+00</td></tr>
         <tr><td>2</td><td>21.022039638771556</td><td>2.45e-14</td><td class="status-done">✓ 0.00e+00</td></tr>
@@ -657,22 +667,22 @@
         <tr><td>4</td><td>30.424876125859513</td><td>4.89e-14</td><td class="status-done">✓ 0.00e+00</td></tr>
         <tr><td>5</td><td>32.935061587739190</td><td>5.12e-14</td><td class="status-done">✓ 0.00e+00</td></tr>
         <tr><td>6</td><td>37.586178158825671</td><td>6.34e-14</td><td class="status-done">✓ 7.11e-15</td></tr>
-        <tr><td colspan="4">… 10 136 zéros supplémentaires jusqu'à t ≈ 10 000 —
-          <a href="https://github.com/hprzeta/Riemann_Lab/blob/main/docs/zeros_T10000_10142.csv"
+        <tr><td colspan="4">… 10 142 zéros supplémentaires jusqu'à t ≈ 10 000
+          <a href="https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/docs/csv/T1000_V2/zeros_zeta_T10000_20260424_205325.csv"
              style="color:var(--gold); text-decoration:none;">zeros_T10000_10142.csv ↗</a>
         </td></tr>
       </tbody>
     </table>
   </div>
+  <div class="section-title">Cours — Apprendre \(\zeta(s)\)</div>
 
-  <!-- COURS -->
-  <div class="section-title">Cours — Apprendre ζ(s)</div>
   <div class="wrap">
     <p style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);margin-bottom:1.5rem;">
       Parcours structuré du niveau zéro à l'expert — chaque niveau produit un module Python réutilisable.
-      Méthode : théorie → formule → animation → code.
+      <br>Méthode : théorie → formule → animation → code.
     </p>
   </div>
+
   <div class="cours-grid">
     <a href="https://github.com/hprzeta/Riemann_Lab/wiki/%F0%9F%93%8B-methode" target="_blank" class="cours-card">
       <span class="cc-level">Méthode</span>
@@ -686,38 +696,49 @@
       <span class="cc-desc">Complexes · Trigonométrie · Formule d'Euler · Cercle unité</span>
       <span class="cc-status status-active">● session 1 disponible</span>
     </a>
-    <a href="animation_theta.html" class="cours-card">
-      <span class="cc-level">Animation</span>
-      <span class="cc-title">◎ θ(t) de Riemann-Siegel</span>
-      <span class="cc-desc">Visualisation interactive de la fonction de phase — connexion avec Z(t)</span>
-      <span class="cc-status status-active">● disponible</span>
-    </a>
     <a href="https://github.com/hprzeta/Riemann_Lab/wiki/%F0%9F%93%88-niveau-1-series" target="_blank" class="cours-card">
       <span class="cc-level">Niveau 1</span>
       <span class="cc-title">📈 Séries et convergence</span>
-      <span class="cc-desc">Séries numériques · DL · Série de Dirichlet ζ(s) = Σ 1/nˢ</span>
-      <span class="cc-status status-soon">◌ à venir</span>
+      <span class="cc-desc">Séries numériques · DL · Série de Dirichlet \(\zeta(s) = \sum 1/n^s\)</span>
+      <span class="cc-status status-active">● disponible</span>
     </a>
     <a href="https://github.com/hprzeta/Riemann_Lab/wiki/%F0%9F%8C%80-niveau-2-analyse-complexe" target="_blank" class="cours-card">
       <span class="cc-level">Niveau 2</span>
       <span class="cc-title">🌀 Analyse complexe</span>
       <span class="cc-desc">Holomorphie · Cauchy · Résidus · Fonctions méromorphes</span>
-      <span class="cc-status status-soon">◌ à venir</span>
+      <span class="cc-status status-active">● disponible</span>
+    </a>
+    <a href="https://github.com/hprzeta/Riemann_Lab/wiki/%F0%9F%8E%AF-niveau-3-gamma-dirichlet" target="_blank" class="cours-card">
+      <span class="cc-level">Niveau 3</span>
+      <span class="cc-title">🎯 Fonction Gamma Γ</span>
+      <span class="cc-desc">Séries de Dirichlet · Transformée de Mellin · Equation fonctionnelle de ζ(s)</span>
+      <span class="cc-status status-active">● disponible</span>
     </a>
     <a href="https://github.com/hprzeta/Riemann_Lab/wiki/%C3%B6-niveau-4-zeta" target="_blank" class="cours-card">
       <span class="cc-level">Niveau 4</span>
-      <span class="cc-title">ζ La fonction zêta</span>
+      <span class="cc-title">\(\zeta(s)\) La fonction zêta</span>
       <span class="cc-desc">Définition · Équation fonctionnelle · Z de Hardy · HR</span>
-      <span class="cc-status status-soon">◌ à venir</span>
+      <span class="cc-status status-active">● disponible</span>
+    </a>
+    <a href="https://github.com/hprzeta/Riemann_Lab/wiki/%F0%9F%8F%86-niveau-5-expert" target="_blank" class="cours-card">
+      <span class="cc-level">Niveau 5 - Expert</span>
+      <span class="cc-title">🏆 TNP - Théorème des nombres premiers</span>
+      <span class="cc-desc">Matrices aléatoires · Fonctions L · Cryptographie</span>
+      <span class="cc-status status-active">● disponible</span>
+    </a>
+    <a href="animation_theta.html" class="cours-card">
+      <span class="cc-level">Animation</span>
+      <span class="cc-title">◎ \(\theta(t)\) de Riemann-Siegel</span>
+      <span class="cc-desc">Visualisation interactive de la fonction de phase — connexion avec \(Z(t)\)</span>
+      <span class="cc-status status-active">● disponible</span>
     </a>
   </div>
 
-  <!-- LINKS -->
   <div class="section-title">Ressources</div>
   <div class="links-grid">
     <a href="animation_theta.html" class="link-card">
       <span class="lc-icon">◎</span>
-      <span class="lc-title">Animation θ(t)</span>
+      <span class="lc-title">Animation \(\theta(t)\)</span>
       <span class="lc-desc">Visualisation interactive de la fonction de phase de Riemann-Siegel</span>
       <span class="lc-arrow">↗</span>
     </a>
@@ -741,7 +762,6 @@
     </a>
   </div>
 
-  <!-- FOOTER -->
   <footer>
     <p>hprzeta · Riemann Lab · avril 2026</p>
     <p>
@@ -754,6 +774,5 @@
   </footer>
 
 </div>
-
 </body>
 </html>

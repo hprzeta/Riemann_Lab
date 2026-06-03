@@ -1,0 +1,83 @@
+=================================================================
+  JOURNAL D'EXÉCUTION — compute_zeros_v5.py  (Phase C Voie B)
+  Projet : Hypothèse de Riemann — hprzeta
+=================================================================
+
+  [1] HORODATAGE
+      Début            : 20260529_152422
+      Fin              : 20260529_152501
+      Durée            : 0.43 min  (25.8 s)
+
+  [2] PARAMÈTRES v5 (Voie B)
+      T_MIN            = 14.0
+      T_MAX            = 80.0
+      Pas balayage     = 0.05
+      TOL_AFFINAGE     = 1e-12
+      mpmath.mp.dps    = 35
+      Voie B           = illinois_mpfr_cb OK
+      dps_detect       = 15
+      Détection        = mpmath.siegelz (vrais zéros garantis)
+      Affinage Voie B  = illinois_mpfr_cb(callback mpmath.siegelz)
+      Biais RS corrigé = ✓ (callback élimine biais C0+C1 ~9e-3)
+
+  [3] RÉSULTATS NUMÉRIQUES
+      Zéros trouvés    = 21
+      N attendus (Weyl)= 19
+      Vitesse moyenne  = 0.82 zéros/s
+      t₁  (1er zéro)  = 14.13472514173469
+      t_n (dernier)   = 79.33737502024935
+      Espacement min  = 1.440149
+      Espacement max  = 6.887314
+      Espacement moy  = 3.260132
+
+  [4] RÉPARTITION DES MÉTHODES D'AFFINAGE
+      Illinois_C             :    21  (100.0%)
+      Illinois_C→mpmath      :     0  (0.0%)
+      echecs                 :     0  (0.0%)
+      mpmath                 :     0  (0.0%)
+
+  [5] VÉRIFICATION LMFDB
+      Score            = 19/20 à < 10⁻¹⁰
+      #  1  écart=0.00e+00  ✅
+      #  2  écart=0.00e+00  ✅
+      #  3  écart=3.55e-15  ✅
+      #  4  écart=0.00e+00  ✅
+      #  5  écart=7.11e-15  ✅
+      #  6  écart=7.11e-15  ✅
+      #  7  écart=0.00e+00  ✅
+      #  8  écart=7.11e-15  ✅
+      #  9  écart=0.00e+00  ✅
+      # 10  écart=0.00e+00  ✅
+      # 11  écart=0.00e+00  ✅
+      # 12  écart=1.42e-13  ✅
+      # 13  écart=0.00e+00  ✅
+      # 14  écart=7.11e-14  ✅
+      # 15  écart=0.00e+00  ✅
+      # 16  écart=0.00e+00  ✅
+      # 17  écart=1.42e-14  ✅
+      # 18  écart=1.42e-14  ✅
+      # 19  écart=1.42e-14  ✅
+      # 20  écart=8.06e-10  ⚠️ 
+
+  [6] VALIDATION TURING-BACKLUND
+      Statut           = ✅ COMPLET
+      Zéros manquants  = 0
+      T=   21.02  calc=     2  attendus=     1  delta=   -1  ⚠️  SURPLUS +1
+      T=   32.94  calc=     5  attendus=     4  delta=   -1  ⚠️  SURPLUS +1
+      T=   49.77  calc=    10  attendus=     9  delta=   -1  ⚠️  SURPLUS +1
+      T=   65.11  calc=    15  attendus=    13  delta=   -2  ⚠️  SURPLUS +2
+      T=   79.34  calc=    21  attendus=    20  delta=   -1  ⚠️  SURPLUS +1
+
+  [7] FICHIERS GÉNÉRÉS
+      CSV → calculs/v5_T80_20260529_152422/zeros_v5_T80_20260529_152422.csv
+      LOG → calculs/v5_T80_20260529_152422/execution_v5_T80_20260529_152422.log
+
+  [8] ENVIRONNEMENT
+      Python           = 3.12.3
+      OS               = Linux 6.17.0-29-generic
+      mpmath           = 1.3.0
+      CPU cores        = 4
+
+=================================================================
+  Fin du journal — 2026-05-29 15:25:01
+=================================================================
