@@ -411,4 +411,58 @@ Puis :
 
 ---
 
-*ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_IA · hprzeta · MAJ 2026-06-03 · 270 lignes*
+---
+
+## SESSION 15 — 3 juin 2026 (nuit)
+### Prompt Option B — Fix Illinois + validation T=10000
+> Résultat : illinois_refine validé 10/10 < 1e-13 · 18.65 z/s · T=10000 en 9.1 min · Turing COMPLET ✅
+
+```
+Implémente l'Option B pour corriger l'affinage Illinois en Phase C.
+
+Contexte : illinois_mpfr.c compile sans warning mais la validation échoue
+(erreur ~0.3 au lieu de <1e-12) car Z_mpfr et Z_double sont incohérents.
+
+Solution Option B :
+- Détection des changements de signe : utiliser mpmath.siegelz (Python)
+- Affinage (Illinois) : utiliser illinois_mpfr.so (C/libmpfr)
+- Supprimer Z_double de z_function.c (source de l'incohérence)
+
+Tâche 1 — Modifier illinois_mpfr.c :
+  Retirer toute référence à Z_double.
+  L'interface C ne reçoit que (a, b, fa, fb) = bornes + valeurs déjà
+  calculées par mpmath.siegelz côté Python.
+  Signature cible :
+    double illinois_refine(double a, double b, double fa, double fb,
+                           int prec_bits, double tol, int max_iter);
+
+Tâche 2 — Modifier le wrapper Python (compute_zeros_v4_1.py) :
+  Phase détection : utiliser mpmath.siegelz (existant, validé)
+  Phase affinage : appeler illinois_refine via ctypes avec (a, b, fa, fb)
+
+Tâche 3 — Recompiler et valider :
+  make clean && make
+  python test_illinois.py  # cible : 10/10 erreurs < 1e-12
+
+Tâche 4 — Benchmark :
+  python benchmark_illinois.py
+  # Cible : > 15 z/s
+
+Tâche 5 — Run T=1000 puis T=10000 :
+  Critères : Turing COMPLET · LMFDB 19/20 · Illinois C pur > 90% · 0 fallback
+
+Tâche 6 — Si validation OK : commit sur Riemann_Lab_C
+  "feat(phase-C): Option B — détection mpmath.siegelz + affinage illinois_mpfr"
+
+Branche : Riemann_Lab_C uniquement. Ne pas toucher Riemann_Lab_IA.
+```
+
+> **Résultats obtenus :**
+> - T=1000 : 649/649 · 16.15 z/s · Turing COMPLET · LMFDB 19/20 · Illinois C 78.7%
+> - T=10000 : 10141/10143 · **18.65 z/s** · Turing COMPLET · LMFDB 19/20 · Illinois C **98.6%**
+> - Durée T=10000 : **9.1 min** (vs 2h46 en v3 = ×18)
+> - Commit : `581e34d` sur `Riemann_Lab_C`
+
+---
+
+*ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_IA · hprzeta · MAJ 2026-06-03 · 300 lignes*
