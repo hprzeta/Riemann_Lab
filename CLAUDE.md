@@ -1,38 +1,62 @@
-# Riemann_Lab — Instructions pour Claude
-> Mis à jour : **21 mai 2026** — Phase 0 terminée ✅
+# ~/projet_zeta/CLAUDE.md — Contexte projet Riemann_Lab
+> **Fichier :** CLAUDE.md - **Dossier :** racine repo (`~/projet_zeta/`)
+> **Branche :** Riemann_Lab_C (source) -> sync main - IA - Test - **Auteur :** hprzeta - **MAJ :** 2026-06-03
+
+---
+
+## ⚠️ Principe de ce fichier
+
+Ce `CLAUDE.md` ne contient **que des règles permanentes** (langue, formules, conventions,
+sécurité). **Aucun état de session ici.** L'état courant, l'historique et la stack vivent dans :
+
+| Fichier | Rôle |
+|---|---|
+| `Riemann_Lab.wiki/Handoff.md` | ⭐ État courant + prochaine action (lu à chaque reprise) |
+| `Riemann_Lab.wiki/JOURNAL.md` | Historique daté (append-only, non lu par défaut) |
+| `Riemann_Lab.wiki/STACK.md` | Branches, matériel, outils, roadmap |
+
+> En début de session : **lire `Handoff.md`**, pas ce fichier (chargé automatiquement).
+> Ne jamais recopier l'état du Handoff ici.
 
 ---
 
 ## Projet
 
 Plateforme de recherche sur la fonction zêta de Riemann et l'Hypothèse de Riemann (HR).
-Trois axes : **numérique** (calcul des zéros), **mathématique** (théorie), **analytique** (propriétés de ζ).
-Long terme : agent IA autonome de recherche mathématique (Objectif 2).
+Trois axes : **numérique** (calcul des zéros), **mathématique** (théorie), **analytique**.
+Long terme (Objectif 2) : agent IA autonome de recherche mathématique.
 
-**Dépôt :** `hprzeta/Riemann_Lab` · **Mail :** `hprzeta@protomail.com`
+**Dépôt :** `hprzeta/Riemann_Lab` · **Mail :** `hprzeta@protonmail.com`
 
 ---
 
-## État actuel — Phase 0 TERMINÉE ✅
+## 🤖 Gestion autonome du contexte — RÈGLES OBLIGATOIRES
 
-| Jalon | Valeur |
+Surveiller en permanence le pourcentage affiché en bas :
+`XX% · YYmin restantes · ZZ% until auto-compact`
+
+| Seuil | Action automatique SANS attendre d'instruction |
 |---|---|
-| Zéros calculés | **10 142** (T=10 000, run 20260521) |
-| Méthode | Riemann-Siegel détection + Illinois affinage |
-| Durée v3 | 2h46min (×7.6 vs v2 qui durait 21h) |
-| Validation Turing | ✅ COMPLET — 0 zéro manquant |
-| LMFDB | ✅ 19/20 zéros à < 10⁻¹⁰ |
-| Prochaine étape | **Phase C** — Illinois en C/libmpfr (×5–10) |
+| **50 %** | `git add -A && git commit -m "wip: checkpoint auto [description]"` |
+| **70 %** | `git push origin [branche]` + créer `docs/session_checkpoint_YYYYMMDD.md` |
+| **80 %** | Arrêt complet — ne plus lancer de nouvelles tâches |
+| **"11 % until auto-compact"** | STOP immédiat — push + rapport court + exit |
+
+**Auto-compact** = résumé automatique de l'historique quand le contexte est plein.
+Imparfait → risque d'oublier des contraintes. Toujours committer/pousser AVANT.
+
+**Runs longs :** jamais T>300 si contexte > 40 % · jamais T=10000 dans une session de dév ·
+préférer plusieurs petites sessions à une longue.
 
 ---
 
 ## Règles de communication
 
 - Toujours répondre en **français**
-- Formules en **LaTeX** (KaTeX — voir règles critiques ci-dessous)
+- Formules en **LaTeX** (KaTeX — voir ci-dessous)
 - Code **commenté ligne par ligne**
 - Distinguer : théorème prouvé / conjecture / heuristique / intuition
-- Donner la réponse directe d'abord, puis les détails
+- Réponse directe d'abord, puis détails
 
 ---
 
@@ -46,17 +70,20 @@ Le wiki GitHub et `docs/index.html` utilisent **KaTeX** (pas MathJax).
 | `\operatorname{Im}` | `\text{Im}` |
 | `\operatorname{...}` | `\text{...}` |
 
-Délimiteurs : `$...$` inline · `$$...$$` display — dans le wiki ET dans `index.html`.
+Délimiteurs : `$...$` inline · `$$...$$` display — wiki ET `index.html`.
 
 ---
 
-## ⚠️ Formules critiques — ne jamais se tromper
+## ⚠️ Formules critiques — SOURCE CANONIQUE (ne jamais se tromper)
 
-### N(T) — formule EXACTE
+> Ces formules sont la **référence unique** du projet. Les fichiers `CLAUDE.md` locaux
+> (optimisation, c_modules) pointent ici plutôt que de les recopier.
+
+### N(T) — Riemann-von Mangoldt (EXACTE)
 ```
-N(T) ≈ T/(2π) · ln(T/2πe)      ← le 'e' est OBLIGATOIRE
+N(T) ≈ T/(2π) · ln(T/2πe)      ← le 'e' dans 2πe est OBLIGATOIRE
 ```
-Sans le `e` : sous-estimation de 64% à T=100 000 (49 346 au lieu de 138 067).
+Sans le `e` : sous-estimation de 64 % à T=100 000 (49 346 au lieu de 138 067).
 
 ### STEP adaptatif
 ```python
@@ -74,12 +101,11 @@ Z(t) = cos(θ)·Re[ζ(½+it)] − sin(θ)·Im[ζ(½+it)]    ← 1 seul appel zet
 ```
 **NE PAS** utiliser `Re(ζ(½+it))` seul comme détecteur → faux positifs (rotation de phase).
 
-### Illinois affinage
+### Illinois — affinage (sécante modifiée)
 ```python
 findroot(lambda x: Z_fast(float(x), dps=35), (t_a, t_b),
          solver="illinois", tol=1e-12, maxsteps=80)
 ```
-`tol=1e-12` cohérent avec 35 dps. `tol=1e-20` à 35 dps = IMPOSSIBLE.
 
 ### Précision adaptative (règle v3)
 | Opération | dps |
@@ -89,59 +115,62 @@ findroot(lambda x: Z_fast(float(x), dps=35), (t_a, t_b),
 | Affinage Illinois | 35 |
 | Validation/publication | 50 |
 
+### Seuil Illinois C (voie B)
+```python
+T_SEUIL_ILLINOIS_C = 300.0
+# t < 300  → N < 7 termes RS → mpmath fallback légitime (~87 zéros sur 10142)
+# t ≥ 300  → N ≥ 7 termes RS → Illinois C pur fiable
+```
+
 ### Visualisation — règle absolue
 ```python
 plt.savefig("fichier.png", dpi=150)
 plt.close()    # TOUJOURS — jamais plt.show() en production (bloquant)
 ```
 
+### Leçon durable — biais Z_mpfr (voie B)
+Le biais Z_mpfr (~1e-3) **n'est pas un bug** : limitation structurelle de RS tronquée à
+C0+C1 (précision max ~1e-3). Solution : wrapper `mpmath.siegelz`.
+`mpc_zeta` est **ABSENT** de libmpc 1.3.1 — ne pas chercher à l'utiliser.
+
 ---
 
 ## Structure du projet
 
 ```
-/home/riemann/projet_zeta/
+~/projet_zeta/
 ├── zeta_env/                         # venv Python 3.12
 ├── src/calculs/optimisation/         # code production
-│   ├── compute_zeros_v3.py           # orchestrateur principal ✅
-│   ├── theta_rapide.py               # θ(t) Stirling
-│   ├── riemann_siegel_batch.py       # Z(t) vectorisé numpy/CuPy
-│   ├── parallel_scanner.py           # 4 workers multiprocessing
-│   ├── turing_validation.py          # N(T) Backlund
-│   └── benchmark_15min.py
-├── calculs/v3_T10000_20260521_133316/  # outputs Phase 0
-│   ├── zeros_v3_T10000_20260521_133316.csv   # 10 142 zéros
-│   ├── zeros_v3_T10000_20260521_133316.png
-│   └── execution_v3_T10000_20260521_133316.log
-├── .claude/skills/zeta-lab/references/
-│   ├── formules_zeta.md              # toutes les formules (enrichi 21 mai)
-│   └── bibliotheques.md             # toutes les libs (enrichi 21 mai)
-└── Riemann_Lab.wiki/                 # wiki cloné (branche master)
-
-GitHub : hprzeta/Riemann_Lab
-  ├── Riemann_Lab_IA    ← développement principal ⭐
-  ├── Riemann_Lab_C     ← Phase C (Illinois en C)
-  ├── Riemann_Lab_Test  ← expérimentations
-  └── main              ← production stable
+│   ├── compute_zeros_v2.py           # référence (21h) — NE PAS MODIFIER
+│   ├── compute_zeros_v3.py           # orchestrateur Phase 0
+│   ├── compute_zeros_v4.py           # Phase C hybride — NE PAS MODIFIER
+│   ├── compute_zeros_v5.py           # Voie B — Illinois_C pur 100% — NE PAS MODIFIER
+│   ├── compute_zeros_v4_1.py         # détection Z_vect_correct + 4 workers (actif)
+│   ├── theta_rapide.py · riemann_siegel.py · riemann_siegel_batch.py
+│   ├── parallel_scanner.py · turing_validation.py
+│   └── c_modules/                    # Phase C (libmpfr) — voir son CLAUDE.md
+├── src/ia/prompts/                   # prompts Claude Code
+├── docs/                             # GitHub Pages + rapports
+├── .mcp.json                         # MCP GitHub — JAMAIS commité (.gitignore)
+├── CLAUDE.md                         # ce fichier ⭐
+└── Riemann_Lab.wiki/                 # wiki cloné (master) — Handoff/JOURNAL/STACK
 ```
 
 ---
 
-## Stack technique RÉELLE
+## Stack technique
 
 | Lib | Usage | Note |
 |---|---|---|
 | `mpmath` | zêta haute précision, Illinois, loggamma | Cœur du calcul |
-| `numpy` | Z(t) vectorisé, phases RS, détection signes | CPU batch |
+| `numpy` | Z(t) vectorisé, détection signes | CPU batch |
 | `cupy` | Z(t) GPU (GTX 960M, CUDA 12.2) | `cupy-cuda12x` |
-| `multiprocessing` | 4 workers (pas joblib — incompatible GMP) | Fork-safe |
-| `pandas` | sauvegarde/chargement CSV zéros | I/O |
-| `matplotlib` | Z(t), espacements, droite critique | Visualisation |
-| `loguru` | journal d'exécution | Logging |
-| `tqdm` | barres de progression | Interface |
+| `multiprocessing` | 4 workers (pas joblib) | Fork-safe |
+| `libmpfr` | PREC=170 bits dans illinois_mpfr.c | Phase C |
+| `libmpc` | v1.3.1 — `mpc_zeta` ABSENT | Ne pas utiliser |
 
-> **⚠️ Exclu :** SageMath, outils propriétaires.
-> **⚠️ Ne pas utiliser joblib avec mpmath** — GMP a un état global non thread-safe → corruption mémoire.
+> **Exclu :** SageMath, outils propriétaires. · **Pas de `joblib` avec `mpmath`** (GMP non
+> thread-safe). · **`mpc_zeta` absent** dans libmpc 1.3.1 → wrapper mpmath.
 
 ---
 
@@ -151,59 +180,56 @@ GitHub : hprzeta/Riemann_Lab
 |---|---|
 | CPU | Intel i7, 4 cœurs |
 | RAM | 8 GB + 16 GB swap |
-| GPU calcul | NVIDIA GeForce GTX 960M — 4 GB VRAM, CUDA 12.2, Compute 5.0 |
-| GPU affichage | Intel HD Graphics 620 |
+| GPU | NVIDIA GTX 960M — 4 GB VRAM, CUDA 12.2 |
 
 **Activation GPU :** `sudo prime-select nvidia && sudo reboot`
-**nvtop :** lire le graphe historique du haut (fiable) — pas la colonne GPU% par processus (bursts 50ms invisibles à 2s d'échantillonnage).
-**CUDA + fork :** `cudaErrorInitializationError` dans les workers = comportement attendu → bascule CPU numpy automatique.
 
 ---
 
 ## Workflow Git
 
 ```bash
-# Activation environnement
 source ~/projet_zeta/zeta_env/bin/activate
 export PYTHONPATH="${PYTHONPATH}:${HOME}/projet_zeta/src"
 
-# Branches
 git checkout Riemann_Lab_IA    # Python, wiki, docs ⭐
-git checkout Riemann_Lab_C     # Module C, libmpfr
-git checkout Riemann_Lab_Test  # Tests ponctuels
+git checkout Riemann_Lab_C     # Phase C (Illinois en C)
 
-# Convention commits (Conventional Commits — messages en anglais)
-git commit -m "feat(phase0): ..."
-git commit -m "fix(katex): ..."
-git commit -m "docs(wiki): ..."
+# Wiki (dépôt séparé — TOUS les .md de suivi vont ici)
+cd ~/projet_zeta/Riemann_Lab.wiki/ && git push origin master
 
-# Wiki (dépôt séparé)
-cd ~/projet_zeta/Riemann_Lab.wiki/
-git push origin master
+# Conventions commits
+# feat(phase-c): ... · fix(z_function): ... · docs(handoff): ... · wip: checkpoint auto HHMM
 ```
+
+⚠️ **Handoff/JOURNAL/STACK vont dans le wiki, jamais dans le repo de code.**
+⚠️ **Les `CLAUDE.md`, eux, vivent AVEC le code** (repo `Riemann_Lab_*`), pas dans le wiki.
+⚠️ **Avant tout `git add -A` : `git status` + `grep mcp .gitignore`.**
 
 ---
 
-## Références indispensables
+## Fichiers de contexte (cascade Claude Code)
 
-- **`handoff.md`** dans le wiki — état complet du projet session par session
-- **`.claude/skills/zeta-lab/references/formules_zeta.md`** — toutes les formules
-- **`.claude/skills/zeta-lab/references/bibliotheques.md`** — toutes les libs
+| Fichier | Portée |
+|---|---|
+| `~/.claude/CLAUDE.md` | Global léger — tous projets (local only) |
+| `~/projet_zeta/CLAUDE.md` | ⭐ Ce fichier — contexte projet |
+| `src/calculs/optimisation/CLAUDE.md` | Règles Illinois, ctypes, précision |
+| `src/calculs/optimisation/c_modules/CLAUDE.md` | C : PREC=170, libmpfr, Makefile |
+
+---
+
+## Références
+
 - LMFDB : https://lmfdb.org/zeros/zeta/
-- Titchmarsh §4.12 : https://sites.math.rutgers.edu/~zeilberg/EM18/TitchmarshZeta.pdf
-- Turing 1953 : https://www-users.cse.umn.edu/~odlyzko/doc/turing.zeta.pdf
-- Odlyzko & Schönhage (1988) : https://www-users.cse.umn.edu/~odlyzko/doc/arch/fast.zeta.eval.pdf
+- Titchmarsh §4.12 · Turing 1953 · Odlyzko-Schönhage 1988 (liens dans `STACK.md`)
 
 ---
 
 ## Prochaines priorités
 
-1. **Phase C** — `illinois_mpfr.c` + Makefile → `.so` → ctypes Python (×5–10 sur l'affinage)
-   ```bash
-   sudo apt install libmpfr-dev libgmp-dev
-   ```
-2. Fix lien PDF cassé dans le wiki + `git push origin master`
-3. Objectif 2 — Agent IA : Claude Code 101 → MCP → Subagents (Anthropic Skilljar)
+> 📍 **Voir `Handoff.md` → section « REPRENDRE ICI ».** Ne pas dupliquer la liste ici
+> (elle change à chaque session ; ce fichier doit rester stable).
 
 ---
-*Dernière mise à jour : 22 mai 2026 — 208 lignes*
+*CLAUDE.md - racine - source Riemann_Lab_C (sync 4 branches) - hprzeta - MAJ 2026-06-03 - 235 lignes*
