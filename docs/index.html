@@ -762,6 +762,145 @@
     </a>
   </div>
 
+<!-- ============================================================
+     SECTION PERFORMANCES — à insérer avant </main> ou le footer
+     Style cohérent avec le thème sombre doré de index.html
+     hprzeta · 2026-06-03
+     ============================================================ -->
+
+<section class="progress" style="margin: 3rem 0;">
+  <div class="wrap">
+
+    <div class="section-title" style="
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;">
+      <span style="display:inline-block;width:24px;height:1px;background:var(--gold);"></span>
+      Performances — De 21h à 9 minutes
+    </div>
+
+    <!-- Tableau versions -->
+    <div style="overflow-x:auto; margin-bottom:2rem;">
+      <table style="
+        width:100%;
+        border-collapse:collapse;
+        font-family:'JetBrains Mono',monospace;
+        font-size:13px;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);">
+            <th style="text-align:left;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Version</th>
+            <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Vitesse</th>
+            <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">T = 10 000</th>
+            <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Gain vs v2</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid rgba(201,168,76,0.06);">
+            <td style="padding:0.6rem 1rem;color:var(--text2);">v2</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">0.13 z/s</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">21h</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">—</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(201,168,76,0.06);">
+            <td style="padding:0.6rem 1rem;color:var(--text2);">v3</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">1.02 z/s</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">2h 46min</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">×7.6</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(201,168,76,0.06);">
+            <td style="padding:0.6rem 1rem;color:var(--text2);">v4 / v5</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">~1.0 z/s</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">~2h 45min</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">×7.6</td>
+          </tr>
+          <tr style="background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.25);">
+            <td style="padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">v4.1 Option B ✦</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">18.65 z/s</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">9.1 min</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">×138</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 3 leviers -->
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+      gap:1rem;
+      margin-bottom:2rem;">
+
+      <div style="
+        padding:1.25rem;
+        border:1px solid var(--border);
+        background:var(--bg2);">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:0.1em;margin-bottom:0.75rem;">LEVIER 1</div>
+        <div style="font-size:1rem;color:#f0ebe2;margin-bottom:0.5rem;">Illinois en C / libmpfr</div>
+        <div style="font-size:0.85rem;color:var(--text2);">Affinage à 170 bits en C pur. Fini le Python scalaire sur le goulot principal.</div>
+        <div style="margin-top:0.75rem;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold);">×5 à ×10</div>
+      </div>
+
+      <div style="
+        padding:1.25rem;
+        border:1px solid var(--border);
+        background:var(--bg2);">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:0.1em;margin-bottom:0.75rem;">LEVIER 2</div>
+        <div style="font-size:1rem;color:#f0ebe2;margin-bottom:0.5rem;">Parallélisme post-fork</div>
+        <div style="font-size:0.85rem;color:var(--text2);">4 workers indépendants chargent chacun leur propre <code style="font-family:'JetBrains Mono';font-size:11px;color:var(--gold);">.so</code>. Pas de contention GIL.</div>
+        <div style="margin-top:0.75rem;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold);">×4</div>
+      </div>
+
+      <div style="
+        padding:1.25rem;
+        border:1px solid rgba(201,168,76,0.35);
+        background:rgba(201,168,76,0.03);">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:0.1em;margin-bottom:0.75rem;">LEVIER 3 — CLÉ</div>
+        <div style="font-size:1rem;color:#f0ebe2;margin-bottom:0.5rem;">Option B — correction Z</div>
+        <div style="font-size:0.85rem;color:var(--text2);">Erreur ~0.3 → &lt;10⁻¹³. Python passe $(f_a, f_b)$ au C. Illinois ne diverge plus.</div>
+        <div style="margin-top:0.75rem;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold2);">Pipeline corrigé ✓</div>
+      </div>
+    </div>
+
+    <!-- Métriques validation -->
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+      gap:0.75rem;
+      padding:1.5rem;
+      border:1px solid var(--border);
+      background:var(--bg2);">
+      <div style="text-align:center;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:0.1em;margin-bottom:0.4rem;">TURING-BACKLUND</div>
+        <div style="font-size:1.1rem;color:#4ade80;font-family:'JetBrains Mono',monospace;">COMPLET</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;">0 zéro manquant</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:0.1em;margin-bottom:0.4rem;">LMFDB</div>
+        <div style="font-size:1.1rem;color:#f0ebe2;font-family:'JetBrains Mono',monospace;">19 / 20</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;">&lt; 10⁻¹⁰</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:0.1em;margin-bottom:0.4rem;">ILLINOIS C PUR</div>
+        <div style="font-size:1.1rem;color:#f0ebe2;font-family:'JetBrains Mono',monospace;">98.6 %</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;">fallback : 0</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:0.1em;margin-bottom:0.4rem;">COMMIT</div>
+        <div style="font-size:1.1rem;color:var(--gold);font-family:'JetBrains Mono',monospace;">581e34d</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;">Riemann_Lab_C</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+<!-- FIN SECTION PERFORMANCES -->
+
   <footer>
     <p>hprzeta · Riemann Lab · avril 2026</p>
     <p>
