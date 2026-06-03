@@ -206,6 +206,38 @@ def Z_batch(
     return Z_out
 
 
+def Z_vect_correct(ts: np.ndarray) -> np.ndarray:
+    """
+    Z(t) vectorisé avec N(t) correct par ligne — CPU uniquement.
+
+    Corrige le bug de Z_batch : N_max fixe → termes RS parasites pour petit t.
+    mask[k, n] = (n ≤ N(t_k)) annule les termes n > N(t_k).
+
+    À utiliser pour la détection quand le batch couvre des t petits (t < 300).
+    """
+    ts      = np.asarray(ts, dtype=np.float64)
+    thetas  = theta_vect(ts)
+    taus    = np.sqrt(ts / _TWO_PI)
+    Ns      = np.floor(taus).astype(int)
+    N_max   = int(np.max(Ns)) + 1
+    ns      = np.arange(1, N_max + 1, dtype=np.float64)
+    log_ns  = np.log(ns)
+    inv_sqn = 1.0 / np.sqrt(ns)
+
+    # Masque booléen : n ≤ N(t_k) pour chaque ligne k
+    mask   = (np.arange(1, N_max + 1)[None, :] <= Ns[:, None])
+    phases = thetas[:, None] - ts[:, None] * log_ns[None, :]
+    Z_out  = 2.0 * np.dot(np.cos(phases) * mask, inv_sqn)
+
+    # Reste RS C0 + C1 avec N(t) correct par ligne
+    for k in range(len(ts)):
+        tau = float(taus[k])
+        N   = int(Ns[k])
+        Z_out[k] += _reste_RS(float(ts[k]), N, tau ** (-0.5))
+
+    return Z_out
+
+
 # ─── Section 5 — Scanner hybride détection + affinage ────────────────────────
 
 def scanner_batch(
