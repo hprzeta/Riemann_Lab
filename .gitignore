@@ -1,12 +1,13 @@
+# ===== SOCLE COMMUN — synchronise sur les 4 branches (hprzeta) =====
 # Environnement virtuel
 zeta_env/
 __pycache__/
 __init__.py
 *.pyc
 
-# Données volumineuses
+# Donnees volumineuses & logs
 # /mnt/data/
-# *.log
+*.log
 
 # IDE
 .vscode/
@@ -17,15 +18,29 @@ __init__.py
 *.bak
 .DS_Store
 
-# IA
-.claude
-
 # Notebooks
 .ipynb_checkpoints/
+
+# Clone du wiki (depot separe — ne pas suivre depuis le repo principal)
 Riemann_Lab.wiki
 
-# MCP git
-.mcp.jsonclaude-traitement-journalier/
+# IA — Claude Code : ignorer .claude/ SAUF les skills (versionnes en Phase 2)
+.claude/*
+!.claude/skills/
+!.claude/skills/**
+claude-traitement-journalier/
+
+# Audit systeme local
+scripts/hprzeta_system_audit_*.tar.gz
+scripts/hprzeta_system_audit_*.zip
+scripts/assistant_pack_audit_*.txt
+scripts/audit_extract_text*/
+
+# SECRETS — ne jamais committer
+.mcp.json
+
+# Etat de session volatil — local uniquement
 Handoff.md
 **/Handoff.md
-.mcp.json
+# ===== FIN SOCLE COMMUN =====
+# (motifs specifiques a une branche, ex. *.so *.o pour C, a ajouter SOUS cette ligne)
