@@ -1,6 +1,6 @@
 # ~/projet_zeta/CLAUDE.md — Contexte projet Riemann_Lab
-> Configuration projet Claude Code — règles **stables** uniquement.
-> Mis à jour : 31 mai 2026
+> **Fichier :** CLAUDE.md - **Dossier :** racine repo (`~/projet_zeta/`)
+> **Branche :** Riemann_Lab_C (source) -> sync main - IA - Test - **Auteur :** hprzeta - **MAJ :** 2026-06-03
 
 ---
 
@@ -232,4 +232,4 @@ cd ~/projet_zeta/Riemann_Lab.wiki/ && git push origin master
 > (elle change à chaque session ; ce fichier doit rester stable).
 
 ---
-*Dernière mise à jour : 31 mai 2026 — ~205 lignes (état purgé → Handoff.md)*
+*CLAUDE.md - racine - source Riemann_Lab_C (sync 4 branches) - hprzeta - MAJ 2026-06-03 - 235 lignes*
