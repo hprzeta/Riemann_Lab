@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/images/logo_riemann_lab.svg" width="500"/>
+</p>
+
 # 🧮 ζ(s) Projet Zêta : Exploration de l'Hypothèse de Riemann
 
 > *"Les zéros non triviaux de la fonction zêta de Riemann ont tous une partie réelle égale à 1/2."*  
