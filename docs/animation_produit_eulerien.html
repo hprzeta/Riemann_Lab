@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Produit eulérien — ζ(s) = Π 1/(1−p⁻ˢ)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #0d1117; color: #e6edf3; line-height: 1.7;
+    padding: 1.8rem 1rem 3rem; max-width: 760px; margin: 0 auto;
+  }
+  h1 { font-size: 1.35rem; font-weight: 600; margin-bottom: 0.3rem; }
+  h2 { font-size: 1.05rem; font-weight: 500; color: #c9d1d9; margin: 2rem 0 0.7rem; }
+  .sub { color: #8b949e; font-size: 0.9rem; margin-bottom: 1.4rem; }
+  p  { color: #c9d1d9; font-size: 0.95rem; margin-bottom: 0.8rem; }
+  strong { color: #e6edf3; }
+  a  { color: #7F77DD; }
+  code {
+    font-family: ui-monospace, monospace; background: #161b22;
+    border: 1px solid #30363d; border-radius: 4px;
+    padding: 1px 5px; font-size: 0.85em; color: #9fe1cb;
+  }
+  .meta {
+    font-size: 0.8rem; color: #8b949e; border: 1px solid #30363d;
+    background: #161b22; border-radius: 8px; padding: 0.5rem 0.9rem;
+    margin-bottom: 1.6rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
+  }
+  .panel {
+    background: #161b22; border: 1px solid #30363d; border-radius: 10px;
+    padding: 1.1rem 1.2rem; margin: 1.2rem 0;
+  }
+  .panel-title { font-size: 0.85rem; color: #8b949e; margin-bottom: 0.8rem; }
+  .ctrl {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 0.83rem; color: #8b949e; margin-bottom: 0.7rem;
+  }
+  .ctrl span:first-child { min-width: 220px; }
+  input[type=range] { flex: 1; accent-color: #7F77DD; height: 4px; cursor: pointer; }
+  .val { font-weight: 600; color: #e6edf3; min-width: 60px; text-align: right; }
+  .katex-block {
+    background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+    padding: 0.4rem 1rem; margin: 0.8rem 0; overflow-x: auto;
+  }
+  table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; font-size: 0.86rem; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid #21262d; color: #c9d1d9; }
+  th { color: #8b949e; font-weight: 500; }
+  .ok { color: #1D9E75; } .ko { color: #E24B4A; } .mid { color: #EF9F27; }
+  .legend {
+    display: flex; gap: 18px; flex-wrap: wrap;
+    font-size: 0.78rem; color: #8b949e; margin-top: 0.7rem;
+  }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .dot { width: 10px; height: 10px; border-radius: 2px; }
+  canvas { display: block; width: 100%; border-radius: 6px; }
+  .readout {
+    background: #0d1117; border: 1px solid #30363d; border-radius: 6px;
+    padding: 0.5rem 0.9rem; margin: 0.7rem 0;
+    display: flex; gap: 1.5rem; flex-wrap: wrap;
+    font-size: 0.82rem; font-family: ui-monospace, monospace;
+  }
+  .readout-label { color: #8b949e; }
+  .readout-val   { color: #e6edf3; font-weight: 600; }
+  ul { color: #c9d1d9; font-size: 0.95rem; margin-left: 1.5rem; margin-bottom: 0.8rem; }
+</style>
+</head>
+<body>
+
+<div class="meta">
+  <span>Riemann_Lab — Cours animé · Produit eulérien</span>
+  <span>Auteur : <b style="color:#c9d1d9">hprzeta</b> · Mise à jour : 6 juin 2026</span>
+</div>
+
+<h1>Le produit eulérien $\zeta(s) = \displaystyle\prod_{p\,\text{premier}} \frac{1}{1-p^{-s}}$</h1>
+<p class="sub">Comment chaque nombre premier contribue à $\zeta$, le lien avec la distribution des premiers, et la preuve de l'infinité des nombres premiers.</p>
+
+<p>Retour au <a href="index.html">tableau de bord</a> · <a href="animation_series_dirichlet.html">série de Dirichlet</a> · <a href="animation_zeros_non_triviaux.html">zéros non-triviaux</a></p>
+
+<!-- ══════════════ 1. FORMULE ══════════════ -->
+<h2>1. La formule d'Euler (1737)</h2>
+<p>Pour $\text{Re}(s) > 1$, Euler a découvert la <strong>factorisation en produit sur les nombres premiers</strong> :</p>
+<div class="katex-block">$$\zeta(s) = \sum_{n=1}^{\infty} \frac{1}{n^s} = \prod_{p\;\text{premier}} \frac{1}{1-p^{-s}}$$</div>
+<p>C'est une conséquence directe du <strong>théorème fondamental de l'arithmétique</strong> : tout entier $n \geq 1$ se factorise de manière unique en produit de nombres premiers. En développant chaque facteur $\tfrac{1}{1-p^{-s}} = \sum_{k=0}^{\infty} p^{-ks}$ et en multipliant sur tous les premiers, on regénère exactement la somme $\sum n^{-s}$.</p>
+
+<!-- ══════════════ 2. DÉMONSTRATION ══════════════ -->
+<h2>2. Idée de la démonstration</h2>
+<p>Chaque facteur eulérien est une série géométrique :</p>
+<div class="katex-block">$$\frac{1}{1-p^{-s}} = 1 + p^{-s} + p^{-2s} + p^{-3s} + \cdots$$</div>
+<p>En développant le produit sur les premiers $2, 3, 5, 7, \ldots$ et en regroupant par la décomposition de chaque entier, on obtient :</p>
+<div class="katex-block">$$\prod_{p} \frac{1}{1-p^{-s}} = \sum_{n=1}^{\infty} \frac{1}{n^s}$$</div>
+<p>La convergence est absolue pour $\text{Re}(s) > 1$. <strong>Conséquence immédiate :</strong> si les nombres premiers étaient finis, le produit serait fini et $\zeta(s)$ serait bornée près de $s=1$ — mais $\zeta(s) \to +\infty$ quand $s \to 1^+$. Donc il y a une infinité de premiers (preuve d'Euler, plus forte que celle d'Euclide).</p>
+
+<!-- ══════════════ ANIMATION ══════════════ -->
+<div class="panel">
+  <div class="panel-title">Animation — convergence du produit partiel $P_k(\sigma) = \prod_{p \leq p_k} (1-p^{-\sigma})^{-1}$ vers $\zeta(\sigma)$</div>
+  <canvas id="cv-prod" height="240"></canvas>
+  <div class="readout">
+    <span><span class="readout-label">σ = </span><span class="readout-val" id="ro-sigma">2.00</span></span>
+    <span><span class="readout-label">premiers : </span><span class="readout-val" id="ro-k">15</span></span>
+    <span><span class="readout-label">p_k = </span><span class="readout-val" id="ro-pk">47</span></span>
+    <span><span class="readout-label">P_k = </span><span class="readout-val" id="ro-prod">0.000</span></span>
+    <span><span class="readout-label">ζ(σ) ≈ </span><span class="readout-val" id="ro-zeta">0.000</span></span>
+    <span><span class="readout-label">écart = </span><span class="readout-val" id="ro-ecart">0.000</span></span>
+  </div>
+  <div class="ctrl">
+    <span>Exposant $\sigma$ (Re(s), doit être &gt; 1)</span>
+    <input type="range" id="sl-sigma" min="1.1" max="5" value="2" step="0.05">
+    <span class="val" id="val-sigma">2.00</span>
+  </div>
+  <div class="ctrl">
+    <span>Nombre de premiers inclus ($k$)</span>
+    <input type="range" id="sl-k" min="1" max="25" value="15" step="1">
+    <span class="val" id="val-k">15</span>
+  </div>
+  <div class="legend">
+    <span><span class="dot" style="background:#EF9F27"></span>produit partiel P_k(σ)</span>
+    <span><span class="dot" style="background:#1D9E75"></span>ζ(σ) exact (5000 termes)</span>
+    <span><span class="dot" style="background:#7F77DD"></span>écart relatif</span>
+  </div>
+</div>
+
+<!-- ══════════════ 3. TABLE ══════════════ -->
+<h2>3. Contribution des premiers (σ = 2)</h2>
+<table id="tbl-premiers">
+  <tr><th>Rang</th><th>Premier $p$</th><th>Facteur $(1-p^{-2})^{-1}$</th><th>Produit cumulé</th><th>Écart vs $\pi^2/6$</th></tr>
+</table>
+<p style="font-size:0.82rem;color:#8b949e">La valeur exacte est $\zeta(2) = \pi^2/6 \approx 1{,}644934$.</p>
+
+<!-- ══════════════ 4. LIEN PREMIERS ══════════════ -->
+<h2>4. Lien avec la distribution des nombres premiers</h2>
+<p>Le produit eulérien crée un pont direct entre les zéros de $\zeta$ et la distribution des premiers. En prenant le logarithme :</p>
+<div class="katex-block">$$\ln\zeta(s) = -\sum_{p} \ln(1-p^{-s}) = \sum_{p}\sum_{k=1}^{\infty}\frac{1}{k\,p^{ks}} = \sum_{p}\frac{1}{p^s} + O(1) \quad \text{près de } s=1$$</div>
+<p>La <strong>formule explicite de Riemann</strong> exprime $\pi(x)$ (nombre de premiers $\leq x$) en fonction des zéros $\rho$ de $\zeta$ :</p>
+<div class="katex-block">$$\pi(x) = \text{Li}(x) - \sum_{\rho}\text{Li}(x^{\rho}) - \ln 2 + \int_x^{\infty}\frac{dt}{t(t^2-1)\ln t}$$</div>
+<p>Chaque zéro $\rho_n = \tfrac{1}{2}+i\gamma_n$ crée une <strong>oscillation</strong> dans $\pi(x)$ de fréquence $\gamma_n$ et d'amplitude $\sim x^{\sigma_n}/|\rho_n|$. Si l'HdR est vraie ($\sigma_n = \tfrac{1}{2}$ pour tout $n$), ces oscillations sont les plus faibles possibles, et le théorème des nombres premiers a la meilleure forme :</p>
+<div class="katex-block">$$|\pi(x) - \text{Li}(x)| = O\!\left(\sqrt{x}\,\ln x\right)$$</div>
+
+<!-- ══════════════ 5. ZÉROS ET PRODUIT ══════════════ -->
+<h2>5. Produit de Hadamard et zéros</h2>
+<p>$\zeta(s)$ admet également une factorisation de Hadamard sur ses zéros :</p>
+<div class="katex-block">$$\xi(s) = \xi(0)\prod_{\rho}\left(1-\frac{s}{\rho}\right), \qquad \xi(s) = \tfrac{1}{2}s(s-1)\pi^{-s/2}\Gamma\!\left(\tfrac{s}{2}\right)\zeta(s)$$</div>
+<p>où le produit porte sur tous les zéros non-triviaux $\rho$. Ce produit converge absolument pour tout $s$ (sauf les pôles de $\Gamma$). La connexion entre le produit eulérien (sur les premiers) et le produit de Hadamard (sur les zéros) est au cœur du lien nombres premiers ↔ zéros de $\zeta$.</p>
+
+<div class="meta" style="margin-top:2rem;margin-bottom:0;">
+  <span>Riemann_Lab · branche Riemann_Lab_IA · <code>docs/animation_produit_eulerien.html</code></span>
+  <span>Mise à jour : 6 juin 2026 · Auteur : <b style="color:#c9d1d9">hprzeta</b> · <span id="nblignes"></span> lignes</span>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  renderMathInElement(document.body, {
+    delimiters: [
+      { left: "$$", right: "$$", display: true },
+      { left: "$",  right: "$",  display: false }
+    ],
+    throwOnError: false
+  });
+  buildTable();
+  drawAll();
+  document.getElementById('nblignes').textContent =
+    document.documentElement.outerHTML.split('\n').length;
+});
+
+/* premiers jusqu'à p_25 = 97 */
+var PRIMES = [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97];
+var TWO_PI = 2 * Math.PI;
+
+function zetaReal(sigma) {
+  var s = 0;
+  for (var n = 1; n <= 5000; n++) s += Math.pow(n, -sigma);
+  return s;
+}
+
+function partialProduct(sigma, k) {
+  var p = 1;
+  for (var i = 0; i < k; i++) p /= (1 - Math.pow(PRIMES[i], -sigma));
+  return p;
+}
+
+/* tableau des contributions pour σ=2 */
+function buildTable() {
+  var tbl = document.getElementById('tbl-premiers');
+  var zExact = Math.PI * Math.PI / 6;
+  var prod = 1;
+  for (var i = 0; i < 10; i++) {
+    var p = PRIMES[i];
+    var factor = 1 / (1 - Math.pow(p, -2));
+    prod *= factor;
+    var tr = document.createElement('tr');
+    tr.innerHTML = '<td>'+(i+1)+'</td>'
+      +'<td class="ok">'+p+'</td>'
+      +'<td style="color:#EF9F27">'+factor.toFixed(6)+'</td>'
+      +'<td style="color:#7F77DD">'+prod.toFixed(6)+'</td>'
+      +'<td style="color:#8b949e">'+Math.abs(prod - zExact).toFixed(6)+'</td>';
+    tbl.appendChild(tr);
+  }
+}
+
+function drawAll() {
+  var sigma = parseFloat(document.getElementById('sl-sigma').value);
+  var k     = parseInt(document.getElementById('sl-k').value);
+
+  document.getElementById('val-sigma').textContent = sigma.toFixed(2);
+  document.getElementById('val-k').textContent     = k;
+  document.getElementById('ro-sigma').textContent  = sigma.toFixed(2);
+  document.getElementById('ro-k').textContent      = k;
+  document.getElementById('ro-pk').textContent     = PRIMES[k-1];
+
+  var prod   = partialProduct(sigma, k);
+  var zExact = zetaReal(sigma);
+  document.getElementById('ro-prod').textContent  = prod.toFixed(6);
+  document.getElementById('ro-zeta').textContent  = zExact.toFixed(6);
+  document.getElementById('ro-ecart').textContent = Math.abs(prod - zExact).toFixed(6);
+
+  drawProd(sigma, k);
+}
+
+function drawProd(sigma, kCur) {
+  var cv = document.getElementById('cv-prod');
+  var W = cv.offsetWidth || 680, dpr = window.devicePixelRatio || 1;
+  cv.width = W * dpr; cv.height = 240 * dpr;
+  var ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
+  var w = W, h = 240, px = 48, py = 20;
+  var K = PRIMES.length; /* 25 */
+
+  ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, w, h);
+
+  var zExact = zetaReal(sigma);
+
+  /* calculer tous les produits partiels */
+  var pts = [], prod = 1;
+  for (var i = 0; i < K; i++) {
+    prod /= (1 - Math.pow(PRIMES[i], -sigma));
+    pts.push(prod);
+  }
+
+  var yMin = Math.min(1, zExact) * 0.98;
+  var yMax = Math.max(pts[K-1], zExact) * 1.02;
+  var span = Math.max(yMax - yMin, 0.001);
+
+  function xOf(k) { return px + (k / (K - 1)) * (w - px - 16); }
+  function yOf(v) { return py + (1 - (v - yMin) / span) * (h - 2 * py); }
+
+  /* ligne ζ(σ) */
+  var ye = yOf(zExact);
+  ctx.strokeStyle = '#1D9E75'; ctx.lineWidth = 1.4; ctx.setLineDash([6, 4]);
+  ctx.beginPath(); ctx.moveTo(px, ye); ctx.lineTo(w - 16, ye); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#1D9E75'; ctx.font = '9px monospace'; ctx.textAlign = 'right';
+  ctx.fillText('ζ('+sigma.toFixed(2)+')=' + zExact.toFixed(5), w - 18, ye - 5);
+
+  /* courbe produit partiel */
+  ctx.beginPath();
+  pts.forEach(function (v, i) {
+    var x = xOf(i), y = yOf(v);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = '#EF9F27'; ctx.lineWidth = 1.8; ctx.stroke();
+
+  /* points aux premiers */
+  pts.forEach(function (v, i) {
+    var x = xOf(i), y = yOf(v);
+    var isActive = (i === kCur - 1);
+    ctx.beginPath(); ctx.arc(x, y, isActive ? 6 : 3.5, 0, TWO_PI);
+    ctx.fillStyle = isActive ? '#EF9F27' : '#EF9F2755'; ctx.fill();
+    if (isActive) { ctx.strokeStyle = '#e6edf3'; ctx.lineWidth = 1.2; ctx.stroke(); }
+    /* label premier */
+    ctx.fillStyle = isActive ? '#EF9F27' : '#484f58';
+    ctx.font = (isActive ? 'bold ' : '') + '8px monospace'; ctx.textAlign = 'center';
+    ctx.fillText('p'+PRIMES[i], x, h - 4);
+  });
+
+  /* barre verticale au premier courant */
+  var xc = xOf(kCur - 1);
+  ctx.strokeStyle = '#EF9F2744'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+  ctx.beginPath(); ctx.moveTo(xc, py); ctx.lineTo(xc, h - py); ctx.stroke();
+  ctx.setLineDash([]);
+
+  /* écart relatif en violet (axe secondaire inversé) */
+  var ptsDelta = [];
+  var pTmp = 1, dMax = 0;
+  for (var i = 0; i < K; i++) {
+    pTmp /= (1 - Math.pow(PRIMES[i], -sigma));
+    var d = Math.abs(pTmp - zExact) / zExact;
+    ptsDelta.push(d);
+    if (d > dMax) dMax = d;
+  }
+  dMax = Math.max(dMax, 1e-10);
+  /* map delta : 0 → h-py, dMax → py (axe droite) */
+  function yDelta(d) { return (h - py) - (d / dMax) * (h - 2*py); }
+
+  ctx.beginPath();
+  ptsDelta.forEach(function (d, i) {
+    var x = xOf(i), y = yDelta(d);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = '#7F77DD66'; ctx.lineWidth = 1; ctx.stroke();
+
+  /* labels */
+  ctx.fillStyle = '#8b949e'; ctx.font = '9px sans-serif'; ctx.textAlign = 'left';
+  ctx.fillText('Produit P_k(σ)', px, py - 4);
+  ctx.fillStyle = '#7F77DD66'; ctx.textAlign = 'right';
+  ctx.fillText('écart relatif (droite)', w - 16, py - 4);
+}
+
+document.getElementById('sl-sigma').addEventListener('input', drawAll);
+document.getElementById('sl-k').addEventListener('input',     drawAll);
+window.addEventListener('resize', drawAll);
+</script>
+</body>
+</html>

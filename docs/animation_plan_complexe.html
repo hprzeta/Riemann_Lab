@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan complexe — |ζ(σ+it)| interactif</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #0d1117; color: #e6edf3; line-height: 1.7;
+    padding: 1.8rem 1rem 3rem; max-width: 760px; margin: 0 auto;
+  }
+  h1 { font-size: 1.35rem; font-weight: 600; margin-bottom: 0.3rem; }
+  h2 { font-size: 1.05rem; font-weight: 500; color: #c9d1d9; margin: 2rem 0 0.7rem; }
+  .sub { color: #8b949e; font-size: 0.9rem; margin-bottom: 1.4rem; }
+  p  { color: #c9d1d9; font-size: 0.95rem; margin-bottom: 0.8rem; }
+  strong { color: #e6edf3; }
+  a  { color: #7F77DD; }
+  code {
+    font-family: ui-monospace, monospace; background: #161b22;
+    border: 1px solid #30363d; border-radius: 4px;
+    padding: 1px 5px; font-size: 0.85em; color: #9fe1cb;
+  }
+  .meta {
+    font-size: 0.8rem; color: #8b949e; border: 1px solid #30363d;
+    background: #161b22; border-radius: 8px; padding: 0.5rem 0.9rem;
+    margin-bottom: 1.6rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
+  }
+  .panel {
+    background: #161b22; border: 1px solid #30363d; border-radius: 10px;
+    padding: 1.1rem 1.2rem; margin: 1.2rem 0;
+  }
+  .panel-title { font-size: 0.85rem; color: #8b949e; margin-bottom: 0.8rem; }
+  .ctrl {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 0.83rem; color: #8b949e; margin-bottom: 0.7rem;
+  }
+  .ctrl span:first-child { min-width: 220px; }
+  input[type=range] { flex: 1; accent-color: #7F77DD; height: 4px; cursor: pointer; }
+  .val { font-weight: 600; color: #e6edf3; min-width: 60px; text-align: right; }
+  .katex-block {
+    background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+    padding: 0.4rem 1rem; margin: 0.8rem 0; overflow-x: auto;
+  }
+  .legend {
+    display: flex; gap: 18px; flex-wrap: wrap;
+    font-size: 0.78rem; color: #8b949e; margin-top: 0.7rem;
+  }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .dot { width: 10px; height: 10px; border-radius: 2px; }
+  canvas { display: block; width: 100%; border-radius: 6px; }
+  .readout {
+    background: #0d1117; border: 1px solid #30363d; border-radius: 6px;
+    padding: 0.5rem 0.9rem; margin: 0.7rem 0;
+    display: flex; gap: 1.5rem; flex-wrap: wrap;
+    font-size: 0.82rem; font-family: ui-monospace, monospace;
+  }
+  .readout-label { color: #8b949e; }
+  .readout-val   { color: #e6edf3; font-weight: 600; }
+  ul { color: #c9d1d9; font-size: 0.95rem; margin-left: 1.5rem; margin-bottom: 0.8rem; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 520px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="meta">
+  <span>Riemann_Lab — Cours animé · ζ dans le plan complexe</span>
+  <span>Auteur : <b style="color:#c9d1d9">hprzeta</b> · Mise à jour : 6 juin 2026</span>
+</div>
+
+<h1>$\zeta(s)$ dans le plan complexe</h1>
+<p class="sub">Module $|\zeta(\sigma+it)|$, pôle en $s=1$, zéros sur la droite critique, et bande critique $0 &lt; \text{Re}(s) &lt; 1$ — visualisation interactive.</p>
+
+<p>Retour au <a href="index.html">tableau de bord</a> · <a href="animation_series_dirichlet.html">série de Dirichlet</a> · <a href="animation_theta.html">θ(t)</a> · <a href="animation_zeros_non_triviaux.html">zéros</a></p>
+
+<!-- ══════════════ 1. STRUCTURE ══════════════ -->
+<h2>1. Structure de $\zeta$ dans $\mathbb{C}$</h2>
+<p>La fonction $\zeta(s)$ est définie sur $\mathbb{C}\setminus\{1\}$ et possède les caractéristiques suivantes :</p>
+<ul>
+  <li><strong>Un pôle simple</strong> en $s = 1$ : $|\zeta(\sigma+it)| \to +\infty$ quand $s \to 1$</li>
+  <li><strong>Zéros triviaux</strong> en $s = -2, -4, -6, \ldots$ (sur l'axe réel négatif)</li>
+  <li><strong>Zéros non-triviaux</strong> dans la bande critique $0 &lt; \text{Re}(s) &lt; 1$ — à ce jour tous vérifiés sur la droite $\text{Re}(s) = \tfrac{1}{2}$</li>
+  <li><strong>Symétrie</strong> : $\zeta(\bar{s}) = \overline{\zeta(s)}$ (valeurs réelles sur l'axe réel)</li>
+</ul>
+
+<!-- ══════════════ 2. BANDE CRITIQUE ══════════════ -->
+<h2>2. La bande critique $0 &lt; \text{Re}(s) &lt; 1$</h2>
+<p>La bande critique est la région fondamentale de la théorie analytique des nombres premiers. Dans cette bande :</p>
+<div class="katex-block">$$\zeta\!\left(\tfrac{1}{2}+it\right) = e^{-i\theta(t)}Z(t), \quad Z(t)\in\mathbb{R} \qquad \text{(sur la droite critique)}$$</div>
+<p>L'équation fonctionnelle $\xi(s)=\xi(1-s)$ impose que les zéros soient symétriques par rapport à la droite $\text{Re}(s)=\tfrac{1}{2}$. L'HdR affirme qu'ils sont <em>tous</em> sur cette droite.</p>
+
+<!-- ══════════════ ANIMATION HEATMAP ══════════════ -->
+<div class="panel">
+  <div class="panel-title">Heatmap $|\zeta(\sigma+it)|$ dans le plan complexe — plus clair = module plus grand, pôle = jaune vif, zéro = noir</div>
+  <canvas id="cv-heat" height="320"></canvas>
+  <div class="readout" style="margin-top:8px;">
+    <span><span class="readout-label">σ = </span><span class="readout-val" id="ro-sigma">0.50</span></span>
+    <span><span class="readout-label">t = </span><span class="readout-val" id="ro-t">20.0</span></span>
+    <span><span class="readout-label">|ζ(σ+it)| ≈ </span><span class="readout-val" id="ro-mod">—</span></span>
+  </div>
+  <p style="font-size:0.8rem;color:#8b949e;margin:4px 0 8px;">Les lignes croisées indiquent la position des curseurs. Calcul via série η alternée (50 termes).</p>
+  <div class="ctrl">
+    <span>Ligne $\sigma$ (curseur vertical)</span>
+    <input type="range" id="sl-sigma" min="-0.2" max="2" value="0.5" step="0.02">
+    <span class="val" id="val-sigma">0.50</span>
+  </div>
+  <div class="ctrl">
+    <span>Ligne $t$ (curseur horizontal)</span>
+    <input type="range" id="sl-t" min="0" max="50" value="20" step="0.5">
+    <span class="val" id="val-t">20.0</span>
+  </div>
+  <div class="legend">
+    <span><span class="dot" style="background:#000000;border:1px solid #444"></span>zéro (|ζ|→0)</span>
+    <span><span class="dot" style="background:#ffcc44"></span>pôle en s=1</span>
+    <span><span class="dot" style="background:#1D9E75"></span>droite critique Re(s)=½</span>
+    <span><span class="dot" style="background:#7F77DD"></span>bande critique 0&lt;Re(s)&lt;1</span>
+  </div>
+</div>
+
+<!-- ══════════════ ANIMATION COUPE ══════════════ -->
+<div class="panel" style="margin-top:0.5rem;">
+  <div class="panel-title">Coupes — $|\zeta(\sigma+it)|$ le long des deux lignes</div>
+  <div class="two-col" style="margin-top:0;">
+    <canvas id="cv-coupe-v" height="180"></canvas>
+    <canvas id="cv-coupe-h" height="180"></canvas>
+  </div>
+  <div class="legend">
+    <span><span class="dot" style="background:#7F77DD"></span>coupe verticale σ=cst, t varie</span>
+    <span><span class="dot" style="background:#EF9F27"></span>coupe horizontale t=cst, σ varie</span>
+  </div>
+</div>
+
+<!-- ══════════════ 3. FORMULE ETA ══════════════ -->
+<h2>3. Calcul numérique — série η alternée</h2>
+<p>Pour $\text{Re}(s) > 0$, $s \neq 1$ :</p>
+<div class="katex-block">$$\zeta(s) = \frac{1}{1-2^{1-s}}\sum_{n=1}^{\infty}\frac{(-1)^{n+1}}{n^s}$$</div>
+<p>Avec $M=50$ termes, la précision est suffisante pour la visualisation (erreur $\sim M^{-\text{Re}(s)}$ pour les régions visibles). Le pôle en $s=1$ est rendu visible par la divergence de $1/(1-2^{1-s})$ quand $s\to 1$.</p>
+
+<div class="meta" style="margin-top:2rem;margin-bottom:0;">
+  <span>Riemann_Lab · branche Riemann_Lab_IA · <code>docs/animation_plan_complexe.html</code></span>
+  <span>Mise à jour : 6 juin 2026 · Auteur : <b style="color:#c9d1d9">hprzeta</b> · <span id="nblignes"></span> lignes</span>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  renderMathInElement(document.body, {
+    delimiters: [
+      { left: "$$", right: "$$", display: true },
+      { left: "$",  right: "$",  display: false }
+    ],
+    throwOnError: false
+  });
+  buildHeatmap();
+  drawAll();
+  document.getElementById('nblignes').textContent =
+    document.documentElement.outerHTML.split('\n').length;
+});
+
+var ZEROS = [
+  14.134725141, 21.022039639, 25.010857580, 30.424876126, 32.935061588,
+  37.586178159, 40.918719012, 43.327073281, 48.005150881, 49.773832478
+];
+var TWO_PI = 2 * Math.PI;
+
+/* ζ(σ+it) par série η, retourne {re, im, mod} */
+function zetaCplx(sigma, t, M) {
+  var eta_re = 0, eta_im = 0;
+  for (var n = 1; n <= M; n++) {
+    var sign = (n % 2 === 1) ? 1 : -1;
+    var amp  = sign * Math.pow(n, -sigma);
+    var ph   = -t * Math.log(n);
+    eta_re += amp * Math.cos(ph);
+    eta_im += amp * Math.sin(ph);
+  }
+  /* facteur 1 - 2^{1-s} = 1 - 2^{1-sigma}*(cos(-t*ln2) + i*sin(-t*ln2)) */
+  var f  = Math.pow(2, 1 - sigma);
+  var fph = -t * Math.LN2;
+  var dr = 1 - f * Math.cos(fph);
+  var di =   - f * Math.sin(fph);
+  var d2 = dr*dr + di*di;
+  if (d2 < 1e-14) return { re: 1e6, im: 0, mod: 1e6 }; /* pôle */
+  var re = (eta_re*dr + eta_im*di) / d2;
+  var im = (eta_im*dr - eta_re*di) / d2;
+  return { re: re, im: im, mod: Math.sqrt(re*re + im*im) };
+}
+
+/* ── Précalcul heatmap sur grille ── */
+var SIGMA_MIN = -0.25, SIGMA_MAX = 2.05, T_MIN_H = 0, T_MAX_H = 52;
+var GW = 80, GH = 110; /* colonnes × lignes de la grille */
+var heatData = null; /* tableau plat GW*GH de mod */
+
+function buildHeatmap() {
+  heatData = new Float32Array(GW * GH);
+  for (var gi = 0; gi < GW; gi++) {
+    var sig = SIGMA_MIN + gi * (SIGMA_MAX - SIGMA_MIN) / (GW - 1);
+    for (var gj = 0; gj < GH; gj++) {
+      var t = T_MIN_H + gj * (T_MAX_H - T_MIN_H) / (GH - 1);
+      var m = zetaCplx(sig, t, 50).mod;
+      heatData[gi + gj * GW] = Math.min(m, 8); /* cap à 8 pour l'échelle */
+    }
+  }
+}
+
+/* Colormap : 0=noir, 0.5=violet, 1=jaune */
+function heatColor(v) {
+  /* v ∈ [0,1] */
+  if (v < 0.25) {
+    var f = v / 0.25;
+    return [Math.round(13*f), Math.round(17*f), Math.round(30*f)];
+  } else if (v < 0.5) {
+    var f = (v - 0.25) / 0.25;
+    return [Math.round(13 + 114*f), Math.round(17 + 6*f), Math.round(30 + 172*f)];
+  } else if (v < 0.75) {
+    var f = (v - 0.5) / 0.25;
+    return [Math.round(127 + 128*f), Math.round(23 + 136*f), Math.round(202 - 50*f)];
+  } else {
+    var f = (v - 0.75) / 0.25;
+    return [255, Math.round(159 + 45*f), Math.round(152 - 84*f)];
+  }
+}
+
+/* Trouver max pour normalisation */
+function drawHeatmap(sigCur, tCur) {
+  var cv = document.getElementById('cv-heat');
+  var W  = cv.offsetWidth || 680, dpr = window.devicePixelRatio || 1;
+  cv.width = W * dpr; cv.height = 320 * dpr;
+  var ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
+  var w = W, h = 320;
+  var px = 42, py = 10, pw = w - px - 12, ph = h - py - 20;
+
+  ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, w, h);
+
+  if (!heatData) return;
+
+  /* trouver max log pour normalisation */
+  var modMax = 0;
+  for (var k = 0; k < heatData.length; k++) if (heatData[k] > modMax) modMax = heatData[k];
+  modMax = Math.max(modMax, 1);
+
+  /* dessiner la heatmap par colonnes */
+  var cellW = pw / GW, cellH = ph / GH;
+  for (var gi = 0; gi < GW; gi++) {
+    for (var gj = 0; gj < GH; gj++) {
+      var m = heatData[gi + gj * GW];
+      /* normalisation logarithmique */
+      var v = Math.log(1 + m) / Math.log(1 + modMax);
+      var c = heatColor(v);
+      ctx.fillStyle = 'rgb('+c[0]+','+c[1]+','+c[2]+')';
+      var x = px + gi * cellW;
+      var y = py + (GH - 1 - gj) * cellH; /* t croissant vers le haut */
+      ctx.fillRect(x, y, Math.ceil(cellW)+0.5, Math.ceil(cellH)+0.5);
+    }
+  }
+
+  /* fonctions de mapping */
+  function xOfSig(sig) { return px + (sig - SIGMA_MIN) / (SIGMA_MAX - SIGMA_MIN) * pw; }
+  function yOfT(t)     { return py + (1 - (t - T_MIN_H) / (T_MAX_H - T_MIN_H)) * ph; }
+
+  /* bande critique en surbrillance légère */
+  var x0b = xOfSig(0), x1b = xOfSig(1);
+  ctx.fillStyle = 'rgba(127,119,221,0.07)';
+  ctx.fillRect(x0b, py, x1b - x0b, ph);
+
+  /* droite critique σ=½ */
+  var xdc = xOfSig(0.5);
+  ctx.strokeStyle = '#1D9E7588'; ctx.lineWidth = 1.2; ctx.setLineDash([4, 3]);
+  ctx.beginPath(); ctx.moveTo(xdc, py); ctx.lineTo(xdc, py + ph); ctx.stroke();
+  ctx.setLineDash([]);
+
+  /* frontières bande critique */
+  [0, 1].forEach(function(s) {
+    var x = xOfSig(s);
+    ctx.strokeStyle = '#7F77DD33'; ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(x, py); ctx.lineTo(x, py+ph); ctx.stroke();
+  });
+
+  /* zéros LMFDB sur droite critique */
+  ZEROS.forEach(function(g) {
+    if (g < T_MIN_H || g > T_MAX_H) return;
+    var xz = xdc, yz = yOfT(g);
+    ctx.beginPath(); ctx.arc(xz, yz, 4, 0, TWO_PI);
+    ctx.fillStyle = '#1D9E75'; ctx.fill();
+    ctx.strokeStyle = '#0d1117'; ctx.lineWidth = 0.8; ctx.stroke();
+  });
+
+  /* curseurs (lignes croisées) */
+  var xCur = xOfSig(sigCur), yCur = yOfT(tCur);
+  ctx.strokeStyle = '#EF9F27'; ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(xCur, py); ctx.lineTo(xCur, py+ph); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(px, yCur); ctx.lineTo(px+pw, yCur); ctx.stroke();
+  /* point d'intersection */
+  ctx.beginPath(); ctx.arc(xCur, yCur, 5, 0, TWO_PI);
+  ctx.fillStyle = '#EF9F27'; ctx.fill();
+  ctx.strokeStyle = '#e6edf3'; ctx.lineWidth = 1.2; ctx.stroke();
+
+  /* label pôle s=1 */
+  var xpole = xOfSig(1), ypole = yOfT(0);
+  ctx.beginPath(); ctx.arc(xpole, ypole, 7, 0, TWO_PI);
+  ctx.strokeStyle = '#ffcc44'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.fillStyle = '#ffcc44'; ctx.font = '9px monospace'; ctx.textAlign = 'left';
+  ctx.fillText('pôle s=1', xpole + 9, ypole + 3);
+
+  /* axe σ (bas) */
+  ctx.fillStyle = '#484f58'; ctx.font = '9px sans-serif';
+  [-0.2, 0, 0.5, 1, 1.5, 2].forEach(function(s) {
+    if (s < SIGMA_MIN || s > SIGMA_MAX) return;
+    var x = xOfSig(s);
+    ctx.strokeStyle = '#30363d'; ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.moveTo(x, py+ph); ctx.lineTo(x, py+ph+4); ctx.stroke();
+    ctx.fillStyle = '#484f58'; ctx.textAlign = 'center';
+    ctx.fillText(s.toFixed(1), x, py+ph+14);
+  });
+  ctx.textAlign = 'right'; ctx.fillText('σ', px+pw+8, py+ph+14);
+
+  /* axe t (gauche) */
+  [0, 10, 20, 30, 40, 50].forEach(function(t) {
+    if (t < T_MIN_H || t > T_MAX_H) return;
+    var y = yOfT(t);
+    ctx.strokeStyle = '#30363d'; ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.moveTo(px, y); ctx.lineTo(px-4, y); ctx.stroke();
+    ctx.fillStyle = '#484f58'; ctx.textAlign = 'right'; ctx.font = '9px sans-serif';
+    ctx.fillText(t, px-6, y+3);
+  });
+  ctx.textAlign = 'right'; ctx.fillText('t', px-6, py);
+
+  /* titre */
+  ctx.fillStyle = '#8b949e'; ctx.font = '9px sans-serif'; ctx.textAlign = 'left';
+  ctx.fillText('|ζ(σ+it)|', px, py+h-py-6);
+}
+
+/* ── Coupe verticale : |ζ(σ₀+it)| vs t ── */
+function drawCoupeV(sigma) {
+  var cv = document.getElementById('cv-coupe-v');
+  var W = cv.offsetWidth || 340, dpr = window.devicePixelRatio || 1;
+  cv.width = W*dpr; cv.height = 180*dpr;
+  var ctx = cv.getContext('2d'); ctx.scale(dpr,dpr);
+  var w=W, h=180, px=36, py=16;
+  ctx.fillStyle='#0d1117'; ctx.fillRect(0,0,w,h);
+  ctx.fillStyle='#8b949e'; ctx.font='9px sans-serif'; ctx.textAlign='left';
+  ctx.fillText('|ζ('+sigma.toFixed(2)+'+it)| vs t', px, py-4);
+
+  var steps=100, T0=0.5, T1=T_MAX_H;
+  var pts=[]; var yMax=0;
+  for (var i=0;i<=steps;i++) {
+    var t=T0+i*(T1-T0)/steps;
+    var m=zetaCplx(sigma,t,50).mod;
+    pts.push({t:t,m:m}); if(m>yMax) yMax=m;
+  }
+  yMax=Math.min(Math.max(yMax,0.5),6);
+
+  function xOf(t){return px+(t-T0)/(T1-T0)*(w-px-8);}
+  function yOf(m){return py+(1-Math.min(m,yMax)/yMax)*(h-2*py);}
+
+  /* axe */
+  ctx.strokeStyle='#30363d'; ctx.lineWidth=0.8;
+  ctx.beginPath(); ctx.moveTo(px,h/2); ctx.lineTo(w-8,h/2); ctx.stroke();
+
+  /* courbe */
+  ctx.beginPath();
+  pts.forEach(function(p,i){i===0?ctx.moveTo(xOf(p.t),yOf(p.m)):ctx.lineTo(xOf(p.t),yOf(p.m));});
+  ctx.strokeStyle='#7F77DD'; ctx.lineWidth=1.6; ctx.stroke();
+
+  /* zéros */
+  if (Math.abs(sigma-0.5)<0.05) {
+    ZEROS.forEach(function(g){
+      if(g<T0||g>T1) return;
+      var x=xOf(g);
+      ctx.strokeStyle='#1D9E75'; ctx.lineWidth=0.8; ctx.setLineDash([3,3]);
+      ctx.beginPath(); ctx.moveTo(x,py); ctx.lineTo(x,h-py); ctx.stroke();
+      ctx.setLineDash([]);
+    });
+  }
+  ctx.fillStyle='#484f58'; ctx.font='9px sans-serif';
+  ctx.textAlign='left'; ctx.fillText('t=0',px,h-4);
+  ctx.textAlign='right'; ctx.fillText('t=50',w-8,h-4);
+}
+
+/* ── Coupe horizontale : |ζ(σ+it₀)| vs σ ── */
+function drawCoupeH(tCur) {
+  var cv = document.getElementById('cv-coupe-h');
+  var W = cv.offsetWidth || 340, dpr = window.devicePixelRatio || 1;
+  cv.width = W*dpr; cv.height = 180*dpr;
+  var ctx = cv.getContext('2d'); ctx.scale(dpr,dpr);
+  var w=W, h=180, px=36, py=16;
+  ctx.fillStyle='#0d1117'; ctx.fillRect(0,0,w,h);
+  ctx.fillStyle='#8b949e'; ctx.font='9px sans-serif'; ctx.textAlign='left';
+  ctx.fillText('|ζ(σ+i'+tCur.toFixed(1)+')| vs σ', px, py-4);
+
+  var steps=100, S0=-0.2, S1=2.05;
+  var pts=[]; var yMax=0;
+  /* éviter σ=1 (pôle) */
+  for (var i=0;i<=steps;i++) {
+    var sig=S0+i*(S1-S0)/steps;
+    var skip=Math.abs(sig-1)<0.04 && Math.abs(tCur)<0.5;
+    var m=skip?0:zetaCplx(sig,tCur,50).mod;
+    pts.push({sig:sig,m:m}); if(m>yMax) yMax=m;
+  }
+  yMax=Math.min(Math.max(yMax,0.5),6);
+
+  function xOf(s){return px+(s-S0)/(S1-S0)*(w-px-8);}
+  function yOf(m){return py+(1-Math.min(m,yMax)/yMax)*(h-2*py);}
+
+  /* bande critique */
+  ctx.fillStyle='rgba(127,119,221,0.07)';
+  ctx.fillRect(xOf(0),py,xOf(1)-xOf(0),h-2*py);
+
+  /* droite critique */
+  ctx.strokeStyle='#1D9E7544'; ctx.lineWidth=1; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(xOf(0.5),py); ctx.lineTo(xOf(0.5),h-py); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.beginPath();
+  pts.forEach(function(p,i){i===0?ctx.moveTo(xOf(p.sig),yOf(p.m)):ctx.lineTo(xOf(p.sig),yOf(p.m));});
+  ctx.strokeStyle='#EF9F27'; ctx.lineWidth=1.6; ctx.stroke();
+
+  /* labels σ */
+  ctx.fillStyle='#484f58'; ctx.font='9px sans-serif';
+  ctx.textAlign='left'; ctx.fillText('σ=−0.2',px,h-4);
+  ctx.textAlign='right'; ctx.fillText('σ=2',w-8,h-4);
+  ctx.fillStyle='#1D9E7566'; ctx.textAlign='center';
+  ctx.fillText('½',xOf(0.5),py-4);
+}
+
+var T_MAX_H = 52;
+function drawAll() {
+  var sigma = parseFloat(document.getElementById('sl-sigma').value);
+  var t     = parseFloat(document.getElementById('sl-t').value);
+  document.getElementById('val-sigma').textContent = sigma.toFixed(2);
+  document.getElementById('val-t').textContent     = t.toFixed(1);
+  document.getElementById('ro-sigma').textContent  = sigma.toFixed(2);
+  document.getElementById('ro-t').textContent      = t.toFixed(1);
+
+  var m = zetaCplx(sigma, t, 50).mod;
+  document.getElementById('ro-mod').textContent = (m > 5 ? '≫ 5' : m.toFixed(4));
+
+  drawHeatmap(sigma, t);
+  drawCoupeV(sigma);
+  drawCoupeH(t);
+}
+
+document.getElementById('sl-sigma').addEventListener('input', drawAll);
+document.getElementById('sl-t').addEventListener('input',     drawAll);
+window.addEventListener('resize', function(){ buildHeatmap(); drawAll(); });
+</script>
+</body>
+</html>

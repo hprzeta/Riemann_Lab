@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fonction Gamma Γ(s) — Cours animé</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #0d1117; color: #e6edf3; line-height: 1.7;
+    padding: 1.8rem 1rem 3rem; max-width: 760px; margin: 0 auto;
+  }
+  h1 { font-size: 1.35rem; font-weight: 600; margin-bottom: 0.3rem; }
+  h2 { font-size: 1.05rem; font-weight: 500; color: #c9d1d9; margin: 2rem 0 0.7rem; }
+  .sub { color: #8b949e; font-size: 0.9rem; margin-bottom: 1.4rem; }
+  p  { color: #c9d1d9; font-size: 0.95rem; margin-bottom: 0.8rem; }
+  strong { color: #e6edf3; }
+  a  { color: #7F77DD; }
+  code {
+    font-family: ui-monospace, monospace; background: #161b22;
+    border: 1px solid #30363d; border-radius: 4px;
+    padding: 1px 5px; font-size: 0.85em; color: #9fe1cb;
+  }
+  .meta {
+    font-size: 0.8rem; color: #8b949e; border: 1px solid #30363d;
+    background: #161b22; border-radius: 8px; padding: 0.5rem 0.9rem;
+    margin-bottom: 1.6rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
+  }
+  .panel {
+    background: #161b22; border: 1px solid #30363d; border-radius: 10px;
+    padding: 1.1rem 1.2rem; margin: 1.2rem 0;
+  }
+  .panel-title { font-size: 0.85rem; color: #8b949e; margin-bottom: 0.8rem; }
+  .ctrl {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 0.83rem; color: #8b949e; margin-bottom: 0.7rem;
+  }
+  .ctrl span:first-child { min-width: 220px; }
+  input[type=range] { flex: 1; accent-color: #7F77DD; height: 4px; cursor: pointer; }
+  .val { font-weight: 600; color: #e6edf3; min-width: 60px; text-align: right; }
+  .katex-block {
+    background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+    padding: 0.4rem 1rem; margin: 0.8rem 0; overflow-x: auto;
+  }
+  table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; font-size: 0.86rem; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid #21262d; color: #c9d1d9; }
+  th { color: #8b949e; font-weight: 500; }
+  .ok { color: #1D9E75; } .ko { color: #E24B4A; } .mid { color: #EF9F27; }
+  .legend {
+    display: flex; gap: 18px; flex-wrap: wrap;
+    font-size: 0.78rem; color: #8b949e; margin-top: 0.7rem;
+  }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .dot { width: 10px; height: 10px; border-radius: 2px; }
+  canvas { display: block; width: 100%; border-radius: 6px; }
+  .readout {
+    background: #0d1117; border: 1px solid #30363d; border-radius: 6px;
+    padding: 0.5rem 0.9rem; margin: 0.7rem 0;
+    display: flex; gap: 1.5rem; flex-wrap: wrap;
+    font-size: 0.82rem; font-family: ui-monospace, monospace;
+  }
+  .readout-label { color: #8b949e; }
+  .readout-val   { color: #e6edf3; font-weight: 600; }
+  ul { color: #c9d1d9; font-size: 0.95rem; margin-left: 1.5rem; margin-bottom: 0.8rem; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  @media (max-width: 520px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="meta">
+  <span>Riemann_Lab — Cours animé · Fonction Gamma Γ(s)</span>
+  <span>Auteur : <b style="color:#c9d1d9">hprzeta</b> · Mise à jour : 6 juin 2026</span>
+</div>
+
+<h1>La fonction Gamma $\Gamma(s)$</h1>
+<p class="sub">Extension analytique de la factorielle, pôles aux entiers négatifs, équation fonctionnelle, et lien avec $\zeta$ via la fonction $\xi$.</p>
+
+<p>Retour au <a href="index.html">tableau de bord</a> · <a href="animation_theta.html">θ(t)</a> · <a href="animation_plan_complexe.html">plan complexe</a></p>
+
+<!-- ══════════════ 1. DÉFINITION ══════════════ -->
+<h2>1. Définition — intégrale d'Euler</h2>
+<p>Pour $\text{Re}(s) > 0$, la fonction Gamma est définie par l'intégrale d'Euler de deuxième espèce :</p>
+<div class="katex-block">$$\Gamma(s) = \int_0^{+\infty} t^{s-1}\,e^{-t}\,dt$$</div>
+<p>Elle généralise la factorielle : $\Gamma(n) = (n-1)!$ pour tout entier $n \geq 1$. La relation fonctionnelle fondamentale est :</p>
+<div class="katex-block">$$\Gamma(s+1) = s\,\Gamma(s)$$</div>
+<p>Cette relation permet de prolonger $\Gamma$ à tout $\mathbb{C}$ sauf aux pôles simples en $s = 0, -1, -2, -3, \ldots$ avec résidu $(-1)^n/n!$ en $-n$.</p>
+
+<!-- ══════════════ 2. PÔLES ══════════════ -->
+<h2>2. Pôles aux entiers négatifs</h2>
+<p>En s'appuyant sur $\Gamma(s) = \Gamma(s+n+1)/[s(s+1)\cdots(s+n)]$, on voit que $\Gamma(s)$ a des <strong>pôles simples</strong> en tous les entiers $\leq 0$. En ces points, $1/\Gamma(s) = 0$ (fonction entière !). Les <strong>résidus</strong> sont :</p>
+<div class="katex-block">$$\text{Res}_{s=-n}\,\Gamma(s) = \frac{(-1)^n}{n!}, \quad n = 0, 1, 2, \ldots$$</div>
+
+<!-- ══════════════ ANIMATION GAMMA RÉEL ══════════════ -->
+<div class="panel">
+  <div class="panel-title">Animation A — $\Gamma(x)$ pour $x$ réel, pôles et équation fonctionnelle</div>
+  <canvas id="cv-gamma-real" height="220"></canvas>
+  <div class="readout" style="margin-top:8px;">
+    <span><span class="readout-label">x = </span><span class="readout-val" id="ro-x">2.00</span></span>
+    <span><span class="readout-label">Γ(x) = </span><span class="readout-val" id="ro-gx">1.000</span></span>
+    <span><span class="readout-label">x·Γ(x) = Γ(x+1) = </span><span class="readout-val" id="ro-gx1">2.000</span></span>
+  </div>
+  <div class="ctrl">
+    <span>Valeur de $x$</span>
+    <input type="range" id="sl-x" min="-3.9" max="6" value="2" step="0.05">
+    <span class="val" id="val-x">2.00</span>
+  </div>
+  <div class="legend">
+    <span><span class="dot" style="background:#7F77DD"></span>Γ(x) &gt; 0</span>
+    <span><span class="dot" style="background:#E24B4A"></span>Γ(x) &lt; 0</span>
+    <span><span class="dot" style="background:#E24B4A;opacity:0.4"></span>pôles (asymptotes)</span>
+    <span><span class="dot" style="background:#EF9F27"></span>position courante</span>
+  </div>
+</div>
+
+<!-- ══════════════ 3. ÉQUATION FONCTIONNELLE ══════════════ -->
+<h2>3. Équation fonctionnelle et formule de réflexion</h2>
+<p>La <strong>formule de réflexion d'Euler</strong> (1739) :</p>
+<div class="katex-block">$$\Gamma(s)\,\Gamma(1-s) = \frac{\pi}{\sin(\pi s)}$$</div>
+<p>Conséquences : pour $s = \tfrac{1}{2}$, on obtient $\Gamma(\tfrac{1}{2})^2 = \pi$, soit $\Gamma(\tfrac{1}{2}) = \sqrt{\pi}$. La formule de doublement de Legendre :</p>
+<div class="katex-block">$$\Gamma(s)\,\Gamma\!\left(s+\tfrac{1}{2}\right) = \frac{\sqrt{\pi}}{2^{2s-1}}\,\Gamma(2s)$$</div>
+
+<!-- ══════════════ ANIMATION |Γ(½+it)| ══════════════ -->
+<div class="panel">
+  <div class="panel-title">Animation B — $|\Gamma(\sigma+it)|$ sur la droite critique $\sigma = \tfrac{1}{2}$ et comportement en $t$</div>
+  <div class="two-col">
+    <canvas id="cv-gamma-crit" height="180"></canvas>
+    <canvas id="cv-gamma-mod" height="180"></canvas>
+  </div>
+  <div class="readout">
+    <span><span class="readout-label">t = </span><span class="readout-val" id="ro-t">5.00</span></span>
+    <span><span class="readout-label">|Γ(½+it)| = </span><span class="readout-val" id="ro-gmod">—</span></span>
+    <span><span class="readout-label">√(π/cosh(πt)) = </span><span class="readout-val" id="ro-gform">—</span></span>
+  </div>
+  <div class="ctrl">
+    <span>Valeur de $t$ (partie imaginaire)</span>
+    <input type="range" id="sl-t" min="0.1" max="20" value="5" step="0.1">
+    <span class="val" id="val-t">5.0</span>
+  </div>
+  <div class="legend">
+    <span><span class="dot" style="background:#7F77DD"></span>|Γ(½+it)| calculé (Lanczos)</span>
+    <span><span class="dot" style="background:#1D9E75"></span>formule exacte √(π/cosh(πt))</span>
+    <span><span class="dot" style="background:#EF9F27"></span>position courante</span>
+  </div>
+</div>
+
+<!-- ══════════════ 4. LIEN AVEC ζ ══════════════ -->
+<h2>4. Lien avec $\zeta$ — la fonction $\xi$</h2>
+<p>La <strong>fonction complétée de Riemann</strong> $\xi(s)$ est construite pour avoir exactement les mêmes zéros que $\zeta$ et satisfaire l'équation fonctionnelle $\xi(s) = \xi(1-s)$ :</p>
+<div class="katex-block">$$\xi(s) = \tfrac{1}{2}\,s(s-1)\,\pi^{-s/2}\,\Gamma\!\left(\tfrac{s}{2}\right)\,\zeta(s)$$</div>
+<p>Les facteurs ont chacun un rôle :</p>
+<ul>
+  <li>$\tfrac{1}{2}s(s-1)$ : compense le pôle de $\zeta$ en $s=1$ et le zéro de $\Gamma$ en $s=0$</li>
+  <li>$\pi^{-s/2}\Gamma(s/2)$ : les "<strong>facteurs archimédiens</strong>" — ils compensent les zéros triviaux de $\zeta$ aux entiers pairs négatifs (qui sont les pôles de $\Gamma(s/2)$)</li>
+  <li>$\zeta(s)$ : les zéros non-triviaux</li>
+</ul>
+<p>La factorisation de Hadamard de $\xi$ sur ses zéros est donc équivalente à la factorisation de $\zeta$ sur ses zéros non-triviaux.</p>
+
+<!-- ══════════════ 5. STIRLING ══════════════ -->
+<h2>5. Formule de Stirling pour $|\Gamma(s)|$</h2>
+<p>Pour $|s| \to \infty$ avec $\text{Re}(s)$ borné :</p>
+<div class="katex-block">$$|\Gamma(\sigma+it)| \sim \sqrt{2\pi}\,|t|^{\sigma-1/2}\,e^{-\pi|t|/2}$$</div>
+<p>En particulier sur la droite critique $\sigma=\tfrac{1}{2}$, la formule exacte est :</p>
+<div class="katex-block">$$\left|\Gamma\!\left(\tfrac{1}{2}+it\right)\right|^2 = \frac{\pi}{\cosh(\pi t)} \xrightarrow{t\to\infty} 2\pi\,e^{-\pi t}$$</div>
+<p>Le module de $\Gamma$ sur la droite critique décroît <em>exponentiellement</em> en $t$. C'est ce facteur qui contrôle la taille de $\zeta$ via l'équation fonctionnelle.</p>
+
+<div class="meta" style="margin-top:2rem;margin-bottom:0;">
+  <span>Riemann_Lab · branche Riemann_Lab_IA · <code>docs/animation_gamma.html</code></span>
+  <span>Mise à jour : 6 juin 2026 · Auteur : <b style="color:#c9d1d9">hprzeta</b> · <span id="nblignes"></span> lignes</span>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  renderMathInElement(document.body, {
+    delimiters: [
+      { left: "$$", right: "$$", display: true },
+      { left: "$",  right: "$",  display: false }
+    ],
+    throwOnError: false
+  });
+  drawAll();
+  document.getElementById('nblignes').textContent =
+    document.documentElement.outerHTML.split('\n').length;
+});
+
+var TWO_PI = 2 * Math.PI;
+
+/* Γ(x) réel via approximation de Lanczos (g=7) */
+var LANCZOS_C = [
+  0.99999999999980993, 676.5203681218851, -1259.1392167224028,
+  771.32342877765313, -176.61502916214059, 12.507343278686905,
+  -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7
+];
+
+function gammaReal(x) {
+  if (x < 0.5) return Math.PI / (Math.sin(Math.PI * x) * gammaReal(1 - x));
+  x -= 1;
+  var a = LANCZOS_C[0];
+  for (var i = 1; i < 9; i++) a += LANCZOS_C[i] / (x + i);
+  var t = x + 7.5;
+  return Math.sqrt(TWO_PI) * Math.pow(t, x + 0.5) * Math.exp(-t) * a;
+}
+
+/* |Γ(½+it)| = √(π / cosh(πt)) */
+function gammaCritMod(t) {
+  return Math.sqrt(Math.PI / Math.cosh(Math.PI * t));
+}
+
+/* Γ(σ+it) complexe via Lanczos — retourne {re, im, mod} */
+function gammaCplx(sigma, t) {
+  /* Pour Re(s) < 0.5 : Γ(s) = π/(sin(πs)·Γ(1-s)) */
+  if (sigma < 0.5) {
+    var s_re = Math.sin(Math.PI*sigma)*Math.cosh(Math.PI*t);
+    var s_im = Math.cos(Math.PI*sigma)*Math.sinh(Math.PI*t);
+    var g1   = gammaCplx(1-sigma, -t);
+    var pr   = s_re*g1.re - s_im*g1.im;
+    var pi_  = s_re*g1.im + s_im*g1.re;
+    var d2   = pr*pr + pi_*pi_;
+    if (d2 < 1e-30) return { re: 1e9, im: 0, mod: 1e9 };
+    return { re: Math.PI*pr/d2, im: -Math.PI*pi_/d2, mod: Math.PI/Math.sqrt(d2) };
+  }
+
+  var z_re = sigma - 1, z_im = t;
+  var x_re = LANCZOS_C[0], x_im = 0;
+  for (var i = 1; i < 9; i++) {
+    var d_re = z_re + i, d_im = z_im;
+    var d2   = d_re*d_re + d_im*d_im;
+    x_re += LANCZOS_C[i] * d_re / d2;
+    x_im -= LANCZOS_C[i] * d_im / d2;
+  }
+  /* t_lz = z + 7.5 */
+  var tl_re = z_re + 7.5, tl_im = z_im;
+  /* ln(t_lz) */
+  var ln_r = 0.5*Math.log(tl_re*tl_re + tl_im*tl_im);
+  var ln_i = Math.atan2(tl_im, tl_re);
+  /* t_lz^(z+0.5) = exp((z_re+0.5)*ln_r - z_im*ln_i + i*((z_re+0.5)*ln_i + z_im*ln_r)) */
+  var pw_r = (z_re+0.5)*ln_r - z_im*ln_i;
+  var pw_i = (z_re+0.5)*ln_i + z_im*ln_r;
+  var tpow_re = Math.exp(pw_r)*Math.cos(pw_i);
+  var tpow_im = Math.exp(pw_r)*Math.sin(pw_i);
+  /* e^{-t_lz} */
+  var et_re = Math.exp(-tl_re)*Math.cos(-tl_im);
+  var et_im = Math.exp(-tl_re)*Math.sin(-tl_im);
+  /* sqrt(2π) * tpow * et * x */
+  var m1_re = tpow_re*et_re - tpow_im*et_im;
+  var m1_im = tpow_re*et_im + tpow_im*et_re;
+  var m2_re = m1_re*x_re - m1_im*x_im;
+  var m2_im = m1_re*x_im + m1_im*x_re;
+  var re = Math.sqrt(TWO_PI)*m2_re;
+  var im = Math.sqrt(TWO_PI)*m2_im;
+  return { re: re, im: im, mod: Math.sqrt(re*re+im*im) };
+}
+
+/* ── Canvas A : Γ(x) réel ── */
+function drawGammaReal(xCur) {
+  var cv = document.getElementById('cv-gamma-real');
+  var W = cv.offsetWidth||680, dpr=window.devicePixelRatio||1;
+  cv.width=W*dpr; cv.height=220*dpr;
+  var ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
+  var w=W, h=220, px=42, py=16;
+  ctx.fillStyle='#0d1117'; ctx.fillRect(0,0,w,h);
+
+  var X0=-4, X1=6, POLES=[-3,-2,-1,0];
+  var steps=400;
+
+  function xOf(x){return px+(x-X0)/(X1-X0)*(w-px-12);}
+  function yOf(v){return h/2-(v/4)*(h/2-py);}
+
+  /* axe zéro */
+  ctx.strokeStyle='#30363d'; ctx.lineWidth=0.8;
+  ctx.beginPath(); ctx.moveTo(px,h/2); ctx.lineTo(w-12,h/2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(xOf(0),py); ctx.lineTo(xOf(0),h-py); ctx.stroke();
+
+  /* asymptotes aux pôles */
+  POLES.forEach(function(p){
+    var x=xOf(p);
+    ctx.strokeStyle='#E24B4A33'; ctx.lineWidth=1; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(x,py); ctx.lineTo(x,h-py); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#E24B4A66'; ctx.font='9px monospace'; ctx.textAlign='center';
+    ctx.fillText('pôle',x,py-4);
+  });
+
+  /* courbe Γ(x) par morceaux (entre pôles) */
+  var segments=[[-3.95,-2.05],[-1.95,-0.05],[0.05,6]];
+  segments.forEach(function(seg){
+    var prevValid=false;
+    var nSteps=Math.round((seg[1]-seg[0])/10*steps);
+    ctx.beginPath();
+    for (var i=0;i<=nSteps;i++) {
+      var x=seg[0]+i*(seg[1]-seg[0])/nSteps;
+      var v=gammaReal(x);
+      if (!isFinite(v)||Math.abs(v)>6) { prevValid=false; continue; }
+      var px_=xOf(x), yv=yOf(v);
+      if (!prevValid) ctx.moveTo(px_,yv); else ctx.lineTo(px_,yv);
+      prevValid=true;
+    }
+    ctx.strokeStyle=(segments.indexOf(seg)%2===0)?'#7F77DD':'#E24B4A';
+    ctx.lineWidth=1.8; ctx.stroke();
+  });
+
+  /* points remarquables */
+  var pts=[{x:1,v:1,lbl:'Γ(1)=1'},{x:2,v:1,lbl:'Γ(2)=1'},{x:3,v:2,lbl:'Γ(3)=2'},{x:4,v:6,lbl:''},{x:0.5,v:Math.sqrt(Math.PI),lbl:'Γ(½)=√π'}];
+  pts.forEach(function(p){
+    if (Math.abs(p.v)>5.5) return;
+    var xi=xOf(p.x), yi=yOf(p.v);
+    ctx.beginPath(); ctx.arc(xi,yi,3.5,0,TWO_PI);
+    ctx.fillStyle='#1D9E75'; ctx.fill();
+    if(p.lbl){
+      ctx.fillStyle='#1D9E75'; ctx.font='8px monospace';
+      ctx.textAlign='left'; ctx.fillText(p.lbl,xi+5,yi-4);
+    }
+  });
+
+  /* point courant */
+  var gv=gammaReal(xCur);
+  if (isFinite(gv)&&Math.abs(gv)<=6) {
+    var xc=xOf(xCur), yc=yOf(gv);
+    ctx.beginPath(); ctx.arc(xc,yc,5,0,TWO_PI); ctx.fillStyle='#EF9F27'; ctx.fill();
+    ctx.strokeStyle='#e6edf3'; ctx.lineWidth=1.2; ctx.stroke();
+    ctx.strokeStyle='#EF9F2744'; ctx.lineWidth=0.8; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(xc,py); ctx.lineTo(xc,h-py); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  /* labels axes */
+  [-3,-2,-1,0,1,2,3,4,5].forEach(function(v){
+    var x=xOf(v);
+    ctx.strokeStyle='#30363d'; ctx.lineWidth=0.5;
+    ctx.beginPath(); ctx.moveTo(x,h/2); ctx.lineTo(x,h/2+4); ctx.stroke();
+    ctx.fillStyle='#484f58'; ctx.font='8px sans-serif'; ctx.textAlign='center';
+    ctx.fillText(v,x,h/2+13);
+  });
+  ctx.fillStyle='#8b949e'; ctx.font='9px sans-serif'; ctx.textAlign='left';
+  ctx.fillText('Γ(x)',px,py-4);
+  ctx.textAlign='right'; ctx.fillStyle='#484f58'; ctx.fillText('x',w-12,h/2+13);
+}
+
+/* ── Canvas B1 : |Γ(½+it)| courbe ── */
+function drawGammaCrit(tCur) {
+  var cv=document.getElementById('cv-gamma-crit');
+  var W=cv.offsetWidth||340, dpr=window.devicePixelRatio||1;
+  cv.width=W*dpr; cv.height=180*dpr;
+  var ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
+  var w=W, h=180, px=42, py=16;
+  ctx.fillStyle='#0d1117'; ctx.fillRect(0,0,w,h);
+
+  var T0=0, T1=20, steps=120;
+  var pts1=[], pts2=[], yMax=0;
+  for (var i=0;i<=steps;i++) {
+    var t=T0+i*(T1-T0)/steps;
+    var m1=gammaCplx(0.5,t).mod;
+    var m2=gammaCritMod(t);
+    pts1.push({t:t,m:m1}); pts2.push({t:t,m:m2});
+    if(m1>yMax) yMax=m1;
+  }
+  yMax=Math.max(yMax,0.1);
+
+  function xOf(t){return px+(t-T0)/(T1-T0)*(w-px-8);}
+  function yOf(m){return py+(1-Math.min(m,yMax)/yMax)*(h-2*py);}
+
+  /* formule exacte (vert) */
+  ctx.beginPath();
+  pts2.forEach(function(p,i){i===0?ctx.moveTo(xOf(p.t),yOf(p.m)):ctx.lineTo(xOf(p.t),yOf(p.m));});
+  ctx.strokeStyle='#1D9E75'; ctx.lineWidth=2; ctx.stroke();
+
+  /* Lanczos (violet) */
+  ctx.beginPath();
+  pts1.forEach(function(p,i){i===0?ctx.moveTo(xOf(p.t),yOf(p.m)):ctx.lineTo(xOf(p.t),yOf(p.m));});
+  ctx.strokeStyle='#7F77DD88'; ctx.lineWidth=1.6; ctx.setLineDash([3,2]); ctx.stroke();
+  ctx.setLineDash([]);
+
+  /* point courant */
+  if (tCur>=T0&&tCur<=T1) {
+    var xc=xOf(tCur), yc=yOf(gammaCritMod(tCur));
+    ctx.beginPath(); ctx.arc(xc,yc,5,0,TWO_PI); ctx.fillStyle='#EF9F27'; ctx.fill();
+  }
+
+  ctx.fillStyle='#8b949e'; ctx.font='9px sans-serif'; ctx.textAlign='left';
+  ctx.fillText('|Γ(½+it)|',px,py-4);
+  ctx.fillStyle='#484f58'; ctx.fillText('t=0',px,h-4);
+  ctx.textAlign='right'; ctx.fillText('t=20',w-8,h-4);
+}
+
+/* ── Canvas B2 : |Γ(σ+it)| vs σ ── */
+function drawGammaMod(tCur) {
+  var cv=document.getElementById('cv-gamma-mod');
+  var W=cv.offsetWidth||340, dpr=window.devicePixelRatio||1;
+  cv.width=W*dpr; cv.height=180*dpr;
+  var ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
+  var w=W, h=180, px=42, py=16;
+  ctx.fillStyle='#0d1117'; ctx.fillRect(0,0,w,h);
+
+  var S0=0.1, S1=5, steps=100;
+  var pts=[], yMax=0;
+  for (var i=0;i<=steps;i++) {
+    var sig=S0+i*(S1-S0)/steps;
+    var m=gammaCplx(sig,tCur).mod;
+    pts.push({sig:sig,m:m}); if(m>yMax&&m<50) yMax=m;
+  }
+  yMax=Math.min(Math.max(yMax,0.1),20);
+
+  function xOf(s){return px+(s-S0)/(S1-S0)*(w-px-8);}
+  function yOf(m){return py+(1-Math.min(m,yMax)/yMax)*(h-2*py);}
+
+  ctx.beginPath();
+  pts.forEach(function(p,i){
+    var y=yOf(p.m);
+    if(i===0) ctx.moveTo(xOf(p.sig),y);
+    else      ctx.lineTo(xOf(p.sig),y);
+  });
+  ctx.strokeStyle='#EF9F27'; ctx.lineWidth=1.8; ctx.stroke();
+
+  /* marque σ=½ */
+  ctx.strokeStyle='#1D9E7544'; ctx.lineWidth=1; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(xOf(0.5),py); ctx.lineTo(xOf(0.5),h-py); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle='#8b949e'; ctx.font='9px sans-serif'; ctx.textAlign='left';
+  ctx.fillText('|Γ(σ+i'+tCur.toFixed(1)+')|',px,py-4);
+  ctx.fillStyle='#484f58'; ctx.fillText('σ=0.1',px,h-4);
+  ctx.textAlign='right'; ctx.fillText('σ=5',w-8,h-4);
+}
+
+function drawAll() {
+  var x  = parseFloat(document.getElementById('sl-x').value);
+  var t  = parseFloat(document.getElementById('sl-t').value);
+  document.getElementById('val-x').textContent = x.toFixed(2);
+  document.getElementById('val-t').textContent = t.toFixed(1);
+  document.getElementById('ro-x').textContent  = x.toFixed(2);
+
+  var gx  = gammaReal(x);
+  var gx1 = gammaReal(x+1);
+  document.getElementById('ro-gx').textContent  = isFinite(gx)  ? gx.toFixed(6)  : '±∞';
+  document.getElementById('ro-gx1').textContent = isFinite(gx1) ? gx1.toFixed(6) : '±∞';
+
+  document.getElementById('ro-t').textContent  = t.toFixed(2);
+  var gmod  = gammaCritMod(t);
+  var gmod2 = gammaCplx(0.5,t).mod;
+  document.getElementById('ro-gmod').textContent  = gmod2.toFixed(6);
+  document.getElementById('ro-gform').textContent = gmod.toFixed(6);
+
+  drawGammaReal(x);
+  drawGammaCrit(t);
+  drawGammaMod(t);
+}
+
+document.getElementById('sl-x').addEventListener('input', drawAll);
+document.getElementById('sl-t').addEventListener('input', drawAll);
+window.addEventListener('resize', drawAll);
+</script>
+</body>
+</html>
