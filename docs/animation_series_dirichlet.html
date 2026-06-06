@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Série de Dirichlet — Convergence de ζ(s)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #0d1117; color: #e6edf3; line-height: 1.7;
+    padding: 1.8rem 1rem 3rem; max-width: 760px; margin: 0 auto;
+  }
+  h1 { font-size: 1.35rem; font-weight: 600; margin-bottom: 0.3rem; }
+  h2 { font-size: 1.05rem; font-weight: 500; color: #c9d1d9; margin: 2rem 0 0.7rem; }
+  .sub { color: #8b949e; font-size: 0.9rem; margin-bottom: 1.4rem; }
+  p  { color: #c9d1d9; font-size: 0.95rem; margin-bottom: 0.8rem; }
+  strong { color: #e6edf3; }
+  a  { color: #7F77DD; }
+  code {
+    font-family: ui-monospace, monospace; background: #161b22;
+    border: 1px solid #30363d; border-radius: 4px;
+    padding: 1px 5px; font-size: 0.85em; color: #9fe1cb;
+  }
+  .meta {
+    font-size: 0.8rem; color: #8b949e; border: 1px solid #30363d;
+    background: #161b22; border-radius: 8px; padding: 0.5rem 0.9rem;
+    margin-bottom: 1.6rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
+  }
+  .panel {
+    background: #161b22; border: 1px solid #30363d; border-radius: 10px;
+    padding: 1.1rem 1.2rem; margin: 1.2rem 0;
+  }
+  .panel-title { font-size: 0.85rem; color: #8b949e; margin-bottom: 0.8rem; }
+  .ctrl {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 0.83rem; color: #8b949e; margin-bottom: 0.7rem;
+  }
+  .ctrl span:first-child { min-width: 220px; }
+  input[type=range] { flex: 1; accent-color: #7F77DD; height: 4px; cursor: pointer; }
+  .val { font-weight: 600; color: #e6edf3; min-width: 60px; text-align: right; }
+  .katex-block {
+    background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+    padding: 0.4rem 1rem; margin: 0.8rem 0; overflow-x: auto;
+  }
+  table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; font-size: 0.86rem; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid #21262d; color: #c9d1d9; }
+  th { color: #8b949e; font-weight: 500; }
+  .ok { color: #1D9E75; } .ko { color: #E24B4A; } .mid { color: #EF9F27; }
+  .legend {
+    display: flex; gap: 18px; flex-wrap: wrap;
+    font-size: 0.78rem; color: #8b949e; margin-top: 0.7rem;
+  }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .dot { width: 10px; height: 10px; border-radius: 2px; }
+  canvas { display: block; width: 100%; border-radius: 6px; }
+  .readout {
+    background: #0d1117; border: 1px solid #30363d; border-radius: 6px;
+    padding: 0.5rem 0.9rem; margin: 0.7rem 0;
+    display: flex; gap: 1.5rem; flex-wrap: wrap;
+    font-size: 0.82rem; font-family: ui-monospace, monospace;
+  }
+  .readout-label { color: #8b949e; }
+  .readout-val   { color: #e6edf3; font-weight: 600; }
+  .warn { color: #E24B4A; font-family: ui-monospace, monospace; font-size: 0.82rem;
+          border: 1px solid #E24B4A33; background: #E24B4A0d; border-radius: 6px;
+          padding: 0.4rem 0.8rem; margin: 0.5rem 0; }
+  ul { color: #c9d1d9; font-size: 0.95rem; margin-left: 1.5rem; margin-bottom: 0.8rem; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  @media (max-width: 520px) { .two-col { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="meta">
+  <span>Riemann_Lab — Cours animé · Série de Dirichlet</span>
+  <span>Auteur : <b style="color:#c9d1d9">hprzeta</b> · Mise à jour : 6 juin 2026</span>
+</div>
+
+<h1>Convergence de $\zeta(s) = \displaystyle\sum_{n=1}^{\infty}\frac{1}{n^s}$</h1>
+<p class="sub">Comment la série de Dirichlet converge pour $\text{Re}(s)>1$, diverge pour $\text{Re}(s)\leq 1$, et comment $\zeta$ s'étend à tout $\mathbb{C}$ par prolongement analytique.</p>
+
+<p>Retour au <a href="index.html">tableau de bord</a> · <a href="animation_theta.html">cours n°1 (θ)</a> · <a href="animation_zeros_non_triviaux.html">cours n°3 (zéros)</a></p>
+
+<!-- ══════════════ 1. DÉFINITION ══════════════ -->
+<h2>1. La série de Dirichlet</h2>
+<p>Pour $s = \sigma + it$ avec $\sigma = \text{Re}(s) > 1$, la série converge <strong>absolument</strong> :</p>
+<div class="katex-block">$$\zeta(s) = \sum_{n=1}^{\infty} \frac{1}{n^s} = 1 + \frac{1}{2^s} + \frac{1}{3^s} + \frac{1}{4^s} + \cdots$$</div>
+<p>Chaque terme $\tfrac{1}{n^s} = n^{-\sigma} e^{-it\ln n}$ est un nombre complexe de module $n^{-\sigma}$. La convergence absolue requiert $\sum n^{-\sigma} < \infty$, ce qui équivaut exactement à $\sigma > 1$ (critère de Riemann-Bertrand).</p>
+
+<!-- ══════════════ 2. CONVERGENCE ══════════════ -->
+<h2>2. Trois régimes selon $\text{Re}(s)$</h2>
+<ul>
+  <li><strong>$\sigma > 1$ :</strong> convergence absolue. La somme partielle $S_N(\sigma) = \sum_{n=1}^N n^{-\sigma}$ converge vers $\zeta(\sigma)$.</li>
+  <li><strong>$\sigma = 1$ :</strong> divergence logarithmique. $S_N(1) = H_N \sim \ln N + \gamma$ où $\gamma \approx 0.5772$ est la constante d'Euler.</li>
+  <li><strong>$\sigma < 1$ :</strong> divergence plus rapide ($S_N(\sigma) \sim \tfrac{N^{1-\sigma}}{1-\sigma}$). Pourtant $\zeta$ y est définie par <em>prolongement analytique</em>.</li>
+</ul>
+<p><strong>Prolongement analytique :</strong> via l'équation fonctionnelle $\xi(s) = \xi(1-s)$ ou la série alternée $\eta(s) = (1-2^{1-s})\zeta(s) = \sum (-1)^{n+1}/n^s$ (convergente pour $\text{Re}(s)>0$), on définit $\zeta(s)$ sur tout $\mathbb{C}$ sauf en $s=1$ (pôle simple).</p>
+
+<!-- ══════════════ ANIMATION PRINCIPALE ══════════════ -->
+<div class="panel">
+  <div class="panel-title">Animation — convergence de la somme partielle $S_N(\sigma) = \sum_{n=1}^{N} n^{-\sigma}$</div>
+  <div class="two-col">
+    <canvas id="cv-conv" height="200"></canvas>
+    <canvas id="cv-zeta" height="200"></canvas>
+  </div>
+  <div class="readout">
+    <span><span class="readout-label">σ = </span><span class="readout-val" id="ro-sigma">2.00</span></span>
+    <span><span class="readout-label">N = </span><span class="readout-val" id="ro-N">50</span></span>
+    <span><span class="readout-label">S_N(σ) = </span><span class="readout-val" id="ro-sn">0.000</span></span>
+    <span><span class="readout-label">ζ(σ) ≈ </span><span class="readout-val" id="ro-zeta">0.000</span></span>
+    <span><span class="readout-label">écart = </span><span class="readout-val" id="ro-ecart">0.000</span></span>
+  </div>
+  <div id="warn-div" class="warn" style="display:none">⚠ σ ≤ 1 : la série diverge — la "valeur" affichée est le prolongement analytique (méthode η), pas la limite de la somme.</div>
+  <div class="ctrl">
+    <span>Exposant $\sigma$ (partie réelle de $s$)</span>
+    <input type="range" id="sl-sigma" min="0.5" max="4" value="2" step="0.05">
+    <span class="val" id="val-sigma">2.00</span>
+  </div>
+  <div class="ctrl">
+    <span>Nombre de termes $N$</span>
+    <input type="range" id="sl-N" min="1" max="150" value="50" step="1">
+    <span class="val" id="val-N">50</span>
+  </div>
+  <div class="legend">
+    <span><span class="dot" style="background:#7F77DD"></span>S_N(σ) — somme partielle</span>
+    <span><span class="dot" style="background:#1D9E75"></span>ζ(σ) — valeur exacte</span>
+    <span><span class="dot" style="background:#E24B4A"></span>divergence (σ ≤ 1)</span>
+    <span><span class="dot" style="background:#EF9F27"></span>σ courant</span>
+  </div>
+</div>
+
+<!-- ══════════════ 3. FRONTIÈRE σ=1 ══════════════ -->
+<h2>3. La frontière $\sigma = 1$</h2>
+<p>En $\sigma=1$ : la <strong>série harmonique</strong> $\sum 1/n = 1 + \frac{1}{2} + \frac{1}{3} + \cdots$ diverge — c'est un résultat classique connu depuis N. Oresme (~1360). La divergence est lente (logarithmique) : il faut $e^{10} \approx 22\,000$ termes pour dépasser 10 !</p>
+<p>Pourtant, pour $\sigma = 1$ et $t \neq 0$ (c'est-à-dire $s = 1+it$ avec $t \neq 0$), la série <strong>converge conditionnellement</strong>. Cela illustre la richesse du plan complexe : la frontière de convergence dépend à la fois de $\sigma$ et de $t$.</p>
+<p>Le pôle de $\zeta$ en $s=1$ est un <strong>pôle simple</strong> de résidu 1 :</p>
+<div class="katex-block">$$\lim_{s\to 1}(s-1)\,\zeta(s) = 1$$</div>
+
+<!-- ══════════════ 4. VALEURS CONNUES ══════════════ -->
+<h2>4. Valeurs remarquables de $\zeta(\sigma)$ pour $\sigma$ réel</h2>
+<table>
+  <tr><th>$\sigma$</th><th>$\zeta(\sigma)$</th><th>Formule exacte</th><th>Termes pour $10^{-3}$ de précision</th></tr>
+  <tr><td>2</td><td class="ok">1,644 934…</td><td>$\pi^2/6$</td><td>1 000</td></tr>
+  <tr><td>3</td><td class="ok">1,202 057…</td><td>Apéry (irrationnel)</td><td>100</td></tr>
+  <tr><td>4</td><td class="ok">1,082 323…</td><td>$\pi^4/90$</td><td>30</td></tr>
+  <tr><td>1,5</td><td class="mid">2,612 375…</td><td>—</td><td>10 000</td></tr>
+  <tr><td>1,1</td><td class="ko">10,584 448…</td><td>—</td><td>&gt; 10⁶</td></tr>
+  <tr><td>1</td><td class="ko">+∞</td><td>série harmonique</td><td>diverge</td></tr>
+  <tr><td>0</td><td class="mid">−1/2</td><td>prolongement (Ramanujan)</td><td>—</td></tr>
+  <tr><td>−1</td><td class="mid">−1/12</td><td>prolongement (physique)</td><td>—</td></tr>
+</table>
+<p style="font-size:0.82rem;color:#8b949e">Les valeurs pour σ ≤ 1 sont définies par prolongement analytique, pas par la série de Dirichlet.</p>
+
+<!-- ══════════════ 5. PROLONGEMENT ANALYTIQUE ══════════════ -->
+<h2>5. Prolongement analytique par la série alternée</h2>
+<p>La fonction $\eta$ de Dirichlet converge pour $\text{Re}(s) > 0$ :</p>
+<div class="katex-block">$$\eta(s) = \sum_{n=1}^{\infty} \frac{(-1)^{n+1}}{n^s} = 1 - \frac{1}{2^s} + \frac{1}{3^s} - \frac{1}{4^s} + \cdots = \left(1 - 2^{1-s}\right)\zeta(s)$$</div>
+<p>Pour $s \neq 1$ et $\text{Re}(s) > 0$ :</p>
+<div class="katex-block">$$\zeta(s) = \frac{\eta(s)}{1 - 2^{1-s}}$$</div>
+<p>Ce prolongement est utilisé numériquement dans l'animation pour calculer $\zeta(\sigma)$ hors du domaine $\sigma>1$. Il permet d'atteindre la bande critique $0 < \sigma < 1$ où vivent les zéros non-triviaux.</p>
+
+<div class="meta" style="margin-top:2rem;margin-bottom:0;">
+  <span>Riemann_Lab · branche Riemann_Lab_IA · <code>docs/animation_series_dirichlet.html</code></span>
+  <span>Mise à jour : 6 juin 2026 · Auteur : <b style="color:#c9d1d9">hprzeta</b> · <span id="nblignes"></span> lignes</span>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  renderMathInElement(document.body, {
+    delimiters: [
+      { left: "$$", right: "$$", display: true },
+      { left: "$",  right: "$",  display: false }
+    ],
+    throwOnError: false
+  });
+  drawAll();
+  document.getElementById('nblignes').textContent =
+    document.documentElement.outerHTML.split('\n').length;
+});
+
+/* ζ(σ) réel par série de Dirichlet (σ > 1) ou η alternée (σ > 0, σ ≠ 1) */
+function zetaReal(sigma) {
+  if (sigma > 1) {
+    var s = 0;
+    for (var n = 1; n <= 5000; n++) s += Math.pow(n, -sigma);
+    return s;
+  }
+  /* prolongement via η : ζ(s) = η(s) / (1 - 2^{1-s}) */
+  var eta = 0;
+  for (var n = 1; n <= 2000; n++) {
+    var sign = (n % 2 === 1) ? 1 : -1;
+    eta += sign * Math.pow(n, -sigma);
+  }
+  var denom = 1 - Math.pow(2, 1 - sigma);
+  if (Math.abs(denom) < 1e-10) return NaN; /* singularité s=1 */
+  return eta / denom;
+}
+
+/* somme partielle S_N(σ) */
+function partialSum(sigma, N) {
+  var s = 0;
+  for (var n = 1; n <= N; n++) s += Math.pow(n, -sigma);
+  return s;
+}
+
+var TWO_PI = 2 * Math.PI;
+
+/* ── Canvas gauche : convergence S_N(σ) vs N ── */
+function drawConv(sigma, Nmax) {
+  var cv = document.getElementById('cv-conv');
+  var W = cv.offsetWidth || 340, dpr = window.devicePixelRatio || 1;
+  cv.width = W * dpr; cv.height = 200 * dpr;
+  var ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
+  var w = W, h = 200, px = 42, py = 18;
+
+  ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = '#8b949e'; ctx.font = '9px sans-serif'; ctx.textAlign = 'left';
+  ctx.fillText('S_N(σ) vs N', px, py - 4);
+
+  /* valeur "exacte" */
+  var zExact = zetaReal(sigma);
+  var isDiv  = sigma <= 1;
+
+  /* calculer tous les points */
+  var pts = [], yMin = Infinity, yMax = -Infinity;
+  for (var n = 1; n <= Nmax; n++) {
+    var v = partialSum(sigma, n);
+    pts.push(v);
+    if (v < yMin) yMin = v; if (v > yMax) yMax = v;
+  }
+  if (!isDiv && !isNaN(zExact)) {
+    if (zExact < yMin) yMin = zExact;
+    if (zExact > yMax) yMax = zExact;
+  }
+  var span = Math.max(yMax - yMin, 0.01);
+  /* ajouter marge */
+  yMin -= span * 0.08; yMax += span * 0.08; span = yMax - yMin;
+
+  function xOf(n) { return px + (n - 1) / (Nmax - 1) * (w - px - 12); }
+  function yOf(v) { return py + (1 - (v - yMin) / span) * (h - 2 * py); }
+
+  /* axe zéro */
+  if (yMin <= 0 && yMax >= 0) {
+    ctx.strokeStyle = '#30363d'; ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(px, yOf(0)); ctx.lineTo(w - 12, yOf(0)); ctx.stroke();
+  }
+
+  /* ligne ζ(σ) exacte */
+  if (!isDiv && !isNaN(zExact)) {
+    ctx.strokeStyle = '#1D9E75'; ctx.lineWidth = 1.2; ctx.setLineDash([5, 4]);
+    var ye = yOf(zExact);
+    ctx.beginPath(); ctx.moveTo(px, ye); ctx.lineTo(w - 12, ye); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#1D9E75'; ctx.font = '9px monospace'; ctx.textAlign = 'right';
+    ctx.fillText('ζ(' + sigma.toFixed(2) + ')=' + zExact.toFixed(4), w - 14, ye - 4);
+  }
+
+  /* courbe S_N */
+  ctx.beginPath();
+  pts.forEach(function (v, i) {
+    var x = xOf(i + 1), y = yOf(v);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = isDiv ? '#E24B4A' : '#7F77DD';
+  ctx.lineWidth = 1.6; ctx.stroke();
+
+  /* point courant N */
+  if (Nmax > 1) {
+    var xc = xOf(Nmax), yc = yOf(pts[Nmax - 1]);
+    ctx.beginPath(); ctx.arc(xc, yc, 4.5, 0, TWO_PI);
+    ctx.fillStyle = isDiv ? '#E24B4A' : '#7F77DD'; ctx.fill();
+  }
+
+  /* axes labels */
+  ctx.fillStyle = '#484f58'; ctx.font = '9px sans-serif';
+  ctx.textAlign = 'left'; ctx.fillText('N=1', px, h - 4);
+  ctx.textAlign = 'right'; ctx.fillText('N=' + Nmax, w - 12, h - 4);
+
+  /* axe y quelques repères */
+  var nTicks = 4;
+  for (var i = 0; i <= nTicks; i++) {
+    var v = yMin + (i / nTicks) * span;
+    var y = yOf(v);
+    ctx.strokeStyle = '#21262d'; ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.moveTo(px, y); ctx.lineTo(px - 4, y); ctx.stroke();
+    ctx.fillStyle = '#484f58'; ctx.font = '8px monospace'; ctx.textAlign = 'right';
+    ctx.fillText(v.toFixed(2), px - 6, y + 3);
+  }
+}
+
+/* ── Canvas droite : courbe ζ(σ) vs σ ── */
+function drawZeta(sigCur) {
+  var cv = document.getElementById('cv-zeta');
+  var W = cv.offsetWidth || 340, dpr = window.devicePixelRatio || 1;
+  cv.width = W * dpr; cv.height = 200 * dpr;
+  var ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
+  var w = W, h = 200, px = 42, py = 18;
+
+  ctx.fillStyle = '#0d1117'; ctx.fillRect(0, 0, w, h);
+  ctx.fillStyle = '#8b949e'; ctx.font = '9px sans-serif'; ctx.textAlign = 'left';
+  ctx.fillText('ζ(σ) pour σ réel', px, py - 4);
+
+  var S0 = 1.05, S1 = 5, steps = 150;
+  var pts = [], yMin = Infinity, yMax = -Infinity;
+  for (var i = 0; i <= steps; i++) {
+    var sig = S0 + i * (S1 - S0) / steps;
+    var v   = zetaReal(sig);
+    pts.push({ sig: sig, v: v });
+    if (v < yMin) yMin = v; if (v > yMax) yMax = v;
+  }
+  var span = Math.max(yMax - yMin, 0.01);
+  yMin -= span * 0.06; yMax += span * 0.06; span = yMax - yMin;
+
+  function xOf(sig) { return px + (sig - S0) / (S1 - S0) * (w - px - 12); }
+  function yOf(v)   { return py + (1 - (v - yMin) / span) * (h - 2 * py); }
+
+  /* repère σ = 2 (valeur pi²/6) */
+  ctx.strokeStyle = '#21262d'; ctx.lineWidth = 0.8; ctx.setLineDash([3, 3]);
+  ctx.beginPath(); ctx.moveTo(xOf(2), py); ctx.lineTo(xOf(2), h - py); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#484f58'; ctx.font = '8px sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText('σ=2', xOf(2), py - 4);
+
+  /* courbe ζ(σ) */
+  ctx.beginPath();
+  pts.forEach(function (p, i) {
+    var x = xOf(p.sig), y = yOf(p.v);
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = '#1D9E75'; ctx.lineWidth = 1.8; ctx.stroke();
+
+  /* point σ courant */
+  if (sigCur >= S0 && sigCur <= S1) {
+    var zc = zetaReal(sigCur);
+    var xc = xOf(sigCur), yc = yOf(zc);
+    /* ligne verticale */
+    ctx.strokeStyle = '#EF9F27'; ctx.lineWidth = 1; ctx.setLineDash([4, 3]);
+    ctx.beginPath(); ctx.moveTo(xc, py); ctx.lineTo(xc, h - py); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath(); ctx.arc(xc, yc, 5, 0, TWO_PI);
+    ctx.fillStyle = '#EF9F27'; ctx.fill();
+    ctx.strokeStyle = '#e6edf3'; ctx.lineWidth = 1.2; ctx.stroke();
+  }
+
+  /* labels σ */
+  ctx.fillStyle = '#484f58'; ctx.font = '9px sans-serif';
+  ctx.textAlign = 'left'; ctx.fillText('σ=1.05', px, h - 4);
+  ctx.textAlign = 'right'; ctx.fillText('σ=5', w - 12, h - 4);
+  /* repère y=1 */
+  if (yMin < 1 && yMax > 1) {
+    ctx.strokeStyle = '#30363d'; ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(px, yOf(1)); ctx.lineTo(w - 12, yOf(1)); ctx.stroke();
+    ctx.fillStyle = '#484f58'; ctx.font = '8px monospace';
+    ctx.textAlign = 'right'; ctx.fillText('1', px - 4, yOf(1) + 3);
+  }
+}
+
+function drawAll() {
+  var sigma = parseFloat(document.getElementById('sl-sigma').value);
+  var N     = parseInt(document.getElementById('sl-N').value);
+  document.getElementById('val-sigma').textContent = sigma.toFixed(2);
+  document.getElementById('val-N').textContent     = N;
+  document.getElementById('ro-sigma').textContent  = sigma.toFixed(2);
+  document.getElementById('ro-N').textContent      = N;
+
+  var sn    = partialSum(sigma, N);
+  var zExact = zetaReal(sigma);
+  document.getElementById('ro-sn').textContent    = sn.toFixed(5);
+  document.getElementById('ro-zeta').textContent  = isNaN(zExact) ? '∞' : zExact.toFixed(5);
+  document.getElementById('ro-ecart').textContent = isNaN(zExact) ? '—' : Math.abs(sn - zExact).toFixed(5);
+
+  var warn = document.getElementById('warn-div');
+  warn.style.display = sigma <= 1 ? 'block' : 'none';
+
+  drawConv(sigma, N);
+  drawZeta(sigma);
+}
+
+document.getElementById('sl-sigma').addEventListener('input', drawAll);
+document.getElementById('sl-N').addEventListener('input',     drawAll);
+window.addEventListener('resize', drawAll);
+</script>
+</body>
+</html>

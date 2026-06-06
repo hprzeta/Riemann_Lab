@@ -525,7 +525,7 @@
     <h1>Riemann <em>Lab</em></h1>
     <p style="margin-top:1rem; color:var(--text2); font-size:0.95rem; max-width:560px;">
       Laboratoire d'exploration de l'Hypothèse de Riemann — calcul des zéros non triviaux
-      de \(\zeta(s)\) sur la droite critique \(\operatorname{Re}(s) = \tfrac{1}{2}\).
+      de \(\zeta(s)\) sur la droite critique \(\text{Re}(s) = \tfrac{1}{2}\).
     </p>
     <div class="subtitle">
       <span class="badge gold">Ubuntu 24.04</span>
@@ -538,11 +538,11 @@
     <div class="eq-scroll">
       <span class="hi">\(\zeta(s) = \displaystyle\sum_{n=1}^{\infty} \frac{1}{n^s}\)</span>
       <span>·</span>
-      <span>\(\operatorname{Re}(s) = \tfrac{1}{2}\)</span>
+      <span>\(\text{Re}(s) = \tfrac{1}{2}\)</span>
       <span>·</span>
       <span class="hi">\(Z(t) = e^{i\theta(t)}\,\zeta\!\left(\tfrac{1}{2}+it\right) \in \mathbb{R}\)</span>
       <span>·</span>
-      <span>\(\theta(t) = \operatorname{Im}\!\left[\ln\Gamma\!\left(\tfrac{1}{4}+\tfrac{it}{2}\right)\right] - \tfrac{t}{2}\ln\pi\)</span>
+      <span>\(\theta(t) = \text{Im}\!\left[\ln\Gamma\!\left(\tfrac{1}{4}+\tfrac{it}{2}\right)\right] - \tfrac{t}{2}\ln\pi\)</span>
       <span>·</span>
       <span class="hi">\(\zeta(2) = \dfrac{\pi^2}{6} \approx 1.6449\)</span>
       <span>·</span>
@@ -550,11 +550,11 @@
       <span>·</span>
       <span class="hi">\(\zeta(s) = \displaystyle\sum_{n=1}^{\infty} \frac{1}{n^s}\)</span>
       <span>·</span>
-      <span>\(\operatorname{Re}(s) = \tfrac{1}{2}\)</span>
+      <span>\(\text{Re}(s) = \tfrac{1}{2}\)</span>
       <span>·</span>
       <span class="hi">\(Z(t) = e^{i\theta(t)}\,\zeta\!\left(\tfrac{1}{2}+it\right) \in \mathbb{R}\)</span>
       <span>·</span>
-      <span>\(\theta(t) = \operatorname{Im}\!\left[\ln\Gamma\!\left(\tfrac{1}{4}+\tfrac{it}{2}\right)\right] - \tfrac{t}{2}\ln\pi\)</span>
+      <span>\(\theta(t) = \text{Im}\!\left[\ln\Gamma\!\left(\tfrac{1}{4}+\tfrac{it}{2}\right)\right] - \tfrac{t}{2}\ln\pi\)</span>
       <span>·</span>
       <span class="hi">\(\zeta(2) = \dfrac{\pi^2}{6} \approx 1.6449\)</span>
       <span>·</span>
@@ -574,6 +574,47 @@
     </div>
   </div>
 
+  <!-- ══ GRILLE ANIMATIONS ══ -->
+  <div class="section-title" style="margin-top:2.5rem;">Animations interactives</div>
+  <div class="links-grid" style="grid-template-columns:repeat(3,1fr);">
+    <a href="animation_series_dirichlet.html" class="link-card">
+      <span class="lc-icon">∑</span>
+      <span class="lc-title">Série de Dirichlet</span>
+      <span class="lc-desc">Convergence \(\zeta(s)=\sum 1/n^s\) selon \(\text{Re}(s)\). Slider \(\sigma\) + N termes.</span>
+      <span class="lc-arrow">↗</span>
+    </a>
+    <a href="animation_produit_eulerien.html" class="link-card">
+      <span class="lc-icon">∏</span>
+      <span class="lc-title">Produit eulérien</span>
+      <span class="lc-desc">Convergence \(\prod(1-p^{-s})^{-1}\) vers \(\zeta(s)\) premier par premier.</span>
+      <span class="lc-arrow">↗</span>
+    </a>
+    <a href="animation_plan_complexe.html" class="link-card">
+      <span class="lc-icon">ℂ</span>
+      <span class="lc-title">Plan complexe</span>
+      <span class="lc-desc">Heatmap \(|\zeta(\sigma+it)|\), pôle \(s=1\), bande critique, zéros visibles.</span>
+      <span class="lc-arrow">↗</span>
+    </a>
+    <a href="animation_gamma.html" class="link-card" style="border-top:1px solid var(--border);border-left:none;">
+      <span class="lc-icon">Γ</span>
+      <span class="lc-title">Fonction Gamma</span>
+      <span class="lc-desc">Pôles aux entiers négatifs, formule de réflexion, lien avec \(\xi(s)\).</span>
+      <span class="lc-arrow">↗</span>
+    </a>
+    <a href="animation_distribution_zeros.html" class="link-card" style="border-top:1px solid var(--border);">
+      <span class="lc-icon">⊞</span>
+      <span class="lc-title">Distribution des zéros</span>
+      <span class="lc-desc">Espacements normalisés, loi de Wigner (GUE) vs Poisson, \(N(T)\) interactif.</span>
+      <span class="lc-arrow">↗</span>
+    </a>
+    <a href="animation_theta.html" class="link-card" style="border-top:1px solid var(--border);">
+      <span class="lc-icon">θ</span>
+      <span class="lc-title">θ(t) — Cours complet</span>
+      <span class="lc-desc">Définition, Stirling, équation fonctionnelle, Backlund — 3 animations simultanées.</span>
+      <span class="lc-arrow">↗</span>
+    </a>
+  </div>
+
   <div class="stats">
     <div class="stat">
       <span class="stat-val">10142</span>
@@ -584,7 +625,7 @@
       <span class="stat-label">précision max</span>
     </div>
     <div class="stat">
-      <span class="stat-val">9998</span>
+      <span class="stat-val">9999</span>
       <span class="stat-label">t max atteint</span>
     </div>
   </div>
@@ -597,13 +638,14 @@
         <span class="step-num">01</span>
         <div class="step-body">
           <h3>Calcul des zéros non triviaux</h3>
-          <p>Méthode Z de Hardy + affinage Illinois (mpmath 50 décimales).
-             10142 zéros validés, après correction d'overflow à t ≈ 432.</p>
-          <div class="pill wip">En cours d'optimisation</div>
+          <p>v4.1 opérationnel — Illinois_C (170 bits) + Newton dps=25. Pipeline post-fork
+             4 workers, ~49 z/s (T=1&nbsp;000), ~19 z/s (T=10&nbsp;000).
+             10&nbsp;142 zéros validés Turing-Backlund, 19/20 LMFDB &lt; 10⁻¹⁰.</p>
+          <div class="pill done">Opérationnel — v4.1</div>
         </div>
-        <div class="step-stat status-wip">
+        <div class="step-stat status-done">
           10142 / 10142<br>
-          <span style="color:var(--dim); font-size:10px;">zéros</span>
+          <span style="color:var(--dim); font-size:10px;">zéros ✓</span>
         </div>
       </div>
 
@@ -611,25 +653,19 @@
         <span class="step-num">02</span>
         <div class="step-body">
           <h3>Visualisations avancées</h3>
-          <p>Graphiques 2D/3D interactifs — \(Z(t)\), distribution des espacements,
-             droite critique, plan complexe.</p>
-          <div class="pill wip">Animation \(\theta(t)\) en ligne</div>
-          <p>
-            <div class="pill wip">\(Z(t)\), distribution des espacements
-              <a href="https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/docs/images/T1000_V2/zeros_zeta_T10000_20260424_205325.png"
-                 style="color:var(--gold); text-decoration:none;">zeros_zeta_T10000↗</a>
-            </div>
-          </p>
+          <p>8 animations interactives en ligne — \(\theta(t)\), \(Z(t)\), plan \(\mathbb{C}\),
+             Gamma, Dirichlet, produit eulérien, distribution des zéros, mur de latence.</p>
+          <div class="pill done">8 animations en ligne</div>
         </div>
-        <div class="step-stat status-wip">Partiel</div>
+        <div class="step-stat status-done">En ligne</div>
       </div>
 
       <div class="step">
         <span class="step-num">03</span>
         <div class="step-body">
           <h3>Intelligence artificielle locale</h3>
-          <p>Intégration Ollama + Mathstral pour l'analyse des patterns
-             dans la distribution des zéros.</p>
+          <p>BrainVault structuré — inbox-ia opérationnel, 26 pavés ingérés (PDF → MD).
+             Ollama + Mathstral : exploratoire. RAG non encore opérationnel.</p>
           <div class="pill wip">Exploratoire</div>
         </div>
         <div class="step-stat status-wip">WIP</div>
@@ -732,16 +768,52 @@
       <span class="cc-desc">Visualisation interactive de la fonction de phase — connexion avec \(Z(t)\)</span>
       <span class="cc-status status-active">● disponible</span>
     </a>
+    <a href="animation_mur_latence.html" class="cours-card">
+      <span class="cc-level">Animation</span>
+      <span class="cc-title">⧗ Le mur de latence</span>
+      <span class="cc-desc">Pourquoi 10 000 zéros précis coûtent des heures</span>
+      <span class="cc-status status-active">● disponible</span>
+    </a>
+    <a href="animation_zeros_non_triviaux.html" class="cours-card">
+      <span class="cc-level">Animation</span>
+      <span class="cc-title">◉ Zéros non-triviaux de ζ</span>
+      <span class="cc-desc">Plan complexe interactif · Z(t) · Hypothèse de Riemann</span>
+      <span class="cc-status status-active">● disponible</span>
+    </a>
+    <a href="animation_series_dirichlet.html" class="cours-card">
+      <span class="cc-level">Animation</span>
+      <span class="cc-title">∑ Série de Dirichlet</span>
+      <span class="cc-desc">Convergence \(\zeta(s)=\sum 1/n^s\) · frontière \(\sigma=1\) · prolongement analytique · séries alternées</span>
+      <span class="cc-status status-active">● disponible</span>
+    </a>
+    <a href="animation_produit_eulerien.html" class="cours-card">
+      <span class="cc-level">Animation</span>
+      <span class="cc-title">∏ Produit eulérien</span>
+      <span class="cc-desc">Facteurs \((1-p^{-s})^{-1}\) · convergence vers \(\zeta(s)\) · lien avec la distribution des premiers</span>
+      <span class="cc-status status-active">● disponible</span>
+    </a>
+    <a href="animation_plan_complexe.html" class="cours-card">
+      <span class="cc-level">Animation</span>
+      <span class="cc-title">ℂ Plan complexe de ζ</span>
+      <span class="cc-desc">Heatmap \(|\zeta(\sigma+it)|\) · pôle \(s=1\) · bande critique · coupes interactives</span>
+      <span class="cc-status status-active">● disponible</span>
+    </a>
+    <a href="animation_gamma.html" class="cours-card">
+      <span class="cc-level">Animation</span>
+      <span class="cc-title">Γ Fonction Gamma</span>
+      <span class="cc-desc">Pôles en \(0,-1,-2,\ldots\) · formule de réflexion · \(|\Gamma(\tfrac{1}{2}+it)|\) · lien \(\xi(s)\)</span>
+      <span class="cc-status status-active">● disponible</span>
+    </a>
+    <a href="animation_distribution_zeros.html" class="cours-card">
+      <span class="cc-level">Animation</span>
+      <span class="cc-title">⊞ Distribution des zéros</span>
+      <span class="cc-desc">Espacements normalisés · loi de Wigner GUE · Poisson · \(N(T)\) interactif · connexion matrices aléatoires</span>
+      <span class="cc-status status-active">● disponible</span>
+    </a>
   </div>
 
   <div class="section-title">Ressources</div>
   <div class="links-grid">
-    <a href="animation_theta.html" class="link-card">
-      <span class="lc-icon">◎</span>
-      <span class="lc-title">Animation \(\theta(t)\)</span>
-      <span class="lc-desc">Visualisation interactive de la fonction de phase de Riemann-Siegel</span>
-      <span class="lc-arrow">↗</span>
-    </a>
     <a href="https://github.com/hprzeta/Riemann_Lab/wiki" target="_blank" class="link-card">
       <span class="lc-icon">📖</span>
       <span class="lc-title">Wiki du projet</span>
@@ -757,7 +829,7 @@
     <a href="https://github.com/hprzeta/Riemann_Lab/issues" target="_blank" class="link-card">
       <span class="lc-icon">⚠</span>
       <span class="lc-title">Issues ouvertes</span>
-      <span class="lc-desc">Overflow à t≈432, optimisation du pas de balayage</span>
+      <span class="lc-desc">Vérif B [300,700] complète · goulot O(√t) à grands t</span>
       <span class="lc-arrow">↗</span>
     </a>
   </div>
@@ -895,6 +967,11 @@
         <div style="font-size:1.1rem;color:var(--gold);font-family:'JetBrains Mono',monospace;">581e34d</div>
         <div style="font-size:11px;color:var(--text2);margin-top:2px;">Riemann_Lab_C</div>
       </div>
+      <div style="text-align:center;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:0.1em;margin-bottom:0.4rem;">VÉRIF B [300,700]</div>
+        <div style="font-size:1.1rem;color:#4ade80;font-family:'JetBrains Mono',monospace;">PASS</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;">+ Newton &lt; 10⁻¹⁰</div>
+      </div>
     </div>
 
   </div>
@@ -902,7 +979,7 @@
 <!-- FIN SECTION PERFORMANCES -->
 
   <footer>
-    <p>hprzeta · Riemann Lab · avril 2026</p>
+    <p>hprzeta · Riemann Lab · juin 2026</p>
     <p>
       <a href="https://github.com/hprzeta/Riemann_Lab" target="_blank">GitHub</a>
       &nbsp;·&nbsp;
