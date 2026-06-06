@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zéros non-triviaux de ζ — Animation interactive</title>
+
+<!-- KaTeX — même moteur que index.html et animation_mur_latence.html -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<style>
+  /* ── Palette identique à animation_mur_latence.html ── */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #0d1117;
+    color: #e6edf3;
+    line-height: 1.7;
+    padding: 1.8rem 1rem 3rem;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 1.35rem; font-weight: 600; margin-bottom: 0.3rem; }
+  h2 { font-size: 1.05rem; font-weight: 500; color: #c9d1d9; margin: 2rem 0 0.7rem; }
+  .sub { color: #8b949e; font-size: 0.9rem; margin-bottom: 1.4rem; }
+  p  { color: #c9d1d9; font-size: 0.95rem; margin-bottom: 0.8rem; }
+  strong { color: #e6edf3; font-weight: 600; }
+  a  { color: #7F77DD; }
+  code {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    background: #161b22; border: 1px solid #30363d; border-radius: 4px;
+    padding: 1px 5px; font-size: 0.85em; color: #9fe1cb;
+  }
+  .meta {
+    font-size: 0.8rem; color: #8b949e;
+    border: 1px solid #30363d; background: #161b22; border-radius: 8px;
+    padding: 0.5rem 0.9rem; margin-bottom: 1.6rem;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
+  }
+  .panel {
+    background: #161b22; border: 1px solid #30363d; border-radius: 10px;
+    padding: 1.1rem 1.2rem; margin: 1.2rem 0;
+  }
+  .panel-title { font-size: 0.85rem; color: #8b949e; margin-bottom: 0.8rem; }
+  .panel-title b { color: #e6edf3; font-weight: 600; }
+  .ctrl {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 0.83rem; color: #8b949e; margin-bottom: 0.7rem;
+  }
+  .ctrl span:first-child { min-width: 200px; }
+  input[type=range] { flex: 1; accent-color: #7F77DD; height: 4px; cursor: pointer; }
+  .val { font-weight: 600; color: #e6edf3; min-width: 64px; text-align: right; }
+  .katex-block {
+    background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+    padding: 0.4rem 1rem; margin: 0.8rem 0; overflow-x: auto;
+  }
+  table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; font-size: 0.86rem; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid #21262d; color: #c9d1d9; }
+  th { color: #8b949e; font-weight: 500; }
+  .ok  { color: #1D9E75; } .ko { color: #E24B4A; } .mid { color: #EF9F27; }
+  .legend {
+    display: flex; gap: 18px; flex-wrap: wrap;
+    font-size: 0.78rem; color: #8b949e; margin-top: 0.7rem;
+  }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .dot { width: 10px; height: 10px; border-radius: 2px; }
+  canvas { display: block; width: 100%; border-radius: 6px; }
+  svg { display: block; width: 100%; }
+  #badge-hr {
+    display: inline-block; border-radius: 6px; padding: 3px 10px;
+    font-size: 0.82rem; font-weight: 600; margin-left: 8px;
+    background: #1D9E75; color: #0d1117;
+    transition: background 0.2s, color 0.2s;
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ EN-TÊTE ══════════════ -->
+<div class="meta">
+  <span>Riemann_Lab — Cours animé n°3 · Zéros non-triviaux</span>
+  <span>Auteur : <b style="color:#c9d1d9">hprzeta</b> · Mise à jour : 6 juin 2026</span>
+</div>
+
+<h1>Les zéros non-triviaux de $\zeta$</h1>
+<p class="sub">Où vivent-ils, comment les détecter via $Z(t)$, et ce que l'Hypothèse de Riemann affirme — animé et interactif.</p>
+
+<p>Dans le <a href="animation_theta.html">cours n°1</a> on a vu que $Z(t)$ est réelle. Dans le <a href="animation_mur_latence.html">cours n°2</a> on a vu que la calculer coûte cher. Ici on regarde les <strong>racines</strong> de cette fonction : les $\gamma_n$ tels que $Z(\gamma_n)=0$, qui sont exactement les parties imaginaires des <strong>zéros non-triviaux</strong> de $\zeta$.</p>
+
+<!-- ══════════════ 1. DÉFINITION ══════════════ -->
+<h2>1. Deux familles de zéros</h2>
+<p>$\zeta(s)$ possède deux types de zéros :</p>
+<div class="katex-block">$$\underbrace{\zeta(-2),\;\zeta(-4),\;\zeta(-6),\;\ldots}_{\text{zéros triviaux, sur l'axe réel négatif}} \qquad \text{et} \qquad \underbrace{\zeta(\rho)=0,\quad 0<\text{Re}(\rho)<1}_{\text{zéros non-triviaux, dans la bande critique}}$$</div>
+<p>L'équation fonctionnelle $\xi(s)=\xi(1-s)$ impose deux symétries sur tout zéro $\rho=\sigma+i\gamma$ :</p>
+<div class="katex-block">$$\rho \in \mathcal{Z} \;\Longrightarrow\; \bar\rho\in\mathcal{Z} \quad\text{(symétrie axe réel)} \qquad\text{et}\qquad 1-\bar\rho\in\mathcal{Z} \quad\text{(symétrie droite }\sigma=\tfrac{1}{2}\text{)}$$</div>
+<p>Si $\sigma\neq\tfrac{1}{2}$, on obtient un <strong>quadruplet</strong> $\{\rho,\,\bar\rho,\,1-\rho,\,1-\bar\rho\}$. Si $\sigma=\tfrac{1}{2}$, le quadruplet se réduit à une <strong>paire</strong> $\{\tfrac{1}{2}+i\gamma,\,\tfrac{1}{2}-i\gamma\}$. L'HdR affirme que seul ce cas se produit.</p>
+
+<!-- ══════════════ 2. PLAN COMPLEXE ══════════════ -->
+<h2>2. Plan complexe — où vivent les zéros (animation)</h2>
+<p>Le curseur <em>"afficher N zéros"</em> les fait apparaître un à un sur la droite critique. Le curseur <em>"HR ?"</em> déplace le dernier zéro hors de $\text{Re}(s)=\tfrac{1}{2}$ et montre le symétrique imposé par l'équation fonctionnelle.</p>
+
+<div class="panel">
+  <div class="panel-title">
+    Bande critique $0&lt;\text{Re}(s)&lt;1$ · droite critique $\text{Re}(s)=\tfrac{1}{2}$ ·
+    HR sur ce zéro : <span id="badge-hr">✓ vérifiée</span>
+  </div>
+  <svg id="svg-plan" viewBox="0 0 680 420"></svg>
+  <div style="margin-top:0.9rem">
+    <div class="ctrl">
+      <span>Afficher les premiers <b id="lbl-n">1</b> zéros</span>
+      <input type="range" id="sl-n" min="1" max="10" value="1" step="1">
+      <span class="val" id="val-n">γ₁</span>
+    </div>
+    <div class="ctrl">
+      <span>HR ? — décaler σ du dernier zéro</span>
+      <input type="range" id="sl-sigma" min="-35" max="35" value="0" step="1">
+      <span class="val" id="val-sigma">½</span>
+    </div>
+  </div>
+  <div class="legend">
+    <span><span class="dot" style="background:#1D9E75"></span>zéro sur Re(s)=½</span>
+    <span><span class="dot" style="background:#E24B4A"></span>zéro déplacé + symétrique imposé</span>
+    <span><span class="dot" style="background:#EF9F27;opacity:0.7"></span>distance à la droite critique</span>
+  </div>
+</div>
+
+<!-- ══════════════ 3. Z(t) ══════════════ -->
+<h2>3. $Z(t)$ — chaque changement de signe = un zéro</h2>
+<p>La factorisation $\zeta(\tfrac{1}{2}+it)=e^{-i\theta(t)}Z(t)$ ramène la recherche de zéros à la détection de signes de la fonction <strong>réelle</strong> $Z(t)$. Avance le curseur : les $\gamma_n$ apparaissent là où $Z$ change de signe.</p>
+<div class="katex-block">$$Z(t) = 2\sum_{n=1}^{N}\frac{\cos\!\left(\theta(t)-t\ln n\right)}{\sqrt{n}}+R(t), \qquad N=\left\lfloor\!\sqrt{\tfrac{t}{2\pi}}\right\rfloor$$</div>
+
+<div class="panel">
+  <div class="panel-title">$Z(t)$ approximé (Dirichlet, 25 termes) sur $[5,\,t_{\max}]$ — les $\gamma_n$ sont les valeurs LMFDB exactes</div>
+  <canvas id="cv-zt" height="200"></canvas>
+  <div style="margin-top:0.7rem">
+    <div class="ctrl">
+      <span>Fenêtre visible $t_{\max}$</span>
+      <input type="range" id="sl-tmax" min="18" max="55" value="28" step="0.5">
+      <span class="val" id="val-tmax">28,0</span>
+    </div>
+  </div>
+  <div class="legend">
+    <span><span class="dot" style="background:#7F77DD"></span>Z(t) &gt; 0</span>
+    <span><span class="dot" style="background:#E24B4A"></span>Z(t) &lt; 0</span>
+    <span><span class="dot" style="background:#1D9E75"></span>γₙ exact (LMFDB)</span>
+  </div>
+</div>
+
+<!-- ══════════════ 4. TABLE ══════════════ -->
+<h2>4. Les 10 premiers zéros (source LMFDB)</h2>
+<table>
+  <tr><th>n</th><th>$\gamma_n$ (partie imaginaire)</th><th>$\text{Re}(\rho_n)$ mesuré</th><th>$N(\gamma_n)$ attendu</th></tr>
+  <tr><td>1</td><td>14,134 725 141…</td><td class="ok">= ½</td><td>1</td></tr>
+  <tr><td>2</td><td>21,022 039 639…</td><td class="ok">= ½</td><td>2</td></tr>
+  <tr><td>3</td><td>25,010 857 580…</td><td class="ok">= ½</td><td>3</td></tr>
+  <tr><td>4</td><td>30,424 876 126…</td><td class="ok">= ½</td><td>4</td></tr>
+  <tr><td>5</td><td>32,935 061 588…</td><td class="ok">= ½</td><td>5</td></tr>
+  <tr><td>6</td><td>37,586 178 159…</td><td class="ok">= ½</td><td>6</td></tr>
+  <tr><td>7</td><td>40,918 719 012…</td><td class="ok">= ½</td><td>7</td></tr>
+  <tr><td>8</td><td>43,327 073 281…</td><td class="ok">= ½</td><td>8</td></tr>
+  <tr><td>9</td><td>48,005 150 881…</td><td class="ok">= ½</td><td>9</td></tr>
+  <tr><td>10</td><td>49,773 832 478…</td><td class="ok">= ½</td><td>10</td></tr>
+</table>
+<p style="font-size:0.82rem;color:#8b949e">Source : <a href="https://lmfdb.org/zeros/zeta/" target="_blank">lmfdb.org/zeros/zeta/</a> · tous vérifiés sur la droite critique à la précision connue · le projet Riemann_Lab a validé 10 142 zéros jusqu'à $T=10\,000$ (Turing OK).</p>
+
+<!-- ══════════════ 5. HR ══════════════ -->
+<h2>5. L'Hypothèse de Riemann en une phrase</h2>
+<p><strong>Conjecture (B. Riemann, 1859 — non prouvée) :</strong></p>
+<div class="katex-block">$$\zeta(\rho)=0,\;\; 0&lt;\text{Re}(\rho)&lt;1 \;\Longrightarrow\; \text{Re}(\rho)=\tfrac{1}{2}$$</div>
+<p>Autrement dit : tous les zéros non-triviaux sont sur la droite critique. Ce n'est pas prouvé. On l'a vérifié numériquement pour les $1{,}5\times 10^{13}$ premiers zéros (Platt-Trudgian 2021). Si un contre-exemple existait avec $\text{Re}(\rho)\neq\tfrac{1}{2}$, l'équation fonctionnelle forcerait l'existence d'un second zéro symétrique — et la formule de von Mangoldt</p>
+<div class="katex-block">$$N(T)=\frac{T}{2\pi}\ln\frac{T}{2\pi e}+1+S(T)$$</div>
+<p>serait perturbée de façon mesurable. C'est l'objet du curseur <em>"HR ?"</em> ci-dessus : déplace un zéro hors de $\tfrac{1}{2}$ et observe la paire de symétriques qui apparaît.</p>
+
+<!-- ══════════════ PIED DE PAGE ══════════════ -->
+<div class="meta" style="margin-top:2rem;margin-bottom:0;">
+  <span>Riemann_Lab · branche Riemann_Lab_IA · <code>docs/animation_zeros_non_triviaux.html</code></span>
+  <span>Mise à jour : 6 juin 2026 · Auteur : <b style="color:#c9d1d9">hprzeta</b> · <span id="nblignes"></span> lignes</span>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   KaTeX auto-render — délimiteurs $...$ et $$...$$
+   ════════════════════════════════════════════════════════════ */
+document.addEventListener("DOMContentLoaded", function () {
+  renderMathInElement(document.body, {
+    delimiters: [
+      { left: "$$", right: "$$", display: true },
+      { left: "$",  right: "$",  display: false }
+    ],
+    throwOnError: false
+  });
+  drawPlan();
+  drawZt();
+  document.getElementById('nblignes').textContent =
+    document.documentElement.outerHTML.split('\n').length;
+});
+
+/* ════════════════════════════════════════════════════════════
+   Données : parties imaginaires des 10 premiers zéros (LMFDB)
+   ════════════════════════════════════════════════════════════ */
+var ZEROS  = [
+  14.134725141, 21.022039639, 25.010857580, 30.424876126, 32.935061588,
+  37.586178159, 40.918719012, 43.327073281, 48.005150881, 49.773832478
+];
+var GLABELS = ['γ₁','γ₂','γ₃','γ₄','γ₅','γ₆','γ₇','γ₈','γ₉','γ₁₀'];
+var TWO_PI  = 2 * Math.PI;
+
+/* ════════════════════════════════════════════════════════════
+   Plan complexe — SVG 680×420
+   σ ∈ [0,1] → x ∈ [160, 560]   (400 px)
+   t ∈ [0,55] → y ∈ [390, 30]   (360 px, inversé)
+   ════════════════════════════════════════════════════════════ */
+var SX0 = 160, SX1 = 560;          // x pour σ=0 et σ=1
+var SY0 = 390, SY1 = 30;           // y pour t=0 et t=T_MAX
+var T_PLAN = 55;
+
+function sToX(sigma) { return SX0 + sigma * (SX1 - SX0); }
+function tToY(t)     { return SY0 + (t / T_PLAN) * (SY1 - SY0); }
+
+function svgEl(tag, attrs) {
+  var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (var k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+}
+
+function drawPlan() {
+  var svg = document.getElementById('svg-plan');
+  svg.innerHTML = '';
+
+  /* bande critique (fond légèrement distinct) */
+  svg.appendChild(svgEl('rect', {
+    x: sToX(0), y: SY1,
+    width: sToX(1) - sToX(0), height: SY0 - SY1,
+    fill: '#131920', stroke: 'none'
+  }));
+
+  /* frontières bande σ=0 et σ=1 */
+  [0, 1].forEach(function (s) {
+    svg.appendChild(svgEl('line', {
+      x1: sToX(s), y1: SY0, x2: sToX(s), y2: SY1,
+      stroke: '#30363d', 'stroke-width': 0.8
+    }));
+  });
+
+  /* droite critique σ=½ */
+  svg.appendChild(svgEl('line', {
+    x1: sToX(0.5), y1: SY0, x2: sToX(0.5), y2: SY1 - 10,
+    stroke: '#1D9E75', 'stroke-width': 1.2, 'stroke-dasharray': '5 3'
+  }));
+
+  /* axe horizontal (base t=0) */
+  svg.appendChild(svgEl('line', {
+    x1: 70, y1: SY0, x2: 620, y2: SY0,
+    stroke: '#30363d', 'stroke-width': 0.8
+  }));
+
+  /* repères σ = 0, ½, 1 */
+  [[0,'0'],[0.5,'½'],[1,'1']].forEach(function (p) {
+    var x = sToX(p[0]);
+    svg.appendChild(svgEl('line', { x1: x, y1: SY0, x2: x, y2: SY0+6, stroke: '#484f58', 'stroke-width': 1 }));
+    var t = svgEl('text', { x: x, y: SY0+18, 'text-anchor': 'middle', style: 'font-size:11px;fill:#8b949e' });
+    t.textContent = p[1];
+    svg.appendChild(t);
+  });
+
+  /* label axe σ */
+  var ls = svgEl('text', { x: 610, y: SY0+18, 'text-anchor': 'middle', style: 'font-size:11px;fill:#484f58' });
+  ls.textContent = 'Re(s)';
+  svg.appendChild(ls);
+
+  /* label droite critique */
+  var ldc = svgEl('text', { x: sToX(0.5), y: SY1 - 14, 'text-anchor': 'middle', style: 'font-size:10px;fill:#1D9E75' });
+  ldc.textContent = 'droite critique Re(s)=½';
+  svg.appendChild(ldc);
+
+  /* repères t = 0, 10, 20, 30, 40, 50 */
+  [0, 10, 20, 30, 40, 50].forEach(function (tv) {
+    var y = tToY(tv);
+    svg.appendChild(svgEl('line', { x1: SX0-6, y1: y, x2: SX0, y2: y, stroke: '#484f58', 'stroke-width': 0.8 }));
+    var t = svgEl('text', { x: SX0-10, y: y+4, 'text-anchor': 'end', style: 'font-size:10px;fill:#8b949e' });
+    t.textContent = tv;
+    svg.appendChild(t);
+  });
+
+  /* label axe t */
+  var lt = svgEl('text', { x: SX0-10, y: SY1-10, 'text-anchor': 'end', style: 'font-size:11px;fill:#484f58' });
+  lt.textContent = 'Im(s)';
+  svg.appendChild(lt);
+
+  /* ── Zéros ── */
+  var N  = parseInt(document.getElementById('sl-n').value);
+  var ds = parseInt(document.getElementById('sl-sigma').value) / 100;  // décalage σ
+
+  for (var i = 0; i < N; i++) {
+    var gamma  = ZEROS[i];
+    var y      = tToY(gamma);
+    var isLast = (i === N - 1);
+    var sigma  = 0.5 + (isLast ? ds : 0);
+    var color  = (ds !== 0 && isLast) ? '#E24B4A' : '#1D9E75';
+    var x      = sToX(sigma);
+
+    /* ligne de grille horizontale légère */
+    svg.appendChild(svgEl('line', {
+      x1: SX0, y1: y, x2: x - 8, y2: y,
+      stroke: '#21262d', 'stroke-width': 0.5
+    }));
+
+    /* point zéro */
+    svg.appendChild(svgEl('circle', { cx: x, cy: y, r: 5.5, fill: color }));
+
+    /* label γₙ = valeur */
+    var lbl = svgEl('text', { x: x+10, y: y+4, style: 'font-size:11px;fill:'+color+';font-weight:600' });
+    lbl.textContent = GLABELS[i] + ' = ' + gamma.toFixed(3);
+    svg.appendChild(lbl);
+
+    /* si décalé : symétrique imposé par équation fonctionnelle */
+    if (ds !== 0 && isLast) {
+      var xSym = sToX(1 - sigma);
+
+      /* ligne reliant le zéro et son symétrique */
+      svg.appendChild(svgEl('line', {
+        x1: x, y1: y, x2: xSym, y2: y,
+        stroke: '#EF9F27', 'stroke-width': 1.2, 'stroke-dasharray': '4 3', opacity: '0.7'
+      }));
+
+      /* distance à la droite critique */
+      svg.appendChild(svgEl('line', {
+        x1: sToX(0.5), y1: y-3, x2: x, y2: y-3,
+        stroke: '#EF9F27', 'stroke-width': 2, opacity: '0.4'
+      }));
+
+      /* point symétrique */
+      svg.appendChild(svgEl('circle', { cx: xSym, cy: y, r: 5.5, fill: '#E24B4A', opacity: '0.55' }));
+
+      /* label 1−ρ */
+      var lsym = svgEl('text', {
+        x: xSym - 10, y: y - 9,
+        'text-anchor': 'end', style: 'font-size:10px;fill:#E24B4A;font-style:italic'
+      });
+      lsym.textContent = '1−ρ';
+      svg.appendChild(lsym);
+    }
+  }
+
+  /* ── Mise à jour des affichages ── */
+  document.getElementById('lbl-n').textContent  = N;
+  document.getElementById('val-n').textContent  = GLABELS[N-1];
+  var d100 = parseInt(document.getElementById('sl-sigma').value);
+  document.getElementById('val-sigma').textContent =
+    d100 === 0 ? '½' : '½' + (d100 > 0 ? '+' : '−') + Math.abs(d100/100).toFixed(2);
+
+  /* badge HR */
+  var badge = document.getElementById('badge-hr');
+  if (d100 === 0) {
+    badge.style.background = '#1D9E75'; badge.style.color = '#0d1117';
+    badge.textContent = '✓ vérifiée';
+  } else {
+    badge.style.background = '#E24B4A'; badge.style.color = '#e6edf3';
+    badge.textContent = '✗ violée — 2 zéros forcés';
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   Z(t) — somme de Dirichlet tronquée à 25 termes
+   Formule : Z(t) = cos(θ)·Re[ζ] − sin(θ)·Im[ζ]
+   avec ζ(½+it) ≈ Σ_{n=1}^{M} n^{−½} e^{−it·ln n}
+   ════════════════════════════════════════════════════════════ */
+function theta(t) {                                        // phase θ(t) asymptotique
+  return (t/2)*Math.log(t/TWO_PI) - t/2 - Math.PI/8 + 1/(48*t);
+}
+
+function Zt(t) {                                           // Z(t) approché (25 termes)
+  var th   = theta(t);
+  var re   = 0, im = 0;
+  for (var n = 1; n <= 25; n++) {                          // 25 termes Dirichlet
+    var amp   = 1 / Math.sqrt(n);
+    var phase = -t * Math.log(n);
+    re += amp * Math.cos(phase);
+    im += amp * Math.sin(phase);
+  }
+  return Math.cos(th) * re - Math.sin(th) * im;           // formule Z(t) du projet
+}
+
+function drawZt() {
+  var canvas = document.getElementById('cv-zt');
+  var W = canvas.offsetWidth || 680;
+  canvas.width  = W * (window.devicePixelRatio || 1);
+  canvas.height = 200 * (window.devicePixelRatio || 1);
+  var ctx = canvas.getContext('2d');
+  ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+  var w = W, h = 200;
+
+  /* fond */
+  ctx.fillStyle = '#0d1117';
+  ctx.fillRect(0, 0, w, h);
+
+  var tMin  = 5;
+  var tMax  = parseFloat(document.getElementById('sl-tmax').value);
+  var steps = Math.round((tMax - tMin) * 80);             // 80 points par unité
+  var pts   = [];
+  var zAbs  = 0;
+
+  for (var i = 0; i <= steps; i++) {
+    var t = tMin + i * (tMax - tMin) / steps;
+    var z = Zt(t);
+    pts.push({ t: t, z: z });
+    if (Math.abs(z) > zAbs) zAbs = Math.abs(z);
+  }
+  zAbs = Math.max(zAbs, 1);
+
+  var padX = 22, padY = 22;
+
+  function xOf(t) { return padX + (t - tMin) / (tMax - tMin) * (w - 2*padX); }
+  function yOf(z) { return h/2 - (z / zAbs) * (h/2 - padY); }
+
+  /* axe zéro */
+  ctx.strokeStyle = '#30363d';
+  ctx.lineWidth   = 1;
+  ctx.beginPath(); ctx.moveTo(padX, h/2); ctx.lineTo(w-padX, h/2); ctx.stroke();
+
+  /* courbe Z(t) avec alternance violet/rouge selon le signe */
+  for (var i = 0; i < pts.length - 1; i++) {
+    var p0 = pts[i], p1 = pts[i+1];
+    ctx.beginPath();
+    ctx.moveTo(xOf(p0.t), yOf(p0.z));
+    ctx.lineTo(xOf(p1.t), yOf(p1.z));
+    ctx.strokeStyle = (p0.z >= 0) ? '#7F77DD' : '#E24B4A';
+    ctx.lineWidth   = 1.8;
+    ctx.stroke();
+  }
+
+  /* zéros γₙ : ligne verticale verte + point + label */
+  ZEROS.forEach(function (g, idx) {
+    if (g < tMin || g > tMax) return;
+    var x = xOf(g);
+
+    ctx.strokeStyle = '#1D9E75';
+    ctx.lineWidth   = 1;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(x, padY); ctx.lineTo(x, h - padY); ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = '#1D9E75';
+    ctx.beginPath(); ctx.arc(x, h/2, 4.5, 0, TWO_PI); ctx.fill();
+
+    ctx.fillStyle   = '#1D9E75';
+    ctx.font        = '10px ui-monospace, monospace';
+    ctx.textAlign   = 'center';
+    ctx.fillText(GLABELS[idx], x, padY - 4);
+  });
+
+  /* labels t_min / t_max */
+  ctx.fillStyle = '#484f58'; ctx.font = '10px sans-serif';
+  ctx.textAlign = 'left';  ctx.fillText('t = ' + tMin.toFixed(0), padX, h - 5);
+  ctx.textAlign = 'right'; ctx.fillText('t = ' + tMax.toFixed(1), w - padX, h - 5);
+
+  /* label Z(t) */
+  ctx.fillStyle = '#8b949e'; ctx.font = '10px sans-serif';
+  ctx.textAlign = 'left'; ctx.fillText('Z(t)', padX, padY - 4);
+
+  document.getElementById('val-tmax').textContent = tMax.toFixed(1);
+}
+
+/* ── Brancher les sliders ── */
+document.getElementById('sl-n').addEventListener('input',     drawPlan);
+document.getElementById('sl-sigma').addEventListener('input', drawPlan);
+document.getElementById('sl-tmax').addEventListener('input',  drawZt);
+</script>
+</body>
+</html>
