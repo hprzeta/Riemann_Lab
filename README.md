@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="docs/images/logo_riemann_lab.svg" width="500"/>
-</p>
+<p align="center"><img src="docs/images/logo_riemann_lab.png" width="500"/></p>
 
 # 🧮 ζ(s) Projet Zêta : Exploration de l'Hypothèse de Riemann
 
