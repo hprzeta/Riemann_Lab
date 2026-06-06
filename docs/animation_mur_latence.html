@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Le mur de latence — pourquoi 10 000 zéros précis coûtent des heures</title>
+
+<!-- KaTeX (rendu des formules) — même moteur que index.html du projet -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<style>
+  /* ── Palette identique à animation_theta.html (thème GitHub sombre) ── */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #0d1117;        /* fond global */
+    color: #e6edf3;             /* texte principal */
+    line-height: 1.7;
+    padding: 1.8rem 1rem 3rem;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  h1 { font-size: 1.35rem; font-weight: 600; margin-bottom: 0.3rem; }
+  h2 { font-size: 1.05rem; font-weight: 500; color: #c9d1d9; margin: 2rem 0 0.7rem; }
+  .sub { color: #8b949e; font-size: 0.9rem; margin-bottom: 1.4rem; }
+  p { color: #c9d1d9; font-size: 0.95rem; margin-bottom: 0.8rem; }
+  strong { color: #e6edf3; font-weight: 600; }
+  code {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    background: #161b22; border: 1px solid #30363d; border-radius: 4px;
+    padding: 1px 5px; font-size: 0.85em; color: #9fe1cb;
+  }
+  /* ── En-tête / pied de page (règle projet : date + auteur hprzeta) ── */
+  .meta {
+    font-size: 0.8rem; color: #8b949e;
+    border: 1px solid #30363d; background: #161b22; border-radius: 8px;
+    padding: 0.5rem 0.9rem; margin-bottom: 1.6rem;
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
+  }
+  /* ── Panneaux / blocs d'animation ── */
+  .panel {
+    background: #161b22; border: 1px solid #30363d; border-radius: 10px;
+    padding: 1.1rem 1.2rem; margin: 1.2rem 0;
+  }
+  .panel-title { font-size: 0.85rem; color: #8b949e; margin-bottom: 0.8rem; }
+  .panel-title b { color: #e6edf3; font-weight: 600; }
+  /* ── La chaîne des 27 appels ── */
+  #chaine { display: flex; gap: 3px; align-items: flex-end; height: 38px; }
+  #chaine .blk {
+    flex: 1; height: 32px; border-radius: 5px;
+    border: 1px solid #30363d; background: #0d1117;
+    transition: background 0.1s, border-color 0.1s;
+  }
+  .row-info { display: flex; justify-content: space-between; margin-top: 0.7rem; font-size: 0.82rem; color: #8b949e; }
+  .row-info b { color: #e6edf3; font-weight: 600; }
+  /* ── Le zoom « termes d'un appel » ── */
+  #termes { display: flex; gap: 2px; height: 12px; margin-top: 0.6rem; }
+  #termes div { flex: 1; height: 12px; border-radius: 2px; background: #1D9E75; opacity: 0.55; }
+  /* ── Calculateur ── */
+  .ctrl { display: flex; align-items: center; gap: 12px; font-size: 0.83rem; color: #8b949e; margin-bottom: 0.7rem; }
+  .ctrl span:first-child { min-width: 150px; }
+  input[type=range] { flex: 1; accent-color: #7F77DD; height: 4px; cursor: pointer; }
+  .val { font-weight: 600; color: #e6edf3; min-width: 54px; text-align: right; }
+  .libbtn {
+    background: #0d1117; border: 1px solid #30363d; border-radius: 6px;
+    color: #c9d1d9; padding: 4px 12px; font-size: 0.82rem; cursor: pointer;
+  }
+  .libbtn.on { border-color: #7F77DD; color: #e6edf3; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 1rem 0; }
+  .card { background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 0.6rem 0.9rem; }
+  .card .lab { font-size: 0.78rem; color: #8b949e; }
+  .card .num { font-size: 1.4rem; font-weight: 600; color: #e6edf3; margin-top: 2px; }
+  #verdict { border-radius: 8px; padding: 0.7rem 1rem; font-size: 0.9rem; border: 1px solid #30363d; }
+  #verdict b { font-weight: 600; }
+  /* ── Tableau des leviers ── */
+  table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; font-size: 0.86rem; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid #21262d; color: #c9d1d9; }
+  th { color: #8b949e; font-weight: 500; }
+  .ok { color: #1D9E75; } .ko { color: #E24B4A; } .mid { color: #EF9F27; }
+  .katex-block { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 0.4rem 1rem; margin: 0.8rem 0; overflow-x: auto; }
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 0.78rem; color: #8b949e; margin-top: 0.7rem; }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .dot { width: 10px; height: 10px; border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ EN-TÊTE (date + auteur) ══════════════ -->
+<div class="meta">
+  <span>Riemann_Lab — Cours animé n°2 · Phase Optimisation</span>
+  <span>Auteur : <b style="color:#c9d1d9">hprzeta</b> · Mise à jour : 2 juin 2026</span>
+</div>
+
+<h1>Le mur de latence</h1>
+<p class="sub">Pourquoi calculer 10&nbsp;000 zéros <em>précis</em> de $\zeta$ coûte des heures — et où sont (et ne sont pas) les vrais leviers d'optimisation.</p>
+
+<p>Dans le <a href="animation_theta.html" style="color:#7F77DD">cours n°1</a>, on a vu que chercher un zéro de $\zeta$ revient à chercher un changement de signe de la fonction réelle $Z(t)$ de Hardy. Mais <strong>localiser précisément</strong> ce zéro a un coût caché. Ce coût forme un mur : on peut le contourner, jamais le percer à mains nues.</p>
+
+<!-- ══════════════ 1. LE SOCLE ══════════════ -->
+<h2>1. Le socle : un zéro = un changement de signe de $Z$</h2>
+<p>La factorisation sur la droite critique donne une fonction <strong>réelle</strong> :</p>
+<div class="katex-block">$$Z(t) = e^{i\theta(t)}\,\zeta\!\left(\tfrac{1}{2}+it\right) \in \mathbb{R}, \qquad \zeta\!\left(\tfrac{1}{2}+it\right)=0 \iff Z(t)=0$$</div>
+<p>On l'évalue par la <strong>formule de Riemann-Siegel</strong> — une somme de $N$ termes plus un reste :</p>
+<div class="katex-block">$$Z(t) = 2\sum_{n=1}^{N}\frac{\cos\!\big(\theta(t)-t\ln n\big)}{\sqrt{n}} + R(t), \qquad N=\left\lfloor\sqrt{\tfrac{t}{2\pi}}\right\rfloor$$</div>
+<p>avec la phase asymptotique</p>
+<div class="katex-block">$$\theta(t) = \frac{t}{2}\ln\frac{t}{2\pi} - \frac{t}{2} - \frac{\pi}{8} + \frac{1}{48t} + \frac{7}{5760\,t^3} + O(t^{-5}).$$</div>
+
+<!-- ══════════════ 2. ANIMATION : L'EMBOÎTEMENT DU COÛT ══════════════ -->
+<h2>2. Le coût, étage par étage (animation)</h2>
+<p>Trouver <strong>un</strong> zéro précis n'est pas une opération : c'est une <strong>chaîne</strong> d'environ 27 évaluations de $Z$ qui doivent se faire <em>l'une après l'autre</em> (chaque itération a besoin du résultat de la précédente). Et chaque évaluation est elle-même une somme de $N$ termes multi-précision. Regarde la chaîne tourner :</p>
+
+<div class="panel">
+  <div class="panel-title">Affiner <b>1 zéro</b> = ~27 appels <code>siegelz</code> en chaîne — strictement séquentiels</div>
+  <div id="chaine"></div>
+  <div class="row-info">
+    <span>appel n° <b id="step-n">0</b> / 27</span>
+    <span>temps cumulé sur ce zéro : <b id="cum-ms">0,0 s</b></span>
+  </div>
+  <div style="margin-top:1rem;border-top:1px solid #21262d;padding-top:0.8rem;">
+    <div class="panel-title"><i>Zoom</i> sur <b>1 appel</b> = somme de <b id="ntermes">37</b> termes multi-précision</div>
+    <div id="termes"></div>
+  </div>
+</div>
+
+<p>Mathématiquement, trois niveaux s'emboîtent :</p>
+
+<p><strong>Niveau 1 — un appel.</strong> Une opération multi-précision à $\text{dps}$ chiffres coûte $O(\text{dps}^2)$, et il y a $N$ termes :</p>
+<div class="katex-block">$$t_{\text{appel}} \;\propto\; N \cdot \text{dps}^2, \qquad N=\left\lfloor\sqrt{\tfrac{t}{2\pi}}\right\rfloor \;\Longrightarrow\; t_{\text{appel}} \text{ grandit avec la hauteur } t.$$</div>
+
+<p><strong>Niveau 2 — un zéro.</strong> L'affinage est une <strong>récurrence</strong> (méthode de la sécante / Illinois) : chaque pas dépend du précédent, donc <em>aucun</em> parallélisme interne possible.</p>
+<div class="katex-block">$$c = b - Z_b\cdot\frac{b-a}{Z_b - Z_a} \quad\text{(sécante)}, \qquad c_{\text{zéro}} \approx n_{\text{itér}}\times t_{\text{appel}}, \quad n_{\text{itér}}\approx 27.$$</div>
+
+<p><strong>Niveau 3 — le run complet.</strong> Les $n$ zéros, eux, sont indépendants → parallélisables sur $W$ cœurs :</p>
+<div class="katex-block">$$\boxed{\,T_{\text{total}} \;\approx\; \dfrac{n\cdot n_{\text{itér}}\cdot t_{\text{appel}}}{W}\,}$$</div>
+
+<!-- ══════════════ 3. EXEMPLE CHIFFRÉ ══════════════ -->
+<h2>3. Exemple chiffré à $t\approx 9000$</h2>
+<table>
+  <tr><th>Grandeur</th><th>Calcul</th><th>Valeur</th></tr>
+  <tr><td>Nombre de termes $N$</td><td>$\lfloor\sqrt{9000/2\pi}\rfloor=\lfloor 37{,}85\rfloor$</td><td><b>37</b></td></tr>
+  <tr><td>Coût d'un appel <code>siegelz</code></td><td>mesuré, dps≈30</td><td><b>≈ 296 ms</b></td></tr>
+  <tr><td>Itérations par zéro</td><td>findroot Illinois</td><td><b>≈ 27</b></td></tr>
+  <tr><td>Coût d'un zéro $c_{\text{zéro}}$</td><td>$27\times 296\,$ms</td><td><b>≈ 8,0 s</b></td></tr>
+  <tr><td>Débit (4 workers)</td><td>$4/8{,}0$</td><td><b>≈ 0,5 z/s</b></td></tr>
+  <tr><td>Run $T=10000$</td><td>$\approx 10\,142/0{,}5$ (queue plus lente)</td><td><b>≈ 5–7 h</b></td></tr>
+</table>
+
+<!-- ══════════════ 4. CALCULATEUR ══════════════ -->
+<h2>4. Calculateur — bouge les leviers</h2>
+<p>Pousse les curseurs : tu verras que le temps ne passe sous 30 min ni avec le GPU, ni avec la RAM (absents de la formule), mais seulement avec <strong>~56 cœurs</strong> (irréaliste) ou un <strong>changement de librairie</strong> (Arb à la place de mpmath).</p>
+
+<div class="panel">
+  <div class="ctrl"><span>hauteur t</span><input type="range" id="s-t" min="100" max="10000" value="9000" step="100"><span class="val" id="o-t">9000</span></div>
+  <div class="ctrl"><span>précision (dps)</span><input type="range" id="s-dps" min="15" max="50" value="30" step="1"><span class="val" id="o-dps">30</span></div>
+  <div class="ctrl"><span>cœurs / workers (W)</span><input type="range" id="s-w" min="1" max="56" value="4" step="1"><span class="val" id="o-w">4</span></div>
+  <div class="ctrl"><span>librairie d'affinage</span>
+    <button class="libbtn on" id="lib-mp" onclick="setLib(1)">mpmath (1×)</button>
+    <button class="libbtn" id="lib-arb" onclick="setLib(15)">Arb (~15×)</button>
+  </div>
+  <div class="cards">
+    <div class="card"><div class="lab">ms / appel siegelz</div><div class="num" id="v-call">296</div></div>
+    <div class="card"><div class="lab">s / zéro (1 worker)</div><div class="num" id="v-zero">8,0</div></div>
+    <div class="card"><div class="lab">débit (z/s)</div><div class="num" id="v-rate">0,5</div></div>
+  </div>
+  <div id="verdict"><b id="v-total">temps total ≈ 5–7 h</b><span id="v-msg" style="display:block;font-size:0.82rem;margin-top:2px;"></span></div>
+</div>
+
+<!-- ══════════════ 5. LA PRÉCISION : POURQUOI LE C SEUL NE SUFFIT PAS ══════════════ -->
+<h2>5. Pourquoi le C pur ne peut pas atteindre $10^{-10}$</h2>
+<p>Le module C affine sur la série <strong>tronquée</strong> $Z_{\text{mpfr}}=Z+R$, pas sur le vrai $Z$. Il converge donc vers $\gamma_{\text{mpfr}}$ tel que $Z(\gamma_{\text{mpfr}})=-R(\gamma_{\text{mpfr}})$. Un développement de Taylor au premier ordre autour du vrai zéro $\gamma$ donne l'erreur de position :</p>
+<div class="katex-block">$$\big|\gamma_{\text{mpfr}}-\gamma\big| \;\approx\; \frac{|R(\gamma)|}{|Z'(\gamma)|}.$$</div>
+<p>À $t\approx 350$ : $N=7$, $|R|\sim 10^{-3}$, croisement plat → écart mesuré <strong>0,016</strong> — très loin de $10^{-10}$. C'est <strong>structurel</strong>, pas un bug. Pour des positions précises il faut un <em>polish</em> final sur le vrai $Z$ via <code>siegelz</code> — et c'est lui le goulot du niveau 2.</p>
+<p>De plus, la précision <strong>absolue</strong> requise grandit avec la hauteur :</p>
+<div class="katex-block">$$\#\text{chiffres} \;\gtrsim\; \log_{10}(\gamma) + 10 \;\approx\; 14 \quad\text{à}\quad \gamma\approx 9999,$$</div>
+<p>ce qui fixe un plancher de précision (~dps 25) : on ne peut pas baisser <code>dps</code> librement.</p>
+
+<!-- ══════════════ 6. LES LEVIERS ══════════════ -->
+<h2>6. Où agir — et où ça ne sert à rien</h2>
+<p>Pour passer de ~7 h à &lt; 30 min il faut un gain <strong>×14</strong>. Voici où chaque levier agit dans $T_{\text{total}}=\dfrac{n\cdot n_{\text{itér}}\cdot t_{\text{appel}}}{W}$ :</p>
+<table>
+  <tr><th>Levier</th><th>Effet</th><th>Sur cette machine ?</th></tr>
+  <tr><td>Cœurs $W$ (dénominateur)</td><td>linéaire ; ×14 ⇒ ~56 cœurs</td><td class="ko">✗ 4 cœurs</td></tr>
+  <tr><td>GPU GTX 960M</td><td>n'agit que sur la détection (10–20 %) ; mpmath non portable GPU</td><td class="ko">✗ nul sur le polish</td></tr>
+  <tr><td>RAM / swap</td><td>absents de la formule ; toucher le swap ≈ ×1000 plus lent</td><td class="ko">✗ aucun effet</td></tr>
+  <tr><td>Itérations $n_{\text{itér}}$ (Newton)</td><td>réfuté par la mesure (le goulot n'est pas le nombre d'appels)</td><td class="ko">✗</td></tr>
+  <tr><td>Précision <code>dps</code> ($\propto\text{dps}^2$)</td><td>plancher ~25 ; gain modeste ×1,4</td><td class="mid">~ marginal</td></tr>
+  <tr><td><b>Librairie : Arb au lieu de mpmath</b></td><td>$t_{\text{appel}}$ ÷10–20 à précision égale</td><td class="ok">✓ ~20–25 min sur 4 cœurs</td></tr>
+</table>
+<p><strong>Le vrai levier est logiciel, pas matériel.</strong> Et si l'objectif n'est que de <strong>vérifier HR jusqu'à T</strong> (comptage de Turing $n_{\text{calc}}=N(T)$, sans positions précises), on saute tout le niveau 2 : Illinois_C pur ≈ 41 z/s ≈ <strong>4 min</strong>. Le mur n'existe que pour le <strong>catalogue de positions $<10^{-10}$</strong> — lequel existe déjà (CSV v2, 10&nbsp;142 zéros, 50 dps).</p>
+
+<div class="katex-block">$$N(T)=\frac{\theta(T)}{\pi}+1+S(T) \;=\; \frac{T}{2\pi}\ln\frac{T}{2\pi e}+1+S(T), \qquad |S(T)|\lesssim 3 \text{ pour } T<10^6.$$</div>
+
+<div class="legend">
+  <span><span class="dot" style="background:#1D9E75"></span>appel terminé</span>
+  <span><span class="dot" style="background:#EF9F27"></span>appel en cours</span>
+  <span><span class="dot" style="background:#0d1117;border:1px solid #30363d"></span>en attente</span>
+</div>
+
+<!-- ══════════════ PIED DE PAGE (date + auteur + nb lignes) ══════════════ -->
+<div class="meta" style="margin-top:2rem;margin-bottom:0;">
+  <span>Riemann_Lab · branche Riemann_Lab_IA · <code>docs/animation_mur_latence.html</code></span>
+  <span>Mise à jour : 2 juin 2026 · Auteur : <b style="color:#c9d1d9">hprzeta</b> · <span id="nblignes">361</span> lignes</span>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   Rendu des formules KaTeX (délimiteurs $...$ et $$...$$)
+   ════════════════════════════════════════════════════════════ */
+document.addEventListener("DOMContentLoaded", function () {   // attendre le DOM
+  renderMathInElement(document.body, {                        // auto-render KaTeX
+    delimiters: [                                             // délimiteurs acceptés
+      { left: "$$", right: "$$", display: true },             // formules centrées
+      { left: "$",  right: "$",  display: false }             // formules inline
+    ],
+    throwOnError: false                                       // ne pas planter sur erreur
+  });
+});
+
+/* ════════════════════════════════════════════════════════════
+   Modèle de coût (mêmes constantes que le calculateur du chat)
+   ════════════════════════════════════════════════════════════ */
+var TWO_PI  = 6.283185307;                 // 2π
+var K       = 296 / (37 * 900);            // calibrage : 296 ms = K · N(9000) · 30²
+var ITERS   = 27;                          // itérations d'affinage par zéro
+var N_ZEROS = 10142;                       // nombre de zéros pour T=10000
+var TARGET  = 1800;                        // objectif : 30 min en secondes
+var lib     = 1;                           // facteur librairie (mpmath=1, Arb=15)
+
+/* Détection d'une préférence « mouvement réduit » (accessibilité) */
+var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ── Construction de la chaîne des 27 blocs ── */
+var chaine = document.getElementById('chaine');            // conteneur de la chaîne
+var blocs  = [];                                           // tableau des 27 blocs
+for (var i = 0; i < 27; i++) {                             // créer 27 blocs
+  var b = document.createElement('div');                   // un bloc = un appel siegelz
+  b.className = 'blk';                                     // style défini en CSS
+  chaine.appendChild(b);                                   // l'ajouter à la chaîne
+  blocs.push(b);                                           // mémoriser la référence
+}
+
+/* ── Dessin des « termes » d'un appel (zoom niveau 1) ── */
+var termes = document.getElementById('termes');            // conteneur des termes
+function drawTermes(n) {                                    // n = nombre de termes N
+  termes.innerHTML = '';                                   // vider
+  var m = Math.max(4, Math.min(n, 60));                    // borner l'affichage [4, 60]
+  for (var i = 0; i < m; i++) {                            // un petit rectangle par terme
+    var t = document.createElement('div');                 // créer le rectangle
+    termes.appendChild(t);                                 // l'ajouter
+  }
+}
+
+/* ── N(t) = ⌊√(t/2π)⌋, jamais < 1 ── */
+function Nof(t) { return Math.max(1, Math.floor(Math.sqrt(t / TWO_PI))); }
+
+/* ── Mise en forme lisible d'une durée en secondes ── */
+function fmtTime(s) {
+  if (s < 90)   return (Math.round(s * 10) / 10).toString().replace('.', ',') + ' s';   // secondes
+  if (s < 5400) return Math.round(s / 60) + ' min';                                       // minutes
+  var h  = Math.floor(s / 3600);                                                          // heures
+  var mn = Math.round((s - h * 3600) / 60);                                               // reste en min
+  return h + ' h' + (mn < 10 ? ' 0' : ' ') + mn;                                          // « 5 h 38 »
+}
+
+/* ════════════════════════════════════════════════════════════
+   Recalcul du calculateur à chaque mouvement de curseur
+   ════════════════════════════════════════════════════════════ */
+function recompute() {
+  var t   = +document.getElementById('s-t').value;          // hauteur t
+  var dps = +document.getElementById('s-dps').value;        // précision
+  var W   = +document.getElementById('s-w').value;          // nombre de workers
+  document.getElementById('o-t').textContent   = t;         // afficher t
+  document.getElementById('o-dps').textContent = dps;       // afficher dps
+  document.getElementById('o-w').textContent   = W;         // afficher W
+
+  var N = Nof(t);                                           // nombre de termes
+  document.getElementById('ntermes').textContent = N;       // afficher N
+  drawTermes(N);                                            // redessiner les termes
+
+  var callMs = K * N * dps * dps / lib;                    // niveau 1 : ms par appel
+  var zeroS  = ITERS * callMs / 1000;                      // niveau 2 : s par zéro (1 worker)
+  var rate   = W / zeroS;                                  // débit en zéros/s
+  var total  = N_ZEROS / rate;                             // niveau 3 : temps total
+
+  document.getElementById('v-call').textContent = Math.round(callMs);                                   // ms/appel
+  document.getElementById('v-zero').textContent = (Math.round(zeroS * 10) / 10).toString().replace('.', ','); // s/zéro
+  document.getElementById('v-rate').textContent = (rate >= 10 ? Math.round(rate)                        // débit
+                          : (Math.round(rate * 10) / 10).toString().replace('.', ','));
+
+  var box = document.getElementById('verdict');             // bloc verdict
+  var msg = document.getElementById('v-msg');               // message secondaire
+  document.getElementById('v-total').textContent = 'temps total ≈ ' + fmtTime(total);  // afficher le total
+  if (total <= TARGET) {                                    // sous les 30 min ?
+    box.style.borderColor = '#1D9E75';                      // bordure verte
+    document.getElementById('v-total').style.color = '#1D9E75';
+    msg.style.color = '#1D9E75';
+    msg.textContent = 'sous la barre des 30 min ✓';
+  } else {                                                  // au-dessus
+    box.style.borderColor = '#E24B4A';                      // bordure rouge
+    document.getElementById('v-total').style.color = '#E24B4A';
+    msg.style.color = '#E24B4A';
+    var fac = Math.round(total / TARGET * 10) / 10;         // facteur manquant
+    msg.textContent = 'au-dessus des 30 min — il faudrait encore ×' + fac.toString().replace('.', ',') + ' de gain';
+  }
+  return { callMs: callMs };                                // renvoyer ms/appel pour l'animation
+}
+
+/* ── Bascule de librairie (mpmath ↔ Arb) ── */
+function setLib(f) {
+  lib = f;                                                                          // mémoriser le facteur
+  document.getElementById('lib-mp').classList.toggle('on',  f === 1);               // surligner mpmath
+  document.getElementById('lib-arb').classList.toggle('on', f === 15);              // surligner Arb
+  recompute();                                                                      // recalculer
+}
+
+/* ── Brancher les curseurs ── */
+['s-t', 's-dps', 's-w'].forEach(function (id) {                                     // pour chaque slider
+  document.getElementById(id).addEventListener('input', recompute);                // recalculer en direct
+});
+
+/* ════════════════════════════════════════════════════════════
+   Animation de la chaîne : un bloc s'allume après l'autre
+   ════════════════════════════════════════════════════════════ */
+var idx = 0, cumMs = 0;                                     // index courant + temps cumulé
+function anim() {
+  var st = recompute();                                     // garder les chiffres synchronisés
+  if (idx < 27) {                                           // tant qu'il reste des appels
+    for (var j = 0; j < 27; j++) {                          // colorer chaque bloc
+      blocs[j].style.background = (j < idx)  ? '#1D9E75'    // vert = terminé
+                               : (j === idx) ? '#EF9F27'    // ambre = en cours
+                               : '#0d1117';                 // sombre = en attente
+      blocs[j].style.borderColor = (j <= idx) ? 'transparent' : '#30363d';
+    }
+    cumMs += st.callMs;                                     // accumuler le temps
+    document.getElementById('step-n').textContent = idx + 1;                               // n° d'appel
+    document.getElementById('cum-ms').textContent = (Math.round(cumMs / 100) / 10)         // temps cumulé en s
+                          .toString().replace('.', ',') + ' s';
+    idx++;                                                  // appel suivant
+  } else {                                                  // chaîne terminée
+    idx = 0; cumMs = 0;                                     // réinitialiser
+    setTimeout(function () {                                // petite pause puis reset visuel
+      for (var j = 0; j < 27; j++) { blocs[j].style.background = '#0d1117'; blocs[j].style.borderColor = '#30363d'; }
+    }, 600);
+  }
+}
+
+/* ── Démarrage ── */
+setLib(1);                                                  // état initial : mpmath
+if (reduce) {                                               // si mouvement réduit : état figé
+  for (var j = 0; j < 27; j++) { blocs[j].style.background = '#1D9E75'; blocs[j].style.borderColor = 'transparent'; }
+  document.getElementById('step-n').textContent = '27';
+  var st0 = recompute();
+  document.getElementById('cum-ms').textContent = (Math.round(27 * st0.callMs / 100) / 10).toString().replace('.', ',') + ' s';
+} else {                                                    // sinon : animer
+  setInterval(anim, 140);                                  // un appel toutes les 140 ms
+}
+</script>
+</body>
+</html>
