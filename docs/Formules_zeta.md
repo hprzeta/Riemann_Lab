@@ -4,6 +4,7 @@
 >   + leçons Vérif A/B v4.1 : erreur de position (perturbation 1ᵉʳ ordre) et distinction comptage/position
 >   + leçon v4.2 : finition Newton (ordre 2, dérivée analytique, critère dps vs LMFDB absolu)
 >   + leçon v4.2 mesurée : Newton réfuté (Z' coûteux), goulot = mpmath.siegelz, pas l'algorithme
+>   + §17 modèle de coût complet (mur de latence) : $t_{\text{appel}} \propto N\,\text{dps}^2$, $T_{\text{total}} \approx n\,n_{\text{itér}}\,t_{\text{appel}}/W$, leviers et régimes
 
 ---
 
@@ -824,4 +825,105 @@ def affiner_zero(t_gauche: float, t_droite: float, tol: float = 1e-20) -> float:
 
 ---
 
-*Auteur : hprzeta · Dernière mise à jour : 2 juin 2026 — ~826 lignes*
+## 17. Le mur de latence du calcul — modèle de coût complet (synthèse)
+
+> Synthèse des formules établies le 2 juin 2026. Version animée : `docs/animation_mur_latence.html`.
+> Rassemble en un seul endroit le coût de localisation d'un zéro précis et les leviers d'optimisation.
+> Renvois : troncature §5.5, erreur de position §5.6, goulot mesuré §6.5.5, espacement §7.1, comptage §8 et §11.1.
+
+### 17.1 Trois niveaux de coût emboîtés
+
+Localiser **un** zéro précis n'est pas une opération atomique : c'est une chaîne d'évaluations de $Z$, chacune étant elle-même une somme de $N$ termes. Trois niveaux s'emboîtent.
+
+**Niveau 1 — coût d'une évaluation $Z(t)$.** La somme de Riemann-Siegel (§5.1) a $N$ termes, et chaque opération multi-précision à $\text{dps}$ chiffres coûte $O(\text{dps}^2)$ :
+
+$$
+t_{\text{appel}} \;\propto\; N \cdot \text{dps}^2,
+\qquad N = \left\lfloor\sqrt{\tfrac{t}{2\pi}}\right\rfloor.
+$$
+
+Conséquence directe : $t_{\text{appel}}$ **croît avec la hauteur $t$** (via $N \sim \sqrt{t}$).
+
+**Niveau 2 — coût d'un zéro.** L'affinage (sécante / Illinois, §6.1) est une **récurrence** : l'itération $k+1$ a besoin du résultat de l'itération $k$.
+
+$$
+c = b - Z_b \cdot \frac{b - a}{Z_b - Z_a}
+\qquad\Longrightarrow\qquad
+c_{\text{zéro}} \approx n_{\text{itér}} \cdot t_{\text{appel}},
+\quad n_{\text{itér}} \approx 27.
+$$
+
+Il n'existe **aucun** parallélisme *à l'intérieur* d'un zéro.
+
+**Niveau 3 — coût du run complet.** Les $n$ zéros sont **indépendants** → parallélisables sur $W$ workers :
+
+$$
+\boxed{\;T_{\text{total}} \;\approx\; \frac{n \cdot n_{\text{itér}} \cdot t_{\text{appel}}}{W}\;}
+$$
+
+### 17.2 Exemple chiffré à $t \approx 9000$
+
+| Grandeur | Calcul | Valeur |
+|---|---|---|
+| Termes $N$ | $\lfloor\sqrt{9000/2\pi}\rfloor = \lfloor 37{,}85\rfloor$ | 37 |
+| Coût d'un appel `siegelz` | mesuré (dps ≈ 30) | ≈ 296 ms |
+| Itérations / zéro | findroot Illinois | ≈ 27 |
+| Coût d'un zéro $c_{\text{zéro}}$ | $27 \times 296$ ms | ≈ 8,0 s |
+| Débit (4 workers) | $4 / 8{,}0$ | ≈ 0,5 z/s |
+| Run $T = 10000$ | $\approx 10\,142 / 0{,}5$ (queue plus lente) | ≈ 5–7 h |
+
+> La latence d'un appel `siegelz` à grand $t$ est le **goulot mesuré** (§6.5.5) : à $t \approx 9000$, ~296 ms pour $N \approx 37$ termes. Réduire $n_{\text{itér}}$ (Newton) ne sert à rien — c'est $t_{\text{appel}}$ qu'il faut attaquer.
+
+### 17.3 Facteur d'accélération requis et leviers
+
+Pour passer de ~7 h à la cible de 30 min :
+
+$$
+\text{facteur} = \frac{T_{\text{actuel}}}{T_{\text{cible}}} \approx \frac{7\ \text{h}}{0{,}5\ \text{h}} = 14.
+$$
+
+Position de chaque levier dans $T_{\text{total}} = \dfrac{n \, n_{\text{itér}} \, t_{\text{appel}}}{W}$ :
+
+| Levier | Agit sur | Gain | Réaliste (i7, 4 cœurs) |
+|---|---|---|---|
+| Cœurs $W$ | dénominateur (linéaire) | ×14 ⇒ $W \approx 56$ | ❌ |
+| GPU GTX 960M | détection seule (10–20 %) | nul sur l'affinage | ❌ |
+| RAM / swap | hors formule (compute-bound) | nul (swap ≈ ×1000 plus lent) | ❌ |
+| $n_{\text{itér}}$ (Newton) | numérateur | réfuté §6.5.5 | ❌ |
+| $\text{dps}$ | $t_{\text{appel}} \propto \text{dps}^2$ | ≈ ×1,4 (plancher §17.4) | ⚠️ marginal |
+| **Librairie Arb** | $t_{\text{appel}}$ ÷ 10–20 | ≈ ×10–20 | ✅ → ~20–25 min |
+
+Nombre de cœurs requis pour la cible (librairie mpmath inchangée) :
+
+$$
+W_{\text{cible}} = W_0 \cdot \frac{T_0}{T_{\text{cible}}} \approx 4 \times 14 = 56\ \text{cœurs}.
+$$
+
+**Le vrai levier est logiciel, pas matériel** : seule la bascule `mpmath.siegelz` → Arb (`acb_dirichlet_hardy_z`, arithmétique de boules en C) réduit $t_{\text{appel}}$ d'un ordre de grandeur à précision égale.
+
+### 17.4 Plancher de précision (rappel §6.5.3)
+
+La précision **absolue** requise à hauteur $\gamma$ impose un nombre minimal de chiffres significatifs :
+
+$$
+\#\text{chiffres} \;\gtrsim\; \log_{10}(\gamma) + 10
+\quad\Longrightarrow\quad
+\approx 14\ \text{à}\ \gamma \approx 9999.
+$$
+
+On ne peut donc pas réduire $\text{dps}$ sous ~25 sans perdre le critère LMFDB ($< 10^{-10}$). Tout abaissement se valide sur un échantillon $t \approx 9900$, **jamais** sur T=1000.
+
+### 17.5 Deux régimes, deux livrables
+
+Le mur de latence ne pèse que dans **un** des deux objectifs (rappel §11.1) :
+
+| Objectif | Méthode | Temps T=10000 |
+|---|---|---|
+| Vérifier HR jusqu'à $T$ (comptage $n_{\text{calc}} = N(T)$) | Illinois_C pur, sans polish `siegelz` | ≈ 41 z/s ⇒ ~4 min |
+| Catalogue de positions $< 10^{-10}$ | polish `siegelz`, ou **réutiliser le CSV v2 existant** | ~7 h, ou 0 min |
+
+> Pour la simple **vérification de HR**, le niveau 2 lent disparaît : le coût d'un appel `siegelz` (§17.1) ne pèse que dans le régime « catalogue de positions ». Ce catalogue existe déjà (CSV v2, 10 142 zéros, 50 dps).
+
+---
+
+*Auteur : hprzeta · Dernière mise à jour : 2 juin 2026 — ~929 lignes*
