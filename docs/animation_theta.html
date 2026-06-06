@@ -3,246 +3,414 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>θ(t) — Animation: Annulation partie imaginaire</title>
+<title>θ(t) de Riemann-Siegel — Cours animé n°1</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    background: #0d1117;
-    color: #e6edf3;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 1.5rem 1rem 2rem;
-    min-height: 100vh;
+    background: #0d1117; color: #e6edf3; line-height: 1.7;
+    padding: 1.8rem 1rem 3rem; max-width: 760px; margin: 0 auto;
   }
-  h2 {
-    font-size: 1rem;
-    font-weight: 500;
-    color: #8b949e;
-    margin-bottom: 0.4rem;
-    letter-spacing: 0.02em;
+  h1 { font-size: 1.35rem; font-weight: 600; margin-bottom: 0.3rem; }
+  h2 { font-size: 1.05rem; font-weight: 500; color: #c9d1d9; margin: 2rem 0 0.7rem; }
+  .sub { color: #8b949e; font-size: 0.9rem; margin-bottom: 1.4rem; }
+  p  { color: #c9d1d9; font-size: 0.95rem; margin-bottom: 0.8rem; }
+  strong { color: #e6edf3; font-weight: 600; }
+  a  { color: #7F77DD; }
+  code {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    background: #161b22; border: 1px solid #30363d; border-radius: 4px;
+    padding: 1px 5px; font-size: 0.85em; color: #9fe1cb;
   }
-  .formula {
-    font-size: 1.1rem;
-    color: #e6edf3;
-    margin-bottom: 1.2rem;
-    background: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 8px;
-    padding: 0.5rem 1.2rem;
+  .meta {
+    font-size: 0.8rem; color: #8b949e; border: 1px solid #30363d;
+    background: #161b22; border-radius: 8px; padding: 0.5rem 0.9rem;
+    margin-bottom: 1.6rem; display: flex; justify-content: space-between;
+    flex-wrap: wrap; gap: 6px;
   }
-  svg { width: 100%; max-width: 700px; display: block; }
-  .controls {
-    width: 100%;
-    max-width: 600px;
-    margin-top: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+  .panel {
+    background: #161b22; border: 1px solid #30363d; border-radius: 10px;
+    padding: 1.1rem 1.2rem; margin: 1.2rem 0;
   }
+  .panel-title { font-size: 0.85rem; color: #8b949e; margin-bottom: 0.8rem; }
   .ctrl {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-size: 13px;
-    color: #8b949e;
+    display: flex; align-items: center; gap: 12px;
+    font-size: 0.83rem; color: #8b949e; margin-bottom: 0.7rem;
   }
-  .ctrl span:first-child { min-width: 80px; }
-  input[type=range] {
-    flex: 1;
-    accent-color: #7F77DD;
-    height: 4px;
-    cursor: pointer;
+  .ctrl span:first-child { min-width: 200px; }
+  input[type=range] { flex: 1; accent-color: #7F77DD; height: 4px; cursor: pointer; }
+  .val { font-weight: 600; color: #e6edf3; min-width: 64px; text-align: right; }
+  .katex-block {
+    background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+    padding: 0.4rem 1rem; margin: 0.8rem 0; overflow-x: auto;
   }
-  .val {
-    font-weight: 600;
-    color: #e6edf3;
-    min-width: 44px;
-    text-align: right;
-  }
+  table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; font-size: 0.86rem; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid #21262d; color: #c9d1d9; }
+  th { color: #8b949e; font-weight: 500; }
+  .ok { color: #1D9E75; } .ko { color: #E24B4A; } .mid { color: #EF9F27; }
   .legend {
-    display: flex;
-    gap: 20px;
-    margin-top: 1rem;
-    font-size: 12px;
-    color: #8b949e;
-    flex-wrap: wrap;
-    justify-content: center;
+    display: flex; gap: 18px; flex-wrap: wrap;
+    font-size: 0.78rem; color: #8b949e; margin-top: 0.7rem;
   }
   .legend span { display: flex; align-items: center; gap: 6px; }
-  .dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
-  .caption {
-    margin-top: 1.4rem;
-    max-width: 600px;
-    font-size: 12.5px;
-    color: #8b949e;
-    line-height: 1.7;
-    border-left: 3px solid #30363d;
-    padding-left: 12px;
+  .dot { width: 10px; height: 10px; border-radius: 2px; }
+  canvas { display: block; width: 100%; border-radius: 6px; }
+  svg { display: block; width: 100%; }
+  .readout {
+    background: #0d1117; border: 1px solid #30363d; border-radius: 6px;
+    padding: 0.5rem 0.9rem; margin: 0.7rem 0;
+    display: flex; gap: 1.5rem; flex-wrap: wrap;
+    font-size: 0.82rem; font-family: ui-monospace, monospace;
   }
-  .caption strong { color: #c9d1d9; }
+  .readout-label { color: #8b949e; }
+  .readout-val   { color: #e6edf3; font-weight: 600; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+  @media (max-width: 500px) { .two-col { grid-template-columns: 1fr; } }
+  ul { color: #c9d1d9; font-size: 0.95rem; margin-left: 1.5rem; margin-bottom: 0.8rem; }
 </style>
 </head>
 <body>
 
-<h2>Visualisation — comment e<sup>iθ</sup> annule la partie imaginaire</h2>
-<div class="formula">Z(t) = e<sup>iθ(t)</sup> · ζ(½ + it) ∈ ℝ</div>
+<div class="meta">
+  <span>Riemann_Lab — Cours animé n°1 · θ(t) de Riemann-Siegel</span>
+  <span>Auteur : <b style="color:#c9d1d9">hprzeta</b> · Mise à jour : 6 juin 2026</span>
+</div>
 
-<svg viewBox="0 0 680 330">
-  <defs>
-    <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-    </marker>
-  </defs>
+<h1>La fonction $\theta(t)$ de Riemann-Siegel</h1>
+<p class="sub">Définition exacte, formule de Stirling, rôle dans la détection des zéros de $\zeta$ — animé et interactif.</p>
 
-  <!-- ── FOND PANNEAUX ── -->
-  <rect x="10" y="10" width="310" height="310" rx="10" fill="#161b22" stroke="#30363d" stroke-width="0.8"/>
-  <rect x="360" y="10" width="310" height="310" rx="10" fill="#161b22" stroke="#30363d" stroke-width="0.8"/>
+<p>Ce cours est le premier de la série. Dans le <a href="animation_zeros_non_triviaux.html">cours n°3</a> on verra que les <em>zéros</em> de $\zeta$ sur la droite critique sont exactement les changements de signe de $Z(t)$. Pour construire $Z(t)$, on a besoin de $\theta(t)$ : c'est l'objet de ce cours.</p>
 
-  <!-- ── TITRES ── -->
-  <text x="165" y="32" text-anchor="middle" style="font-size:13px;fill:#8b949e">ζ(½ + it)  dans ℂ</text>
-  <text x="515" y="32" text-anchor="middle" style="font-size:13px;fill:#8b949e">Z(t) = e^iθ · ζ  —  réel !</text>
+<!-- ══════════════ 1. DÉFINITION ══════════════ -->
+<h2>1. Définition exacte de $\theta(t)$</h2>
+<p>La <strong>fonction de phase de Riemann-Siegel</strong> $\theta(t)$ est définie par :</p>
+<div class="katex-block">$$\theta(t) = \text{Im}\!\left[\ln\Gamma\!\left(\tfrac{1}{4}+\tfrac{it}{2}\right)\right] - \frac{t}{2}\ln\pi$$</div>
+<p>C'est une fonction <strong>réelle et continue</strong> pour $t>0$. Elle mesure l'angle accumulé par la fonction zêta sur la droite critique. La branche du logarithme est choisie de manière à ce que $\theta(0) = 0$.</p>
+<p>La définition via $\Gamma$ n'est pas commode pour le calcul numérique. On utilise l'approximation asymptotique ci-dessous.</p>
 
-  <!-- ── AXES GAUCHE ── -->
-  <line x1="40" y1="170" x2="300" y2="170" stroke="#30363d" stroke-width="0.8" marker-end="url(#arr)"/>
-  <line x1="165" y1="295" x2="165" y2="45" stroke="#30363d" stroke-width="0.8" marker-end="url(#arr)"/>
-  <text x="296" y="163" style="font-size:11px;fill:#484f58">Réel</text>
-  <text x="170" y="52"  style="font-size:11px;fill:#484f58">Im</text>
-  <circle cx="165" cy="170" r="95" fill="none" stroke="#21262d" stroke-width="0.8" stroke-dasharray="4 4"/>
+<!-- ══════════════ 2. STIRLING ══════════════ -->
+<h2>2. Formule asymptotique — Stirling</h2>
+<p>Pour $t \geq 20$, l'approximation est précise à mieux que $10^{-9}$ :</p>
+<div class="katex-block">$$\theta(t) \approx \frac{t}{2}\ln\frac{t}{2\pi} - \frac{t}{2} - \frac{\pi}{8} + \frac{1}{48t} + \frac{7}{5760\,t^3} - \frac{31}{80640\,t^5}$$</div>
+<p>Le terme dominant est $\tfrac{t}{2}\ln\tfrac{t}{2\pi} - \tfrac{t}{2}$. Les corrections $-\tfrac{\pi}{8}$ et $\tfrac{1}{48t}$ viennent du développement de Stirling de $\ln\Gamma$. <strong>Croissance asymptotique :</strong> $\theta(t) \sim \tfrac{t}{2}\ln t$ quand $t\to+\infty$ : $\theta$ croît sans borne, mais lentement.</p>
 
-  <!-- ── AXES DROITE ── -->
-  <line x1="390" y1="170" x2="650" y2="170" stroke="#30363d" stroke-width="0.8" marker-end="url(#arr)"/>
-  <line x1="515" y1="295" x2="515" y2="45"  stroke="#30363d" stroke-width="0.8" marker-end="url(#arr)"/>
-  <text x="646" y="163" style="font-size:11px;fill:#484f58">Réel</text>
-  <text x="520" y="52"  style="font-size:11px;fill:#484f58">Im</text>
-  <circle cx="515" cy="170" r="95" fill="none" stroke="#21262d" stroke-width="0.8" stroke-dasharray="4 4"/>
+<!-- ══════════════ 3. ÉQUATION FONCTIONNELLE ══════════════ -->
+<h2>3. Équation fonctionnelle sur la droite critique</h2>
+<p>La <strong>factorisation de Hardy-Siegel</strong> relie $\zeta$ sur la droite critique à une fonction réelle :</p>
+<div class="katex-block">$$\zeta\!\left(\tfrac{1}{2}+it\right) = e^{-i\theta(t)}\,Z(t) \qquad \text{avec } Z(t) \in \mathbb{R}$$</div>
+<p>$\zeta(\tfrac{1}{2}+it)$ est un nombre <em>complexe</em> : il pointe dans une direction quelconque dans $\mathbb{C}$. En multipliant par $e^{-i\theta(t)}$, on le <strong>contra-rotationne</strong> exactement de la bonne phase, et le résultat $Z(t)$ atterrit sur l'axe réel. $\theta(t)$ est <em>la phase intrinsèque</em> de $\zeta$ sur la droite critique.</p>
+<p>$Z(t)$ est calculé efficacement via la formule de Riemann-Siegel :</p>
+<div class="katex-block">$$Z(t) = 2\sum_{n=1}^{N}\frac{\cos\!\left(\theta(t)-t\ln n\right)}{\sqrt{n}}+R(t), \qquad N=\left\lfloor\sqrt{\tfrac{t}{2\pi}}\right\rfloor$$</div>
 
-  <!-- ── SURBRILLANCE axe réel droite ── -->
-  <line x1="390" y1="170" x2="650" y2="170" stroke="#1D9E75" stroke-width="4" opacity="0.15"/>
-
-  <!-- ── ÉLÉMENTS DYNAMIQUES ── -->
-
-  <!-- Gauche : arc θ -->
-  <path id="arc-theta" fill="none" stroke="#E24B4A" stroke-width="1.5" opacity="0.8"/>
-  <text id="lbl-theta" style="font-size:12px;fill:#E24B4A"/>
-
-  <!-- Gauche : projections -->
-  <line id="proj-im" x1="165" y1="170" x2="165" y2="170" stroke="#E24B4A" stroke-width="1" stroke-dasharray="4 3" opacity="0.7"/>
-  <line id="proj-re" x1="165" y1="170" x2="165" y2="170" stroke="#7F77DD" stroke-width="1" stroke-dasharray="4 3" opacity="0.4"/>
-
-  <!-- Gauche : vecteur ζ -->
-  <line id="vec-zeta" x1="165" y1="170" x2="165" y2="170" stroke="#7F77DD" stroke-width="2.5" marker-end="url(#arr)" stroke-linecap="round"/>
-  <circle id="dot-zeta" cx="165" cy="170" r="4.5" fill="#7F77DD"/>
-  <text id="lbl-im"   style="font-size:11px;fill:#E24B4A;font-weight:600"/>
-  <text id="lbl-zeta" style="font-size:12px;fill:#7F77DD;font-weight:500"/>
-
-  <!-- Droite : vecteur Z -->
-  <line id="vec-Z" x1="515" y1="170" x2="515" y2="170" stroke="#1D9E75" stroke-width="2.5" marker-end="url(#arr)" stroke-linecap="round"/>
-  <circle id="dot-Z" cx="515" cy="170" r="4.5" fill="#1D9E75"/>
-  <text id="lbl-Z"   style="font-size:11px;fill:#1D9E75;font-weight:600"/>
-  <text id="lbl-im0" style="font-size:11px;fill:#1D9E75" opacity="0"/>
-</svg>
-
-<div class="controls">
-  <div class="ctrl">
-    <span>Angle θ(t)</span>
-    <input type="range" id="sl-theta" min="-165" max="165" value="50" step="1">
-    <span class="val" id="v-theta">50°</span>
+<!-- ══════════════ ANIMATION ══════════════ -->
+<div class="panel">
+  <div class="panel-title">Animation — déplacer $t$ pour voir $\theta(t)$, $Z(t)$ et la rotation dans $\mathbb{C}$ simultanément</div>
+  <div class="two-col">
+    <canvas id="cv-theta" height="160"></canvas>
+    <canvas id="cv-zt"    height="160"></canvas>
+  </div>
+  <svg id="sv-cplx" viewBox="0 0 680 250" style="margin-bottom:6px;"></svg>
+  <div class="readout">
+    <span><span class="readout-label">t = </span><span class="readout-val" id="ro-t">14.13</span></span>
+    <span><span class="readout-label">θ(t) = </span><span class="readout-val" id="ro-theta">−1.73</span></span>
+    <span><span class="readout-label">Z(t) ≈ </span><span class="readout-val" id="ro-zt">0.00</span></span>
+    <span><span class="readout-label">|ζ(½+it)| ≈ </span><span class="readout-val" id="ro-mod">0.00</span></span>
   </div>
   <div class="ctrl">
-    <span>Module |ζ|</span>
-    <input type="range" id="sl-r" min="25" max="90" value="68" step="1">
-    <span class="val" id="v-r">68</span>
+    <span>Valeur de $t$</span>
+    <input type="range" id="sl-t" min="10" max="54" value="14.13" step="0.05">
+    <span class="val" id="val-t">14.1</span>
+  </div>
+  <div class="legend">
+    <span><span class="dot" style="background:#E24B4A"></span>θ(t)</span>
+    <span><span class="dot" style="background:#7F77DD"></span>Z(t) &gt; 0</span>
+    <span><span class="dot" style="background:#E24B4A"></span>Z(t) &lt; 0</span>
+    <span><span class="dot" style="background:#1D9E75"></span>γₙ (LMFDB)</span>
+    <span><span class="dot" style="background:#EF9F27"></span>position courante</span>
   </div>
 </div>
 
-<div class="legend">
-  <span><span class="dot" style="background:#7F77DD"></span>ζ(½+it) — complexe</span>
-  <span><span class="dot" style="background:#1D9E75"></span>Z(t) = e^{iθ}·ζ — réel</span>
-  <span><span class="dot" style="background:#E24B4A"></span>partie Im annulée</span>
-</div>
+<!-- ══════════════ 4. DÉTECTION DES ZÉROS ══════════════ -->
+<h2>4. Rôle dans la détection des zéros</h2>
+<p>La factorisation donne immédiatement :</p>
+<div class="katex-block">$$\zeta\!\left(\tfrac{1}{2}+it\right) = 0 \;\Longleftrightarrow\; Z(t) = 0$$</div>
+<p>puisque $e^{-i\theta(t)}\neq 0$ pour tout $t\in\mathbb{R}$. <strong>Chercher les zéros de $\zeta$ sur la droite critique revient à chercher les racines réelles de $Z(t)$.</strong> On passe d'un problème complexe à une recherche de racines réelles classique. En pratique :</p>
+<ul>
+  <li>On balaye $t$ par pas adaptatif et on calcule $Z(t)$ (formule RS ou <code>mpmath.siegelz</code>)</li>
+  <li>Deux valeurs consécutives de signe opposé → changement de signe → zéro entre elles</li>
+  <li>Affinage avec la méthode Illinois (précision 35 décimales)</li>
+</ul>
 
-<div class="caption">
-  <strong>À gauche :</strong> ζ(½+it) est un vecteur oblique — il a une partie imaginaire non nulle (pointillés rouges).<br>
-  <strong>À droite :</strong> après multiplication par e<sup>iθ(t)</sup>, le vecteur pivote exactement du bon angle et atterrit sur l'axe réel. Im = 0.<br>
-  <strong>En une phrase :</strong> θ(t) est la phase naturelle de ζ ; e<sup>iθ</sup> contra-rotationne ce vecteur et produit une fonction réelle Z(t).
+<!-- ══════════════ 5. BACKLUND ══════════════ -->
+<h2>5. Connexion avec $N(T)$ — formule de Backlund</h2>
+<p>Notons $N(T)$ le nombre de zéros $\rho = \sigma + i\gamma$ avec $0 < \gamma \leq T$. La <strong>formule de Backlund</strong> (1918) :</p>
+<div class="katex-block">$$N(T) = \frac{\theta(T)}{\pi} + 1 + S(T), \qquad S(T) = O(\log T)$$</div>
+<p>En pratique $|S(T)| \leq 3$ pour tous les $T$ calculés. La formule de von Mangoldt donne l'approximation principale :</p>
+<div class="katex-block">$$N(T) \approx \frac{T}{2\pi}\ln\frac{T}{2\pi e}$$</div>
+<p><strong>Test de Turing :</strong> si le nombre de changements de signe de $Z$ dans $[0,T]$ coïncide avec $\lfloor\tfrac{\theta(T)}{\pi}\rfloor+1$, il ne manque aucun zéro dans cet intervalle. Le projet Riemann_Lab applique ce test sur les 10 142 zéros calculés jusqu'à $T=10\,000$ — résultat : aucun manquant.</p>
+
+<!-- ══════════════ TABLE ══════════════ -->
+<h2>6. Valeurs aux 10 premiers zéros (LMFDB)</h2>
+<table>
+  <tr><th>$n$</th><th>$\gamma_n$</th><th>$\theta(\gamma_n)$</th><th>$\lfloor\theta(\gamma_n)/\pi\rfloor + 1$</th><th>$N(\gamma_n)$</th></tr>
+  <tr><td>1</td><td>14,134 725…</td><td class="mid">−1,729 rad</td><td>0</td><td class="ok">1</td></tr>
+  <tr><td>2</td><td>21,022 039…</td><td class="mid"> 1,787 rad</td><td>1</td><td class="ok">2</td></tr>
+  <tr><td>3</td><td>25,010 857…</td><td class="mid"> 4,091 rad</td><td>2</td><td class="ok">3</td></tr>
+  <tr><td>4</td><td>30,424 876…</td><td class="mid"> 7,254 rad</td><td>3</td><td class="ok">4</td></tr>
+  <tr><td>5</td><td>32,935 061…</td><td class="mid"> 8,863 rad</td><td>3</td><td class="ok">5</td></tr>
+  <tr><td>6</td><td>37,586 178…</td><td class="mid">12,038 rad</td><td>4</td><td class="ok">6</td></tr>
+  <tr><td>7</td><td>40,918 719…</td><td class="mid">14,248 rad</td><td>5</td><td class="ok">7</td></tr>
+  <tr><td>8</td><td>43,327 073…</td><td class="mid">15,826 rad</td><td>6</td><td class="ok">8</td></tr>
+  <tr><td>9</td><td>48,005 150…</td><td class="mid">18,920 rad</td><td>7</td><td class="ok">9</td></tr>
+  <tr><td>10</td><td>49,773 832…</td><td class="mid">20,095 rad</td><td>7</td><td class="ok">10</td></tr>
+</table>
+<p style="font-size:0.82rem;color:#8b949e">Valeurs $\theta$ calculées par la formule asymptotique. Source zéros : <a href="https://lmfdb.org/zeros/zeta/" target="_blank">lmfdb.org/zeros/zeta/</a></p>
+
+<div class="meta" style="margin-top:2rem;margin-bottom:0;">
+  <span>Riemann_Lab · branche Riemann_Lab_IA · <code>docs/animation_theta.html</code></span>
+  <span>Mise à jour : 6 juin 2026 · Auteur : <b style="color:#c9d1d9">hprzeta</b> · <span id="nblignes"></span> lignes</span>
 </div>
 
 <script>
-const PI = Math.PI;
-const deg = d => d * PI / 180;
+document.addEventListener("DOMContentLoaded", function () {
+  renderMathInElement(document.body, {
+    delimiters: [
+      { left: "$$", right: "$$", display: true },
+      { left: "$",  right: "$",  display: false }
+    ],
+    throwOnError: false
+  });
+  drawAll();
+  document.getElementById('nblignes').textContent =
+    document.documentElement.outerHTML.split('\n').length;
+});
 
-function arcPath(cx, cy, r, a1, a2) {
-  const x1 = cx + r * Math.cos(a1), y1 = cy + r * Math.sin(a1);
-  const x2 = cx + r * Math.cos(a2), y2 = cy + r * Math.sin(a2);
-  const lg = Math.abs(a2 - a1) > PI ? 1 : 0;
-  return `M ${x1.toFixed(2)} ${y1.toFixed(2)} A ${r} ${r} 0 ${lg} 1 ${x2.toFixed(2)} ${y2.toFixed(2)}`;
+var ZEROS = [
+  14.134725141, 21.022039639, 25.010857580, 30.424876126, 32.935061588,
+  37.586178159, 40.918719012, 43.327073281, 48.005150881, 49.773832478
+];
+var GLABELS = ['γ₁','γ₂','γ₃','γ₄','γ₅','γ₆','γ₇','γ₈','γ₉','γ₁₀'];
+var TWO_PI = 2 * Math.PI;
+
+function theta(t) {
+  var t3 = t * t * t, t5 = t3 * t * t;
+  return (t/2)*Math.log(t/TWO_PI) - t/2 - Math.PI/8 + 1/(48*t) + 7/(5760*t3) - 31/(80640*t5);
 }
 
-function set(id, attr, val) {
-  document.getElementById(id).setAttribute(attr, val);
+function Zt(t) {
+  var th = theta(t), re = 0, im = 0;
+  for (var n = 1; n <= 30; n++) {
+    var amp = 1/Math.sqrt(n), phase = -t*Math.log(n);
+    re += amp*Math.cos(phase); im += amp*Math.sin(phase);
+  }
+  return Math.cos(th)*re - Math.sin(th)*im;
 }
 
-function update() {
-  const theta = parseFloat(document.getElementById('sl-theta').value);
-  const R     = parseFloat(document.getElementById('sl-r').value);
-  document.getElementById('v-theta').textContent = theta + '°';
-  document.getElementById('v-r').textContent = R;
-
-  // Gauche : ζ pointe à l'angle -theta (sa phase)
-  const phi = deg(-theta);
-  const cx = 165, cy = 170;
-  const ex = cx + R * Math.cos(phi);
-  const ey = cy + R * Math.sin(phi);
-  const imVal = -(ey - cy);
-
-  set('vec-zeta',  'x2', ex.toFixed(2)); set('vec-zeta',  'y2', ey.toFixed(2));
-  set('dot-zeta',  'cx', ex.toFixed(2)); set('dot-zeta',  'cy', ey.toFixed(2));
-  set('proj-im', 'x1', ex.toFixed(2)); set('proj-im', 'y1', ey.toFixed(2));
-  set('proj-im', 'x2', ex.toFixed(2)); set('proj-im', 'y2', cy);
-  set('proj-re', 'x1', ex.toFixed(2)); set('proj-re', 'y1', ey.toFixed(2));
-  set('proj-re', 'x2', cx);            set('proj-re', 'y2', ey.toFixed(2));
-
-  // arc θ
-  document.getElementById('arc-theta').setAttribute('d', arcPath(cx, cy, 28, 0, phi));
-  const tl = document.getElementById('lbl-theta');
-  tl.setAttribute('x', (cx + 42 * Math.cos(phi / 2) - 6).toFixed(2));
-  tl.setAttribute('y', (cy + 42 * Math.sin(phi / 2) + 4).toFixed(2));
-  tl.textContent = 'θ';
-
-  // label Im
-  const il = document.getElementById('lbl-im');
-  il.setAttribute('x', (ex + (ex > cx ? 5 : -48)).toFixed(2));
-  il.setAttribute('y', ((ey + cy) / 2 + 4).toFixed(2));
-  il.textContent = `Im=${imVal.toFixed(0)}`;
-
-  // label ζ
-  const zl = document.getElementById('lbl-zeta');
-  zl.setAttribute('x', (ex + 8).toFixed(2));
-  zl.setAttribute('y', (ey - 8).toFixed(2));
-  zl.textContent = 'ζ';
-
-  // Droite : Z sur l'axe réel
-  const cx2 = 515, cy2 = 170;
-  set('vec-Z', 'x2', (cx2 + R).toFixed(2)); set('vec-Z', 'y2', cy2);
-  set('dot-Z', 'cx', (cx2 + R).toFixed(2)); set('dot-Z', 'cy', cy2);
-
-  const lz = document.getElementById('lbl-Z');
-  lz.setAttribute('x', (cx2 + R + 8).toFixed(2));
-  lz.setAttribute('y', (cy2 - 10).toFixed(2));
-  lz.textContent = `Z(t)=${R.toFixed(0)}`;
-
-  const t0 = document.getElementById('lbl-im0');
-  t0.setAttribute('x', (cx2 + R / 2).toFixed(2));
-  t0.setAttribute('y', (cy2 - 12).toFixed(2));
-  t0.textContent = 'Im = 0 ✓';
-  t0.setAttribute('opacity', '1');
+function zetaRI(t) {
+  var re = 0, im = 0;
+  for (var n = 1; n <= 30; n++) {
+    var amp = 1/Math.sqrt(n), phase = -t*Math.log(n);
+    re += amp*Math.cos(phase); im += amp*Math.sin(phase);
+  }
+  return { re: re, im: im, mod: Math.sqrt(re*re + im*im) };
 }
 
-document.getElementById('sl-theta').addEventListener('input', update);
-document.getElementById('sl-r').addEventListener('input', update);
-update();
+/* ── Canvas θ(t) ── */
+function drawTheta(tc) {
+  var cv = document.getElementById('cv-theta');
+  var W = cv.offsetWidth || 340, dpr = window.devicePixelRatio||1;
+  cv.width = W*dpr; cv.height = 160*dpr;
+  var ctx = cv.getContext('2d'); ctx.scale(dpr,dpr);
+  var w=W, h=160, px=28, py=18;
+  ctx.fillStyle='#0d1117'; ctx.fillRect(0,0,w,h);
+
+  var T0=10, T1=55, steps=200;
+  var pts=[], yMin=Infinity, yMax=-Infinity;
+  for (var i=0;i<=steps;i++) {
+    var t=T0+i*(T1-T0)/steps, v=theta(t);
+    pts.push({t:t,v:v});
+    if(v<yMin) yMin=v; if(v>yMax) yMax=v;
+  }
+  var span = yMax-yMin || 1;
+  function xOf(t){return px+(t-T0)/(T1-T0)*(w-2*px);}
+  function yOf(v){return py+(1-(v-yMin)/span)*(h-2*py);}
+
+  if (yMin<=0&&yMax>=0) {
+    ctx.strokeStyle='#30363d'; ctx.lineWidth=0.8;
+    ctx.beginPath(); ctx.moveTo(px,yOf(0)); ctx.lineTo(w-px,yOf(0)); ctx.stroke();
+  }
+  ctx.beginPath();
+  pts.forEach(function(p,i){ i===0?ctx.moveTo(xOf(p.t),yOf(p.v)):ctx.lineTo(xOf(p.t),yOf(p.v)); });
+  ctx.strokeStyle='#E24B4A'; ctx.lineWidth=1.8; ctx.stroke();
+
+  ZEROS.forEach(function(g,i){
+    if(g<T0||g>T1) return;
+    var x=xOf(g);
+    ctx.strokeStyle='#1D9E75'; ctx.lineWidth=0.8; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(x,py); ctx.lineTo(x,h-py); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#1D9E75'; ctx.font='8px monospace'; ctx.textAlign='center';
+    ctx.fillText(GLABELS[i],x,h-4);
+  });
+
+  var xc=xOf(tc), yc=yOf(theta(tc));
+  ctx.beginPath(); ctx.arc(xc,yc,5,0,TWO_PI); ctx.fillStyle='#EF9F27'; ctx.fill();
+  ctx.strokeStyle='#e6edf3'; ctx.lineWidth=1.2; ctx.stroke();
+  ctx.strokeStyle='#484f58'; ctx.lineWidth=0.8; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(xc,py); ctx.lineTo(xc,h-py); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle='#8b949e'; ctx.font='9px sans-serif'; ctx.textAlign='left';
+  ctx.fillText('θ(t)', px, py-4);
+  ctx.fillStyle='#484f58';
+  ctx.fillText('t='+T0,px,h-4);
+  ctx.textAlign='right'; ctx.fillText('t='+T1,w-px,h-4);
+}
+
+/* ── Canvas Z(t) ── */
+function drawZt(tc) {
+  var cv = document.getElementById('cv-zt');
+  var W = cv.offsetWidth||340, dpr=window.devicePixelRatio||1;
+  cv.width=W*dpr; cv.height=160*dpr;
+  var ctx=cv.getContext('2d'); ctx.scale(dpr,dpr);
+  var w=W, h=160, px=28, py=18;
+  ctx.fillStyle='#0d1117'; ctx.fillRect(0,0,w,h);
+
+  var T0=10, T1=55, steps=Math.round((T1-T0)*60);
+  var pts=[], zA=0;
+  for (var i=0;i<=steps;i++) {
+    var t=T0+i*(T1-T0)/steps, z=Zt(t);
+    pts.push({t:t,z:z}); if(Math.abs(z)>zA) zA=Math.abs(z);
+  }
+  zA=Math.max(zA,1);
+  function xOf(t){return px+(t-T0)/(T1-T0)*(w-2*px);}
+  function yOf(z){return h/2-(z/zA)*(h/2-py);}
+
+  ctx.strokeStyle='#30363d'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(px,h/2); ctx.lineTo(w-px,h/2); ctx.stroke();
+
+  for (var i=0;i<pts.length-1;i++) {
+    var p0=pts[i],p1=pts[i+1];
+    ctx.beginPath(); ctx.moveTo(xOf(p0.t),yOf(p0.z)); ctx.lineTo(xOf(p1.t),yOf(p1.z));
+    ctx.strokeStyle=(p0.z>=0)?'#7F77DD':'#E24B4A'; ctx.lineWidth=1.8; ctx.stroke();
+  }
+
+  ZEROS.forEach(function(g,i){
+    if(g<T0||g>T1) return;
+    var x=xOf(g);
+    ctx.strokeStyle='#1D9E75'; ctx.lineWidth=0.8; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(x,py); ctx.lineTo(x,h-py); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='#1D9E75'; ctx.beginPath(); ctx.arc(x,h/2,4,0,TWO_PI); ctx.fill();
+    ctx.fillStyle='#1D9E75'; ctx.font='8px monospace'; ctx.textAlign='center';
+    ctx.fillText(GLABELS[i],x,py-3);
+  });
+
+  var xc=xOf(tc), yc=yOf(Zt(tc));
+  ctx.beginPath(); ctx.arc(xc,yc,5,0,TWO_PI); ctx.fillStyle='#EF9F27'; ctx.fill();
+  ctx.strokeStyle='#e6edf3'; ctx.lineWidth=1.2; ctx.stroke();
+  ctx.strokeStyle='#484f58'; ctx.lineWidth=0.8; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(xc,py); ctx.lineTo(xc,h-py); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.fillStyle='#8b949e'; ctx.font='9px sans-serif'; ctx.textAlign='left';
+  ctx.fillText('Z(t)',px,py-4);
+  ctx.fillStyle='#484f58';
+  ctx.fillText('t=10',px,h-4);
+  ctx.textAlign='right'; ctx.fillText('t=55',w-px,h-4);
+}
+
+/* ── SVG plan complexe ── */
+function svgEl(tag,attrs) {
+  var el=document.createElementNS('http://www.w3.org/2000/svg',tag);
+  for(var k in attrs) el.setAttribute(k,attrs[k]);
+  return el;
+}
+
+function drawComplex(tc) {
+  var svg=document.getElementById('sv-cplx');
+  svg.innerHTML='';
+  var W=680, H=250, cx1=170, cy1=125, cx2=510, cy2=125, R=90;
+
+  var defs=svgEl('defs',{}); var mrk=svgEl('marker',{id:'arr2',viewBox:'0 0 10 10',refX:'8',refY:'5',markerWidth:'6',markerHeight:'6',orient:'auto-start-reverse'});
+  mrk.appendChild(svgEl('path',{d:'M2 1L8 5L2 9',fill:'none',stroke:'context-stroke','stroke-width':'1.5','stroke-linecap':'round'}));
+  defs.appendChild(mrk); svg.appendChild(defs);
+
+  [[20,W/2-25],[W/2+5,W/2-25]].forEach(function(p){
+    svg.appendChild(svgEl('rect',{x:p[0],y:10,width:p[1],height:H-20,rx:8,fill:'#161b22',stroke:'#30363d','stroke-width':'0.8'}));
+  });
+
+  [[cx1,cy1],[cx2,cy2]].forEach(function(c){
+    var cx=c[0],cy=c[1];
+    svg.appendChild(svgEl('line',{x1:cx-R-30,y1:cy,x2:cx+R+25,y2:cy,stroke:'#30363d','stroke-width':'0.8','marker-end':'url(#arr2)'}));
+    svg.appendChild(svgEl('line',{x1:cx,y1:cy+R+15,x2:cx,y2:cy-R-20,stroke:'#30363d','stroke-width':'0.8','marker-end':'url(#arr2)'}));
+    svg.appendChild(svgEl('circle',{cx:cx,cy:cy,r:R,fill:'none',stroke:'#21262d','stroke-width':'0.8','stroke-dasharray':'4 4'}));
+  });
+
+  svg.appendChild(svgEl('line',{x1:cx2-R-30,y1:cy2,x2:cx2+R+25,y2:cy2,stroke:'#1D9E75','stroke-width':'4',opacity:'0.15'}));
+
+  var tl1=svgEl('text',{x:cx1,y:28,'text-anchor':'middle',style:'font-size:12px;fill:#8b949e'});
+  tl1.textContent='ζ(½+it) dans ℂ'; svg.appendChild(tl1);
+  var tl2=svgEl('text',{x:cx2,y:28,'text-anchor':'middle',style:'font-size:12px;fill:#8b949e'});
+  tl2.textContent='Z(t) = e^{iθ}·ζ — réel'; svg.appendChild(tl2);
+
+  var zr=zetaRI(tc);
+  var mod=zr.mod, sc=mod>0?Math.min(R*0.82/mod,R):R;
+  var ex=cx1+zr.re*sc, ey=cy1-zr.im*sc;
+  var th=theta(tc), zt=Math.cos(th)*zr.re-Math.sin(th)*zr.im;
+
+  /* arc θ */
+  var zetaAng=Math.atan2(-zr.im,zr.re);
+  var arcR=30, a1=0, a2=zetaAng;
+  var lg=Math.abs(a2-a1)>Math.PI?1:0;
+  var ax1=cx1+arcR*Math.cos(a1),ay1=cy1+arcR*Math.sin(a1);
+  var ax2=cx1+arcR*Math.cos(a2),ay2=cy1+arcR*Math.sin(a2);
+  svg.appendChild(svgEl('path',{d:'M'+ax1+' '+ay1+' A '+arcR+' '+arcR+' 0 '+lg+' 1 '+ax2+' '+ay2,fill:'none',stroke:'#E24B4A','stroke-width':'1.4',opacity:'0.9'}));
+  var tth=svgEl('text',{x:cx1+42*Math.cos(zetaAng/2),y:cy1+42*Math.sin(zetaAng/2)+4,style:'font-size:13px;fill:#E24B4A'});
+  tth.textContent='θ'; svg.appendChild(tth);
+
+  /* projection Im */
+  svg.appendChild(svgEl('line',{x1:ex.toFixed(1),y1:ey.toFixed(1),x2:ex.toFixed(1),y2:cy1,stroke:'#E24B4A','stroke-width':'1','stroke-dasharray':'4 3',opacity:'0.7'}));
+
+  /* vecteur ζ */
+  svg.appendChild(svgEl('line',{x1:cx1,y1:cy1,x2:ex.toFixed(1),y2:ey.toFixed(1),stroke:'#7F77DD','stroke-width':'2.5','marker-end':'url(#arr2)','stroke-linecap':'round'}));
+  svg.appendChild(svgEl('circle',{cx:ex.toFixed(1),cy:ey.toFixed(1),r:4.5,fill:'#7F77DD'}));
+
+  var iml=svgEl('text',{x:ex+(ex>cx1?6:-50),y:(ey+cy1)/2+4,style:'font-size:10px;fill:#E24B4A;font-weight:600'});
+  iml.textContent='Im ≠ 0'; svg.appendChild(iml);
+
+  /* vecteur Z sur axe réel */
+  var zx=cx2+zt*sc;
+  var col=zt>=0?'#1D9E75':'#E24B4A';
+  svg.appendChild(svgEl('line',{x1:cx2,y1:cy2,x2:zx.toFixed(1),y2:cy2,stroke:col,'stroke-width':'2.5','marker-end':'url(#arr2)','stroke-linecap':'round'}));
+  svg.appendChild(svgEl('circle',{cx:zx.toFixed(1),cy:cy2,r:4.5,fill:col}));
+
+  var im0=svgEl('text',{x:((cx2+zx)/2).toFixed(1),y:cy2-12,style:'font-size:11px;fill:#1D9E75;font-weight:600'});
+  im0.textContent='Im = 0 ✓'; svg.appendChild(im0);
+
+  /* labels axes */
+  [[cx1+R+18,cy1+4,'Réel'],[cx1+5,cy1-R-15,'Im'],[cx2+R+18,cy2+4,'Réel'],[cx2+5,cy2-R-15,'Im']].forEach(function(l){
+    var t=svgEl('text',{x:l[0],y:l[1],style:'font-size:10px;fill:#484f58'});
+    t.textContent=l[2]; svg.appendChild(t);
+  });
+
+  document.getElementById('ro-t').textContent=tc.toFixed(3);
+  document.getElementById('ro-theta').textContent=th.toFixed(4);
+  document.getElementById('ro-zt').textContent=zt.toFixed(4);
+  document.getElementById('ro-mod').textContent=mod.toFixed(4);
+}
+
+function drawAll() {
+  var t=parseFloat(document.getElementById('sl-t').value);
+  document.getElementById('val-t').textContent=t.toFixed(2);
+  drawTheta(t); drawZt(t); drawComplex(t);
+}
+
+document.getElementById('sl-t').addEventListener('input', drawAll);
+window.addEventListener('resize', drawAll);
 </script>
 </body>
 </html>
