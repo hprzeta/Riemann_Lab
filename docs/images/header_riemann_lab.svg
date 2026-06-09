@@ -60,6 +60,6 @@
 <rect x="0" y="345" width="680" height="75" fill="#0a0a0a"/>
 <text x="370" y="383" text-anchor="middle" font-family="Georgia, serif" font-size="44" font-weight="normal" fill="#ffffff" letter-spacing="6">RIEMANN</text>
 <text x="370" y="415" text-anchor="middle" font-family="Georgia, serif" font-size="26" font-weight="normal" fill="#c9a84c" letter-spacing="12">LAB</text>
-<text x="370" y="350" text-anchor="middle" font-family="Georgia, serif" font-size="13" fill="#aaaaaa" letter-spacing="1">hprzeta · Hypothèse de Riemann</text>
+<text x="370" y="320" text-anchor="middle" font-family="Georgia, serif" font-size="13" fill="#aaaaaa" letter-spacing="1">hprzeta · Hypothèse de Riemann</text>
 
 </svg>
