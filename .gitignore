@@ -48,5 +48,9 @@ Handoff.md
 # Staging PDF → MD (locaux, non versionnés)
 pdf/optimisation/Voie_b_5/.pdf_to_md/
 pdf/optimisation/Voie_b_5/md_to_claude/
-calculs/
+# Résultats de run (CSV, PNG, logs) — dossiers de sortie des scripts
+# NB : la règle nue `calculs/` ignorait aussi src/calculs/ (module Python) →
+#      corrigé : règles précises ci-dessous pour ne pas bloquer les nouveaux modules.
+/calculs/
+src/calculs/optimisation/calculs/
 test-results/
