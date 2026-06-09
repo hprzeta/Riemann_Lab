@@ -518,6 +518,9 @@
 </head>
 <body>
 
+<img src="images/header_riemann_lab.svg" alt="Riemann Lab Header"
+     style="width:100%; display:block; margin-bottom:0;">
+
 <div class="wrap">
 
   <header>
@@ -977,6 +980,103 @@
   </div>
 </section>
 <!-- FIN SECTION PERFORMANCES -->
+
+<section style="padding: 3rem 2rem; max-width: 900px; margin: 0 auto;">
+  <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+    <div style="width: 2rem; height: 1px; background: #c9a84c;"></div>
+    <span style="font-size: 0.75rem; letter-spacing: 0.15em; color: #c9a84c;">PROGRESSION V1 → V5</span>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 1.5rem;">
+    <div style="background:#1a1a1a; border-radius:8px; padding:0.75rem; text-align:center;">
+      <div style="font-size:12px; color:#666; margin-bottom:4px;">v1</div>
+      <div style="font-size:22px; font-weight:500; color:#fff;">21h</div>
+      <div style="font-size:11px; color:#444;">baseline</div>
+    </div>
+    <div style="background:#1a1a1a; border-radius:8px; padding:0.75rem; text-align:center;">
+      <div style="font-size:12px; color:#666; margin-bottom:4px;">v2</div>
+      <div style="font-size:22px; font-weight:500; color:#fff;">2h</div>
+      <div style="font-size:11px; color:#444;">×10</div>
+    </div>
+    <div style="background:#1a1a1a; border-radius:8px; padding:0.75rem; text-align:center;">
+      <div style="font-size:12px; color:#666; margin-bottom:4px;">v3</div>
+      <div style="font-size:22px; font-weight:500; color:#fff;">45min</div>
+      <div style="font-size:11px; color:#444;">×28</div>
+    </div>
+    <div style="background:#1a1a1a; border-radius:8px; padding:0.75rem; text-align:center;">
+      <div style="font-size:12px; color:#666; margin-bottom:4px;">v4.1</div>
+      <div style="font-size:22px; font-weight:500; color:#fff;">9min</div>
+      <div style="font-size:11px; color:#444;">×140</div>
+    </div>
+    <div style="background:#1a2a3a; border:2px solid #c9a84c; border-radius:8px; padding:0.75rem; text-align:center;">
+      <div style="font-size:12px; color:#c9a84c; margin-bottom:4px;">v5</div>
+      <div style="font-size:22px; font-weight:500; color:#c9a84c;">~1min</div>
+      <div style="font-size:11px; color:#c9a84c;">×1 260</div>
+    </div>
+  </div>
+  <table style="width:100%; border-collapse:collapse; font-size:13px;">
+    <thead>
+      <tr style="border-bottom: 1px solid #333;">
+        <th style="padding:10px 12px; text-align:left; color:#666; font-weight:500;">Ver.</th>
+        <th style="padding:10px 12px; text-align:left; color:#666; font-weight:500;">Temps</th>
+        <th style="padding:10px 12px; text-align:left; color:#666; font-weight:500;">Gain</th>
+        <th style="padding:10px 12px; text-align:left; color:#666; font-weight:500;">Algorithme clé</th>
+        <th style="padding:10px 12px; text-align:left; color:#666; font-weight:500;">Formule principale</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr style="border-bottom:1px solid #222;">
+        <td style="padding:10px 12px; color:#fff; font-weight:500;">v1</td>
+        <td style="padding:10px 12px; color:#fff;">21h</td>
+        <td style="padding:10px 12px; color:#555;">—</td>
+        <td style="padding:10px 12px; color:#aaa;">Newton scalar</td>
+        <td style="padding:10px 12px; color:#666; font-size:12px;">ζ(½+it) Newton séquentiel, 1 worker</td>
+      </tr>
+      <tr style="border-bottom:1px solid #222;">
+        <td style="padding:10px 12px; color:#fff; font-weight:500;">v2</td>
+        <td style="padding:10px 12px; color:#fff;">2h</td>
+        <td style="padding:10px 12px; color:#aaa;">×10</td>
+        <td style="padding:10px 12px; color:#aaa;">Illinois + Z(t)</td>
+        <td style="padding:10px 12px; color:#666; font-size:12px;">Z(t) = e<sup>iθ(t)</sup>ζ(½+it) · Illinois bracket</td>
+      </tr>
+      <tr style="border-bottom:1px solid #222;">
+        <td style="padding:10px 12px; color:#fff; font-weight:500;">v3</td>
+        <td style="padding:10px 12px; color:#fff;">45min</td>
+        <td style="padding:10px 12px; color:#aaa;">×28</td>
+        <td style="padding:10px 12px; color:#aaa;">Parallèle W=4</td>
+        <td style="padding:10px 12px; color:#666; font-size:12px;">T/W par worker · post-fork .so · N(T) corrigé</td>
+      </tr>
+      <tr style="border-bottom:1px solid #222;">
+        <td style="padding:10px 12px; color:#fff; font-weight:500;">v4.1</td>
+        <td style="padding:10px 12px; color:#fff;">9min</td>
+        <td style="padding:10px 12px; color:#aaa;">×140</td>
+        <td style="padding:10px 12px; color:#aaa;">Illinois C/libmpfr</td>
+        <td style="padding:10px 12px; color:#666; font-size:12px;">illinois_mpfr.c · (fa,fb) pré-calculés Python→C</td>
+      </tr>
+      <tr style="background:#0d1a0d;">
+        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">v5</td>
+        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">~1min</td>
+        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">×1 260</td>
+        <td style="padding:10px 12px; color:#c9a84c;">Arb hardy_z</td>
+        <td style="padding:10px 12px; color:#c9a84c; font-size:12px;">arb_fpwrap_cdouble_hardy_z · double natif, 0 malloc</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:1rem;">
+    <div style="background:#1a1a1a; border-radius:8px; padding:0.75rem;">
+      <div style="font-size:11px; color:#666; margin-bottom:2px;">Gain total v1→v5</div>
+      <div style="font-size:18px; font-weight:500; color:#fff;">×1 260</div>
+    </div>
+    <div style="background:#1a1a1a; border-radius:8px; padding:0.75rem;">
+      <div style="font-size:11px; color:#666; margin-bottom:2px;">Speedup Arb vs mpmath</div>
+      <div style="font-size:18px; font-weight:500; color:#fff;">×27</div>
+    </div>
+    <div style="background:#1a1a1a; border-radius:8px; padding:0.75rem;">
+      <div style="font-size:11px; color:#666; margin-bottom:2px;">Zéros validés</div>
+      <div style="font-size:18px; font-weight:500; color:#fff;">10 142</div>
+    </div>
+  </div>
+</section>
+<!-- FIN SECTION PROGRESSION V1→V5 -->
 
   <footer>
     <p>hprzeta · Riemann Lab · juin 2026</p>

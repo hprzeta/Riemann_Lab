@@ -465,4 +465,42 @@ Branche : Riemann_Lab_C uniquement. Ne pas toucher Riemann_Lab_IA.
 
 ---
 
-*ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_IA · hprzeta · MAJ 2026-06-03 · 300 lignes*
+## Prompt consolidé documentation — session 2026-06-09
+
+```
+Tâches de documentation — session 2026-06-09.
+NE PAS lancer de run de calcul. Documentation uniquement.
+
+TÂCHE 1 — Wiki : Formules_zeta.md
+[§18 Benchmark Arb/FLINT — 0.77 ms vs 21.13 ms, ×27, erreur < 2.2e-16]
+
+TÂCHE 2 — Wiki : Bibliotheques.md
+[§12 mise à jour VALIDÉ ×27 — tableau paramètres + pattern arb_hardy_z]
+
+TÂCHE 3 — Skill : ~/.claude/skills/phase-c-illinois/SKILL.md
+[Section "Mur de latence — RÉSOLU (2026-06-09)" ajoutée]
+
+TÂCHE 4 — Wiki : STACK.md
+[Tableau progression v1→v5 — ×1 260 total, ~1 min vs 21h]
+
+TÂCHE 5 — docs/index.html (branche Riemann_Lab_IA)
+[Section PROGRESSION V1→V5 HTML après FIN SECTION PERFORMANCES]
+
+TÂCHE 6 — scripts/ia_prompts/ia_prompts_riemann_lab_complet.md
+[Résultats session + prompt consolidé]
+```
+
+## Session 2026-06-09 — résultats clés
+
+- Speedup Arb : ×27 (0.77 ms vs 21.13 ms)
+- T_total estimé v5 : ~15 min (vs 7h mpmath)
+- Animations créées : zeros_non_triviaux, equation_fonctionnelle,
+  series_dirichlet, produit_eulerien, plan_complexe, gamma,
+  distribution_zeros + enrichissement theta
+- Header SVG `header_riemann_lab.svg` déployé README + index
+- `arb_wrapper.py` intégré `compute_zeros_v4_1.py` (commit `b563db2`)
+- Commits : wiki `f9e7061` · Riemann_Lab_C `8358cdb` · Riemann_Lab_IA (ce commit)
+
+---
+
+*ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_IA · hprzeta · MAJ 2026-06-03 · 9 juin 2026 · ~500 lignes*
