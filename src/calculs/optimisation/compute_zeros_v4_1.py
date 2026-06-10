@@ -119,6 +119,7 @@ def worker_v4_1(args: tuple) -> Tuple[list, dict, dict]:
     zeros_segment = []
     stats         = {"illinois_C": 0, "mpmath_petit_t": 0, "mpmath_fallback": 0}
     TAILLE_BLOC   = 5000   # points par appel Z_batch
+    _log_palier   = 0      # dernier palier de 1000 zéros affiché
 
     t_courant = t_start
     while t_courant < t_end:
@@ -170,6 +171,14 @@ def worker_v4_1(args: tuple) -> Tuple[list, dict, dict]:
                     stats["mpmath_petit_t"] += 1
             except Exception:
                 pass  # Turing-Backlund détectera les zéros manquants
+
+        # Log de progression toutes les 1000 zéros (palier franchi dans ce bloc)
+        n = len(zeros_segment)
+        if n // 1000 > _log_palier // 1000 and n > 0:
+            elapsed = time.time() - debut
+            print(f"  [Worker {worker_id}] zéro #{(n // 1000) * 1000}"
+                  f" à t={zeros_segment[-1]:.2f} — {elapsed:.1f}s", flush=True)
+            _log_palier = n
 
         t_courant = float(t_array[-1]) + step
 
