@@ -190,11 +190,21 @@ Inexistant dans v3 (mpmath pur plafonné à ~296 ms/appel constant). Pertinent p
 
 ---
 
+## Mur de latence — RÉSOLU (2026-06-09)
+
+- `mpmath.siegelz` : 21.13 ms/appel → ~7h pour T=10 000
+- `arb_fpwrap_cdouble_hardy_z` : 0.77 ms/appel → ~15 min — **×27**
+- Intégré dans `compute_zeros_v4_1.py` (commit `b563db2`, Riemann_Lab_C)
+- `arb_wrapper.py` : détection auto libflint bundlée, fallback `mpmath.siegelz` si absent
+- API : `arb_hardy_z(t)` — identique à `float(mp.siegelz(t))`
+
+---
+
 ## Étapes restantes
 
 1. Rédiger le rapport `v5 → v4.1` (même structure que `v2→v3`).
-2. Estimer T=100 000 : profil O(√t) → ~5 h estimées, valider avant run long.
-3. Envisager la bascule vers Arb (`acb_dirichlet_hardy_z`) pour T > 100 000 (levier §12 Bibliotheques.md).
+2. Run T=100 000 — goulot O(√t) sur `illinois_C` (~5 h estimées).
+3. Envisager `compute_zeros_v5` avec Arb comme méthode principale (non plus fallback) — voir §12 Bibliotheques.md.
 
 ---
-*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026*
+*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026 · 9 juin 2026 (Mur de latence RÉSOLU ×27)*

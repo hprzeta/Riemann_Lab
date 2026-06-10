@@ -54,6 +54,7 @@ mpmath.mp.dps = 35   # affinage fallback uniquement
 from riemann_siegel_batch import Z_batch, Z_vect_correct
 from parallel_scanner      import partitionner, dedupliquer
 from turing_validation     import valider_turing, N_attendu
+from arb_wrapper           import arb_hardy_z, info_backend, ARB_DISPONIBLE
 
 # Instrumentation 3+1 phases (detection / illinois_C / mpmath_petit_t / turing)
 from chrono_phases         import chrono, snapshot, agreger, rapport
@@ -148,23 +149,23 @@ def worker_v4_1(args: tuple) -> Tuple[list, dict, dict]:
                         zeros_segment.append(zero)
                         stats["illinois_C"] += 1
                     else:
-                        # Résultat hors intervalle → fallback bracketed Illinois mpmath
-                        # (ne pas utiliser findroot(siegelz, t_mid) sans bracket : peut diverger)
+                        # Résultat hors intervalle → fallback bracketed Illinois Arb
+                        # (ne pas utiliser findroot(arb_hardy_z, t_mid) sans bracket : peut diverger)
                         with chrono("mpmath_fallback"):
                             zero = float(_mp.findroot(
-                                _mp.siegelz, (a, b),
+                                arb_hardy_z, (a, b),
                                 solver="illinois", tol=1e-12, maxsteps=80,
                             ))
                         zeros_segment.append(zero)
                         stats["mpmath_fallback"] += 1
                 else:
-                    # t < 300 — N < 7 termes, Illinois C imprécis → mpmath bracketed
+                    # t < 300 — N < 7 termes, Illinois C imprécis → Arb bracketed
+                    # arb_hardy_z (~15 dps) suffisant ; workprec supprimé (sans effet sur Arb)
                     with chrono("mpmath_petit_t"):
-                        with _mp.workprec(50):   # ~15 dps — suffit pour N<7 termes RS
-                            zero = float(_mp.findroot(
-                                _mp.siegelz, (a, b),
-                                solver="illinois", tol=tol, maxsteps=80,
-                            ))
+                        zero = float(_mp.findroot(
+                            arb_hardy_z, (a, b),
+                            solver="illinois", tol=tol, maxsteps=80,
+                        ))
                     zeros_segment.append(zero)
                     stats["mpmath_petit_t"] += 1
             except Exception:
@@ -372,7 +373,9 @@ def ecrire_log(chemin_log, horodatage, T_MIN, T_MAX, STEP, N_WORKERS,
     L(f"      illinois_mpfr.so   : {SO_PATH}")
     L(f"      Détection          : Z_batch (RS numpy vectorisé — correct partout)")
     L(f"      Affinage t≥300     : illinois_refine C Option B — fa/fb depuis Z_vect_correct")
-    L(f"      Affinage t<300     : mpmath.findroot (N<7 termes — légitime)")
+    L(f"      Affinage t<300     : arb_hardy_z + mpmath.findroot (N<7 termes — légitime)")
+    L(f"      Fallback           : arb_hardy_z + mpmath.findroot (hors intervalle)")
+    L(f"      Backend Arb        : {info_backend()}")
     L()
 
     L("  [3] RÉSULTATS NUMÉRIQUES")
@@ -449,9 +452,10 @@ def saisir_parametres():
     print("   CALCUL DES ZÉROS NON TRIVIAUX — v4.1 (Phase C)")
     print("=" * 65)
     print()
-    print("  Méthode : Z_batch (détection) + Illinois C/mpmath (affinage)")
+    print("  Méthode : Z_batch (détection) + Illinois C/Arb/mpmath (affinage)")
     print("  Validation : Turing-Backlund")
     print(f"  .so : {SO_PATH}")
+    print(f"  Z(t) fallback : {info_backend()}")
     print()
     print("  Estimation du temps (4 workers) :")
     print("    T =   1 000  →  ~ 396 zéros  →  ~  30 sec")
