@@ -84,9 +84,10 @@ def step_pour_t(t: float) -> float:
     Espacement moyen entre zéros ≈ 2π/ln(t/2π) :
       ~0.39 à t=1k · ~0.28 à t=10k · ~0.21 à t=100k
     On prend step ≈ espacement/5 pour garantir au moins 5 points par bracket.
-    Seuils conservateurs : step/espacement_min ≥ 3 dans chaque tranche.
+    Seuil t=5 000 ajouté (2026-06-10) : espacement min mesuré ~0.038 à t~8000
+    → STEP=0.05 au lieu de 0.1 pour t ∈ [5k, 50k].
     """
-    if t < 10_000:
+    if t < 5_000:
         return 0.1
     elif t < 50_000:
         return 0.05
@@ -101,8 +102,8 @@ def _partitionner_adaptatif(
     Justification : ∫ 1/√t dt = 2√t → couper l'axe √t en N parts égales
     équilibre le nombre de zéros par worker (densité ≈ log(t)/2π ∝ 1/√t).
     Sans ça : Worker 3 ([75k,100k]) traite ~2× plus de zéros que Worker 0 ([14,25k]).
-    Overlap = 4 × step_pour_t(b) pour chaque frontière — garantit qu'aucun bracket
-    aux frontières n'est raté sans créer de doublons hors-tolérance.
+    Overlap fixe 2.0 — couvre toujours plusieurs brackets même à STEP=0.02.
+    Les doublons produits sont éliminés par dedupliquer(tolerance=0.01).
     """
     sqrt_min = math.sqrt(T_MIN)
     sqrt_max = math.sqrt(T_MAX)
@@ -115,10 +116,9 @@ def _partitionner_adaptatif(
         if i == N_WORKERS - 1:
             b = T_MAX
         else:
-            # Overlap proportionnel au STEP local (4× STEP) → doublons à distance < STEP
-            # → éliminés par dedupliquer(tolerance=0.01) sans créer de surplus
-            overlap = step_pour_t(b) * 4
-            b += overlap
+            # Overlap fixe 2.0 — couvre toujours plusieurs brackets même à STEP=0.02
+            # Les doublons produits sont éliminés par dedupliquer(tolerance=0.01)
+            b += 2.0
         segments.append((a, min(b, T_MAX)))
     return segments
 
