@@ -83,15 +83,18 @@ def step_pour_t(t: float) -> float:
 
     Espacement moyen entre zéros ≈ 2π/ln(t/2π) :
       ~0.39 à t=1k · ~0.28 à t=10k · ~0.21 à t=100k
-    On prend step ≈ espacement/5 pour garantir au moins 5 points par bracket.
-    Seuil t=5 000 ajouté (2026-06-10) : espacement min mesuré ~0.038 à t~8000
-    → STEP=0.05 au lieu de 0.1 pour t ∈ [5k, 50k].
+
+    Historique des corrections :
+      2026-06-10 v1 : 0.1 / 0.05 / 0.02 → 30 manquants sur T=100k
+        Cause : paires de zéros d'espacement < STEP englouties en un seul pas.
+        Gap min trouvé : 0.01940 à t=66678 (< STEP=0.02 → preuve directe).
+        Manquants dès t=17500 (STEP=0.05) : le problème frappe les deux seuils.
+      2026-06-10 v2 : cap uniforme 0.010 pour t ≥ 5k (÷5 et ÷2 respectivement).
+        Impact détection : +27s sur 6300s totaux (< 0.5 % du run).
     """
     if t < 5_000:
-        return 0.1
-    elif t < 50_000:
         return 0.05
-    return 0.02
+    return 0.010
 
 
 def _partitionner_adaptatif(
