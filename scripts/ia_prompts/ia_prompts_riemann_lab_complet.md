@@ -576,4 +576,95 @@ RÈGLES ABSOLUES :
 
 ---
 
-*ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_IA · hprzeta · MAJ 10 juin 2026 · ~545 lignes*
+## Session 2026-06-10 — Nettoyage + corrections + tests + documentation
+
+### Prompt 1 — Nettoyage + doc session 09 + relance run T=100 000
+```
+Tâche 0 — NETTOYAGE :
+1. Supprimer Riemann_Lab.wiki/Handoff.md
+2. Mettre à jour Handoff.md local ~/projet_zeta/handoff/
+3. Exécuter prompt consolidé doc session 09
+4. JOURNAL.md entrée 2026-06-09
+5. Corriger PDF/PNG VS Code (tomoki1207.pdf)
+6. Commit propre toutes branches + sync main
+Tâche 1 — Relancer run T=100 000 avec nohup + printf
+RÈGLE : Faire tâches 0-6 AVANT le run
+```
+
+### Prompt 2 — Analyse T=100 000 + corrections STEP + test T=10 000
+```
+Analyse run T=100 000 : 137 904 zéros, 356 manquants
+Corrections compute_zeros_v4_1.py :
+- STEP adaptatif : t<5k→0.1, t∈[5k,50k]→0.05, t>50k→0.02
+- Segmentation 1/√t (load balancing)
+- Fix GPU nvrtc sm_50 déprécié CUDA 12.x → fallback CPU
+- Log progression 1000 zéros par worker
+Test T=10 000 v2 : 0 manquant, Turing COMPLET, 2.60 min
+Commit 50837f7 Riemann_Lab_C
+```
+
+### Prompt 3 — Documentation mathématique STEP adaptatif
+```
+Wiki Formules_zeta.md — ajouter §23 :
+- Densité zéros : ρ(t) = (1/2π)·ln(t/2π)
+- Espacement : δ(t) = 2π/ln(t/2π)
+- Condition : STEP(t) < π/ln(t/2π)
+- Tableau δ(t) pour t=100,1k,5k,10k,50k,100k
+- STEP adaptatif : 0.1/0.05/0.02 (seuil t=5k)
+- Overlap fixe 2.0
+- Résultats : STEP fixe→6 manquants, adaptatif→0 manquant ✅
+
+Wiki Bibliotheques.md — tableau résultats runs avec Arb :
+T=10k v1: 6 manquants / T=10k v2: 0 manquant ✅ / T=100k v1: 356 manquants
+
+Wiki STACK.md — corriger v4.1+Arb : 2.60 min mesuré, ×484 vs v1
+
+Wiki JOURNAL.md — entrée 2026-06-10 complète
+
+Skill phase-c-illinois — ajouter section STEP adaptatif obligatoire
+```
+
+### Prompt 4 — Guides bonnes pratiques
+```
+Wiki Bonnes-Pratiques-Claude-Code.md :
+- nohup + printf "T\nO\n" obligatoire pour runs interactifs
+- Ne jamais fermer VS Code sans nohup
+- zeta_turbo_on.sh avant tout run
+- STEP adaptatif obligatoire STEP(t) < π/ln(t/2π)
+- Log progression 1000 zéros par worker
+- Segmentation 1/√t pour load balancing
+
+Wiki Guide-Git-GitHub.md :
+- Handoff : local uniquement, jamais wiki ni docs/
+- find -printf "%TY-%Tm-%Td %TH:%TM  %p\n" pour listing daté
+- Vérifier doublon Handoff avant chaque session
+
+Wiki Guide-VSCode-Bonnes-Pratiques.md :
+- tomoki1207.pdf + Reload Window
+- F11 plein écran toggle
+- tmux : Ctrl+b d détacher, Ctrl+b [ scroll, set -g mouse on
+- htop filtre : F4 + nom processus
+```
+
+### Prompt 5 — Rapport analyse v4.1 → v5
+```
+Créer wiki/analyse_problemes_v4_1_v5.md :
+1. Mur latence mpmath → Arb ×27 (0.77ms vs 21.13ms)
+2. STEP fixe → manquants → STEP adaptatif 0.1/0.05/0.02
+3. GPU nvrtc sm_50 → fallback CPU numpy
+4. Segmentation égale → 1/√t load balancing
+Tableau récap + Questions ouvertes
+Générer PDF → pdf/optimisation/analyse_problemes_v4_1_v5.pdf
+```
+
+### Résultats clés session 10 juin
+- Run T=100 000 v1 : 137 904 zéros, 356 manquants, 1h58
+- Fix STEP adaptatif + overlap=2.0 + segmentation 1/√t (commits 7467731, 50837f7)
+- Test T=10 000 v2 : 0 manquant, Turing COMPLET ✅, 2.60 min, 64.97 z/s
+- GPU nvrtc corrigé (sm_50 déprécié CUDA 12.x → message propre + fallback CPU)
+- Wiki §23 STEP adaptatif + Bibliotheques §12 + STACK ×484 + guides mis à jour
+- analyse_problemes_v4_1_v5.md créé (5 pages PDF)
+
+---
+
+*ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_IA · hprzeta · MAJ 10 juin 2026 · ~645 lignes*
