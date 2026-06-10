@@ -195,16 +195,19 @@ Inexistant dans v3 (mpmath pur plafonné à ~296 ms/appel constant). Pertinent p
 - `mpmath.siegelz` : 21.13 ms/appel → ~7h pour T=10 000
 - `arb_fpwrap_cdouble_hardy_z` : 0.77 ms/appel → ~15 min — **×27**
 - Intégré dans `compute_zeros_v4_1.py` (commit `b563db2`, Riemann_Lab_C)
-- `arb_wrapper.py` : détection auto libflint bundlée, fallback `mpmath.siegelz` si absent
-- API : `arb_hardy_z(t)` — identique à `float(mp.siegelz(t))`
+- `arb_wrapper.py` : détection auto libflint bundlée, fallback `mpmath` si absent
+- Run T=100 000 (2026-06-10) : 137 904 zéros · 99.35 min · 23.14 z/s
+- 356 manquants → cause : STEP=0.1 trop grand à grand t (espacement min = 0.028)
+- Fix 2026-06-10 : `step_pour_t()` → STEP 0.1/0.05/0.02 selon tranche t
+- Segmentation 1/√t → charge équilibrée entre workers
 
 ---
 
 ## Étapes restantes
 
-1. Rédiger le rapport `v5 → v4.1` (même structure que `v2→v3`).
-2. Run T=100 000 — goulot O(√t) sur `illinois_C` (~5 h estimées).
-3. Envisager `compute_zeros_v5` avec Arb comme méthode principale (non plus fallback) — voir §12 Bibliotheques.md.
+1. Analyser le test T=10 000 avec STEP adaptatif + segmentation 1/√t.
+2. Relancer T=100 000 avec corrections — Turing-Backlund COMPLET attendu.
+3. Rédiger le rapport `v5 → v4.1` (même structure que `v2→v3`).
 
 ---
-*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026 · 9 juin 2026 (Mur de latence RÉSOLU ×27)*
+*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026 · 9 juin 2026 (Mur de latence RÉSOLU ×27) · 10 juin 2026 (run T=100k analysé, fix STEP)*
