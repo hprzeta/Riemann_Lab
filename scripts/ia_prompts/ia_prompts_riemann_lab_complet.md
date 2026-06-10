@@ -504,3 +504,76 @@ TÂCHE 6 — scripts/ia_prompts/ia_prompts_riemann_lab_complet.md
 ---
 
 *ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_IA · hprzeta · MAJ 2026-06-03 · 9 juin 2026 · ~500 lignes*
+
+---
+
+## Prompt zeta_turbo — optimisation système avant/après run (2026-06-10)
+
+> Résultat : 3 scripts créés (zeta_turbo_on.sh, zeta_turbo_off.sh, zeta_run.sh) + alias
+> zeta-run dans ~/.bashrc + règle run obligatoire dans CLAUDE.md (4 branches).
+> Commits : `5c8cdd3` IA · `0cdc787` C · `6679b3f` IA (rule) · `de90697` Test · `6044809` main
+
+```
+Créer un script d'optimisation système pour les runs Riemann_Lab.
+
+TÂCHE 1 — Analyser et identifier les processus à arrêter
+   ps aux --sort=-%mem | head -40
+   ps aux --sort=-%cpu | head -40
+   systemctl list-units --type=service --state=running
+   
+   Identifier tout ce qui n'est PAS nécessaire au calcul :
+   - Services snap, Bluetooth, Impression (cups)
+   - Tracker/indexation fichiers
+   - Effets visuels GNOME
+   - Mises à jour automatiques
+   - Services cloud/sync
+
+TÂCHE 2 — Créer scripts/zeta_turbo_on.sh
+Avant chaque run :
+- Arrêter tous les services non essentiels
+- Désactiver animations GNOME
+- Régler swappiness à 10
+- Régler scheduler CPU en performance
+- Afficher tableau avant/après (RAM libérée, CPU libéré)
+- Logger dans logs/zeta_turbo_YYYYMMDD.log
+
+TÂCHE 3 — Créer scripts/zeta_turbo_off.sh
+Après chaque run :
+- Relancer tous les services arrêtés
+- Remettre les réglages normaux
+- Restaurer animations GNOME
+- Remettre swappiness à 60
+
+TÂCHE 4 — Tableau récapitulatif :
+| Service/Processus | RAM avant | RAM après | CPU avant | CPU après | Action |
+
+TÂCHE 5 — Intégrer dans le workflow :
+Alias zeta-run = zeta_turbo_on.sh → run → zeta_turbo_off.sh
+
+TÂCHE 6 — Mémoriser dans CLAUDE.md (4 branches) :
+Ajouter règle :
+TOUJOURS exécuter scripts/zeta_turbo_on.sh AVANT tout run.
+TOUJOURS exécuter scripts/zeta_turbo_off.sh APRÈS tout run.
+Ne jamais lancer compute_zeros_*.py sans zeta_turbo_on.sh.
+
+RÈGLES ABSOLUES :
+- Ne jamais killer les workers actifs
+- Ne pas désactiver le réseau
+- Ne pas toucher VS Code ni terminal actif
+- Tester chaque commande avant intégration
+```
+
+**Résultats obtenus :**
+- Services arrêtés (12) : bluetooth, cups, cups-browsed, avahi-daemon, colord, fwupd,
+  iio-sensor-proxy, ModemManager, canonical-livepatch, unattended-upgrades,
+  gnome-remote-desktop, ollama — RAM libérée ~143 MB
+- CPU governor : powersave → performance (4 cœurs, gain estimé +15–30 % calcul)
+- swappiness : déjà à 10 (optimal)
+- Animations GNOME : désactivées pendant le run
+- État sauvegardé dans `/tmp/zeta_turbo_state.txt` pour restauration propre
+- Alias `~/.bashrc` : `zeta-run`, `zeta-turbo-on`, `zeta-turbo-off`
+- Règle run obligatoire propagée sur les 4 branches via cherry-pick
+
+---
+
+*ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_IA · hprzeta · MAJ 10 juin 2026 · ~545 lignes*
