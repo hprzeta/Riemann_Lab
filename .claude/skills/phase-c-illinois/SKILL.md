@@ -203,11 +203,35 @@ Inexistant dans v3 (mpmath pur plafonné à ~296 ms/appel constant). Pertinent p
 
 ---
 
-## Étapes restantes
+## STEP adaptatif — règle obligatoire (2026-06-10)
 
-1. Analyser le test T=10 000 avec STEP adaptatif + segmentation 1/√t.
-2. Relancer T=100 000 avec corrections — Turing-Backlund COMPLET attendu.
-3. Rédiger le rapport `v5 → v4.1` (même structure que `v2→v3`).
+**Ne jamais utiliser STEP fixe.** Condition mathématique :
+
+$$\text{STEP}(t) < \frac{\pi}{\ln(t/2\pi)}$$
+
+Valeurs implémentées (`step_pour_t` dans `compute_zeros_v4_1.py`) :
+
+| Tranche $t$ | STEP | Justification |
+|---|---|---|
+| $t < 5\,000$ | 0.1 | $\delta_{\min} \approx 0.5$ → ratio safe |
+| $t \in [5\,000, 50\,000]$ | 0.05 | $\delta_{\min} \approx 0.038$ mesuré à T=10k |
+| $t > 50\,000$ | 0.02 | $\delta_{\min}$ encore plus petit |
+
+**Overlap :** toujours **fixe = 2.0** (jamais proportionnel au STEP).
+
+Résultats mesurés (commit `50837f7`, branche `Riemann_Lab_C`) :
+
+| Test | STEP | Overlap | Turing |
+|---|---|---|---|
+| T=10k v1 | 0.1 fixe | ×4 STEP | ❌ 6 manquants |
+| **T=10k v2** | **0.05 pour t≥5k** | **2.0 fixe** | **✅ 0 manquant** |
 
 ---
-*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026 · 9 juin 2026 (Mur de latence RÉSOLU ×27) · 10 juin 2026 (run T=100k analysé, fix STEP)*
+
+## Étapes restantes
+
+1. Analyser run T=100 000 v2 (STEP adaptatif) — Turing-Backlund COMPLET attendu.
+2. Rédiger le rapport `v5 → v4.1` (même structure que `v2→v3`).
+
+---
+*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026 · 9 juin 2026 (Mur de latence RÉSOLU ×27) · 10 juin 2026 (STEP adaptatif validé T=10k v2)*
