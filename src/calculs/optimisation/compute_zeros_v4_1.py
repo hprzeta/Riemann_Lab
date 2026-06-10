@@ -78,6 +78,51 @@ if not SO_PATH.exists():
 T_SEUIL_ILLINOIS_C = 300.0
 
 
+def step_pour_t(t: float) -> float:
+    """Pas de scan adaptatif selon la tranche t.
+
+    Espacement moyen entre zéros ≈ 2π/ln(t/2π) :
+      ~0.39 à t=1k · ~0.28 à t=10k · ~0.21 à t=100k
+    On prend step ≈ espacement/5 pour garantir au moins 5 points par bracket.
+    Seuils conservateurs : step/espacement_min ≥ 3 dans chaque tranche.
+    """
+    if t < 10_000:
+        return 0.1
+    elif t < 50_000:
+        return 0.05
+    return 0.02
+
+
+def _partitionner_adaptatif(
+    T_MIN: float, T_MAX: float, N_WORKERS: int
+) -> list:
+    """Segments équitables via partition uniforme de [√T_MIN, √T_MAX].
+
+    Justification : ∫ 1/√t dt = 2√t → couper l'axe √t en N parts égales
+    équilibre le nombre de zéros par worker (densité ≈ log(t)/2π ∝ 1/√t).
+    Sans ça : Worker 3 ([75k,100k]) traite ~2× plus de zéros que Worker 0 ([14,25k]).
+    Overlap = 4 × step_pour_t(b) pour chaque frontière — garantit qu'aucun bracket
+    aux frontières n'est raté sans créer de doublons hors-tolérance.
+    """
+    sqrt_min = math.sqrt(T_MIN)
+    sqrt_max = math.sqrt(T_MAX)
+    delta    = (sqrt_max - sqrt_min) / N_WORKERS
+
+    segments = []
+    for i in range(N_WORKERS):
+        a = max(T_MIN, (sqrt_min + i * delta) ** 2)
+        b = (sqrt_min + (i + 1) * delta) ** 2
+        if i == N_WORKERS - 1:
+            b = T_MAX
+        else:
+            # Overlap proportionnel au STEP local (4× STEP) → doublons à distance < STEP
+            # → éliminés par dedupliquer(tolerance=0.01) sans créer de surplus
+            overlap = step_pour_t(b) * 4
+            b += overlap
+        segments.append((a, min(b, T_MAX)))
+    return segments
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 #  SECTION 2 — WORKER MULTIPROCESSING (chargement .so après fork)
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -119,11 +164,13 @@ def worker_v4_1(args: tuple) -> Tuple[list, dict, dict]:
     zeros_segment = []
     stats         = {"illinois_C": 0, "mpmath_petit_t": 0, "mpmath_fallback": 0}
     TAILLE_BLOC   = 5000   # points par appel Z_batch
+    _log_palier   = 0      # dernier palier de 1000 zéros affiché
 
     t_courant = t_start
     while t_courant < t_end:
-        t_fin_bloc = min(t_courant + TAILLE_BLOC * step, t_end)
-        t_array    = np.arange(t_courant, t_fin_bloc, step, dtype=np.float64)
+        s          = step_pour_t(t_courant)          # pas adaptatif selon la tranche t
+        t_fin_bloc = min(t_courant + TAILLE_BLOC * s, t_end)
+        t_array    = np.arange(t_courant, t_fin_bloc, s, dtype=np.float64)
         if len(t_array) < 2:
             break
 
@@ -171,7 +218,15 @@ def worker_v4_1(args: tuple) -> Tuple[list, dict, dict]:
             except Exception:
                 pass  # Turing-Backlund détectera les zéros manquants
 
-        t_courant = float(t_array[-1]) + step
+        # Log de progression toutes les 1000 zéros (palier franchi dans ce bloc)
+        n = len(zeros_segment)
+        if n // 1000 > _log_palier // 1000 and n > 0:
+            elapsed = time.time() - debut
+            print(f"  [Worker {worker_id}] zéro #{(n // 1000) * 1000}"
+                  f" à t={zeros_segment[-1]:.2f} — {elapsed:.1f}s", flush=True)
+            _log_palier = n
+
+        t_courant = float(t_array[-1]) + s
 
     duree = time.time() - debut
     print(f"  [Worker {worker_id}] {len(zeros_segment)} zéros en {duree:.1f}s  "
@@ -195,7 +250,8 @@ def calculer_zeros_v4_1(
 
     Retourne (zeros, stats_aggregées, profil_phases_workers).
     """
-    segments  = partitionner(T_MIN, T_MAX, N_WORKERS, overlap=STEP * 4)
+    # Segmentation 1/√t — équilibre le nombre de zéros par worker
+    segments  = _partitionner_adaptatif(T_MIN, T_MAX, N_WORKERS)
     args_list = [
         (t_min, t_max, STEP, SO_PATH, TOL, i)
         for i, (t_min, t_max) in enumerate(segments)
