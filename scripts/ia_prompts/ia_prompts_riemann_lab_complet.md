@@ -503,4 +503,39 @@ TÂCHE 6 — scripts/ia_prompts/ia_prompts_riemann_lab_complet.md
 
 ---
 
-*ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_IA · hprzeta · MAJ 2026-06-03 · 9 juin 2026 · ~500 lignes*
+## Session 2026-06-10 après-midi — STEP v3 0.05/0.010 + run T=100 000 v3
+
+### Contexte de reprise
+
+Runs T=100 000 du matin : tous STEP=0.1 ancien code → dernier résultat 138 050 zéros / 17 manquants / Turing INCOMPLET. Résultat v2 (STEP adaptatif 0.1/0.05/0.02) : 138 039 zéros / 68 manquants. Cause identifiée : gap min mesuré 0.01940 à t=66678, prouvant que STEP=0.02 est insuffisant.
+
+### Fix appliqué — commit `181fdd1`
+
+`step_pour_t()` corrigé :
+- Avant (v1) : t<5k→0.1 / t∈[5k,50k]→0.05 / t>50k→0.02
+- Après (v2) : t<5k→0.05 / t≥5k→0.010 (cap uniforme ÷5 et ÷2)
+
+### Actions réalisées en session
+
+| Action | Résultat |
+|---|---|
+| Vérification code STEP adaptatif (TÂCHE 1) | ✅ commit `181fdd1` en place |
+| Lancement run T=100k v3 (TÂCHE 2) | PID 311769 · log `run_T100k_step_adaptatif_20260610_1642.log` |
+| Formules_zeta.md §23 (TÂCHE 3a) | STEP v3 0.05/0.010 · résultats T=100k v1/v2 · v3 EN COURS |
+| Bibliotheques.md §12 (TÂCHE 3b) | Tableau runs complété (v2=68 manquants, v3 EN COURS) |
+| STACK.md (TÂCHE 3c) | STEP v3 corrigé · progression v4.1+Arb mise à jour |
+| JOURNAL.md (TÂCHE 3d) | Entrée 16h42 ajoutée |
+| SKILL phase-c-illinois (TÂCHE 3e) | STEP v3 + tableau T=100k v1/v2/v3 |
+| Handoff.md (TÂCHE 5) | État run v3 EN COURS · historique runs |
+
+### Résultats runs T=100 000
+
+| Version | STEP | Zéros | Manquants | Turing |
+|---|---|---|---|---|
+| v1 | 0.1 fixe | 137 904 / 138 069 | 356 | ❌ |
+| v2 | 0.1/0.05/0.02 | 138 039 / 138 069 | 68 | ❌ |
+| **v3** | **0.05/0.010** | **EN COURS** | **—** | **attendu ✅** |
+
+---
+
+*ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_IA · hprzeta · MAJ 2026-06-03 · 9 juin 2026 · 10 juin 2026 · ~540 lignes*
