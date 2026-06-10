@@ -208,6 +208,32 @@ cd ~/projet_zeta/Riemann_Lab.wiki/ && git push origin master
 
 ---
 
+## ⚠️ Règle run obligatoire — SCRIPTS TURBO
+
+**TOUJOURS** exécuter `scripts/zeta_turbo_on.sh` AVANT tout run de calcul.
+**TOUJOURS** exécuter `scripts/zeta_turbo_off.sh` APRÈS tout run de calcul.
+Ne jamais lancer `compute_zeros_*.py` directement — utiliser `scripts/zeta_run.sh`.
+
+```bash
+# Run standard (workflow complet)
+zeta-run 100000           # alias ~/.bashrc → zeta_turbo_on → run → zeta_turbo_off
+
+# Ou manuellement
+sudo scripts/zeta_turbo_on.sh
+printf "100000\nO\n" | nohup python src/calculs/optimisation/compute_zeros_v4_1.py > logs/run.log &
+# ... attendre la fin ...
+sudo scripts/zeta_turbo_off.sh
+```
+
+**Ce que fait `zeta_turbo_on.sh` :**
+- Arrêt de 12 services non essentiels (~143 MB RAM libérés)
+- CPU governor : `powersave` → `performance` (4 cœurs à fréquence max, +15–30 % calcul)
+- Animations GNOME désactivées
+- swappiness = 10 (évite le swap des workers Python sous charge)
+- État sauvegardé dans `/tmp/zeta_turbo_state.txt` pour restauration propre
+
+---
+
 ## Fichiers de contexte (cascade Claude Code)
 
 | Fichier | Portée |
