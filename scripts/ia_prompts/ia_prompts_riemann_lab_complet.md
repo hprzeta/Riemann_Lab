@@ -534,8 +534,88 @@ Runs T=100 000 du matin : tous STEP=0.1 ancien code → dernier résultat 138 05
 |---|---|---|---|---|
 | v1 | 0.1 fixe | 137 904 / 138 069 | 356 | ❌ |
 | v2 | 0.1/0.05/0.02 | 138 039 / 138 069 | 68 | ❌ |
-| **v3** | **0.05/0.010** | **EN COURS** | **—** | **attendu ✅** |
+| v3 (0.05/0.010) | TUÉ — régression ×11 vitesse | — | — |
+| **v4 (δ/3)** | **EN COURS — PID 328675** | **—** | **attendu ✅** |
 
 ---
 
-*ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_IA · hprzeta · MAJ 2026-06-03 · 9 juin 2026 · 10 juin 2026 · ~540 lignes*
+## Session 2026-06-10 après-midi/soir — Prompts A–D
+
+### Prompt A — Fix STEP δ(t)/3 + relance run T=100k
+
+```
+CONTEXTE — Régression vitesse run T=100 000 (10 juin 2026)
+Run en cours (PID 311769) : vitesse ~0.5 z/s.
+Cause : STEP=0.010 → 5M points Z_batch (vs ~460k avec δ/3).
+
+TÂCHE 1 — Tuer run : kill 311769
+TÂCHE 2 — Corriger step_pour_t() :
+  STEP = max(0.05, min(0.5, 2π/(3·ln(t/2π))))
+  → commit d2f62c1 Riemann_Lab_C
+TÂCHE 3 — Relancer nohup → log run_T100k_step_delta3_20260610_1717.log
+TÂCHE 4 — Commit + push Riemann_Lab_C
+TÂCHE 5 — Handoff.md : run v4 EN COURS (PID 328675)
+Vérifier vitesse après 5 min (> 15 z/s).
+```
+
+### Prompt B — PDFs analyse v4→v4.1 et v4.1→v5
+
+```
+TÂCHE — Générer les 2 PDFs manquants dans l'ordre logique
+
+PDF 1 — analyse_problemes_v4_v4_1.pdf
+  Créer analyse_problemes_v4_v4_1.md (wiki) :
+  - P1 : Z_double incohérent → Option B (fa,fb) Python — commit 581e34d
+  - P2 : .so pré-fork → post-fork — commit d9bb267
+  - P3 : Z_batch N_max fixe → Z_vect_correct masque — commit 50837f7
+
+PDF 2 — analyse_problemes_v4_1_v5.pdf
+  Compléter analyse_problemes_v4_1_v5.md avec résultats 10 juin :
+  - Arb ×27 — commit b563db2
+  - STEP δ/3 — commit d2f62c1
+  Générer via build_pdf_riemann.sh (xelatex, DejaVu Serif)
+
+Résultat : 4 PDFs côte à côte dans pdf/optimisation/
+```
+
+### Prompt C — Documentation finale v5 (après résultat run)
+
+```
+CONTEXTE — Run T=100 000 v4 (STEP=δ/3) terminé.
+Résultats : [à compléter après notification Monitor]
+
+TÂCHE 1 — Formules_zeta.md §23.4 : remplacer "EN COURS" par chiffres réels
+TÂCHE 2 — STACK.md : ligne v4 (δ/3) avec résultats mesurés
+TÂCHE 3 — Bibliotheques.md §12 : tableau runs complet
+TÂCHE 4 — JOURNAL.md : entrée finale 10 juin (résultats + commits)
+TÂCHE 5 — Handoff.md : prochaine action = v6 (scan_arb.c + W=8)
+TÂCHE 6 — SKILL phase-c-illinois : résultats T=100k v4
+TÂCHE 7 — Push wiki + Riemann_Lab_C
+```
+
+### Prompt D — v6 scan_arb.c + W=8 workers (après /clear)
+
+```
+CONTEXTE — v5 validée (T=100k Turing COMPLET)
+Objectif v6 : ~27 min T=100k (vs ~105 min v5), 0 manquant
+
+LEVIERS :
+  L1 — W=8 : N_WORKERS = min(8, cpu_count()) — 1 ligne, gain ×1.3
+  L2 — scan_arb.c : détection C pure (×7.5 vs Python)
+       scan_zeros_arb(t_min, t_max, step, out_a, out_b, out_fa, out_fb, n_max)
+       Backend : arb_fpwrap_cdouble_hardy_z en boucle C
+  L3 — Cache fa/fb : scan retourne Z(a)/Z(b) → illinois_refine direct, 0 recalcul
+  L4 — Segmentation N(T) : N(b)-N(a) égaux par worker (vs 1/√t)
+
+ESTIMATION :
+  v5 ~105 min × W=8 (×1.3) × scan_arb (×2.0) × cache (×1.5) → ~27 min
+
+TÂCHE 0 — Benchmark chrono par phase T=5000 (identifier vrai goulot)
+TÂCHE 1 — c_modules/scan_arb.c + ctypes binding
+TÂCHE 2 — Intégration compute_zeros_v4_1.py
+TÂCHE 3 — Test T=10k v6, Turing COMPLET avant T=100k
+```
+
+---
+
+*ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_IA · hprzeta · MAJ 2026-06-03 · 9 juin 2026 · 10 juin 2026 (soir) · ~620 lignes*
