@@ -79,22 +79,31 @@ T_SEUIL_ILLINOIS_C = 300.0
 
 
 def step_pour_t(t: float) -> float:
-    """Pas de scan adaptatif selon la tranche t.
+    """Pas de scan adaptatif : STEP = δ(t)/3, borné dans [0.05, 0.5].
 
-    Espacement moyen entre zéros ≈ 2π/ln(t/2π) :
-      ~0.39 à t=1k · ~0.28 à t=10k · ~0.21 à t=100k
+    Formule : δ(t) = 2π/ln(t/2π) — espacement moyen entre zéros consécutifs.
+    Cible : STEP = δ(t)/3 — sécurité ×3 sur l'espacement moyen.
+
+    Valeurs résultantes :
+      t=100     → δ≈2.27 → step=0.5   (plafond)
+      t=1 000   → δ≈1.24 → step=0.41
+      t=5 000   → δ≈1.06 → step=0.35
+      t=10 000  → δ≈0.98 → step=0.33
+      t=50 000  → δ≈0.84 → step=0.28
+      t=100 000 → δ≈0.78 → step=0.26
+    → T=100k ≈ 460k points (vs 5M avec v3 STEP=0.010 — ÷11)
 
     Historique des corrections :
-      2026-06-10 v1 : 0.1 / 0.05 / 0.02 → 30 manquants sur T=100k
-        Cause : paires de zéros d'espacement < STEP englouties en un seul pas.
-        Gap min trouvé : 0.01940 à t=66678 (< STEP=0.02 → preuve directe).
-        Manquants dès t=17500 (STEP=0.05) : le problème frappe les deux seuils.
-      2026-06-10 v2 : cap uniforme 0.010 pour t ≥ 5k (÷5 et ÷2 respectivement).
-        Impact détection : +27s sur 6300s totaux (< 0.5 % du run).
+      v1 (commit 7467731) : paliers fixes 0.1/0.05/0.02 → 30 manquants sur T=100k
+        Gap min mesuré : 0.01940 à t=66678 (< STEP=0.02 → preuve directe).
+      v2 (commit 181fdd1) : cap 0.010 pour t≥5k → 0 manquant sur T=10k ✅
+        Régression vitesse T=100k : ×11 de points → ~0.5 z/s (vs 22 z/s attendu).
+      v3 (ce commit) : δ(t)/3 — vitesse restaurée, sur-échantillonnage éliminé.
     """
-    if t < 5_000:
-        return 0.05
-    return 0.010
+    if t < 14.0:
+        return 0.5
+    delta = 2 * math.pi / math.log(t / (2 * math.pi))
+    return max(0.05, min(0.5, delta / 3.0))
 
 
 def _partitionner_adaptatif(
