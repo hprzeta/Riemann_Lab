@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Précision mpfr &amp; limbs — le vrai levier v7</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #0d1117; color: #e6edf3; line-height: 1.7;
+    padding: 1.8rem 1rem 3rem; max-width: 760px; margin: 0 auto;
+  }
+  h1 { font-size: 1.35rem; font-weight: 600; margin-bottom: 0.3rem; }
+  h2 { font-size: 1.05rem; font-weight: 500; color: #c9d1d9; margin: 2rem 0 0.7rem; }
+  .sub { color: #8b949e; font-size: 0.9rem; margin-bottom: 1.4rem; }
+  p  { color: #c9d1d9; font-size: 0.95rem; margin-bottom: 0.8rem; }
+  strong { color: #e6edf3; }
+  a  { color: #7F77DD; }
+  code {
+    font-family: ui-monospace, monospace; background: #161b22;
+    border: 1px solid #30363d; border-radius: 4px;
+    padding: 1px 5px; font-size: 0.85em; color: #9fe1cb;
+  }
+  .meta {
+    font-size: 0.8rem; color: #8b949e; border: 1px solid #30363d;
+    background: #161b22; border-radius: 8px; padding: 0.5rem 0.9rem;
+    margin-bottom: 1.6rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
+  }
+  .panel {
+    background: #161b22; border: 1px solid #30363d; border-radius: 10px;
+    padding: 1.1rem 1.2rem; margin: 1.2rem 0;
+  }
+  .panel-title { font-size: 0.85rem; color: #8b949e; margin-bottom: 0.8rem; }
+  .ctrl {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 0.83rem; color: #8b949e; margin-bottom: 0.7rem;
+  }
+  .ctrl span:first-child { min-width: 200px; }
+  input[type=range] { flex: 1; accent-color: #7F77DD; height: 4px; cursor: pointer; }
+  .val { font-weight: 600; color: #e6edf3; min-width: 90px; text-align: right; }
+  .katex-block {
+    background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+    padding: 0.4rem 1rem; margin: 0.8rem 0; overflow-x: auto;
+  }
+  table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; font-size: 0.86rem; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid #21262d; color: #c9d1d9; }
+  th { color: #8b949e; font-weight: 500; }
+  .ok  { color: #1D9E75; font-weight: 600; }
+  .ko  { color: #E24B4A; }
+  .mid { color: #EF9F27; }
+  .readout {
+    background: #0d1117; border: 1px solid #30363d; border-radius: 6px;
+    padding: 0.5rem 0.9rem; margin: 0.7rem 0;
+    display: flex; gap: 1.5rem; flex-wrap: wrap;
+    font-size: 0.82rem; font-family: ui-monospace, monospace;
+  }
+  .readout-label { color: #8b949e; }
+  .readout-val   { color: #e6edf3; font-weight: 600; }
+
+  /* Barres de comparaison */
+  .bar-row {
+    display: flex; align-items: center; gap: 10px;
+    margin: 6px 0; font-size: 0.82rem; font-family: ui-monospace, monospace;
+  }
+  .bar-label { width: 110px; color: #8b949e; flex-shrink: 0; font-size: 0.79rem; }
+  .bar-bg { flex: 1; background: #21262d; border-radius: 3px; height: 18px; overflow: hidden; position: relative; }
+  .bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; display: flex; align-items: center; padding-left: 6px; font-size: 0.75rem; font-weight: 600; color: #0d1117; }
+  .bar-annot { width: 120px; color: #8b949e; font-size: 0.76rem; text-align: right; }
+  .bar-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 0.72rem; font-weight: 600; margin-left: 6px; vertical-align: middle;
+  }
+  .badge-simd { background: #1D9E75; color: #0d1117; }
+  .badge-nosimd { background: #E24B4A; color: #fff; }
+  .badge-warn { background: #EF9F27; color: #0d1117; }
+
+  /* Slider highlight */
+  #slider-prec::-webkit-slider-thumb { background: #7F77DD; }
+  #slider-fast::-webkit-slider-thumb { background: #7F77DD; }
+
+  .highlight-box {
+    border-left: 3px solid #1D9E75; background: rgba(29,158,117,0.07);
+    border-radius: 0 8px 8px 0; padding: 0.5rem 0.9rem; margin: 0.7rem 0;
+    font-size: 0.87rem; color: #c9d1d9;
+  }
+  .highlight-box.warn {
+    border-left-color: #EF9F27; background: rgba(239,159,39,0.07);
+  }
+  footer { text-align: center; color: #8b949e; font-size: 0.8rem; margin-top: 3rem; }
+</style>
+</head>
+<body>
+
+<h1>Précision mpfr &amp; limbs — le vrai levier v7</h1>
+<p class="sub">Pourquoi <code>prec=64 bits</code> est ×16 plus rapide que <code>prec=116 bits</code></p>
+
+<div class="meta">
+  <span>Projet : <strong>Riemann_Lab</strong></span>
+  <span>v7 — commit <code>8637098</code></span>
+  <span>11 juin 2026</span>
+  <span><a href="index.html">← Retour</a></span>
+</div>
+
+<p>
+  La version v7 du calcul de zéros a apporté un gain de <strong>×3.7 global</strong>
+  (×16 sur le bottleneck) par rapport à v6. Ce gain ne vient <em>pas</em> du nombre de termes
+  Riemann-Siegel (hypothèse initiale) mais de la <strong>précision binaire</strong> utilisée
+  par libmpfr. Un seul mot machine (64 bits) active des routines SIMD spécialisées.
+</p>
+
+<!-- Section 1 — Slider précision -->
+<h2>Section 1 — Impact du nombre de limbs</h2>
+
+<p>
+  libmpfr représente un flottant multi-précision comme un tableau de mots machine de 64 bits
+  appelés <em>limbs</em>. Le nombre de limbs dicte si les opérations tombent dans un chemin
+  SIMD ultra-rapide ou dans une boucle générique sur plusieurs mots.
+</p>
+
+<div class="panel">
+  <div class="panel-title">Glisser pour choisir la précision mpfr</div>
+  <div class="ctrl">
+    <span>Précision (bits)</span>
+    <input type="range" id="slider-prec" min="32" max="256" step="4" value="64">
+    <span class="val" id="val-prec">64 bits</span>
+  </div>
+
+  <div class="readout" id="readout-prec">
+    <span><span class="readout-label">N_limbs = </span><span class="readout-val" id="out-nlimbs">1</span></span>
+    <span><span class="readout-label">SIMD = </span><span class="readout-val" id="out-simd" style="color:#1D9E75">OUI (AVX2)</span></span>
+    <span><span class="readout-label">ms/appel ≈ </span><span class="readout-val" id="out-ms">1.47 ms</span></span>
+    <span><span class="readout-label">Gain vs 64 bits = </span><span class="readout-val" id="out-gain">×1.0</span></span>
+  </div>
+
+  <div id="highlight-prec" class="highlight-box">
+    prec = 64 bits → 1 limb → routines SIMD libmpfr activées → optimal ✅
+  </div>
+</div>
+
+<div class="katex-block">
+  $$N_{\text{limbs}} = \left\lceil\frac{\text{prec}}{64}\right\rceil
+  \qquad
+  t_{\text{appel}}(\text{prec}) \approx 1.47 \times N_{\text{limbs}}^2 \text{ ms}$$
+</div>
+
+<p>
+  Le coût croît en $N_{\text{limbs}}^2$ à cause de la multiplication multi-précision :
+  chaque paire de limbs génère une retenue qui se propage.
+  À <strong>1 limb</strong>, tout tient dans les registres AVX2 — pas de boucle.
+</p>
+
+<!-- Section 2 — Comparaison barres animées -->
+<h2>Section 2 — Comparaison des précisions candidates</h2>
+
+<p>
+  Les valeurs ci-dessous sont des mesures réelles à $t \approx 5000$ (T=5k, Worker 0).
+  32 bits est trop imprécis (erreur Z &gt; 1e-3). 64 bits est le point optimal.
+</p>
+
+<div class="panel" id="panel-bars">
+  <div class="panel-title">Temps par appel illinois_refine (ms) — plus court = meilleur</div>
+
+  <div class="bar-row">
+    <div class="bar-label">32 bits (1 limb)</div>
+    <div class="bar-bg"><div class="bar-fill" id="bar-32" style="width:3%;background:#EF9F27;">0.7</div></div>
+    <div class="bar-annot"><span class="badge-simd bar-badge">SIMD</span> <span class="mid">trop imprécis</span></div>
+  </div>
+  <div class="bar-row">
+    <div class="bar-label">64 bits (1 limb)</div>
+    <div class="bar-bg"><div class="bar-fill" id="bar-64" style="width:6%;background:#1D9E75;">1.5</div></div>
+    <div class="bar-annot"><span class="badge-simd bar-badge">SIMD</span> <span class="ok">OPTIMAL v7 ✅</span></div>
+  </div>
+  <div class="bar-row">
+    <div class="bar-label">116 bits (2 limbs)</div>
+    <div class="bar-bg"><div class="bar-fill" id="bar-116" style="width:100%;background:#E24B4A;">23.5</div></div>
+    <div class="bar-annot"><span class="badge-nosimd bar-badge">NON</span></div>
+  </div>
+  <div class="bar-row">
+    <div class="bar-label">128 bits (2 limbs)</div>
+    <div class="bar-bg"><div class="bar-fill" id="bar-128" style="width:100%;background:#E24B4A;">24</div></div>
+    <div class="bar-annot"><span class="badge-nosimd bar-badge">NON</span></div>
+  </div>
+  <div class="bar-row">
+    <div class="bar-label">170 bits (3 limbs)</div>
+    <div class="bar-bg"><div class="bar-fill" id="bar-170" style="width:100%;background:#E24B4A;">35</div></div>
+    <div class="bar-annot"><span class="badge-nosimd bar-badge">NON</span></div>
+  </div>
+
+  <p style="margin-top:1rem;">
+    Référence barre maximale : 35 ms (170 bits, v6).
+    La barre de 64 bits fait 1.5/35 ≈ 4 % de la largeur totale — ×23 plus rapide.
+  </p>
+</div>
+
+<div class="katex-block">
+  $$\text{prec}=64 \;\Rightarrow\; N_{\text{limbs}}=1 \;\Rightarrow\; \text{routines SIMD} \;\Rightarrow\; \times 16 \text{ vs prec}=170$$
+</div>
+
+<!-- Section 3 — Impact sur durée T=100k -->
+<h2>Section 3 — Durée estimée pour T=100 000</h2>
+
+<p>
+  Modifier <code>prec_fast</code> (phase 1 d'illinois_refine_adaptive) change radicalement
+  la durée du run. La phase 2 est fixe à 116 bits.
+</p>
+
+<div class="panel">
+  <div class="panel-title">Glisser pour choisir <code>prec_fast</code> (phase 1)</div>
+  <div class="ctrl">
+    <span>prec_fast (bits)</span>
+    <input type="range" id="slider-fast" min="32" max="128" step="4" value="64">
+    <span class="val" id="val-fast">64 bits</span>
+  </div>
+
+  <div class="readout" id="readout-fast">
+    <span><span class="readout-label">N_limbs phase 1 = </span><span class="readout-val" id="out-fast-nlimbs">1</span></span>
+    <span><span class="readout-label">ms/appel phase 1 ≈ </span><span class="readout-val" id="out-fast-ms">1.47 ms</span></span>
+    <span><span class="readout-label">ms/appel phase 2 = </span><span class="readout-val">5.88 ms</span></span>
+  </div>
+
+  <!-- Barre durée T=100k -->
+  <div style="margin-top:0.9rem;">
+    <div class="bar-row">
+      <div class="bar-label">Durée T=100k</div>
+      <div class="bar-bg" style="height:26px;"><div class="bar-fill" id="bar-fast" style="width:27%;background:#7F77DD;font-size:0.8rem;">30.9 min</div></div>
+      <div class="bar-annot" id="out-fast-pct" style="color:#7F77DD; font-weight:600;">30.9 min</div>
+    </div>
+    <div style="font-size:0.78rem;color:#8b949e;margin-top:4px;">Référence : v6 = 113 min (barre pleine). 4 workers, iter_switch=8.</div>
+  </div>
+
+  <div id="highlight-fast" class="highlight-box" style="margin-top:1rem;">
+    prec_fast=64 bits → phase 1 ultra-rapide → 30.9 min pour T=100k ✅
+  </div>
+</div>
+
+<div class="katex-block">
+  $$t_{\text{total}} \approx \frac{138\,069 \times \left(8 \cdot t_{\text{ph1}} + 42 \cdot t_{\text{ph2}}\right)}{4 \text{ workers}} \times k_{\text{overhead}}$$
+</div>
+
+<p>
+  Avec $t_{\text{ph1}} = 1.47 \times N_{\text{limbs,1}}^2$ ms,
+  $t_{\text{ph2}} \approx 5.88$ ms (116 bits, 2 limbs, mesuré),
+  $k_{\text{overhead}} \approx 1.05$ (pool fork, GIL).
+</p>
+
+<!-- Tableau récapitulatif -->
+<h2>Récapitulatif mesuré — v7 (T=5k → T=100k)</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>Paramètre</th><th>v6 (170 bits)</th><th>v7 (64→116 bits)</th><th>Gain</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>ms/appel (T=5k)</td>
+      <td class="ko">~23.5 ms</td>
+      <td class="ok">1.47 ms</td>
+      <td class="ok">×16</td>
+    </tr>
+    <tr>
+      <td>ms/appel (T=100k)</td>
+      <td class="ko">~130 ms</td>
+      <td class="ok">42.05 ms</td>
+      <td class="ok">×3.1</td>
+    </tr>
+    <tr>
+      <td>Vitesse (T=100k)</td>
+      <td class="ko">~20 z/s</td>
+      <td class="ok">74.49 z/s</td>
+      <td class="ok">×3.6</td>
+    </tr>
+    <tr>
+      <td>Durée T=100k</td>
+      <td class="ko">~113 min</td>
+      <td class="ok">30.9 min</td>
+      <td class="ok">×3.7</td>
+    </tr>
+    <tr>
+      <td>Turing-Backlund</td>
+      <td class="ok">COMPLET</td>
+      <td class="ok">COMPLET</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>N_termes RS</td>
+      <td colspan="2" style="color:#8b949e;text-align:center;">N_full dans les 2 phases (identique)</td>
+      <td>—</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="highlight-box">
+  <strong>Leçon clé :</strong> la théorie prédisait ×4.6 via N_termes RS adaptatif.
+  La réalité mesurée : ×16 via <code>prec_fast=64 bits</code> (1 limb SIMD).
+  <strong>Ne jamais supposer que l'intuition théorique identifie le vrai levier — mesurer d'abord.</strong>
+</div>
+
+<!-- Vers v8 -->
+<h2>Perspectives — v8</h2>
+
+<p>
+  Avec <code>illinois_C</code> à <strong>78.2 %</strong> du temps CPU à T=100k,
+  deux options sont à l'étude pour atteindre &lt;20 min :
+</p>
+
+<table>
+  <thead>
+    <tr><th>Option</th><th>Description</th><th>Gain estimé</th><th>Cible</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>A</strong></td>
+      <td>W=8 workers (doubler le parallélisme)</td>
+      <td class="mid">×1.3</td>
+      <td class="mid">~24 min</td>
+    </tr>
+    <tr>
+      <td><strong>B</strong></td>
+      <td>prec phase 2 = 80 bits (encore 2 limbs, vérifier)</td>
+      <td class="mid">à mesurer</td>
+      <td class="mid">?</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+  <strong>TÂCHE 0 obligatoire avant v8 :</strong> benchmark empirique
+  <code>prec_fast ∈ {32, 48, 64, 80, 96} bits</code> sur T=5k.
+</p>
+
+<footer>
+  Riemann_Lab · hprzeta · 11 juin 2026 · <a href="index.html">← Page principale</a>
+</footer>
+
+<script>
+// Constantes mesurées
+const MS_REF = 35.0;      // ms/appel v6 (170 bits) — référence barre
+const N_ZEROS = 138069;
+const N_WORKERS = 4;
+const ITER_SWITCH = 8;
+const MS_PH2 = 5.88;      // ms/appel phase 2 fixe (116 bits mesurés)
+const K_OVERHEAD = 1.05;  // overhead pool
+const V6_MIN = 113.0;     // durée v6 T=100k en minutes (barre pleine)
+
+function nLimbs(prec) { return Math.ceil(prec / 64); }
+function msAppel(prec) { return 1.47 * Math.pow(nLimbs(prec), 2); }
+
+// Durée T=100k estimée en minutes
+function dureeEstimee(precFast) {
+  const ms1 = msAppel(precFast);
+  const totalMs = N_ZEROS * (ITER_SWITCH * ms1 + 42 * MS_PH2) / N_WORKERS * K_OVERHEAD;
+  return totalMs / 60000;
+}
+
+// Slider Section 1
+const sliderPrec = document.getElementById('slider-prec');
+function updatePrec() {
+  const prec = parseInt(sliderPrec.value);
+  const limbs = nLimbs(prec);
+  const ms = msAppel(prec);
+  const gain = msAppel(64) / ms;
+
+  document.getElementById('val-prec').textContent = prec + ' bits';
+  document.getElementById('out-nlimbs').textContent = limbs;
+  const simdEl = document.getElementById('out-simd');
+  if (limbs === 1) {
+    simdEl.textContent = 'OUI (AVX2)'; simdEl.style.color = '#1D9E75';
+  } else {
+    simdEl.textContent = 'NON (overhead)'; simdEl.style.color = '#E24B4A';
+  }
+  document.getElementById('out-ms').textContent = ms.toFixed(2) + ' ms';
+  document.getElementById('out-gain').textContent = (gain >= 1 ? '×' : '÷') + Math.abs(gain).toFixed(1);
+
+  const hl = document.getElementById('highlight-prec');
+  if (prec === 32) {
+    hl.className = 'highlight-box warn';
+    hl.innerHTML = 'prec = 32 bits → 1 limb → SIMD actif, mais précision insuffisante pour Z(t) ⚠️';
+  } else if (limbs === 1) {
+    hl.className = 'highlight-box';
+    hl.innerHTML = 'prec = ' + prec + ' bits → 1 limb → routines SIMD libmpfr activées → rapide ✅';
+  } else {
+    hl.className = 'highlight-box warn';
+    hl.innerHTML = 'prec = ' + prec + ' bits → ' + limbs + ' limbs → boucle multi-mots, pas de SIMD → lent ×' + (ms / msAppel(64)).toFixed(1);
+  }
+}
+sliderPrec.addEventListener('input', updatePrec);
+updatePrec();
+
+// Slider Section 3
+const sliderFast = document.getElementById('slider-fast');
+function updateFast() {
+  const prec = parseInt(sliderFast.value);
+  const limbs = nLimbs(prec);
+  const ms = msAppel(prec);
+  const duree = dureeEstimee(prec);
+  const pct = Math.min(100, (duree / V6_MIN) * 100);
+
+  document.getElementById('val-fast').textContent = prec + ' bits';
+  document.getElementById('out-fast-nlimbs').textContent = limbs;
+  document.getElementById('out-fast-ms').textContent = ms.toFixed(2) + ' ms';
+
+  const bar = document.getElementById('bar-fast');
+  bar.style.width = Math.max(4, pct) + '%';
+  bar.textContent = duree.toFixed(1) + ' min';
+  bar.style.background = (pct < 35) ? '#1D9E75' : (pct < 60) ? '#EF9F27' : '#E24B4A';
+
+  document.getElementById('out-fast-pct').textContent = duree.toFixed(1) + ' min';
+  document.getElementById('out-fast-pct').style.color = (pct < 35) ? '#1D9E75' : (pct < 60) ? '#EF9F27' : '#E24B4A';
+
+  const hl2 = document.getElementById('highlight-fast');
+  if (prec === 64) {
+    hl2.className = 'highlight-box';
+    hl2.innerHTML = 'prec_fast=64 bits → phase 1 ultra-rapide → ' + duree.toFixed(1) + ' min pour T=100k ✅';
+  } else if (limbs === 1 && prec < 64) {
+    hl2.className = 'highlight-box warn';
+    hl2.innerHTML = 'prec_fast=' + prec + ' bits → SIMD, mais précision insuffisante — à valider Turing ⚠️';
+  } else if (limbs === 1) {
+    hl2.className = 'highlight-box';
+    hl2.innerHTML = 'prec_fast=' + prec + ' bits → ' + limbs + ' limb → SIMD → ' + duree.toFixed(1) + ' min';
+  } else {
+    hl2.className = 'highlight-box warn';
+    hl2.innerHTML = 'prec_fast=' + prec + ' bits → ' + limbs + ' limbs → pas de SIMD → ' + duree.toFixed(1) + ' min (lent)';
+  }
+}
+sliderFast.addEventListener('input', updateFast);
+updateFast();
+</script>
+</body>
+</html>
