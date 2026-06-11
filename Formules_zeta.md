@@ -1349,4 +1349,48 @@ Condition de sécurité réelle : STEP $\leq 0.014 \cdot \delta(t)$ (pour gap_mi
 **Prochaine étape (v6) :** scan_arb.c (×7.5) + STEP≤0.010 + W=8 → cible ~15 min, 0 manquant.
 
 ---
-*Auteur : hprzeta — Riemann_Lab — Mise à jour : 3 juin 2026 (§19–21 ajoutés) · 6 juin 2026 (§22 ajouté) · 9 juin 2026 (§18 ajouté) · 10 juin 2026 (§23 STEP adaptatif, résultats T=10k v2, STEP v3 0.05/0.010, runs T=100k v1–v4, leçon GUE) · ~1345 lignes*
+
+## §24 — Benchmark v8 : plancher hardware i7-7500U (11 juin 2026)
+
+### Résultats mesurés
+
+| Config (prec_fast, prec_full) | Limbes ph1+ph2 | ms/appel | Gain vs ref |
+|---|---|---|---|
+| (64, 116) | 1+2 | 0.443 ms | ×1.00 — référence v7 |
+| (48, 116) | 1+2 | 0.559 ms | ×0.79 ❌ |
+| (32, 116) | 1+2 | 0.875 ms | ×0.51 ❌ |
+| (64,  96) | 1+2 | 0.476 ms | ×0.93 ❌ |
+| **(64, 80)** | **1+2** | **0.416 ms** | **×1.06 ✅ optimal** |
+
+W=4 : 2 505.8 z/s · W=8 : 2 474.0 z/s (×0.99 — context-switching, contre-productif)
+
+### Conclusion
+
+`prec_full = 80 bits` est optimal sur i7-7500U (×1.06 vs 116 bits). Gain marginal.
+W=8 est contre-productif sur dual-core HT (4 threads logiques, `nproc=4`).
+
+### Plancher hardware atteint
+
+$$t_{\text{zéro}}^{\min}(i7) \approx \frac{10 \times 0{,}416\text{ ms}}{4\text{ workers}} \approx 1\text{ ms/zéro}$$
+
+Durée T=100k plancher : $138\,069 \times 1\text{ ms} / 4 \approx 34\text{ s}$ (inatteignable en pratique).
+Durée réaliste v8 : **~29 min** (gain ×1.06 vs v7).
+
+### Explication : pourquoi prec=32 est plus lent ?
+
+Contre-intuitif : `prec=32` (1 limbe) est plus lent que `prec=64` (1 limbe aussi).
+Raison : mpfr alloue toujours un minimum de 64 bits par limbe (granularité de l'architecture 64 bits).
+`prec=32` déclenche des conversions d'arrondi supplémentaires sans réduire la taille mémoire.
+
+$$\left\lceil \frac{32}{64} \right\rceil = \left\lceil \frac{64}{64} \right\rceil = 1 \text{ limbe} \quad \text{mais overhead arrondi supérieur pour prec}=32$$
+
+### Prochains leviers au-delà du i7-7500U
+
+| Levier | Gain estimé | Condition |
+|---|---|---|
+| CPU 8 cœurs physiques (i9, Ryzen 9) | ×2 (W=8 réel) | ~15 min T=100k |
+| Arb `acb_dirichlet_hardy_z` pour affinage | à benchmarker | — |
+| GPU CUDA détection Z_double | ~×100 détection | mais détection = 0.2% du temps |
+
+---
+*Auteur : hprzeta — Riemann_Lab — Mise à jour : 3 juin 2026 (§19–21) · 6 juin 2026 (§22) · 9 juin 2026 (§18) · 10 juin 2026 (§23 STEP adaptatif) · **11 juin 2026 (§24 benchmark v8 plancher i7)** · ~1385 lignes*

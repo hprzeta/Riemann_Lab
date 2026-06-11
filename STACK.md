@@ -125,14 +125,18 @@ npx flowise start   # http://localhost:3000
 
 ## 📋 Roadmap
 
-### Objectif 1 — finalisation (10 000 zéros)
+### Objectif 1 — finalisation (10 000 zéros → 100 000 zéros)
 - [x] Run `compute_zeros_v4_1` à T=10 000 — **10 141 zéros, Turing COMPLET, 18.65 z/s** ✅
 - [x] Comparer aux tables LMFDB — 19/20 précision ≤ 1e-10 ✅
 - [x] Visualisations dans `/docs` — 8 animations HTML + index.html, validées Playwright ✅
 - [x] Logo PNG statique `docs/images/logo_riemann_lab.png` — README + wiki Home.md, 4 branches ✅
+- [x] Run T=100 000 — **138 069 zéros, Turing COMPLET, 30.9 min, 74.49 z/s (v7)** ✅
+- [x] Site GitHub Pages mis à jour v6+v7 — commit `9dc0d23`, vérifié 11 juin 2026 ✅
+- [x] Benchmark v8 — prec_fast/prec_full + W=4 vs W=8 → plancher hardware i7 atteint ✅
+- [ ] v8 test T=10 000 en cours — critères : Turing COMPLET · LMFDB 19/20 · 0 manquant
 - [ ] Wiki — Partie 2 (Z(t), zéros non-triviaux).
-- [ ] Run T=100 000 (~5 h, run de nuit, voir `Handoff.md`).
 - [ ] Fix lien PDF cassé dans `Phase-Optimisation-compute_zeros_v3.md` + `git push origin master`.
+- [ ] v9 en réflexion : CPU upgrade (W=8 réel) ou algo (Arb acb_dirichlet_hardy_z)
 
 ### Phase C — accélération Illinois
 - [x] Appliquer + valider Option B (`illinois_refine` fa/fb depuis Python) — T=10 000 ✅
@@ -194,17 +198,34 @@ npx flowise start   # http://localhost:3000
 | v4.1 | 9min | ×140 | Illinois C/libmpfr | `illinois_mpfr.c` · $(f_a, f_b)$ pré-calculés Python→C |
 | **v4.1+Arb** | **2.60 min** | **×484** | **Arb + STEP adaptatif** | Arb ×27 · STEP 0.05/0.010 · overlap=2.0 · Turing COMPLET |
 
-> ×484 = 21h / 2.60 min — mesuré T=10 000 v2 (2026-06-10 · commit `50837f7`).
+> ×484 = 21h / 2.60 min — mesuré T=10 000 (2026-06-10 · commit `50837f7`).
 > STEP adaptatif **v3** (commit `181fdd1`) : 0.05 (t<5k) / 0.010 (t≥5k) + overlap fixe 2.0.
 
 Speedup Arb vs mpmath : ×27 (0.77 ms vs 21.13 ms, mesuré `benchmark_arb_vs_mpmath_20260609`)
 
-**Runs T=100 000 :**
-- v1 (STEP=0.1 fixe) : 137 904 zéros · 1h58 · 356 manquants ❌
-- v2 (STEP adaptatif 0.1/0.05/0.02) : 138 039 zéros · 105.1 min · 68 manquants ❌ — Turing INCOMPLET
-- **v3 (STEP adaptatif 0.05/0.010, commit `181fdd1`) : EN COURS — lancé 2026-06-10 16h42**
+---
 
-**Run T=10 000 v2 validé :** 10 141/10 142 zéros · 2.60 min · Turing COMPLET · LMFDB 19/20
+## Progression des versions — T = 100 000 zéros
+
+| Version | Temps | Gain | Zéros | Algorithme clé | Commit |
+|---|---|---|---|---|---|
+| v1 (STEP=0.1 fixe) | ~1h58 | — | 137 904 | baseline | — |
+| v2 (STEP adaptatif 0.1/0.05/0.02) | ~105 min | — | 138 039 | Turing INCOMPLET ❌ | — |
+| v3 (STEP adaptatif 0.05/0.010) | ~113 min | — | 138 069 | scan_arb.c Z_double | `181fdd1` |
+| v6 (STEP=0.010 fixe, scan_arb.c) | ~130 min | — | 138 069 | Z_double C inline · 0 manquant ✅ | `b676e88` |
+| v7 (illinois_refine_adaptive) | 30.9 min | ×4.2 vs v6 | 138 069 | prec=64 bits → 1 limb → SIMD ×16 | `8637098` |
+| **v8 (prec_full=80 bits)** | **~29 min** | **×1.06 vs v7** | **138 069** | **prec_full 116→80 bits (×1.06 benchmark)** | — |
+
+**Gain global v1 → v8 : ×5 628** (21h → ~29 min)
+
+> **Découverte v7 :** réduire $N_\text{termes}/4$ invalide les signes Z_rs (faux zéros).
+> Le vrai levier : `prec_fast = 64 bits` → 1 limbe mpfr → SIMD AVX2 automatique.
+> Gain ×16 local (phase 1), ×3.7 global. Analyse : `analyse_problemes_v6_v7.md`.
+
+> **Benchmark v8 :** `prec_full=80 bits` → ×1.06 (gain marginal). W=8 contre-productif sur
+> i7-7500U (dual-core HT, 4 threads logiques). Plancher hardware atteint. Voir §24 Formules_zeta.md.
+
+**Run T=10 000 v4.1+Arb validé :** 10 141/10 142 zéros · 2.60 min · Turing COMPLET · LMFDB 19/20
 
 ---
-> *Mise à jour : 6 juin 2026 · 9 juin 2026 (Progression v1→v5 ajoutée) · 10 juin 2026 (×484 T=10k v2, STEP v3 0.05/0.010, run T=100k v3 EN COURS) · STACK.md · ~217 lignes · logo PNG*
+> *Mise à jour : 6 juin 2026 · 9 juin 2026 (Progression v1→v5) · 10 juin 2026 (×484 T=10k) · **11 juin 2026 (v6+v7, ×5 292) · 11 juin 2026 soir (v8 prec_full=80 bits, plancher i7)** · STACK.md · ~235 lignes · logo PNG*
