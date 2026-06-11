@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Illinois adaptatif — v7 : 2 phases de calcul</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]})"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #0d1117; color: #e6edf3; line-height: 1.7;
+    padding: 1.8rem 1rem 3rem; max-width: 760px; margin: 0 auto;
+  }
+  h1 { font-size: 1.35rem; font-weight: 600; margin-bottom: 0.3rem; }
+  h2 { font-size: 1.05rem; font-weight: 500; color: #c9d1d9; margin: 2rem 0 0.7rem; }
+  .sub { color: #8b949e; font-size: 0.9rem; margin-bottom: 1.4rem; }
+  p  { color: #c9d1d9; font-size: 0.95rem; margin-bottom: 0.8rem; }
+  strong { color: #e6edf3; }
+  a  { color: #7F77DD; }
+  code {
+    font-family: ui-monospace, monospace; background: #161b22;
+    border: 1px solid #30363d; border-radius: 4px;
+    padding: 1px 5px; font-size: 0.85em; color: #9fe1cb;
+  }
+  .meta {
+    font-size: 0.8rem; color: #8b949e; border: 1px solid #30363d;
+    background: #161b22; border-radius: 8px; padding: 0.5rem 0.9rem;
+    margin-bottom: 1.6rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
+  }
+  .panel {
+    background: #161b22; border: 1px solid #30363d; border-radius: 10px;
+    padding: 1.1rem 1.2rem; margin: 1.2rem 0;
+  }
+  .panel-title { font-size: 0.85rem; color: #8b949e; margin-bottom: 0.8rem; }
+  .ctrl {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 0.83rem; color: #8b949e; margin-bottom: 0.7rem;
+  }
+  .ctrl span:first-child { min-width: 220px; }
+  input[type=range] { flex: 1; accent-color: #7F77DD; height: 4px; cursor: pointer; }
+  .val { font-weight: 600; color: #e6edf3; min-width: 80px; text-align: right; }
+  .katex-block {
+    background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+    padding: 0.4rem 1rem; margin: 0.8rem 0; overflow-x: auto;
+  }
+  table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; font-size: 0.86rem; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid #21262d; color: #c9d1d9; }
+  th { color: #8b949e; font-weight: 500; }
+  .ok { color: #1D9E75; } .ko { color: #E24B4A; } .mid { color: #EF9F27; }
+  canvas { display: block; width: 100%; border-radius: 6px; }
+  .readout {
+    background: #0d1117; border: 1px solid #30363d; border-radius: 6px;
+    padding: 0.5rem 0.9rem; margin: 0.7rem 0;
+    display: flex; gap: 1.5rem; flex-wrap: wrap;
+    font-size: 0.82rem; font-family: ui-monospace, monospace;
+  }
+  .readout-label { color: #8b949e; }
+  .readout-val   { color: #e6edf3; font-weight: 600; }
+  .pie-wrap { display: flex; align-items: center; gap: 24px; margin: 0.8rem 0; }
+  .pie-legend { display: flex; flex-direction: column; gap: 6px; font-size: 0.83rem; }
+  .pie-legend span { display: flex; align-items: center; gap: 8px; color: #c9d1d9; }
+  .pie-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+  .iter-row {
+    display: flex; align-items: center; gap: 8px;
+    margin: 4px 0; font-size: 0.82rem; font-family: ui-monospace, monospace;
+    opacity: 0; transition: opacity 0.25s ease;
+  }
+  .iter-label { width: 52px; color: #8b949e; flex-shrink: 0; }
+  .iter-bar-bg { flex: 1; background: #21262d; border-radius: 3px; height: 16px; overflow: hidden; }
+  .iter-bar { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
+  .iter-annot { width: 140px; color: #8b949e; font-size: 0.76rem; }
+  .toggle-row { display: flex; gap: 10px; margin: 0.7rem 0; }
+  .btn-toggle {
+    padding: 5px 16px; border-radius: 6px; border: 1px solid #30363d;
+    background: #161b22; color: #8b949e; cursor: pointer; font-size: 0.83rem;
+  }
+  .btn-toggle.active { background: #7F77DD22; border-color: #7F77DD; color: #7F77DD; }
+</style>
+</head>
+<body>
+
+<div class="meta">
+  <span>Riemann_Lab — Cours animé · Illinois adaptatif v7</span>
+  <span>Auteur : <b style="color:#c9d1d9">hprzeta</b> · Mise à jour : 11 juin 2026</span>
+</div>
+
+<h1>Illinois adaptatif — v7 : 2 phases de calcul</h1>
+<p class="sub">Comment réduire ×4.6 le coût de <code>illinois_C</code></p>
+
+<p>
+  En v6, chaque zéro est affiné par la méthode Illinois : ~10 itérations, chacune évaluant
+  $Z(t)$ avec $N(t) = \lfloor\sqrt{t/2\pi}\rfloor$ termes. À grand $t$, ce coût devient
+  le <strong>bottleneck à 83 %</strong>. La v7 exploite le fait que les premières itérations
+  n'ont besoin que du <em>signe</em> de $Z$ — une précision $10^{-3}$ suffit.
+</p>
+
+<!-- SECTION 1 — Visualisation interactive -->
+<h2>Section 1 — Coûts v6 et v7 en fonction de $t$</h2>
+
+<div class="panel">
+  <div class="panel-title">Paramètre</div>
+  <div class="ctrl">
+    <span>Valeur de $t$ (point d'affinement)</span>
+    <input type="range" id="sl-t" min="1000" max="100000" step="500" value="77000">
+    <span class="val" id="val-t">77 000</span>
+  </div>
+
+  <div class="readout">
+    <span><span class="readout-label">N_full(t) = </span><span class="readout-val" id="ro-nfull">111</span></span>
+    <span><span class="readout-label">N_fast(t) = </span><span class="readout-val" id="ro-nfast">28</span></span>
+    <span><span class="readout-label">ms/iter v6 = </span><span class="readout-val" id="ro-ms-v6">123 ms</span></span>
+    <span><span class="readout-label">ms/iter v7 phase 1 = </span><span class="readout-val" id="ro-ms-p1">2.2 ms</span></span>
+  </div>
+  <div class="readout">
+    <span><span class="readout-label">t_zéro v6 = </span><span class="readout-val" id="ro-tz-v6">1230 ms</span></span>
+    <span><span class="readout-label">t_zéro v7 = </span><span class="readout-val" id="ro-tz-v7">264 ms</span></span>
+    <span><span class="readout-label">Gain = </span><span class="readout-val ok" id="ro-gain">×4.7</span></span>
+  </div>
+
+  <canvas id="cv-phases" height="160" style="margin-top:0.7rem;"></canvas>
+</div>
+
+<div class="katex-block">
+  $$N(t) = \left\lfloor\sqrt{\frac{t}{2\pi}}\right\rfloor \qquad N_{\text{fast}}(t) = \max\!\left(5,\ \left\lfloor\frac{N(t)}{4}\right\rfloor\right)$$
+</div>
+
+<!-- SECTION 2 — 10 itérations animées -->
+<h2>Section 2 — Les 10 itérations Illinois</h2>
+<p>
+  Phase 1 (vert, iter. 1–8) : $N_{\text{fast}}$ termes, prec 64 bits, tol $10^{-4}$.
+  Phase 2 (orange, iter. 9–10) : $N_{\text{full}}$ termes, prec 116 bits, tol $10^{-12}$.
+</p>
+
+<div class="panel">
+  <div class="panel-title">Itérations à $t = 77\,000$</div>
+  <div id="iter-container"></div>
+</div>
+
+<div class="katex-block">
+  $$t_{\text{zéro}}^{v7} = 8 \times N_{\text{fast}} \times 0.08\text{ ms} + 2 \times N(t) \times 1.1\text{ ms}$$
+</div>
+
+<!-- SECTION 3 — Durée T=100k -->
+<h2>Section 3 — Durée totale $T = 100\,000$</h2>
+
+<div class="panel">
+  <div class="panel-title">Comparaison v6 / v7</div>
+  <div style="margin: 0.8rem 0;">
+    <div style="font-size:0.83rem;color:#8b949e;margin-bottom:4px;">v6 — ~130 min</div>
+    <div style="background:#E24B4A33;border-radius:4px;height:28px;width:100%;position:relative;">
+      <div id="bar-v6" style="background:#E24B4A;height:100%;border-radius:4px;width:0%;transition:width 1.2s ease;"></div>
+      <span style="position:absolute;right:8px;top:5px;font-size:0.82rem;font-family:monospace;color:#e6edf3;">130 min</span>
+    </div>
+  </div>
+  <div style="margin: 0.8rem 0;">
+    <div style="font-size:0.83rem;color:#8b949e;margin-bottom:4px;">v7 estimé — ~28 min</div>
+    <div style="background:#1D9E7533;border-radius:4px;height:28px;width:100%;position:relative;">
+      <div id="bar-v7" style="background:#1D9E75;height:100%;border-radius:4px;width:0%;transition:width 1.2s ease 0.3s;"></div>
+      <span style="position:absolute;right:8px;top:5px;font-size:0.82rem;font-family:monospace;color:#e6edf3;">~28 min</span>
+    </div>
+  </div>
+  <p style="font-size:0.83rem;color:#8b949e;margin-top:0.6rem;">
+    Estimé sur 4 workers. Basé sur le gain ×4.6 mesuré théoriquement à $t=77\,000$.
+    Le run v7 réel permettra de valider ces chiffres.
+  </p>
+</div>
+
+<table>
+  <thead><tr><th>Métrique</th><th>v6</th><th>v7 estimé</th></tr></thead>
+  <tbody>
+    <tr><td>ms/zéro à $t=77\,000$</td><td class="ko">1230 ms</td><td class="ok">~264 ms</td></tr>
+    <tr><td>z/s à $t=77\,000$</td><td class="ko">4.3 z/s</td><td class="ok">~20 z/s</td></tr>
+    <tr><td>Durée $T=100\,000$ (4 workers)</td><td class="ko">~130 min</td><td class="ok"><strong>~28 min</strong></td></tr>
+    <tr><td>Durée $T=1\,000\,000$ (estimée)</td><td class="ko">>48 h</td><td class="mid">~5 h ?</td></tr>
+  </tbody>
+</table>
+
+<!-- SECTION 4 — Camembert v6 vs v7 -->
+<h2>Section 4 — Répartition du temps CPU</h2>
+
+<div class="toggle-row">
+  <button class="btn-toggle active" id="btn-v6" onclick="setPie('v6')">v6 (actuel)</button>
+  <button class="btn-toggle" id="btn-v7" onclick="setPie('v7')">v7 (estimé)</button>
+</div>
+
+<div class="panel">
+  <div class="pie-wrap">
+    <canvas id="cv-pie" width="200" height="200" style="width:200px;flex-shrink:0;"></canvas>
+    <div class="pie-legend" id="pie-legend"></div>
+  </div>
+</div>
+
+<div class="katex-block">
+  $$\text{Gain} = \frac{10 \times N(t) \times 1.1}{8 \times N_{\text{fast}} \times 0.08 + 2 \times N(t) \times 1.1}$$
+</div>
+
+<p style="margin-top:1.5rem;">
+  <a href="animation_ntermes_rs.html">← Coût RS et N_termes</a> ·
+  <a href="index.html">Accueil Riemann_Lab</a>
+</p>
+
+<script>
+var TWO_PI = 2 * Math.PI;
+
+/* ─── Fonctions de base ─── */
+function Nfull(t) { return Math.floor(Math.sqrt(t / TWO_PI)); }
+function Nfast(t) { return Math.max(5, Math.floor(Nfull(t) / 4)); }
+function msIterV6(t) { return 1.1 * Nfull(t); }
+function msIterP1(t) { return 0.08 * Nfast(t); }
+function msIterP2(t) { return 1.1 * Nfull(t); }
+function msZeroV6(t) { return 10 * msIterV6(t); }
+function msZeroV7(t) { return 8 * msIterP1(t) + 2 * msIterP2(t); }
+function gainV7(t)   { return msZeroV6(t) / msZeroV7(t); }
+
+/* ─── Section 1 ─── */
+function initSection1() {
+  document.getElementById('sl-t').addEventListener('input', updateSection1);
+  updateSection1();
+}
+
+function updateSection1() {
+  var t = parseFloat(document.getElementById('sl-t').value);
+  document.getElementById('val-t').textContent = t.toLocaleString('fr-FR');
+
+  var nf = Nfull(t), ns = Nfast(t);
+  var mv6 = msIterV6(t), mp1 = msIterP1(t);
+  var tz6 = msZeroV6(t), tz7 = msZeroV7(t);
+  var g   = gainV7(t);
+
+  document.getElementById('ro-nfull').textContent = nf;
+  document.getElementById('ro-nfast').textContent = ns;
+  document.getElementById('ro-ms-v6').textContent = mv6.toFixed(0) + ' ms';
+  document.getElementById('ro-ms-p1').textContent = mp1.toFixed(1) + ' ms';
+  document.getElementById('ro-tz-v6').textContent = tz6.toFixed(0) + ' ms';
+  document.getElementById('ro-tz-v7').textContent = tz7.toFixed(0) + ' ms';
+  document.getElementById('ro-gain').textContent  = '×' + g.toFixed(2);
+
+  drawPhases(t);
+}
+
+function drawPhases(t) {
+  var cv  = document.getElementById('cv-phases');
+  cv.width = cv.offsetWidth || 700;
+  var ctx = cv.getContext('2d');
+  var W = cv.width, H = cv.height;
+  ctx.clearRect(0, 0, W, H);
+
+  var px = 55, py = 15, pw = W - px - 20, ph = H - py - 35;
+  ctx.strokeStyle = '#30363d'; ctx.lineWidth = 1;
+  ctx.strokeRect(px, py, pw, ph);
+
+  var tMin = 1000, tMax = 100000, msMax = 1500;
+  function xOf(tv) { return px + (tv - tMin) / (tMax - tMin) * pw; }
+  function yOf(ms) { return py + ph - Math.min(ms, msMax) / msMax * ph; }
+
+  /* grille */
+  ctx.strokeStyle = '#21262d'; ctx.lineWidth = 0.5;
+  [10000, 50000, 100000].forEach(function(tv) {
+    var x = xOf(tv);
+    ctx.beginPath(); ctx.moveTo(x, py); ctx.lineTo(x, py+ph); ctx.stroke();
+    ctx.fillStyle = '#8b949e'; ctx.font = '10px monospace';
+    ctx.fillText((tv/1000)+'k', x - 8, py+ph+14);
+  });
+  [300, 600, 900, 1200].forEach(function(ms) {
+    var y = yOf(ms);
+    ctx.beginPath(); ctx.moveTo(px, y); ctx.lineTo(px+pw, y); ctx.stroke();
+  });
+
+  /* courbe t_zéro v6 */
+  ctx.strokeStyle = '#E24B4A'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (var i = 0; i <= pw; i++) {
+    var tv = tMin + i/pw * (tMax - tMin);
+    var ms = msZeroV6(tv);
+    if (i === 0) ctx.moveTo(px+i, yOf(ms)); else ctx.lineTo(px+i, yOf(ms));
+  }
+  ctx.stroke();
+
+  /* courbe t_zéro v7 */
+  ctx.strokeStyle = '#1D9E75'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (var i = 0; i <= pw; i++) {
+    var tv = tMin + i/pw * (tMax - tMin);
+    var ms = msZeroV7(tv);
+    if (i === 0) ctx.moveTo(px+i, yOf(ms)); else ctx.lineTo(px+i, yOf(ms));
+  }
+  ctx.stroke();
+
+  /* point courant */
+  ctx.fillStyle = '#E24B4A';
+  ctx.beginPath(); ctx.arc(xOf(t), yOf(msZeroV6(t)), 5, 0, TWO_PI); ctx.fill();
+  ctx.fillStyle = '#1D9E75';
+  ctx.beginPath(); ctx.arc(xOf(t), yOf(msZeroV7(t)), 5, 0, TWO_PI); ctx.fill();
+
+  /* légende */
+  ctx.fillStyle = '#E24B4A'; ctx.font = '11px monospace';
+  ctx.fillText('v6 : t_zéro', px+6, py+18);
+  ctx.fillStyle = '#1D9E75';
+  ctx.fillText('v7 : t_zéro adaptatif', px+6, py+32);
+
+  /* labels axe Y */
+  ctx.fillStyle = '#8b949e'; ctx.font = '10px monospace';
+  [300, 600, 900, 1200].forEach(function(ms) {
+    ctx.fillText(ms+'ms', 2, yOf(ms)+4);
+  });
+}
+
+/* ─── Section 2 — 10 itérations ─── */
+function initIterations() {
+  var container = document.getElementById('iter-container');
+  var t = 77000;
+  var nf = Nfull(t), ns = Nfast(t);
+  var msP1 = msIterP1(t), msP2 = msIterP2(t);
+  var maxMs = msP2;
+
+  for (var i = 1; i <= 10; i++) {
+    var isPhase2 = i > 8;
+    var ms = isPhase2 ? msP2 : msP1;
+    var pct = (ms / maxMs * 100).toFixed(1);
+    var color = isPhase2 ? '#EF9F27' : '#1D9E75';
+    var annot = isPhase2
+      ? 'N=' + nf + ' · 116 bits'
+      : 'N=' + ns + ' · 64 bits';
+    var phase = isPhase2 ? 'P2' : 'P1';
+
+    var row = document.createElement('div');
+    row.className = 'iter-row';
+    row.id = 'iter-row-' + i;
+    row.innerHTML =
+      '<span class="iter-label">iter ' + i + '</span>' +
+      '<span class="iter-bar-bg"><span class="iter-bar" id="ibar-' + i + '"' +
+        ' style="background:' + color + ';width:0%"></span></span>' +
+      '<span style="width:52px;font-size:0.78rem;color:' + color + ';font-family:monospace">' + phase + ' ' + ms.toFixed(1) + 'ms</span>' +
+      '<span class="iter-annot">' + annot + '</span>';
+    container.appendChild(row);
+  }
+
+  /* animation séquentielle */
+  for (var j = 1; j <= 10; j++) {
+    (function(idx, isP2, ms, maxMsInner) {
+      var delay = idx * 100;
+      setTimeout(function() {
+        var rowEl = document.getElementById('iter-row-' + idx);
+        var barEl = document.getElementById('ibar-' + idx);
+        if (rowEl) rowEl.style.opacity = '1';
+        if (barEl) {
+          var pctVal = (ms / maxMsInner * 100).toFixed(1);
+          barEl.style.width = pctVal + '%';
+        }
+      }, delay);
+    })(j, j > 8, j > 8 ? msP2 : msP1, maxMs);
+  }
+}
+
+/* ─── Section 3 — barres durée ─── */
+function initBars() {
+  setTimeout(function() {
+    document.getElementById('bar-v6').style.width = '100%';
+    document.getElementById('bar-v7').style.width = (28/130*100).toFixed(1) + '%';
+  }, 400);
+}
+
+/* ─── Section 4 — Camembert ─── */
+var PIE_DATA = {
+  v6: [
+    { pct: 0.830, color: '#E24B4A', label: 'illinois_C : 83 %' },
+    { pct: 0.110, color: '#EF9F27', label: 'overhead Python : 11 %' },
+    { pct: 0.057, color: '#7F77DD', label: 'détection numpy : 5.7 %' },
+    { pct: 0.003, color: '#1D9E75', label: 'autres : 0.3 %' }
+  ],
+  v7: [
+    { pct: 0.540, color: '#EF9F27', label: 'illinois_C phase 2 : ~54 %' },
+    { pct: 0.180, color: '#1D9E75', label: 'illinois_C phase 1 : ~18 %' },
+    { pct: 0.170, color: '#EF9F2788', label: 'overhead Python : ~17 %' },
+    { pct: 0.110, color: '#7F77DD', label: 'détection + autres : ~11 %' }
+  ]
+};
+
+var currentPie = 'v6';
+
+function setPie(version) {
+  currentPie = version;
+  document.getElementById('btn-v6').className = 'btn-toggle' + (version === 'v6' ? ' active' : '');
+  document.getElementById('btn-v7').className = 'btn-toggle' + (version === 'v7' ? ' active' : '');
+  drawPie(version);
+}
+
+function drawPie(version) {
+  var slices = PIE_DATA[version];
+  var cv = document.getElementById('cv-pie');
+  var ctx = cv.getContext('2d');
+  var cx = 100, cy = 100, r = 85;
+  ctx.clearRect(0, 0, 200, 200);
+
+  var angle = -Math.PI / 2;
+  var delay = 0;
+  slices.forEach(function(sl) {
+    var endAngle = angle + sl.pct * TWO_PI;
+    setTimeout((function(a, ea, col) {
+      return function() {
+        ctx.beginPath(); ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, a, ea);
+        ctx.closePath();
+        ctx.fillStyle = col; ctx.fill();
+        ctx.strokeStyle = '#0d1117'; ctx.lineWidth = 1.5;
+        ctx.stroke();
+      };
+    })(angle, endAngle, sl.color), delay);
+    delay += 150;
+    angle = endAngle;
+  });
+
+  /* légende */
+  var legend = document.getElementById('pie-legend');
+  legend.innerHTML = '';
+  slices.forEach(function(sl) {
+    var span = document.createElement('span');
+    span.innerHTML = '<span class="pie-dot" style="background:' + sl.color + '"></span>' + sl.label;
+    legend.appendChild(span);
+  });
+}
+
+/* ─── Init ─── */
+window.addEventListener('load', function() {
+  initSection1();
+  initIterations();
+  initBars();
+  drawPie('v6');
+  window.addEventListener('resize', function() {
+    updateSection1();
+  });
+});
+</script>
+</body>
+</html>
