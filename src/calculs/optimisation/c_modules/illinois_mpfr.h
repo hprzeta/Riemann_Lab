@@ -83,4 +83,15 @@ double Z_rs_mpfr_ntermes(double t_d, int N_termes, mpfr_prec_t prec);
 double illinois_refine_adaptive(double a, double b, double fa, double fb,
                                 double t, int iter_switch, int max_iter);
 
+/* illinois_refine_bench — variante benchmark, prec_fast/prec_full en paramètres
+ *
+ * Identique à illinois_refine_adaptive mais expose les précisions pour tester
+ * différentes configurations sans recompiler. Chemins de production inchangés.
+ *
+ * Entrée : prec_fast_bits — précision phase 1 (ex: 32, 48, 64)
+ * Entrée : prec_full_bits — précision phase 2 (ex: 80, 96, 116) */
+double illinois_refine_bench(double a, double b, double fa, double fb,
+                             double t, int iter_switch, int max_iter,
+                             int prec_fast_bits, int prec_full_bits);
+
 #endif /* ILLINOIS_MPFR_H */
