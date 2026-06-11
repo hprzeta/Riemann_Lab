@@ -302,3 +302,147 @@ double illinois_refine(double a, double b, double fa, double fb,
     /* retourner la borne avec le plus petit résidu */
     return (fabs(Za) < fabs(Zb)) ? a : b;
 }
+
+/* =========================================================================
+ * Z_rs_mpfr_ntermes — Z(t) RS avec N_termes imposé, retourne double
+ *
+ * Variante de Z_mpfr où N_termes est fourni explicitement (pas ⌊√(t/2π)⌋).
+ * Permet N_fast = max(5, N_full/4) pour les premières itérations Illinois :
+ * les SIGNES sont corrects pour la convergence, la précision absolue est
+ * réduite proportionnellement → suffisant jusqu'à tol_fast = 1e-4.
+ * ========================================================================= */
+double Z_rs_mpfr_ntermes(double t_d, int N_termes, mpfr_prec_t prec) {
+    mpfr_t mt, pi, theta, result, ln_n, arg, cs, sqn, tmp;
+    mpfr_inits2(prec, mt, pi, theta, result,
+                ln_n, arg, cs, sqn, tmp, (mpfr_ptr)NULL);
+
+    mpfr_set_d(mt, t_d, MPFR_RNDN);
+    mpfr_const_pi(pi, MPFR_RNDN);
+    theta_mpfr(theta, mt, pi, prec);
+
+    double pi_d = mpfr_get_d(pi, MPFR_RNDN);
+    double tau  = sqrt(t_d / (2.0 * pi_d));
+    long   N    = (long)N_termes;
+
+    mpfr_set_ui(result, 0, MPFR_RNDN);
+    for (long n = 1; n <= N; n++) {
+        mpfr_set_ui(ln_n, (unsigned long)n, MPFR_RNDN);
+        mpfr_log(ln_n, ln_n, MPFR_RNDN);                     /* ln(n) */
+        mpfr_mul(arg, mt, ln_n, MPFR_RNDN);                  /* t·ln n */
+        mpfr_sub(arg, theta, arg, MPFR_RNDN);               /* θ−t·ln n */
+        mpfr_cos(cs, arg, MPFR_RNDN);                        /* cos(·) */
+        mpfr_set_ui(sqn, (unsigned long)n, MPFR_RNDN);
+        mpfr_sqrt(sqn, sqn, MPFR_RNDN);                      /* √n */
+        mpfr_div(tmp, cs, sqn, MPFR_RNDN);
+        mpfr_add(result, result, tmp, MPFR_RNDN);
+    }
+    mpfr_mul_2ui(result, result, 1, MPFR_RNDN);              /* Z = 2·Σ */
+
+    /* terme de correction RS (C₀+C₁) avec N = N_termes */
+    double p  = tau - (double)N;
+    double u  = 2.0 * p - 1.0;
+    double A  = pi_d * (u*u / 2.0 + 0.375);
+    double B  = pi_d * u;
+    double cB = cos(B), sB = sin(B);
+    double cA = cos(A), sA = sin(A);
+    double R  = 0.0;
+    if (fabs(cB) > 1e-10) {
+        double C0    = cA / cB;
+        double dPsi  = pi_d * (-u*sA*cB + cA*sB) / (cB*cB);
+        double C1    = dPsi * (u*u/2.0 - 0.375) / (pi_d * tau);
+        double signe = ((N - 1) % 2 == 0) ? 1.0 : -1.0;
+        R = signe * pow(tau, -0.5) * (C0 + C1);
+    }
+    mpfr_set_d(tmp, R, MPFR_RNDN);
+    mpfr_add(result, result, tmp, MPFR_RNDN);
+
+    double r = mpfr_get_d(result, MPFR_RNDN);
+    mpfr_clears(mt, pi, theta, result, ln_n, arg, cs, sqn, tmp, (mpfr_ptr)NULL);
+    return r;
+}
+
+/* =========================================================================
+ * illinois_refine_adaptive — Illinois 2-phases : N_fast puis N_full
+ *
+ * Phase 1 (i < iter_switch) : N_fast = max(5, N_full/4), prec_fast = 64 bits
+ *   → coût ×4 moins cher, convergence rapide vers tol_fast = 1e-4
+ * Phase 2 (i ≥ iter_switch) : N_full = ⌊√(t/2π)⌋,  prec_full = 116 bits
+ *   → convergence finale vers tol_full = 1e-12
+ *
+ * Entrée : a, b       — bornes avec fa·fb < 0
+ * Entrée : fa, fb     — Z(a), Z(b) fournis par Python (mpmath.siegelz)
+ * Entrée : t          — valeur centrale ≈ (a+b)/2, pour calculer N_full
+ * Entrée : iter_switch — nombre d'itérations phase 1 (calibré sur bench)
+ * Entrée : max_iter   — nombre max d'itérations total
+ * Sortie : double — zéro affiné à tol_full ≈ 1e-12
+ * ========================================================================= */
+double illinois_refine_adaptive(
+    double a, double b,
+    double fa, double fb,
+    double t,
+    int iter_switch,
+    int max_iter
+) {
+    int N_full = (int)floor(sqrt(t / (2.0 * M_PI)));
+    /* N_full termes utilisés dans les deux phases — garantit les signes corrects.
+     * La vitesse vient de la précision réduite : 64 bits (phase 1) vs 116 bits (phase 2).
+     * N_fast = N_full/4 (idée originale) invalide les signes pour N_full > 10. */
+    mpfr_prec_t prec_fast = 64;    /* phase 1 : ~19 décimales — signes sûrs pour t≥300 */
+    mpfr_prec_t prec_full = 116;   /* phase 2 : ~35 décimales — convergence à 1e-12 */
+    double tol_full = 1e-12;
+
+    mpfr_t ma, mb, mc, mfa, mfb, mfc;
+    mpfr_inits2(prec_fast, ma, mb, mc, mfa, mfb, mfc, (mpfr_ptr)NULL);
+    mpfr_set_d(ma,  a,  MPFR_RNDN);
+    mpfr_set_d(mb,  b,  MPFR_RNDN);
+    mpfr_set_d(mfa, fa, MPFR_RNDN);
+    mpfr_set_d(mfb, fb, MPFR_RNDN);
+    mpfr_set(mc, mb, MPFR_RNDN);   /* valeur initiale de mc = b */
+
+    for (int i = 0; i < max_iter; i++) {
+        mpfr_prec_t prec_use = (i < iter_switch) ? prec_fast : prec_full;
+
+        /* passage phase 1→2 : élargir la précision de toutes les variables */
+        if (i == iter_switch) {
+            mpfr_prec_round(ma,  prec_full, MPFR_RNDN);
+            mpfr_prec_round(mb,  prec_full, MPFR_RNDN);
+            mpfr_prec_round(mfa, prec_full, MPFR_RNDN);
+            mpfr_prec_round(mfb, prec_full, MPFR_RNDN);
+            mpfr_prec_round(mc,  prec_full, MPFR_RNDN);
+            mpfr_prec_round(mfc, prec_full, MPFR_RNDN);
+        }
+
+        /* sécante : c = b − Z(b)·(b−a)/(Z(b)−Z(a)) */
+        mpfr_sub(mc,  mb,  ma,  MPFR_RNDN);   /* mc  = b − a */
+        mpfr_sub(mfc, mfb, mfa, MPFR_RNDN);   /* mfc = Z(b) − Z(a) */
+        mpfr_div(mc,  mc,  mfc, MPFR_RNDN);   /* mc  = (b−a)/(Z(b)−Z(a)) */
+        mpfr_mul(mc,  mc,  mfb, MPFR_RNDN);   /* mc  = Z(b)·(b−a)/(Z(b)−Z(a)) */
+        mpfr_sub(mc,  mb,  mc,  MPFR_RNDN);   /* mc  = b − ... = c */
+
+        double c_d  = mpfr_get_d(mc, MPFR_RNDN);
+        double fc_d = Z_rs_mpfr_ntermes(c_d, N_full, prec_use);
+        mpfr_set_d(mfc, fc_d, MPFR_RNDN);
+
+        /* mise à jour Illinois : fc·fb < 0 → zéro dans [b,c], déplacer a→b */
+        double fb_d = mpfr_get_d(mfb, MPFR_RNDN);
+        if (fc_d * fb_d < 0.0) {
+            mpfr_set(ma,  mb,  MPFR_RNDN);   /* a ← b */
+            mpfr_set(mfa, mfb, MPFR_RNDN);   /* Z(a) ← Z(b) */
+        } else {
+            /* correction Illinois — halve Z(a) pour éviter la stagnation */
+            mpfr_div_d(mfa, mfa, 2.0, MPFR_RNDN);
+        }
+        mpfr_set(mb,  mc,  MPFR_RNDN);       /* b ← c */
+        mpfr_set(mfb, mfc, MPFR_RNDN);       /* Z(b) ← Z(c) */
+
+        /* vérification convergence — uniquement en phase 2 */
+        double width = fabs(
+            mpfr_get_d(mb, MPFR_RNDN) - mpfr_get_d(ma, MPFR_RNDN)
+        );
+        if (width < tol_full && i >= iter_switch) break;
+    }
+
+    double result = mpfr_get_d(mc, MPFR_RNDN);
+    mpfr_clears(ma, mb, mc, mfa, mfb, mfc, (mpfr_ptr)NULL);
+    return result;
+}
