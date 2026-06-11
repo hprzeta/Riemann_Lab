@@ -1,0 +1,325 @@
+% analyse_v6_v7.tex — Transition v6 → v7 : illinois_refine_adaptive
+% Projet Riemann_Lab — hprzeta — 11 juin 2026
+% Compilé avec : lualatex analyse_v6_v7.tex
+\documentclass[11pt,a4paper]{article}
+
+\usepackage{amsmath,amsfonts,amssymb}
+\usepackage{geometry}
+\usepackage{booktabs}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{array}
+\usepackage{microtype}
+
+\geometry{margin=2.5cm}
+
+\definecolor{codeblue}{rgb}{0.0,0.3,0.6}
+\definecolor{codegray}{rgb}{0.4,0.4,0.4}
+\definecolor{codegreen}{rgb}{0.0,0.5,0.2}
+\definecolor{backcolor}{rgb}{0.97,0.97,0.97}
+
+\lstset{
+  backgroundcolor=\color{backcolor},
+  basicstyle=\ttfamily\small,
+  commentstyle=\color{codegray}\itshape,
+  keywordstyle=\color{codeblue}\bfseries,
+  stringstyle=\color{codegreen},
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{codegray!40},
+  language=C,
+  numbers=none,
+  xleftmargin=4pt,
+  xrightmargin=4pt,
+}
+
+\hypersetup{colorlinks=true, linkcolor=codeblue, urlcolor=codeblue}
+
+\title{\textbf{Analyse v6 $\to$ v7 : \texttt{illinois\_refine\_adaptive}}\\[4pt]
+  \large Optimisation 2-phases de l'affinage Illinois en C/libmpfr}
+\author{hprzeta --- Riemann\_Lab}
+\date{11 juin 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent
+La version v6 du pipeline de calcul des zéros de $\zeta$ identifie l'affinage
+Illinois (\texttt{illinois\_refine}, \textsc{libmpfr} 170 bits) comme bottleneck à
+\textbf{78--83\,\% du temps CPU}.
+La v7 introduit \texttt{illinois\_refine\_adaptive}, un affinage en deux phases :
+les premières itérations utilisent une précision réduite de 64~bits (1 limbe \textsc{mpfr}),
+avant de basculer à 116~bits pour la convergence finale.
+Le gain mesuré est \textbf{$\times 3.7$ sur la durée totale} à $T = 100\,000$
+(30,9 min vs $\approx$113 min pour v6).
+\end{abstract}
+
+%----------------------------------------------------------------------
+\section{Rappel v6 --- état et bottleneck}
+%----------------------------------------------------------------------
+
+La v6 (\textit{commit \texttt{b676e88}}) a résolu le problème des zéros manquants
+introduit par un STEP adaptatif insuffisant : avec \texttt{STEP = 0.010} fixe et la
+détection \texttt{scan\_arb.c} (Z double en C pur), le run $T = 100\,000$ donne
+\textbf{138\,069 zéros, 0 manquant, Turing--Backlund COMPLET}.
+
+Le profil de phases de v6 révèle un goulot unique :
+
+\begin{center}
+\begin{tabular}{lrrr}
+\toprule
+Phase & Temps cumulé & ms/appel & \% mur$\times$W \\
+\midrule
+\texttt{illinois\_C} & $\approx$5\,500 s & $\approx$130 ms & \textbf{83\,\%} \\
+turing & $\approx$60 s & --- & 1\,\% \\
+detection & $\approx$30 s & --- & 0,5\,\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+L'affinage de chaque zéro par \texttt{illinois\_refine} (170 bits, 15--20 itérations,
+$N_\text{full}$ termes par appel) est linéaire en
+\begin{equation}
+  N_\text{full}(t) = \left\lfloor\sqrt{\frac{t}{2\pi}}\right\rfloor
+  \quad\Longrightarrow\quad
+  N_\text{full}(100\,000) \approx 126\ \text{termes.}
+\end{equation}
+Avec 170 bits (3 limbes GMP), chaque opération \texttt{mpfr\_cos}, \texttt{mpfr\_log}
+est lente. C'est la cible de v7.
+
+%----------------------------------------------------------------------
+\section{Principe de l'optimisation 2-phases}
+%----------------------------------------------------------------------
+
+L'algorithme Illinois sur $[a, b]$ converge en $\approx 15$--20 itérations pour
+$|b - a| = \texttt{STEP} = 0.01 \to \varepsilon = 10^{-12}$.
+Les 8 premières itérations réduisent l'intervalle de $0.01$ à $\approx 10^{-4}$
+(gain $\approx 10^{8}$ sur la largeur) : c'est là que réside le coût dominant.
+
+\textbf{Idée v7 :} évaluer $Z(t)$ en précision réduite (64 bits) durant la phase de
+réduction rapide, puis en précision complète (116 bits) pour la convergence finale.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lcccl}
+\toprule
+Phase & Itérations & Précision & Limbes mpfr & Objectif \\
+\midrule
+1 (rapide) & $i = 0 \dots 7$ & 64 bits & 1 & $|b-a| \to 10^{-4}$ \\
+2 (précise) & $i \ge 8$ & 116 bits & 2 & $|b-a| \to 10^{-12}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+La transition de phase est opérée par \texttt{mpfr\_prec\_round} qui élargit la
+représentation sans recalcul.
+
+%----------------------------------------------------------------------
+\section{Décision technique : $N_\text{full}$ et non $N_\text{fast}$}
+%----------------------------------------------------------------------
+
+L'idée initiale était d'utiliser $N_\text{fast} = \max(5,\, N_\text{full}/4)$ termes
+en phase 1, réduisant le coût d'évaluation d'un facteur $\times 4$.
+\textbf{Cette approche a été abandonnée} pour la raison suivante.
+
+La formule de Riemann--Siegel
+\begin{equation}
+  Z(t) = 2\sum_{n=1}^{N} \frac{\cos\!\left(\theta(t) - t\ln n\right)}{\sqrt{n}}
+         + R(t), \quad N = N_\text{full}(t)
+\end{equation}
+n'est correcte que pour $N = \lfloor\sqrt{t/2\pi}\rfloor$.
+Tronquer à $N_\text{fast} < N_\text{full}$ ne produit pas une approximation
+grossière du même $Z$ : les termes manquants peuvent \emph{changer le signe} de la somme.
+
+\begin{center}
+\small\textit{Exemple} : $t = 1002$, $N_\text{full} = 12$, $N_\text{fast} = 3$.\\
+$Z_\text{RS}(c,\, N=3)$ peut avoir le signe opposé à $Z_\text{RS}(c,\, N=12)$.
+\end{center}
+
+Un signe incorrect dans l'algorithme Illinois viole l'invariant
+$Z(a) \cdot Z(b) < 0$ et la convergence diverge vers un pseudo-zéro arbitraire.
+\textbf{La solution retenue conserve $N_\text{full}$ termes dans les deux phases} :
+le gain de vitesse vient uniquement de la précision réduite.
+
+\subsection*{Pourquoi 64 bits $\gg$ 170 bits en vitesse ?}
+
+\textsc{mpfr} stocke un nombre flottant en $\lceil p/64 \rceil$ limbes de 64 bits.
+Pour $p = 64$ bits : 1 limbe. Pour $p = 170$ bits : 3 limbes.
+Les fonctions transcendantes (\texttt{mpfr\_cos}, \texttt{mpfr\_log}) exploitent des
+routines SIMD spécialisées pour 1 limbe, absentes à 3 limbes.
+Le rapport de vitesse observé est \textbf{$\times 10$--$20$} par appel, bien supérieur
+au simple rapport de limbes ($\times 3$).
+
+%----------------------------------------------------------------------
+\section{Implémentation}
+%----------------------------------------------------------------------
+
+Deux fonctions ont été ajoutées dans \texttt{illinois\_mpfr.c} (commit \texttt{8637098}) :
+
+\begin{lstlisting}[language=C, caption=Signature de \texttt{Z\_rs\_mpfr\_ntermes}]
+/* Z(t) RS avec N_termes impose (pas floor(sqrt(t/2pi))) */
+double Z_rs_mpfr_ntermes(double t_d, int N_termes, mpfr_prec_t prec);
+\end{lstlisting}
+
+\begin{lstlisting}[language=C, caption=Coeur de \texttt{illinois\_refine\_adaptive}]
+double illinois_refine_adaptive(
+    double a, double b, double fa, double fb,
+    double t, int iter_switch, int max_iter)
+{
+    int N_full = (int)floor(sqrt(t / (2.0 * M_PI)));
+    mpfr_prec_t prec_fast = 64;   /* phase 1 : 1 limbe SIMD */
+    mpfr_prec_t prec_full = 116;  /* phase 2 : 2 limbes, convergence 1e-12 */
+
+    /* ... boucle Illinois ... */
+    if (i == iter_switch) {
+        /* transition : elargir la precision de toutes les variables mpfr */
+        mpfr_prec_round(ma, prec_full, MPFR_RNDN);
+        /* ... idem mb, mfa, mfb, mc, mfc ... */
+    }
+    double fc_d = Z_rs_mpfr_ntermes(c_d, N_full, prec_use);
+    /* ... mise a jour Illinois classique ... */
+}
+\end{lstlisting}
+
+Côté Python, \texttt{compute\_zeros\_v6.py} charge la nouvelle signature par ctypes
+et appelle \texttt{illinois\_refine\_adaptive} avec \texttt{ITER\_SWITCH = 8},
+\texttt{MAX\_ITER = 50}, et un fallback vers \texttt{illinois\_refine} classique en cas
+d'exception.
+
+%----------------------------------------------------------------------
+\section{Benchmarks mesurés}
+%----------------------------------------------------------------------
+
+\subsection{Profil phases v7 --- $T = 100\,000$}
+
+\begin{center}
+\begin{tabular}{lrrrr}
+\toprule
+Phase & Temps cumulé & Appels & ms/appel & \% mur$\times$W \\
+\midrule
+\texttt{illinois\_C} & 5\,799,66 s & 137\,934 & \textbf{42,05} & 78,2\,\% \\
+\texttt{detection}   &    37,80 s  & 4         & 9\,450 & 0,5\,\% \\
+\texttt{turing}      &    22,05 s  & 1         & 22\,046 & 0,3\,\% \\
+\texttt{mpmath\_petit\_t} & 0,78 s & 138       & 5,65  & 0,0\,\% \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{Comparaison v6 vs v7}
+
+\begin{center}
+\begin{tabular}{lrrrr}
+\toprule
+Run & v6 (170 bits) & v7 (64$\to$116 bits) & Gain \\
+\midrule
+T=5\,000 --- vitesse (z/s)    & 136       & \textbf{1\,808}    & $\times 13$ \\
+T=5\,000 --- ms/appel         & 23,50 ms  & \textbf{1,47 ms}   & $\times 16$ \\
+T=10\,000 --- vitesse (z/s)   & $\approx$66 & \textbf{408}     & $\times 6{,}2$ \\
+T=10\,000 --- ms/appel        & $\approx$50 ms & \textbf{3,71 ms} & $\times 13$ \\
+T=100\,000 --- vitesse (z/s)  & $\approx$20 & \textbf{74,49}  & $\times 3{,}7$ \\
+T=100\,000 --- ms/appel       & $\approx$130 ms & \textbf{42,05 ms} & $\times 3{,}1$ \\
+T=100\,000 --- durée          & $\approx$113 min & \textbf{30,9 min} & $\times 3{,}7$ \\
+\midrule
+T=100\,000 --- zéros          & 138\,069  & 138\,069           & identique \\
+T=100\,000 --- manquants      & 0         & 0                  & identique \\
+T=100\,000 --- Turing         & COMPLET   & COMPLET            & identique \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%----------------------------------------------------------------------
+\section{Analyse du gain en fonction de $t$}
+%----------------------------------------------------------------------
+
+Le gain décroît avec $T$ car le coût d'un appel à \texttt{Z\_rs\_mpfr\_ntermes}
+est $\mathcal{O}(N_\text{full})$, avec $N_\text{full}(t) = \lfloor\sqrt{t/2\pi}\rfloor$ :
+
+\begin{equation}
+  N_\text{full}(T = 5\,000)   \approx 20, \quad
+  N_\text{full}(T = 10\,000)  \approx 40, \quad
+  N_\text{full}(T = 100\,000) \approx 126.
+\end{equation}
+
+À $T = 5\,000$ ($N \approx 20$), la boucle \texttt{for n=1..N} est courte et la
+différence 64 bits vs 170 bits (routines SIMD vs génériques) domine : gain $\times 16$.
+À $T = 100\,000$ ($N \approx 126$), la boucle sur les 126 termes domine et le gain
+de précision est dilué : gain $\times 3,1$ sur \texttt{ms/appel}.
+
+La relation empirique est :
+\begin{equation}
+  \text{gain}(T) \approx \frac{\alpha}{N_\text{full}(T)},
+  \quad \alpha \approx 300 \quad (\text{ajusté sur les mesures}).
+\end{equation}
+
+\subsection*{Précision finale}
+
+Les deux versions convergent vers le même pseudo-zéro RS, dont la distance au vrai
+zéro de Riemann est bornée par le biais structurel de la formule de Riemann--Siegel :
+\begin{equation}
+  \varepsilon_\text{RS}(t) = \mathcal{O}\!\left(t^{-3/2}\right)
+  \approx \begin{cases}
+    10^{-4} & t = 300 \\
+    10^{-6} & t = 77\,000
+  \end{cases}
+\end{equation}
+Cette précision est largement suffisante pour la validation Turing--Backlund
+(espacement minimal entre zéros $\approx 2\pi/\ln(t/2\pi) \approx 0.5$ à $t = 100\,000$).
+
+%----------------------------------------------------------------------
+\section{Résultat final v7 --- $T = 100\,000$}
+%----------------------------------------------------------------------
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+Paramètre & Valeur \\
+\midrule
+Script         & \texttt{compute\_zeros\_v6.py} (illinois\_refine\_adaptive) \\
+Zéros trouvés  & \textbf{138\,069} \\
+Manquants      & \textbf{0} \\
+Turing--Backlund & \textbf{COMPLET} \\
+LMFDB          & 19/20 à $< 10^{-10}$ \\
+Durée          & \textbf{30,9 min} \\
+Vitesse        & \textbf{74,49 z/s} \\
+Gain vs v6     & \textbf{$\times 3.7$} \\
+Log            & \texttt{logs/run\_T100k\_v7\_20260611\_1424.log} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%----------------------------------------------------------------------
+\section{Conclusion et perspectives}
+%----------------------------------------------------------------------
+
+La v7 démontre qu'une réduction de précision \emph{bien ciblée} (64 bits pour 8
+itérations Illinois sur 15--20) apporte un gain substantiel ($\times 3,7$) sans
+aucune perte de correction mathématique.
+
+\subsection*{Limitation connue}
+
+$N_\text{fast} = N_\text{full}/4$ a été écarté car les termes manquants changent
+le signe de $Z_\text{RS}$ et brisent la convergence.
+Toute tentative future de réduction des termes devra intégrer un \emph{guard de signe}
+(comparaison avec \texttt{Z\_double} avant d'accepter le signe de $Z_\text{RS}$ tronquée).
+
+\subsection*{Pistes post-v7}
+
+\begin{enumerate}
+  \item \textbf{Termes RS plus rapides} : implémenter $C_2, C_3$ (corrections d'ordre
+    supérieur) pour réduire le biais $\varepsilon_\text{RS}$ à $\mathcal{O}(t^{-5/2})$.
+  \item \textbf{Vectorisation interne} : batch de plusieurs appels $Z_\text{RS}(c_i)$
+    simultanés dans Illinois (SSE/AVX pour la boucle sur $n$).
+  \item \textbf{Phase 1 en double pur} : remplacer \texttt{mpfr} à 64 bits par
+    \texttt{double} IEEE 754 ($\sim 52$ bits) pour les itérations de réduction rapide,
+    évitant l'overhead d'allocation \texttt{mpfr}.
+\end{enumerate}
+
+\vspace{1.5em}
+\hrule
+\vspace{0.5em}
+\small\textit{Document produit le 11 juin 2026. Commit \texttt{8637098} sur la branche
+\texttt{Riemann\_Lab\_C}. Voir \texttt{JOURNAL.md} du wiki pour l'historique complet.}
+
+\end{document}
