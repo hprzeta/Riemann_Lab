@@ -235,7 +235,6 @@ def valider_turing(zeros_calcules: list, dps: int = 35) -> dict:
     print(f"  {'─'*10}  {'─'*10}  {'─'*10}  {'─'*10}  {'─'*10}")
 
     verifications   = []
-    manquants_total = 0   # uniquement les vrais déficits (manquants > 0)
     complet         = True
 
     for T in T_checks:
@@ -250,7 +249,6 @@ def valider_turing(zeros_calcules: list, dps: int = 35) -> dict:
             # Vrais zéros manqués — le calcul est incomplet
             statut = f"❌ MANQUE {delta}"
             ok     = False
-            manquants_total += delta
             complet = False
         else:
             # Plus de zéros que prévu — surplus dû au chevauchement des workers
@@ -265,6 +263,11 @@ def valider_turing(zeros_calcules: list, dps: int = 35) -> dict:
             "delta": delta, "ok": ok, "statut": statut
         })
 
+    # Déficit net = delta au dernier checkpoint (T_max).
+    # NE PAS sommer les deltas intermédiaires : ils sont cumulatifs et
+    # compteraient les mêmes zéros manquants plusieurs fois (bug historique).
+    manquants_total = verifications[-1]["delta"] if verifications else 0
+
     print(f"{'─'*70}")
     if complet:
         print(f"  ✅  COMPLET — aucun zéro manquant dans [0, {T_max:.2f}]")
@@ -274,7 +277,7 @@ def valider_turing(zeros_calcules: list, dps: int = 35) -> dict:
             print(f"       (chevauchement workers ou imprécision de N(T) — normal)")
     else:
         print(f"  ❌  INCOMPLET — {manquants_total} zéro(s) manquant(s)")
-        print(f"       → Relancer avec STEP plus petit (ex: 0.1)")
+        print(f"       → Relancer avec STEP plus petit")
     print(f"{'─'*70}\n")
 
     return {

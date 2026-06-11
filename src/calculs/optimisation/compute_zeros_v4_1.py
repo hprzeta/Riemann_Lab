@@ -59,6 +59,17 @@ from arb_wrapper           import arb_hardy_z, info_backend, ARB_DISPONIBLE
 # Instrumentation 3+1 phases (detection / illinois_C / mpmath_petit_t / turing)
 from chrono_phases         import chrono, snapshot, agreger, rapport
 
+# scan_arb — détection C pure (Z_double RS double + C0+C1)
+# Import au niveau module : scan_arb_wrapper charge scan_arb.so au 1er appel.
+# Dans chaque worker (après fork), le 1er appel à scan_arb() charge le .so
+# dans l'espace mémoire du worker — pas de conflit GMP/mpfr.
+try:
+    from scan_arb_wrapper import scan_arb
+    SCAN_ARB_DISPONIBLE = True
+except (ImportError, FileNotFoundError) as _e:
+    SCAN_ARB_DISPONIBLE = False
+    print(f"  ⚠️  scan_arb.so absent → fallback Z_vect_correct ({_e})")
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 #  SECTION 1 — CHEMIN .so ET SEUIL
@@ -78,48 +89,48 @@ if not SO_PATH.exists():
 T_SEUIL_ILLINOIS_C = 300.0
 
 
-def step_pour_t(t: float) -> float:
-    """Pas de scan adaptatif selon la tranche t.
-
-    Espacement moyen entre zéros ≈ 2π/ln(t/2π) :
-      ~0.39 à t=1k · ~0.28 à t=10k · ~0.21 à t=100k
-    On prend step ≈ espacement/5 pour garantir au moins 5 points par bracket.
-    Seuil t=5 000 ajouté (2026-06-10) : espacement min mesuré ~0.038 à t~8000
-    → STEP=0.05 au lieu de 0.1 pour t ∈ [5k, 50k].
+def _n_zeros_expected(T: float) -> int:
+    """N(T) — formule de Riemann-von Mangoldt.
+    N(T) ≈ T/(2π) · ln(T/2πe)  — le 'e' dans 2πe est OBLIGATOIRE.
     """
-    if t < 5_000:
-        return 0.1
-    elif t < 50_000:
-        return 0.05
-    return 0.02
+    if T < 14.0:
+        return 0
+    return int(T / (2 * math.pi) * math.log(T / (2 * math.pi * math.e)))
 
 
 def _partitionner_adaptatif(
     T_MIN: float, T_MAX: float, N_WORKERS: int
 ) -> list:
-    """Segments équitables via partition uniforme de [√T_MIN, √T_MAX].
+    """Segments équitables par inversion de N(T) — chaque worker reçoit N(T_MAX)/W zéros.
 
-    Justification : ∫ 1/√t dt = 2√t → couper l'axe √t en N parts égales
-    équilibre le nombre de zéros par worker (densité ≈ log(t)/2π ∝ 1/√t).
-    Sans ça : Worker 3 ([75k,100k]) traite ~2× plus de zéros que Worker 0 ([14,25k]).
-    Overlap fixe 2.0 — couvre toujours plusieurs brackets même à STEP=0.02.
-    Les doublons produits sont éliminés par dedupliquer(tolerance=0.01).
+    Recherche binaire pour trouver T_i tels que N(T_i) = i × N(T_MAX)/W.
+    Plus précis que la méthode 1/√t pour les grands T où la densité croît.
+    Overlap fixe 0.5 — couvre les brackets sur les bords de segment.
+    Les doublons sont éliminés par dedupliquer(tolerance=0.01).
     """
-    sqrt_min = math.sqrt(T_MIN)
-    sqrt_max = math.sqrt(T_MAX)
-    delta    = (sqrt_max - sqrt_min) / N_WORKERS
+    N_total = _n_zeros_expected(T_MAX)
+    if N_total == 0 or N_WORKERS <= 1:
+        return [(T_MIN, T_MAX)]
+
+    # Trouver T tel que N(T) = cible par bissection
+    def _t_pour_n(n_cible: int, t_lo: float, t_hi: float) -> float:
+        for _ in range(60):  # 60 itérations → précision ~1e-12 sur t_hi
+            t_mid = (t_lo + t_hi) / 2.0
+            if _n_zeros_expected(t_mid) < n_cible:
+                t_lo = t_mid
+            else:
+                t_hi = t_mid
+        return (t_lo + t_hi) / 2.0
 
     segments = []
-    for i in range(N_WORKERS):
-        a = max(T_MIN, (sqrt_min + i * delta) ** 2)
-        b = (sqrt_min + (i + 1) * delta) ** 2
-        if i == N_WORKERS - 1:
-            b = T_MAX
-        else:
-            # Overlap fixe 2.0 — couvre toujours plusieurs brackets même à STEP=0.02
-            # Les doublons produits sont éliminés par dedupliquer(tolerance=0.01)
-            b += 2.0
-        segments.append((a, min(b, T_MAX)))
+    OVERLAP  = 0.5  # assure que les brackets sur les bords sont capturés
+    t_prev   = T_MIN
+    for i in range(1, N_WORKERS):
+        n_cible = i * N_total // N_WORKERS
+        t_next  = _t_pour_n(n_cible, T_MIN, T_MAX)
+        segments.append((t_prev, min(t_next + OVERLAP, T_MAX)))
+        t_prev  = t_next
+    segments.append((t_prev, T_MAX))
     return segments
 
 
@@ -128,11 +139,12 @@ def _partitionner_adaptatif(
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def worker_v4_1(args: tuple) -> Tuple[list, dict, dict]:
-    """Worker multiprocessing v4.1.
+    """Worker multiprocessing v4.1 — détection scan_arb.c + affinage illinois_refine.
 
-    Charge illinois_mpfr.so APRÈS le fork() → pas de corruption GMP.
-    Utilise Z_batch pour la détection vectorisée (correct partout).
-    Affinage : Illinois C si t ≥ T_SEUIL_ILLINOIS_C, mpmath sinon.
+    Charge illinois_mpfr.so ET scan_arb.so APRÈS le fork() → pas de corruption GMP.
+    Détection : scan_arb C (Z_double RS double + C0+C1, step=0.010)
+    Affinage  : illinois_refine C (libmpfr 170 bits) pour t ≥ 300
+                arb_hardy_z + mpmath.findroot pour t < 300
 
     Paramètres
     ----------
@@ -141,18 +153,14 @@ def worker_v4_1(args: tuple) -> Tuple[list, dict, dict]:
     t_start, t_end, step, so_path, tol, worker_id = args
     debut = time.time()
 
-    # Chargement .so après fork — chaque worker a son propre espace mémoire
+    # Chargement illinois_mpfr.so après fork — chaque worker a son propre espace mémoire
     lib = ctypes.CDLL(str(so_path))
-    # Ancienne interface conservée pour compatibilité
-    lib.illinois_mpfr.restype  = ctypes.c_double
-    lib.illinois_mpfr.argtypes = [ctypes.c_double, ctypes.c_double, ctypes.c_double]
-    # Option B : illinois_refine reçoit fa/fb précalculés par Python
     lib.illinois_refine.restype  = ctypes.c_double
     lib.illinois_refine.argtypes = [
         ctypes.c_double,  # a
         ctypes.c_double,  # b
-        ctypes.c_double,  # fa = Z(a) calculé par Z_vect_correct
-        ctypes.c_double,  # fb = Z(b) calculé par Z_vect_correct
+        ctypes.c_double,  # fa = Z(a) précalculé par scan_arb
+        ctypes.c_double,  # fb = Z(b) précalculé par scan_arb
         ctypes.c_int,     # prec_bits (170)
         ctypes.c_double,  # tol
         ctypes.c_int,     # max_iter (100)
@@ -163,70 +171,68 @@ def worker_v4_1(args: tuple) -> Tuple[list, dict, dict]:
 
     zeros_segment = []
     stats         = {"illinois_C": 0, "mpmath_petit_t": 0, "mpmath_fallback": 0}
-    TAILLE_BLOC   = 5000   # points par appel Z_batch
-    _log_palier   = 0      # dernier palier de 1000 zéros affiché
+    _log_palier   = 0
 
-    t_courant = t_start
-    while t_courant < t_end:
-        s          = step_pour_t(t_courant)          # pas adaptatif selon la tranche t
-        t_fin_bloc = min(t_courant + TAILLE_BLOC * s, t_end)
-        t_array    = np.arange(t_courant, t_fin_bloc, s, dtype=np.float64)
-        if len(t_array) < 2:
-            break
-
-        # Détection vectorisée — Z_vect_correct (N(t) par ligne, correct partout)
-        # Z_batch utilise N_max fixe → termes RS parasites pour petit t → bug détection
+    # ── Détection : scan_arb C (1 appel) ou Z_vect_correct numpy (fallback) ──────
+    if SCAN_ARB_DISPONIBLE:
         with chrono("detection"):
-            Z_vals = Z_vect_correct(t_array)
-            idx    = np.where(np.diff(np.sign(Z_vals)))[0]
+            brackets = scan_arb(t_start, t_end, step=step)
+    else:
+        # Fallback Z_vect_correct — blocs de TAILLE_BLOC pour éviter l'OOM
+        TAILLE_BLOC = 5000
+        brackets    = []
+        t_courant   = t_start
+        with chrono("detection"):
+            while t_courant < t_end:
+                t_fin = min(t_courant + TAILLE_BLOC * step, t_end)
+                t_arr = np.arange(t_courant, t_fin, step, dtype=np.float64)
+                if len(t_arr) < 2:
+                    break
+                Zv = Z_vect_correct(t_arr)
+                for j in np.where(np.diff(np.sign(Zv)))[0]:
+                    brackets.append((float(t_arr[j]), float(t_arr[j+1]),
+                                     float(Zv[j]),   float(Zv[j+1])))
+                t_courant = float(t_arr[-1]) + step
 
-        for i in idx:
-            a     = float(t_array[i])
-            b     = float(t_array[i + 1])
-            fa    = float(Z_vals[i])      # valeur déjà calculée — pas de recalcul
-            fb    = float(Z_vals[i + 1])
-            t_mid = (a + b) / 2.0
-            try:
-                if t_mid >= T_SEUIL_ILLINOIS_C:
-                    # Illinois C Option B — fa/fb depuis Z_vect_correct (correct partout)
-                    # Évite la recalcul Z en C qui introduisait le biais ~0.3
-                    with chrono("illinois_C"):
-                        zero = lib.illinois_refine(a, b, fa, fb, 170, tol, 100)
-                    if a - 1e-10 <= zero <= b + 1e-10:
-                        zeros_segment.append(zero)
-                        stats["illinois_C"] += 1
-                    else:
-                        # Résultat hors intervalle → fallback bracketed Illinois Arb
-                        # (ne pas utiliser findroot(arb_hardy_z, t_mid) sans bracket : peut diverger)
-                        with chrono("mpmath_fallback"):
-                            zero = float(_mp.findroot(
-                                arb_hardy_z, (a, b),
-                                solver="illinois", tol=1e-12, maxsteps=80,
-                            ))
-                        zeros_segment.append(zero)
-                        stats["mpmath_fallback"] += 1
+    # ── Affinage : illinois_refine ou arb+mpmath selon seuil t=300 ───────────────
+    for a, b, fa, fb in brackets:
+        t_mid = (a + b) / 2.0
+        try:
+            if t_mid >= T_SEUIL_ILLINOIS_C:
+                # Illinois C Option B — fa/fb depuis scan_arb, pas de recalcul C
+                with chrono("illinois_C"):
+                    zero = lib.illinois_refine(a, b, fa, fb, 170, tol, 100)
+                if a - 1e-10 <= zero <= b + 1e-10:
+                    zeros_segment.append(zero)
+                    stats["illinois_C"] += 1
                 else:
-                    # t < 300 — N < 7 termes, Illinois C imprécis → Arb bracketed
-                    # arb_hardy_z (~15 dps) suffisant ; workprec supprimé (sans effet sur Arb)
-                    with chrono("mpmath_petit_t"):
+                    # Résultat hors intervalle → fallback Arb bracketed
+                    with chrono("mpmath_fallback"):
                         zero = float(_mp.findroot(
                             arb_hardy_z, (a, b),
-                            solver="illinois", tol=tol, maxsteps=80,
+                            solver="illinois", tol=1e-12, maxsteps=80,
                         ))
                     zeros_segment.append(zero)
-                    stats["mpmath_petit_t"] += 1
-            except Exception:
-                pass  # Turing-Backlund détectera les zéros manquants
+                    stats["mpmath_fallback"] += 1
+            else:
+                # t < 300 — N < 7 termes RS, illinois_refine imprécis → Arb bracketed
+                with chrono("mpmath_petit_t"):
+                    zero = float(_mp.findroot(
+                        arb_hardy_z, (a, b),
+                        solver="illinois", tol=tol, maxsteps=80,
+                    ))
+                zeros_segment.append(zero)
+                stats["mpmath_petit_t"] += 1
+        except Exception:
+            pass  # Turing-Backlund détectera les zéros manquants
 
-        # Log de progression toutes les 1000 zéros (palier franchi dans ce bloc)
+        # Log de progression toutes les 1000 zéros
         n = len(zeros_segment)
         if n // 1000 > _log_palier // 1000 and n > 0:
             elapsed = time.time() - debut
             print(f"  [Worker {worker_id}] zéro #{(n // 1000) * 1000}"
                   f" à t={zeros_segment[-1]:.2f} — {elapsed:.1f}s", flush=True)
             _log_palier = n
-
-        t_courant = float(t_array[-1]) + s
 
     duree = time.time() - debut
     print(f"  [Worker {worker_id}] {len(zeros_segment)} zéros en {duree:.1f}s  "
@@ -250,7 +256,7 @@ def calculer_zeros_v4_1(
 
     Retourne (zeros, stats_aggregées, profil_phases_workers).
     """
-    # Segmentation 1/√t — équilibre le nombre de zéros par worker
+    # Segmentation N(T) — chaque worker reçoit N(T_MAX)/N_WORKERS zéros
     segments  = _partitionner_adaptatif(T_MIN, T_MAX, N_WORKERS)
     args_list = [
         (t_min, t_max, STEP, SO_PATH, TOL, i)
@@ -427,8 +433,9 @@ def ecrire_log(chemin_log, horodatage, T_MIN, T_MAX, STEP, N_WORKERS,
     L(f"      N_WORKERS          = {N_WORKERS}")
     L(f"      T_SEUIL_ILLINOIS_C = {T_SEUIL_ILLINOIS_C}  (N≥7 termes RS)")
     L(f"      illinois_mpfr.so   : {SO_PATH}")
-    L(f"      Détection          : Z_batch (RS numpy vectorisé — correct partout)")
-    L(f"      Affinage t≥300     : illinois_refine C Option B — fa/fb depuis Z_vect_correct")
+    scan_str = "scan_arb C (Z_double RS C0+C1)" if SCAN_ARB_DISPONIBLE else "Z_vect_correct numpy (fallback)"
+    L(f"      Détection          : {scan_str}")
+    L(f"      Affinage t≥300     : illinois_refine C Option B — fa/fb depuis scan_arb")
     L(f"      Affinage t<300     : arb_hardy_z + mpmath.findroot (N<7 termes — légitime)")
     L(f"      Fallback           : arb_hardy_z + mpmath.findroot (hors intervalle)")
     L(f"      Backend Arb        : {info_backend()}")
@@ -497,9 +504,8 @@ def ecrire_log(chemin_log, horodatage, T_MIN, T_MAX, STEP, N_WORKERS,
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def _step_adaptatif(T_MAX: float) -> float:
-    """Pas sécurisé = espacement_moyen / 5, plafonné à 0.10."""
-    espacement = 2 * math.pi / math.log(T_MAX / (2 * math.pi))
-    return min(round(espacement / 5, 3), 0.10)
+    """STEP fixe 0.010 — gap-safe mesuré (gap min = 0.019 à t=66678 sur T=100k)."""
+    return 0.010
 
 
 def saisir_parametres():
@@ -508,15 +514,17 @@ def saisir_parametres():
     print("   CALCUL DES ZÉROS NON TRIVIAUX — v4.1 (Phase C)")
     print("=" * 65)
     print()
-    print("  Méthode : Z_batch (détection) + Illinois C/Arb/mpmath (affinage)")
-    print("  Validation : Turing-Backlund")
+    scan_statut = "✓ scan_arb.so actif (Z_double C)" if SCAN_ARB_DISPONIBLE else "⚠ fallback Z_vect_correct"
+    print(f"  Détection  : {scan_statut}")
+    print(f"  Affinage   : Illinois C/Arb/mpmath")
+    print(f"  Validation : Turing-Backlund")
     print(f"  .so : {SO_PATH}")
     print(f"  Z(t) fallback : {info_backend()}")
     print()
-    print("  Estimation du temps (4 workers) :")
-    print("    T =   1 000  →  ~ 396 zéros  →  ~  30 sec")
-    print("    T =  10 000  →  ~4516 zéros  →  ~   5 min")
-    print("    T = 100 000  →  ~49k  zéros  →  ~  45 min")
+    print(f"  Estimation du temps ({min(8, multiprocessing.cpu_count())} workers) :")
+    print("    T =   1 000  →  ~  396 zéros  →  ~  25 sec")
+    print("    T =  10 000  →  ~ 4516 zéros  →  ~ 2.5 min")
+    print("    T = 100 000  →  ~49k  zéros  →  ~  35 min")
     print()
 
     while True:
@@ -528,7 +536,7 @@ def saisir_parametres():
         except ValueError:
             print("  Nombre invalide.")
 
-    N_WORKERS = multiprocessing.cpu_count()
+    N_WORKERS = min(8, multiprocessing.cpu_count())
     STEP      = _step_adaptatif(T_MAX)
     print(f"\n  ── Configuration ──────────────────────────────")
     print(f"     T_MAX              = {T_MAX:.0f}")
