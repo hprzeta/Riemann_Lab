@@ -618,4 +618,173 @@ TÂCHE 3 — Test T=10k v6, Turing COMPLET avant T=100k
 
 ---
 
-*ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_IA · hprzeta · MAJ 2026-06-03 · 9 juin 2026 · 10 juin 2026 (soir) · ~620 lignes*
+## Session 2026-06-10 soir / 2026-06-11 — Prompts E–L
+
+### Prompt E — Fix régression STEP + relance run T=100k (10 juin soir)
+
+```
+CONTEXTE :
+Run T=100k STEP=δ/3 (PID 311769) tué — régression ×40 (0.5 z/s)
+Cause : STEP=0.02 → 5M points détection → ×40 plus lent
+
+TÂCHE 1 — Tuer run régressif : kill 311769
+TÂCHE 2 — Corriger step_pour_t() :
+  → STEP = 0.010 fixe (gap-safe mesuré g_min=0.019 à t=66 678)
+TÂCHE 3 — Relancer T=100k
+  nohup bash -c 'printf "100000\nO\n" | python \
+    src/calculs/optimisation/compute_zeros_v4_1.py \
+    2>&1 | tee calculs/run_T100k_step_delta3_$(date +%Y%m%d_%H%M).log' &
+
+RÉSULTAT : PID 328675, log run_T100k_step_delta3_20260610_1717.log
+  Worker 0 [14-6700] : 27 z/s ✅
+  Worker 3 [56700-100k] : 4.3 z/s (N_termes RS bottleneck)
+```
+
+### Prompt F — Documentation pendant run (10 juin 19h-22h)
+
+```
+TÂCHE 1 — ia_prompts_riemann_lab_complet.md : section prompts A-D
+TÂCHE 2 — Bonnes-Pratiques-Claude-Code.md :
+  + STEP=0.010 règle absolue
+  + Monitor Claude Code timeout 1h
+  + /clear avant prompt v6
+TÂCHE 3 — Guide-Git-GitHub.md :
+  + Pattern run longue durée (nohup + printf + tee)
+TÂCHE 4 — plan_v6_riemann.md (wiki) créé
+TÂCHE 5 — Skill riemann-lab mis à jour
+COMMIT : dc0be02 (wiki), a925999 (Riemann_Lab_C)
+```
+
+### Prompt G — Analyse résultat run + PDFs (10-11 juin)
+
+```
+CONTEXTE :
+Monitor déclenché 19h11 — run T=100k STEP=δ/3 terminé
+Turing : INCOMPLET — 2072 manquants ❌
+STEP=δ/3≈0.22 >> g_min=0.019 (distribution GUE)
+
+TÂCHE 1 — PDFs analyse :
+  analyse_problemes_v4_v4_1.md + PDF ✅
+  analyse_problemes_v4_1_v5.md complété + PDF ✅
+TÂCHE 2 — Commit + push
+```
+
+### Prompt H — Prompt D v6 corrigé (10 juin 19h30, après /clear)
+
+```
+ÉTAT :
+  STEP=0.1   → 17 manquants ❌
+  STEP paliers → 356 manquants ❌
+  STEP=δ/3   → 2072 manquants ❌ (pire — GUE gaps << δ)
+  RÈGLE : STEP = 0.010 fixe — gap-safe empirique
+
+TÂCHE 0 — Benchmark phases T=5000 :
+  illinois_C : ~85% · détection : ~3% · overhead : ~11%
+
+TÂCHE 1 — Créer scan_arb.c :
+  scan_zeros_arb(t_min, t_max, step, brackets_a, brackets_b, fa, fb)
+  arb_fpwrap rejeté : 175 µs/pt scalaire (×32 trop lent vs numpy)
+  Z_double retenu : ~1-2 µs/pt (×88 vs arb)
+
+TÂCHE 2 — Intégrer scan_arb + STEP=0.010 fixe
+TÂCHE 3 — Segmentation N(T) équilibrée (remplace 1/√t)
+
+RÉSULTATS (commit d3b4de0) :
+  T=5 000  : 115 z/s, Turing COMPLET ✅
+  T=10 000 : 75 z/s, Turing COMPLET ✅
+  T=100 000: 138 069 zéros, 0 manquant, Turing COMPLET ✅ (~130 min)
+  illinois_C = 83% (N_termes RS ≈ √(t/2π))
+```
+
+### Prompt I — Prompt unique post-v6 (11 juin, 19 tâches)
+
+```
+CONTEXTE : v6 validée (T=100k, 0 manquant, commit d3b4de0)
+
+19 TÂCHES :
+  0.  Nommage compute_zeros_v6.py
+  1.  Session reconstituée 10 juin
+  2.  Récap session PDF → BrainVault
+  3.  JOURNAL.md
+  4.  STACK.md
+  5.  Formules_zeta.md §19/§20/§21
+  6.  Bibliotheques.md
+  7.  Skills phase-c-illinois + riemann-lab
+  8.  Bonnes-Pratiques + Guide-Git
+  9.  analyse_problemes_v5_v6.md + PDF
+  10. analyse_problemes_v4_1_v6_synthese.md + PDF
+  11. Etape-1 section "Suite optimisations v5→v6"
+  12. ORGANISATION_FICHIERS.md
+  13. ia_prompts archivé
+  14. animations gaps_gue + ntermes_rs
+  15. index.html 2 pavés + stats 138 069 zéros
+  16. plan_v6_riemann.svg → docs/images/
+  17. Handoff.md local
+  18. PDFs → Proton Drive (3 nouveaux)
+  19. Push wiki + Riemann_Lab_IA + Riemann_Lab_C + main
+
+LEÇONS :
+  STEP=δ/3 → 2072 manquants (GUE gaps << δ, ratio ~30)
+  arb_fpwrap : 175 µs/pt inutilisable pour scan
+  illinois_C = 83% = vrai bottleneck (N_termes RS ≈ √(t/2π))
+```
+
+### Prompt J — Workflow SVG + maths v7 (11 juin)
+
+```
+TÂCHE 1 — workflow_post_version_riemann_lab.svg créé
+  10 blocs : 0-Nommage → ... → 10-Push final
+  → docs/images/workflow_post_version_riemann_lab.svg
+
+TÂCHE 2 — Maths v7 expliquées :
+  Z(t) = 2·Σ cos(θ(t)-t·ln n)/√n, N(t)=⌊√(t/2π)⌋
+  Coût : t_appel(t) ≈ 1.1 × N(t) ms
+  Phase 1 (bracketing) : N_fast=N(t)/4, 64 bits, tol 1e-4
+  Phase 2 (polish) : N_full=N(t), 116 bits, tol 1e-12
+  Gain théorique : ×4.6 → ~28 min T=100k
+```
+
+### Prompt K — Nettoyage prompts + inbox-ia (11 juin)
+
+```
+TÂCHE 1 — Consolidation prompts lieu unique
+  ia_prompts_riemann_lab_complet.md : ajout E→K
+  src/ia/prompts/*.md absorbés + supprimés
+TÂCHE 2 — Régénération inbox_ia_liens.md
+TÂCHE 3 — Push inbox-ia nouveaux docs
+TÂCHE 4 — PDF maths v7 "Pourquoi c'est lent et comment y remédier"
+TÂCHE 5 — animation_illinois_adaptatif.html
+```
+
+### Prompt L — v7 N_termes adaptatif illinois_mpfr.c (11 juin, après /clear)
+
+```
+CONTEXTE : v6 VALIDÉE : T=100k, 138 069 zéros, 0 manquant, Turing COMPLET ✅
+Bottleneck : illinois_C = 83%, N_termes RS ≈ √(t/2π)
+  t=77k → N=111 → 123 ms/appel → 4.3 z/s → 130 min T=100k
+
+OBJECTIF v7 : Illinois adaptatif 2 phases
+  N_fast = max(5, N(t)/4)
+  t_zéro_v7 = 8 × N_fast × 0.08ms + 2 × N(t) × 1.1ms
+  Gain ×4.6 → ~28 min T=100k estimé
+
+TÂCHES :
+  0. Benchmark chrono phases T=5000 (calibrer iter_switch)
+  1. illinois_mpfr.c : illinois_refine_adaptive() 2 phases
+  2. illinois_mpfr.c : Z_rs_mpfr_ntermes(t, N_termes, prec)
+  3. compute_zeros_v6.py : intégration + fallback
+  4. Compilation + test unitaire γ₁ ≈ 14.1347
+  5. Benchmark T=5000 v6 vs v7
+  6. Test T=10 000 (critère : 0 manquant, Turing COMPLET)
+  7. Run T=100 000 v7 (si T=10k validé)
+  8. Commit v7
+
+RÈGLES ABSOLUES :
+  STEP = 0.010 fixe
+  Charger .so POST-FORK
+  0 manquant + Turing COMPLET sur T=10k avant T=100k
+```
+
+---
+
+*ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_IA · hprzeta · MAJ 2026-06-03 · 9 juin 2026 · 10 juin 2026 (soir) · 11 juin 2026 · ~760 lignes*
