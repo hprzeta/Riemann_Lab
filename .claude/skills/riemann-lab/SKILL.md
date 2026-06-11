@@ -255,7 +255,20 @@ Pour des sujets plus approfondis, consulter :
 
 ---
 
-## 9. Comportement attendu
+## 9. État courant du projet (11 juin 2026)
+
+| Objectif | État |
+|---|---|
+| **Obj. 1 — v7 validée T=100k** | ✅ **30.9 min, 74.49 z/s, 138 069 zéros, 0 manquant, Turing COMPLET** |
+| Script actif | `compute_zeros_v7.py` |
+| Levier v7 | `prec_fast=64 bits` (1 limb mpfr → SIMD ×16) |
+| Commit | `8637098` sur `Riemann_Lab_C` |
+| Bottleneck restant | `illinois_C` = 78.2 % du temps CPU |
+| **Obj. 2 — v8 en préparation** | Option A : W=8 workers (×1.3 estimé, ~24 min) · Option B : prec phase 2 = 80 bits (à tester) |
+
+---
+
+## 10. Comportement attendu
 
 - Toujours répondre en **français**
 - Toujours vérifier que le LaTeX est **compatible KaTeX** avant de le proposer
