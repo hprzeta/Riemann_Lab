@@ -446,3 +446,82 @@ double illinois_refine_adaptive(
     mpfr_clears(ma, mb, mc, mfa, mfb, mfc, (mpfr_ptr)NULL);
     return result;
 }
+
+/* =========================================================================
+ * illinois_refine_bench — variante benchmark avec prec_fast/prec_full paramétrés
+ *
+ * Identique à illinois_refine_adaptive mais expose prec_fast_bits et
+ * prec_full_bits en paramètres pour tester différentes configurations
+ * sans recompiler. N'affecte pas les chemins de production.
+ *
+ * Paramètres ajoutés (vs illinois_refine_adaptive) :
+ *   prec_fast_bits — précision phase 1 (ex: 32, 48, 64, 80)
+ *   prec_full_bits — précision phase 2 (ex: 80, 96, 116)
+ *
+ * Règle des limbes : ceil(prec/64) → ≤64 bits = 1 limbe SIMD (rapide)
+ *                                   65–128 bits = 2 limbes (plus lent)
+ * ========================================================================= */
+double illinois_refine_bench(
+    double a, double b,
+    double fa, double fb,
+    double t,
+    int iter_switch,
+    int max_iter,
+    int prec_fast_bits,
+    int prec_full_bits
+) {
+    int N_full = (int)floor(sqrt(t / (2.0 * M_PI)));
+    mpfr_prec_t prec_fast = (mpfr_prec_t)prec_fast_bits;
+    mpfr_prec_t prec_full = (mpfr_prec_t)prec_full_bits;
+    double tol_full = 1e-12;
+
+    mpfr_t ma, mb, mc, mfa, mfb, mfc;
+    mpfr_inits2(prec_fast, ma, mb, mc, mfa, mfb, mfc, (mpfr_ptr)NULL);
+    mpfr_set_d(ma,  a,  MPFR_RNDN);
+    mpfr_set_d(mb,  b,  MPFR_RNDN);
+    mpfr_set_d(mfa, fa, MPFR_RNDN);
+    mpfr_set_d(mfb, fb, MPFR_RNDN);
+    mpfr_set(mc, mb, MPFR_RNDN);
+
+    for (int i = 0; i < max_iter; i++) {
+        mpfr_prec_t prec_use = (i < iter_switch) ? prec_fast : prec_full;
+
+        if (i == iter_switch) {
+            mpfr_prec_round(ma,  prec_full, MPFR_RNDN);
+            mpfr_prec_round(mb,  prec_full, MPFR_RNDN);
+            mpfr_prec_round(mfa, prec_full, MPFR_RNDN);
+            mpfr_prec_round(mfb, prec_full, MPFR_RNDN);
+            mpfr_prec_round(mc,  prec_full, MPFR_RNDN);
+            mpfr_prec_round(mfc, prec_full, MPFR_RNDN);
+        }
+
+        mpfr_sub(mc,  mb,  ma,  MPFR_RNDN);
+        mpfr_sub(mfc, mfb, mfa, MPFR_RNDN);
+        mpfr_div(mc,  mc,  mfc, MPFR_RNDN);
+        mpfr_mul(mc,  mc,  mfb, MPFR_RNDN);
+        mpfr_sub(mc,  mb,  mc,  MPFR_RNDN);
+
+        double c_d  = mpfr_get_d(mc, MPFR_RNDN);
+        double fc_d = Z_rs_mpfr_ntermes(c_d, N_full, prec_use);
+        mpfr_set_d(mfc, fc_d, MPFR_RNDN);
+
+        double fb_d = mpfr_get_d(mfb, MPFR_RNDN);
+        if (fc_d * fb_d < 0.0) {
+            mpfr_set(ma,  mb,  MPFR_RNDN);
+            mpfr_set(mfa, mfb, MPFR_RNDN);
+        } else {
+            mpfr_div_d(mfa, mfa, 2.0, MPFR_RNDN);
+        }
+        mpfr_set(mb,  mc,  MPFR_RNDN);
+        mpfr_set(mfb, mfc, MPFR_RNDN);
+
+        double width = fabs(
+            mpfr_get_d(mb, MPFR_RNDN) - mpfr_get_d(ma, MPFR_RNDN)
+        );
+        if (width < tol_full && i >= iter_switch) break;
+    }
+
+    double result = mpfr_get_d(mc, MPFR_RNDN);
+    mpfr_clears(ma, mb, mc, mfa, mfb, mfc, (mpfr_ptr)NULL);
+    return result;
+}
