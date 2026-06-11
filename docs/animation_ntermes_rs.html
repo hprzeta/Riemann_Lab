@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coût RS — N_termes et bottleneck illinois_C</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #0d1117; color: #e6edf3; line-height: 1.7;
+    padding: 1.8rem 1rem 3rem; max-width: 760px; margin: 0 auto;
+  }
+  h1 { font-size: 1.35rem; font-weight: 600; margin-bottom: 0.3rem; }
+  h2 { font-size: 1.05rem; font-weight: 500; color: #c9d1d9; margin: 2rem 0 0.7rem; }
+  .sub { color: #8b949e; font-size: 0.9rem; margin-bottom: 1.4rem; }
+  p  { color: #c9d1d9; font-size: 0.95rem; margin-bottom: 0.8rem; }
+  strong { color: #e6edf3; }
+  a  { color: #7F77DD; }
+  code {
+    font-family: ui-monospace, monospace; background: #161b22;
+    border: 1px solid #30363d; border-radius: 4px;
+    padding: 1px 5px; font-size: 0.85em; color: #9fe1cb;
+  }
+  .meta {
+    font-size: 0.8rem; color: #8b949e; border: 1px solid #30363d;
+    background: #161b22; border-radius: 8px; padding: 0.5rem 0.9rem;
+    margin-bottom: 1.6rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
+  }
+  .panel {
+    background: #161b22; border: 1px solid #30363d; border-radius: 10px;
+    padding: 1.1rem 1.2rem; margin: 1.2rem 0;
+  }
+  .panel-title { font-size: 0.85rem; color: #8b949e; margin-bottom: 0.8rem; }
+  .ctrl {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 0.83rem; color: #8b949e; margin-bottom: 0.7rem;
+  }
+  .ctrl span:first-child { min-width: 220px; }
+  input[type=range] { flex: 1; accent-color: #7F77DD; height: 4px; cursor: pointer; }
+  .val { font-weight: 600; color: #e6edf3; min-width: 80px; text-align: right; }
+  .katex-block {
+    background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+    padding: 0.4rem 1rem; margin: 0.8rem 0; overflow-x: auto;
+  }
+  table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; font-size: 0.86rem; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid #21262d; color: #c9d1d9; }
+  th { color: #8b949e; font-weight: 500; }
+  .ok { color: #1D9E75; } .ko { color: #E24B4A; } .mid { color: #EF9F27; }
+  .legend {
+    display: flex; gap: 18px; flex-wrap: wrap;
+    font-size: 0.78rem; color: #8b949e; margin-top: 0.7rem;
+  }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .dot { width: 10px; height: 10px; border-radius: 2px; }
+  canvas { display: block; width: 100%; border-radius: 6px; }
+  .readout {
+    background: #0d1117; border: 1px solid #30363d; border-radius: 6px;
+    padding: 0.5rem 0.9rem; margin: 0.7rem 0;
+    display: flex; gap: 1.5rem; flex-wrap: wrap;
+    font-size: 0.82rem; font-family: ui-monospace, monospace;
+  }
+  .readout-label { color: #8b949e; }
+  .readout-val   { color: #e6edf3; font-weight: 600; }
+  /* camembert */
+  .pie-wrap { display: flex; align-items: center; gap: 24px; margin: 0.8rem 0; }
+  .pie-legend { display: flex; flex-direction: column; gap: 6px; font-size: 0.83rem; }
+  .pie-legend span { display: flex; align-items: center; gap: 8px; color: #c9d1d9; }
+  .pie-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<div class="meta">
+  <span>Riemann_Lab — Cours animé · Coût RS et bottleneck illinois_C</span>
+  <span>Auteur : <b style="color:#c9d1d9">hprzeta</b> · Mise à jour : 11 juin 2026</span>
+</div>
+
+<h1>Coût RS — N_termes et bottleneck illinois_C</h1>
+<p class="sub">Pourquoi la vitesse de calcul décroît avec t, et où se situe le vrai goulot d'étranglement en v6.</p>
+
+<p>Retour au <a href="index.html">tableau de bord</a> · <a href="animation_gaps_gue.html">gaps GUE &amp; STEP</a> · <a href="animation_theta.html">θ(t)</a></p>
+
+<!-- ══════════════ 1. N_termes ══════════════ -->
+<h2>1. Nombre de termes Riemann-Siegel</h2>
+<p>La formule de Riemann-Siegel calcule $Z(t)$ comme une somme de $N_{\text{termes}}$ termes :</p>
+<div class="katex-block">$$Z(t) = 2\sum_{n=1}^{N_{\text{termes}}} \frac{\cos(\theta(t) - t\ln n)}{\sqrt{n}} + \text{terme de reste}, \qquad N_{\text{termes}}(t) = \left\lfloor\sqrt{\frac{t}{2\pi}}\right\rfloor$$</div>
+<p>Chaque terme nécessite un calcul de cosinus et une division. Le coût par appel $Z(t)$ croît donc en $O(\sqrt{t})$.</p>
+
+<div class="panel">
+  <div class="panel-title">Animation A — N_termes(t) et temps estimé par appel</div>
+  <canvas id="cv-ntermes" height="190"></canvas>
+  <div class="readout">
+    <span><span class="readout-label">t = </span><span class="readout-val" id="ro-t">10000</span></span>
+    <span><span class="readout-label">N_termes = </span><span class="readout-val" id="ro-n">—</span></span>
+    <span><span class="readout-label">≈ ms/appel Z = </span><span class="readout-val" id="ro-ms">—</span></span>
+    <span><span class="readout-label">√(t/2π) = </span><span class="readout-val" id="ro-sqrt">—</span></span>
+  </div>
+  <div class="ctrl">
+    <span>Valeur de t</span>
+    <input type="range" id="sl-t" min="100" max="100000" value="10000" step="100">
+    <span class="val" id="val-t">10 000</span>
+  </div>
+  <div class="legend">
+    <span><span class="dot" style="background:#7F77DD"></span>N_termes(t) = ⌊√(t/2π)⌋</span>
+    <span><span class="dot" style="background:#EF9F27"></span>point courant</span>
+  </div>
+</div>
+
+<!-- ══════════════ 2. VITESSE ══════════════ -->
+<h2>2. Vitesse réelle z/s — données v6</h2>
+<p>Les mesures du run v6 montrent que la vitesse suit approximativement $v(t) \propto 1/\sqrt{t}$ :</p>
+<div class="katex-block">$$v(t) \approx \frac{C}{\sqrt{t}}, \qquad C \approx 1700 \text{ (calibré sur les mesures v6)}$$</div>
+
+<div class="panel">
+  <div class="panel-title">Animation B — Vitesse z/s (mesurée v6 + courbe ajustée)</div>
+  <canvas id="cv-speed" height="200"></canvas>
+  <div class="readout">
+    <span><span class="readout-label">t estimé = </span><span class="readout-val" id="ro-test">10000</span></span>
+    <span><span class="readout-label">v(t) estimée = </span><span class="readout-val" id="ro-vest">—</span></span>
+    <span><span class="readout-label">Durée T=100k ≈ </span><span class="readout-val" id="ro-dur">—</span></span>
+  </div>
+  <div class="ctrl">
+    <span>t pour estimation vitesse</span>
+    <input type="range" id="sl-t2" min="100" max="100000" value="10000" step="100">
+    <span class="val" id="val-t2">10 000</span>
+  </div>
+  <div class="legend">
+    <span><span class="dot" style="background:#EF9F27"></span>mesures v6 (t=1k, 10k, 77k)</span>
+    <span><span class="dot" style="background:#7F77DD"></span>ajustement v∝1/√t</span>
+    <span><span class="dot" style="background:#1D9E75"></span>estimation courante</span>
+  </div>
+</div>
+
+<!-- ══════════════ 3. CAMEMBERT ══════════════ -->
+<h2>3. Répartition du temps CPU — run T=100 000 (v6)</h2>
+<p>L'affinage Illinois est le goulot principal : 83 % du temps CPU, contre &lt;1 % pour la détection de signes.</p>
+
+<div class="panel">
+  <div class="panel-title">Camembert animé — Temps CPU par composant</div>
+  <div class="pie-wrap">
+    <canvas id="cv-pie" width="200" height="200"></canvas>
+    <div class="pie-legend">
+      <span><span class="pie-dot" style="background:#E24B4A"></span>illinois_C (affinage 170 bits) — <strong>83 %</strong></span>
+      <span><span class="pie-dot" style="background:#EF9F27"></span>overhead Python/multiprocessing — <strong>11 %</strong></span>
+      <span><span class="pie-dot" style="background:#7F77DD"></span>scan_arb (détection Z_double) — <strong>5.7 %</strong></span>
+      <span><span class="pie-dot" style="background:#1D9E75"></span>détection signe numpy — <strong>0.2 %</strong></span>
+      <span><span class="pie-dot" style="background:#8b949e"></span>Turing-Backlund validation — <strong>0.1 %</strong></span>
+    </div>
+  </div>
+  <p style="font-size:0.83rem;color:#8b949e;">Le bottleneck est l'affinage Illinois à 170 bits (PREC=170, libmpfr). La v7 ciblera une réduction de N_termes par segmentation adaptative.</p>
+</div>
+
+<!-- ══════════════ 4. LEVIER V7 ══════════════ -->
+<h2>4. Levier v7 — N_termes adaptatif</h2>
+<p>L'idée v7 : limiter N_termes à un maximum <code>N_max</code> pour les grandes valeurs de t, en échange d'une légère perte de précision sur Z(t) (compensée par l'affinage Illinois).</p>
+
+<div class="panel">
+  <div class="panel-title">Simulation — Gain estimé avec N_max</div>
+  <canvas id="cv-gain" height="160"></canvas>
+  <div class="readout">
+    <span><span class="readout-label">N_max = </span><span class="readout-val" id="ro-nmax">111</span></span>
+    <span><span class="readout-label">Gain estimé = </span><span class="readout-val" id="ro-gain">—</span></span>
+    <span><span class="readout-label">Durée T=100k ≈ </span><span class="readout-val" id="ro-dur2">—</span></span>
+  </div>
+  <div class="ctrl">
+    <span>N_max (termes max RS)</span>
+    <input type="range" id="sl-nmax" min="10" max="111" value="111" step="1">
+    <span class="val" id="val-nmax">111</span>
+  </div>
+  <p style="font-size:0.82rem;color:#8b949e;margin-top:0.5rem;">
+    N_termes(100 000) = ⌊√(100000/2π)⌋ = 126. N_max=111 → gain ×(126/111)≈1.14.
+    Attention : N_max trop petit → précision Z(t) insuffisante pour l'affinage.
+  </p>
+</div>
+
+<!-- ══════════════ TABLE ══════════════ -->
+<h2>5. Table de référence — N_termes et vitesse mesurée</h2>
+<table>
+  <tr><th>t</th><th>N_termes</th><th>v mesurée (v6)</th><th>Durée T=t</th></tr>
+  <tr><td>1 000</td><td>12</td><td>17 z/s</td><td>~1 min</td></tr>
+  <tr><td>10 000</td><td>39</td><td>8 z/s</td><td>~21 min</td></tr>
+  <tr><td>77 000</td><td>110</td><td>4.3 z/s</td><td>~7h30</td></tr>
+  <tr><td>100 000</td><td>126</td><td>~3.5 z/s (estimé)</td><td>~11h</td></tr>
+</table>
+<p style="font-size:0.82rem;color:#8b949e;">Run réel T=100k : 1h53min — bénéfice des 4 workers + zeta_turbo_on.sh.</p>
+
+<div class="meta" style="margin-top:2rem;margin-bottom:0;">
+  <span>Riemann_Lab · branche Riemann_Lab_IA · <code>docs/animation_ntermes_rs.html</code></span>
+  <span>Mise à jour : 11 juin 2026 · Auteur : <b style="color:#c9d1d9">hprzeta</b> · <span id="nblignes"></span> lignes</span>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  renderMathInElement(document.body, {
+    delimiters: [
+      { left: "$$", right: "$$", display: true },
+      { left: "$",  right: "$",  display: false }
+    ],
+    throwOnError: false
+  });
+  initNtermes();
+  initSpeed();
+  drawPie();
+  initGain();
+  document.getElementById('nblignes').textContent =
+    document.documentElement.outerHTML.split('\n').length;
+});
+
+var TWO_PI = 2 * Math.PI;
+function Ntermes(t) { return Math.floor(Math.sqrt(t / TWO_PI)); }
+
+/* ─── Animation A : N_termes(t) ─── */
+function initNtermes() {
+  document.getElementById('sl-t').addEventListener('input', drawNtermes);
+  drawNtermes();
+}
+
+function drawNtermes() {
+  var t0 = parseFloat(document.getElementById('sl-t').value);
+  document.getElementById('val-t').textContent = t0.toLocaleString('fr-FR');
+  var N = Ntermes(t0);
+  var ms = (N * 1.1).toFixed(1);
+  document.getElementById('ro-t').textContent = t0.toLocaleString('fr-FR');
+  document.getElementById('ro-n').textContent = N;
+  document.getElementById('ro-ms').textContent = ms + ' ms';
+  document.getElementById('ro-sqrt').textContent = Math.sqrt(t0 / TWO_PI).toFixed(2);
+
+  var cv = document.getElementById('cv-ntermes');
+  cv.width = cv.offsetWidth || 700;
+  var ctx = cv.getContext('2d');
+  var W = cv.width, H = cv.height;
+  ctx.clearRect(0, 0, W, H);
+
+  var px = 50, py = 15, pw = W - px - 20, ph = H - py - 35;
+  ctx.strokeStyle = '#30363d'; ctx.lineWidth = 1;
+  ctx.strokeRect(px, py, pw, ph);
+
+  var tMin = 100, tMax = 100000;
+  var nMax = Ntermes(tMax) * 1.05;
+
+  function xOf(t) { return px + (t - tMin) / (tMax - tMin) * pw; }
+  function yOf(n) { return py + ph - n / nMax * ph; }
+
+  /* grille */
+  ctx.strokeStyle = '#21262d'; ctx.lineWidth = 0.5;
+  [10000, 50000, 100000].forEach(function(tv) {
+    var x = xOf(tv);
+    ctx.beginPath(); ctx.moveTo(x, py); ctx.lineTo(x, py+ph); ctx.stroke();
+    ctx.fillStyle = '#8b949e'; ctx.font = '10px monospace';
+    ctx.fillText(tv >= 1000 ? (tv/1000)+'k' : tv, x - 10, py+ph+14);
+  });
+
+  /* courbe N_termes */
+  ctx.strokeStyle = '#7F77DD'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (var i = 0; i <= pw; i++) {
+    var tv = tMin + i/pw * (tMax - tMin);
+    var nv = Ntermes(tv);
+    if (i === 0) ctx.moveTo(px+i, yOf(nv)); else ctx.lineTo(px+i, yOf(nv));
+  }
+  ctx.stroke();
+
+  /* point courant */
+  ctx.fillStyle = '#EF9F27';
+  ctx.beginPath(); ctx.arc(xOf(t0), yOf(N), 5, 0, TWO_PI); ctx.fill();
+
+  /* labels axe Y */
+  ctx.fillStyle = '#8b949e'; ctx.font = '10px monospace';
+  [20, 40, 60, 80, 100, 120].forEach(function(nv) {
+    if (nv <= nMax) ctx.fillText(nv, 4, yOf(nv)+4);
+  });
+}
+
+/* ─── Animation B : vitesse ─── */
+var MEASURES = [
+  { t: 1000,  v: 17.0 },
+  { t: 10000, v: 8.0  },
+  { t: 77000, v: 4.3  }
+];
+var C_FIT = 1700; /* calibré : v = C/√t */
+
+function initSpeed() {
+  document.getElementById('sl-t2').addEventListener('input', drawSpeed);
+  drawSpeed();
+}
+
+function drawSpeed() {
+  var t0 = parseFloat(document.getElementById('sl-t2').value);
+  document.getElementById('val-t2').textContent = t0.toLocaleString('fr-FR');
+  var vest = C_FIT / Math.sqrt(t0);
+  /* durée T=100k à cette vitesse (intégrale approximative) */
+  var nZeros = 100000 / TWO_PI * Math.log(100000 / (TWO_PI * Math.E));
+  var dur_s = nZeros / vest;
+  var dur_h = (dur_s / 3600).toFixed(1);
+  document.getElementById('ro-test').textContent = t0.toLocaleString('fr-FR');
+  document.getElementById('ro-vest').textContent = vest.toFixed(1) + ' z/s';
+  document.getElementById('ro-dur').textContent = dur_h + ' h (brut 1 worker)';
+
+  var cv = document.getElementById('cv-speed');
+  cv.width = cv.offsetWidth || 700;
+  var ctx = cv.getContext('2d');
+  var W = cv.width, H = cv.height;
+  ctx.clearRect(0, 0, W, H);
+
+  var px = 50, py = 15, pw = W - px - 20, ph = H - py - 35;
+  ctx.strokeStyle = '#30363d'; ctx.lineWidth = 1;
+  ctx.strokeRect(px, py, pw, ph);
+
+  var tMin = 100, tMax = 100000, vMax = 20;
+
+  function xOf(t) { return px + (Math.log(t)-Math.log(tMin))/(Math.log(tMax)-Math.log(tMin)) * pw; }
+  function yOf(v) { return py + ph - Math.min(v, vMax) / vMax * ph; }
+
+  /* courbe ajustée */
+  ctx.strokeStyle = '#7F77DD'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (var i = 0; i <= pw; i++) {
+    var tv = Math.exp(Math.log(tMin) + i/pw*(Math.log(tMax)-Math.log(tMin)));
+    var vv = C_FIT / Math.sqrt(tv);
+    if (i === 0) ctx.moveTo(px+i, yOf(vv)); else ctx.lineTo(px+i, yOf(vv));
+  }
+  ctx.stroke();
+
+  /* points mesurés */
+  ctx.fillStyle = '#EF9F27';
+  MEASURES.forEach(function(m) {
+    ctx.beginPath(); ctx.arc(xOf(m.t), yOf(m.v), 5, 0, TWO_PI); ctx.fill();
+    ctx.fillText(m.v + ' z/s', xOf(m.t)+6, yOf(m.v)-4);
+  });
+
+  /* point courant */
+  ctx.fillStyle = '#1D9E75';
+  ctx.beginPath(); ctx.arc(xOf(t0), yOf(vest), 6, 0, TWO_PI); ctx.fill();
+
+  /* axes */
+  ctx.fillStyle = '#8b949e'; ctx.font = '10px monospace';
+  [1000,10000,100000].forEach(function(tv) {
+    ctx.fillText(tv>=1000?(tv/1000)+'k':tv, xOf(tv)-10, py+ph+14);
+  });
+  [5,10,15,20].forEach(function(vv) {
+    ctx.fillText(vv, 4, yOf(vv)+4);
+  });
+}
+
+/* ─── Camembert ─── */
+function drawPie() {
+  var cv = document.getElementById('cv-pie');
+  var ctx = cv.getContext('2d');
+  var cx = 100, cy = 100, r = 85;
+
+  var slices = [
+    { pct: 0.83,  color: '#E24B4A' },
+    { pct: 0.11,  color: '#EF9F27' },
+    { pct: 0.057, color: '#7F77DD' },
+    { pct: 0.002, color: '#1D9E75' },
+    { pct: 0.001, color: '#8b949e' }
+  ];
+
+  var angle = -Math.PI / 2;
+  var delay = 0;
+  slices.forEach(function(sl) {
+    var endAngle = angle + sl.pct * TWO_PI;
+    setTimeout((function(a, ea, col) {
+      return function() {
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, a, ea);
+        ctx.closePath();
+        ctx.fillStyle = col;
+        ctx.fill();
+        ctx.strokeStyle = '#0d1117'; ctx.lineWidth = 1.5;
+        ctx.stroke();
+      };
+    })(angle, endAngle, sl.color), delay);
+    delay += 180;
+    angle = endAngle;
+  });
+}
+
+/* ─── Gain v7 ─── */
+function initGain() {
+  document.getElementById('sl-nmax').addEventListener('input', drawGain);
+  drawGain();
+}
+
+function drawGain() {
+  var nmax = parseInt(document.getElementById('sl-nmax').value);
+  document.getElementById('val-nmax').textContent = nmax;
+  document.getElementById('ro-nmax').textContent = nmax;
+
+  var nRef = Ntermes(100000); /* 126 */
+  var gain = nRef > nmax ? (nRef / nmax).toFixed(2) : '1.00';
+  var dur  = nRef > nmax ? (113 / parseFloat(gain)).toFixed(0) : '113';
+  document.getElementById('ro-gain').textContent = '×' + gain;
+  document.getElementById('ro-dur2').textContent = dur + ' min (4 workers)';
+
+  var cv = document.getElementById('cv-gain');
+  cv.width = cv.offsetWidth || 700;
+  var ctx = cv.getContext('2d');
+  var W = cv.width, H = cv.height;
+  ctx.clearRect(0, 0, W, H);
+
+  var px = 50, py = 15, pw = W - px - 20, ph = H - py - 35;
+  ctx.strokeStyle = '#30363d'; ctx.lineWidth = 1;
+  ctx.strokeRect(px, py, pw, ph);
+
+  var nmaxMin = 10, nmaxMax = 126, gainMax = nRef / nmaxMin;
+  function xOf(n) { return px + (n - nmaxMin) / (nmaxMax - nmaxMin) * pw; }
+  function yOf(g) { return py + ph - (g - 1) / (gainMax - 1) * ph; }
+
+  /* courbe gain */
+  ctx.strokeStyle = '#7F77DD'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (var n = nmaxMin; n <= nmaxMax; n++) {
+    var g = nRef / n;
+    if (n === nmaxMin) ctx.moveTo(xOf(n), yOf(g)); else ctx.lineTo(xOf(n), yOf(g));
+  }
+  ctx.stroke();
+
+  /* ligne N_max courant */
+  ctx.strokeStyle = '#EF9F27'; ctx.lineWidth = 1.5; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(xOf(nmax), py); ctx.lineTo(xOf(nmax), py+ph); ctx.stroke();
+  ctx.setLineDash([]);
+
+  /* point */
+  ctx.fillStyle = '#EF9F27';
+  ctx.beginPath(); ctx.arc(xOf(nmax), yOf(Math.max(1, nRef/nmax)), 5, 0, TWO_PI); ctx.fill();
+
+  /* labels */
+  ctx.fillStyle = '#8b949e'; ctx.font = '10px monospace';
+  [20, 40, 60, 80, 100, 120].forEach(function(n) {
+    ctx.fillText(n, xOf(n)-6, py+ph+14);
+  });
+  [2,4,6,8,10].forEach(function(g) {
+    if (g <= gainMax) ctx.fillText('×'+g, 4, yOf(g)+4);
+  });
+}
+</script>
+</body>
+</html>

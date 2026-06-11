@@ -667,4 +667,40 @@ Générer PDF → pdf/optimisation/analyse_problemes_v4_1_v5.pdf
 
 ---
 
-*ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_IA · hprzeta · MAJ 10 juin 2026 · ~645 lignes*
+## Session 2026-06-11 — Prompt unique post-v6
+
+### Contexte
+v6 validée la veille (10 juin) : T=100 000, 0 manquant, Turing COMPLET.
+Ce prompt regroupe toute la documentation post-v6 (tâches 0 à 19).
+
+### Tâches exécutées
+- 0. Nommage `compute_zeros_v6.py`
+- 1. Session reconstituée 10 juin (`logs/session_20260610_reconstituee.md`)
+- 2. Récap session PDF BrainVault (`claude-traitement-journalier/recap_session_20260610_11.pdf`)
+- 3. JOURNAL.md mise à jour (session 10 juin, 28 zéros/s, 0 manquant)
+- 4. STACK.md mise à jour (v6 section, T=100k, 138 069 zéros)
+- 5. `Formules_zeta.md` §19 (STEP/GUE) · §20 (coût scan) · §21 (N_termes RS)
+- 6. `Bibliotheques.md` tableau runs (run T=100 000 v6 ajouté)
+- 7. Skills `phase-c-illinois` + `riemann-lab` — SKILL.md mis à jour
+- 8. `Bonnes-Pratiques-Claude-Code.md` + `Guide-Git-GitHub.md` enrichis
+- 9. PDF `analyse_problemes_v5_v6.pdf` généré (lualatex)
+- 10. PDF `analyse_problemes_v4_1_v6_synthese.pdf` généré (lualatex)
+- 11. Animations `animation_gaps_gue.html` + `animation_ntermes_rs.html` créées
+- 12. `Etape-1-Calcul-des-zeros-non-triviaux.md` enrichi (section v5→v6)
+- 13. `ORGANISATION_FICHIERS.md` mis à jour (8 entrées v6)
+- 14. Ce prompt archivé ici
+- 15. Animations créées + intégration `index.html` (2 nouveaux pavés)
+- 16. `docs/images/plan_v6_riemann.svg` copié depuis Téléchargements
+- 17. `Handoff.md` local mis à jour (date, état v6, prochaine action v7)
+- 18. PDFs envoyés sur Proton Drive via rclone (7 fichiers)
+- 19. Push final : wiki + Riemann_Lab_C + sync main
+
+### Résultats v6
+- T=100 000 : 138 069 zéros, 0 manquant, Turing COMPLET ✅
+- STEP=0.010 · scan_arb.c Z_double · illinois_C = 83 % bottleneck
+- Vitesse : 17 z/s (T=1k) → 8 z/s (T=10k) → 4.3 z/s (T=77k)
+- N_termes ≈ √(t/2π) — prochaine étape : v7 N_termes adaptatif
+
+---
+
+*ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_IA · hprzeta · MAJ 11 juin 2026 · ~707 lignes*
