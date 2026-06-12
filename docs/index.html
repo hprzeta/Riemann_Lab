@@ -620,7 +620,7 @@
 
   <div class="stats">
     <div class="stat">
-      <span class="stat-val">10142</span>
+      <span class="stat-val">138&nbsp;069</span>
       <span class="stat-label">zéros validés</span>
     </div>
     <div class="stat">
@@ -628,7 +628,7 @@
       <span class="stat-label">précision max</span>
     </div>
     <div class="stat">
-      <span class="stat-val">9999</span>
+      <span class="stat-val">99&nbsp;999</span>
       <span class="stat-label">t max atteint</span>
     </div>
   </div>
@@ -641,13 +641,14 @@
         <span class="step-num">01</span>
         <div class="step-body">
           <h3>Calcul des zéros non triviaux</h3>
-          <p>v4.1 opérationnel — Illinois_C (170 bits) + Newton dps=25. Pipeline post-fork
-             4 workers, ~49 z/s (T=1&nbsp;000), ~19 z/s (T=10&nbsp;000).
-             10&nbsp;142 zéros validés Turing-Backlund, 19/20 LMFDB &lt; 10⁻¹⁰.</p>
-          <div class="pill done">Opérationnel — v4.1</div>
+          <p>v9 opérationnel — Brent C/libmpfr (64→80 bits) + parallélisme 4 workers.
+             <strong>138&nbsp;069 zéros</strong> calculés jusqu'à T=100&nbsp;000 en
+             <strong>28.0 min</strong> · 82 z/s. Turing-Backlund COMPLET, 19/20 LMFDB &lt; 10⁻¹⁰.
+             Gain total v1 → v9 : <strong>×4&nbsp;500</strong> (sans turbo).</p>
+          <div class="pill done">Opérationnel — v9</div>
         </div>
         <div class="step-stat status-done">
-          10142 / 10142<br>
+          138&nbsp;069<br>
           <span style="color:var(--dim); font-size:10px;">zéros ✓</span>
         </div>
       </div>
@@ -857,10 +858,11 @@
       align-items: center;
       gap: 0.75rem;">
       <span style="display:inline-block;width:24px;height:1px;background:var(--gold);"></span>
-      Performances — De 21h à 9 minutes
+      Performances — De 21h à 28 min · T=100&nbsp;000
     </div>
 
-    <!-- Tableau versions -->
+    <!-- Tableau versions T=10 000 -->
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:0.15em;margin-bottom:0.5rem;">T = 10 000 ZÉROS</div>
     <div style="overflow-x:auto; margin-bottom:2rem;">
       <table style="
         width:100%;
@@ -904,6 +906,49 @@
       </table>
     </div>
 
+    <!-- Tableau versions T=100 000 -->
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:0.15em;margin-bottom:0.5rem;">T = 100 000 ZÉROS</div>
+    <div style="overflow-x:auto; margin-bottom:2rem;">
+      <table style="
+        width:100%;
+        border-collapse:collapse;
+        font-family:'JetBrains Mono',monospace;
+        font-size:13px;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);">
+            <th style="text-align:left;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Version</th>
+            <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Vitesse</th>
+            <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">T = 100 000</th>
+            <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Gain vs v7</th>
+            <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Conditions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid rgba(201,168,76,0.06);">
+            <td style="padding:0.6rem 1rem;color:var(--text2);">v7</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">74.5 z/s</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">30.9 min</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">—</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">avec turbo</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(201,168,76,0.06);">
+            <td style="padding:0.6rem 1rem;color:var(--text2);">v8</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">45.6 z/s</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">50.5 min</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">—</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">sans turbo</td>
+          </tr>
+          <tr style="background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.25);">
+            <td style="padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">v9 Brent ✦</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">82.2 z/s</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">28.0 min</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">×1.80 vs v8</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">sans turbo</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
     <!-- 3 leviers -->
     <div style="
       display:grid;
@@ -940,6 +985,16 @@
         <div style="font-size:0.85rem;color:var(--text2);">Erreur ~0.3 → &lt;10⁻¹³. Python passe $(f_a, f_b)$ au C. Illinois ne diverge plus.</div>
         <div style="margin-top:0.75rem;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold2);">Pipeline corrigé ✓</div>
       </div>
+
+      <div style="
+        padding:1.25rem;
+        border:1px solid rgba(201,168,76,0.35);
+        background:rgba(201,168,76,0.03);">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:0.1em;margin-bottom:0.75rem;">LEVIER 4 — v9</div>
+        <div style="font-size:1rem;color:#f0ebe2;margin-bottom:0.5rem;">Brent C/mpfr — ordre ~1.84</div>
+        <div style="font-size:0.85rem;color:var(--text2);">IQI + sécante + bissection. 2 phases 64→80 bits. Moins d'itérations que Illinois (ordre 1.44).</div>
+        <div style="margin-top:0.75rem;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--gold);">×1.80 vs Illinois</div>
+      </div>
     </div>
 
     <!-- Métriques validation -->
@@ -961,19 +1016,19 @@
         <div style="font-size:11px;color:var(--text2);margin-top:2px;">&lt; 10⁻¹⁰</div>
       </div>
       <div style="text-align:center;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:0.1em;margin-bottom:0.4rem;">ILLINOIS C PUR</div>
-        <div style="font-size:1.1rem;color:#f0ebe2;font-family:'JetBrains Mono',monospace;">98.6 %</div>
-        <div style="font-size:11px;color:var(--text2);margin-top:2px;">fallback : 0</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:0.1em;margin-bottom:0.4rem;">BRENT C (v9)</div>
+        <div style="font-size:1.1rem;color:#f0ebe2;font-family:'JetBrains Mono',monospace;">99.9 %</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;">37.84 ms/appel</div>
       </div>
       <div style="text-align:center;">
         <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:0.1em;margin-bottom:0.4rem;">COMMIT</div>
-        <div style="font-size:1.1rem;color:var(--gold);font-family:'JetBrains Mono',monospace;">581e34d</div>
+        <div style="font-size:1.1rem;color:var(--gold);font-family:'JetBrains Mono',monospace;">1c8c0ab</div>
         <div style="font-size:11px;color:var(--text2);margin-top:2px;">Riemann_Lab_C</div>
       </div>
       <div style="text-align:center;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:0.1em;margin-bottom:0.4rem;">VÉRIF B [300,700]</div>
-        <div style="font-size:1.1rem;color:#4ade80;font-family:'JetBrains Mono',monospace;">PASS</div>
-        <div style="font-size:11px;color:var(--text2);margin-top:2px;">+ Newton &lt; 10⁻¹⁰</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:0.1em;margin-bottom:0.4rem;">T=100K — GAIN v8→v9</div>
+        <div style="font-size:1.1rem;color:#4ade80;font-family:'JetBrains Mono',monospace;">×1.80</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;">sans turbo · 12 juin 2026</div>
       </div>
     </div>
 
@@ -984,7 +1039,7 @@
 <section style="padding: 3rem 2rem; max-width: 900px; margin: 0 auto;">
   <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
     <div style="width: 2rem; height: 1px; background: #c9a84c;"></div>
-    <span style="font-size: 0.75rem; letter-spacing: 0.15em; color: #c9a84c;">PROGRESSION V1 → V5</span>
+    <span style="font-size: 0.75rem; letter-spacing: 0.15em; color: #c9a84c;">PROGRESSION V1 → V9</span>
   </div>
   <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 1.5rem;">
     <div style="background:#1a1a1a; border-radius:8px; padding:0.75rem; text-align:center;">
@@ -1007,10 +1062,20 @@
       <div style="font-size:22px; font-weight:500; color:#fff;">9min</div>
       <div style="font-size:11px; color:#444;">×140</div>
     </div>
+    <div style="background:#1a1a1a; border-radius:8px; padding:0.75rem; text-align:center;">
+      <div style="font-size:12px; color:#666; margin-bottom:4px;">v5</div>
+      <div style="font-size:22px; font-weight:500; color:#fff;">~1min</div>
+      <div style="font-size:11px; color:#444;">×1 260</div>
+    </div>
+    <div style="background:#1a1a1a; border-radius:8px; padding:0.75rem; text-align:center;">
+      <div style="font-size:12px; color:#666; margin-bottom:4px;">v7</div>
+      <div style="font-size:22px; font-weight:500; color:#fff;">30.9m</div>
+      <div style="font-size:11px; color:#666; font-size:9px;">T=100k · turbo</div>
+    </div>
     <div style="background:#1a2a3a; border:2px solid #c9a84c; border-radius:8px; padding:0.75rem; text-align:center;">
-      <div style="font-size:12px; color:#c9a84c; margin-bottom:4px;">v5</div>
-      <div style="font-size:22px; font-weight:500; color:#c9a84c;">~1min</div>
-      <div style="font-size:11px; color:#c9a84c;">×1 260</div>
+      <div style="font-size:12px; color:#c9a84c; margin-bottom:4px;">v9</div>
+      <div style="font-size:22px; font-weight:500; color:#c9a84c;">28.0m</div>
+      <div style="font-size:11px; color:#c9a84c;">×1.80 vs v8</div>
     </div>
   </div>
   <table style="width:100%; border-collapse:collapse; font-size:13px;">
@@ -1052,27 +1117,48 @@
         <td style="padding:10px 12px; color:#aaa;">Illinois C/libmpfr</td>
         <td style="padding:10px 12px; color:#666; font-size:12px;">illinois_mpfr.c · (fa,fb) pré-calculés Python→C</td>
       </tr>
+      <tr style="border-bottom:1px solid #222;">
+        <td style="padding:10px 12px; color:#fff; font-weight:500;">v5</td>
+        <td style="padding:10px 12px; color:#fff;">~1min</td>
+        <td style="padding:10px 12px; color:#aaa;">×1 260</td>
+        <td style="padding:10px 12px; color:#aaa;">Arb hardy_z</td>
+        <td style="padding:10px 12px; color:#666; font-size:12px;">arb_fpwrap_cdouble_hardy_z · double natif, 0 malloc</td>
+      </tr>
+      <tr style="border-bottom:1px solid #222;">
+        <td style="padding:10px 12px; color:#fff; font-weight:500;">v7</td>
+        <td style="padding:10px 12px; color:#fff;">74.5 z/s</td>
+        <td style="padding:10px 12px; color:#aaa;">×4.2 vs v6</td>
+        <td style="padding:10px 12px; color:#aaa;">Illinois adaptive</td>
+        <td style="padding:10px 12px; color:#666; font-size:12px;">prec=64 bits → 1 limb → SIMD ×16 · T=100k · 30.9 min</td>
+      </tr>
+      <tr style="border-bottom:1px solid #222;">
+        <td style="padding:10px 12px; color:#fff; font-weight:500;">v8</td>
+        <td style="padding:10px 12px; color:#fff;">45.6 z/s</td>
+        <td style="padding:10px 12px; color:#aaa;">—</td>
+        <td style="padding:10px 12px; color:#aaa;">Illinois 64→80 bits</td>
+        <td style="padding:10px 12px; color:#666; font-size:12px;">prec_full=80 bits · T=100k · 50.5 min sans turbo</td>
+      </tr>
       <tr style="background:#0d1a0d;">
-        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">v5</td>
-        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">~1min</td>
-        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">×1 260</td>
-        <td style="padding:10px 12px; color:#c9a84c;">Arb hardy_z</td>
-        <td style="padding:10px 12px; color:#c9a84c; font-size:12px;">arb_fpwrap_cdouble_hardy_z · double natif, 0 malloc</td>
+        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">v9</td>
+        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">82.2 z/s</td>
+        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">×1.80 vs v8</td>
+        <td style="padding:10px 12px; color:#c9a84c;">Brent C/mpfr</td>
+        <td style="padding:10px 12px; color:#c9a84c; font-size:12px;">IQI+sécante+bissection · ordre ~1.84 · T=100k · 28.0 min</td>
       </tr>
     </tbody>
   </table>
   <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:1rem;">
     <div style="background:#1a1a1a; border-radius:8px; padding:0.75rem;">
-      <div style="font-size:11px; color:#666; margin-bottom:2px;">Gain total v1→v5</div>
-      <div style="font-size:18px; font-weight:500; color:#fff;">×1 260</div>
+      <div style="font-size:11px; color:#666; margin-bottom:2px;">Gain total v1→v9 (sans turbo)</div>
+      <div style="font-size:18px; font-weight:500; color:#fff;">×4 500</div>
     </div>
     <div style="background:#1a1a1a; border-radius:8px; padding:0.75rem;">
-      <div style="font-size:11px; color:#666; margin-bottom:2px;">Speedup Arb vs mpmath</div>
-      <div style="font-size:18px; font-weight:500; color:#fff;">×27</div>
+      <div style="font-size:11px; color:#666; margin-bottom:2px;">Brent vs Illinois (v9)</div>
+      <div style="font-size:18px; font-weight:500; color:#fff;">×1.80</div>
     </div>
     <div style="background:#1a1a1a; border-radius:8px; padding:0.75rem;">
-      <div style="font-size:11px; color:#666; margin-bottom:2px;">Zéros validés</div>
-      <div style="font-size:18px; font-weight:500; color:#fff;">10 142</div>
+      <div style="font-size:11px; color:#666; margin-bottom:2px;">Zéros validés (T=100k)</div>
+      <div style="font-size:18px; font-weight:500; color:#fff;">138 069</div>
     </div>
   </div>
 </section>
