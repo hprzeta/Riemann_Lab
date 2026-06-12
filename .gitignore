@@ -54,3 +54,6 @@ pdf/optimisation/Voie_b_5/md_to_claude/
 /calculs/
 src/calculs/optimisation/calculs/
 test-results/
+logs/*.pid
+pdf/optimisation/*.aux
+pdf/optimisation/*.out
