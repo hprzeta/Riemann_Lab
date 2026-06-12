@@ -788,3 +788,30 @@ RÈGLES ABSOLUES :
 ---
 
 *ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_IA · hprzeta · MAJ 2026-06-03 · 9 juin 2026 · 10 juin 2026 (soir) · 11 juin 2026 · ~760 lignes*
+
+---
+
+## Prompt M — Fix sudoers + run v9 turbo (2026-06-12)
+
+**Objectif :** fix sudoers zeta_turbo + re-run v9 avec turbo → cible 17 min.
+
+**Résultat :**
+- sudoers `/etc/sudoers.d/zeta_turbo` installé ✅
+- Note Ubuntu 24.04 : sysctl = `/usr/sbin/sysctl` (pas `/sbin/`)
+- Run lancé PID 104516 · log `run_T100k_v9_turbo_20260612_144428.log`
+- Durée mesurée : 26.6 min · 86.5 z/s
+- Gain turbo : ×1.05 (bottleneck MPFR/mémoire — projection 17 min invalidée)
+
+---
+
+## Prompt N — Documentation post-v9 tout-en-un (2026-06-12)
+
+**Objectif :** intégrer tous les résultats v9 turbo (12 tâches).
+
+**Tâches :** JOURNAL · STACK · Formules_zeta §26 · Bibliotheques §13 ·
+SKILL phase-c-illinois · analyse_problemes_v8_v9.md · index.html ·
+push wiki + Riemann_Lab_C + Riemann_Lab_IA · prompts · Handoff.md local
+
+---
+
+*ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_IA · hprzeta · MAJ 2026-06-03 · 9 juin 2026 · 10 juin 2026 (soir) · 11 juin 2026 · **12 juin 2026 (Prompts M-N v9 turbo)** · ~800 lignes*
