@@ -6,8 +6,8 @@ description: >
   Se déclenche sur : "Phase C", "libmpfr", "Illinois en C", "affinage C",
   "illinois_mpfr", "ctypes", "Voie B", "module C", "branche Riemann_Lab_C",
   "post-fork", "mpfr_t", "accélération Illinois", "compute_zeros_v4_1".
-version: 0.3.0
-date: 2026-06-03
+version: 0.4.0
+date: 2026-06-11
 ---
 
 # Phase C — Affinage Illinois en C / libmpfr (Voie B)
@@ -158,7 +158,7 @@ mpfr-config --version
 
 ---
 
-## État Phase C au 3 juin 2026
+## État Phase C au 11 juin 2026
 
 | Jalon | Statut |
 |---|---|
@@ -169,8 +169,39 @@ mpfr-config --version
 | Run T=1000 — 649 zéros, 16.15 z/s, Turing COMPLET, LMFDB 19/20 | ✅ |
 | Run T=10 000 — 10 141 zéros, **18.65 z/s**, Turing COMPLET, LMFDB 19/20 | ✅ |
 | illinois_C 98.6 % sur T=10 000 (objectif 90 % dépassé) | ✅ |
-| Rapport `v5 → v4.1` (`pdf/optimisation/analyse_problemes_v5_v4_1.pdf`) | ⏳ à faire |
-| T=100 000 — estimation ~5 h, goulot O(√t) identifié | ⏳ planifier |
+| **v6 — STEP adaptatif + scan_arb, run T=100k** | ✅ **138 069 zéros, 0 manquant, Turing COMPLET, ~113 min** |
+| **v7 — `illinois_refine_adaptive` (64→116 bits)** (`8637098`) | ✅ **138 069, 0 manquant, Turing COMPLET, 30.9 min** |
+| v7 benchmark T=5k : 1.47 ms/appel, 1808 z/s → **×16 vs 170 bits** | ✅ |
+| v7 benchmark T=100k : 42.05 ms/appel, 74.49 z/s → **×3.7 global** | ✅ |
+
+---
+
+## v7 — Leçon technique clé (11 juin 2026)
+
+**Contre-intuition :** le gain vient de la **précision** (64 bits → 1 limb mpfr → SIMD),
+pas du nombre de termes RS. La théorie prédisait ×4.6 via N_termes ; la réalité est ×16 via précision.
+
+| Param. | v6 | v7 |
+|---|---|---|
+| Phase 1 précision | 170 bits (3 limbs) | **64 bits (1 limb)** |
+| Phase 2 précision | 170 bits | 116 bits (2 limbs) |
+| ms/appel T=5k | ~23.5 ms | **1.47 ms** |
+| ms/appel T=100k | ~130 ms | **42.05 ms** |
+
+**Règle v7 :** `N_full` termes dans les **deux** phases (N_fast = N_full/4 invalide les signes Z).
+`ITER_SWITCH=8`, `MAX_ITER=50`. `prec_fast=64`, `prec_full=116`.
+
+---
+
+## v8 — En préparation
+
+| Option | Description | Gain estimé | Cible T=100k |
+|---|---|---|---|
+| A — W=8 workers | Doubler les workers (8 cœurs logiques) | ×1.3 | ~24 min |
+| B — prec phase 2 = 80 bits | 80 bits = encore 2 limbs → tester si OK | à mesurer | ? |
+
+**Bottleneck restant :** `illinois_C` = **78.2 %** du temps CPU à T=100k.
+**TÂCHE 0 (obligatoire avant v8)** : benchmark empirique prec_fast ∈ {32,48,64,80,96} bits.
 
 ---
 
@@ -190,11 +221,50 @@ Inexistant dans v3 (mpmath pur plafonné à ~296 ms/appel constant). Pertinent p
 
 ---
 
-## Étapes restantes
+## Mur de latence — RÉSOLU (2026-06-09)
 
-1. Rédiger le rapport `v5 → v4.1` (même structure que `v2→v3`).
-2. Estimer T=100 000 : profil O(√t) → ~5 h estimées, valider avant run long.
-3. Envisager la bascule vers Arb (`acb_dirichlet_hardy_z`) pour T > 100 000 (levier §12 Bibliotheques.md).
+- `mpmath.siegelz` : 21.13 ms/appel → ~7h pour T=10 000
+- `arb_fpwrap_cdouble_hardy_z` : 0.77 ms/appel → ~15 min — **×27**
+- Intégré dans `compute_zeros_v4_1.py` (commit `b563db2`, Riemann_Lab_C)
+- `arb_wrapper.py` : détection auto libflint bundlée, fallback `mpmath` si absent
+- Run T=100 000 (2026-06-10) : 137 904 zéros · 99.35 min · 23.14 z/s
+- 356 manquants → cause : STEP=0.1 trop grand à grand t (espacement min = 0.028)
+- Fix 2026-06-10 : `step_pour_t()` → STEP 0.1/0.05/0.02 selon tranche t
+- Segmentation 1/√t → charge équilibrée entre workers
 
 ---
-*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026*
+
+## STEP adaptatif — règle obligatoire (2026-06-10)
+
+**Ne jamais utiliser STEP fixe.** Condition mathématique :
+
+$$\text{STEP}(t) < \frac{\pi}{\ln(t/2\pi)}$$
+
+Valeurs implémentées (`step_pour_t` dans `compute_zeros_v4_1.py`) :
+
+| Tranche $t$ | STEP | Justification |
+|---|---|---|
+| $t < 5\,000$ | 0.1 | $\delta_{\min} \approx 0.5$ → ratio safe |
+| $t \in [5\,000, 50\,000]$ | 0.05 | $\delta_{\min} \approx 0.038$ mesuré à T=10k |
+| $t > 50\,000$ | 0.02 | $\delta_{\min}$ encore plus petit |
+
+**Overlap :** toujours **fixe = 2.0** (jamais proportionnel au STEP).
+
+Résultats mesurés (commit `50837f7`, branche `Riemann_Lab_C`) :
+
+| Test | STEP | Overlap | Turing |
+|---|---|---|---|
+| T=10k v1 | 0.1 fixe | ×4 STEP | ❌ 6 manquants |
+| **T=10k v2** | **0.05 pour t≥5k** | **2.0 fixe** | **✅ 0 manquant** |
+
+---
+
+## Étapes restantes — v8
+
+1. Benchmark `prec_fast` ∈ {32, 48, 64, 80, 96} bits sur T=5k (TÂCHE 0 obligatoire).
+2. Choisir Option A (W=8) ou Option B (prec phase 2 réduite) selon benchmark.
+3. Implémenter v8, run T=100k, valider Turing.
+4. Cible : < 20 min pour T=100k.
+
+---
+*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026 · 9 juin 2026 (Mur de latence RÉSOLU ×27) · 10 juin 2026 (STEP adaptatif) · 11 juin 2026 (v7 validée 30.9 min — prec_fast=64 bits SIMD)*

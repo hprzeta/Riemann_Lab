@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-compute_zeros_v4_1.py — Phase C : Illinois C + Z_batch + parallèle
-══════════════════════════════════════════════════════════════════════
+compute_zeros_v6.py — scan_arb.c (Z_double C) + STEP=0.010 + N(T) bissection
+══════════════════════════════════════════════════════════════════════════════════
+v6 (basée sur v4.1) — Run T=100 000 : 138 069 zéros, 0 manquant, Turing COMPLET ✅
+Date : 11 juin 2026 — bottleneck : illinois_C 83 %, prochaine étape : v7 N_termes adaptatif
+
 Corrige 5 erreurs architecturales de v4 :
 
   P1 — Détection : mpmath.siegelz → Z_batch() (RS numpy vectorisé)
@@ -165,6 +168,19 @@ def worker_v4_1(args: tuple) -> Tuple[list, dict, dict]:
         ctypes.c_double,  # tol
         ctypes.c_int,     # max_iter (100)
     ]
+    # v7 — affinage 2-phases : prec_fast=64 bits (iter_switch iter.) puis prec_full=116 bits
+    ITER_SWITCH = 8   # calibré sur bench T=5000 : ~8 iter. suffisent pour réduire le bracket
+    MAX_ITER    = 50
+    lib.illinois_refine_adaptive.restype  = ctypes.c_double
+    lib.illinois_refine_adaptive.argtypes = [
+        ctypes.c_double,  # a
+        ctypes.c_double,  # b
+        ctypes.c_double,  # fa
+        ctypes.c_double,  # fb
+        ctypes.c_double,  # t (milieu du bracket, pour calculer N_full)
+        ctypes.c_int,     # iter_switch
+        ctypes.c_int,     # max_iter
+    ]
 
     import mpmath as _mp
     _mp.mp.dps = 35
@@ -199,9 +215,16 @@ def worker_v4_1(args: tuple) -> Tuple[list, dict, dict]:
         t_mid = (a + b) / 2.0
         try:
             if t_mid >= T_SEUIL_ILLINOIS_C:
-                # Illinois C Option B — fa/fb depuis scan_arb, pas de recalcul C
+                # v7 — illinois_refine_adaptive (2-phases 64→116 bits)
                 with chrono("illinois_C"):
-                    zero = lib.illinois_refine(a, b, fa, fb, 170, tol, 100)
+                    try:
+                        zero = lib.illinois_refine_adaptive(
+                            a, b, float(fa), float(fb), t_mid,
+                            ITER_SWITCH, MAX_ITER
+                        )
+                    except Exception as _e:
+                        # fallback illinois_refine classique si adaptive échoue
+                        zero = lib.illinois_refine(a, b, fa, fb, 170, tol, 100)
                 if a - 1e-10 <= zero <= b + 1e-10:
                     zeros_segment.append(zero)
                     stats["illinois_C"] += 1

@@ -1,8 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-compute_zeros_v4_1.py — Phase C : Illinois C + Z_batch + parallèle
-══════════════════════════════════════════════════════════════════════
+compute_zeros_v9.py — Phase C v9 : Brent C/mpfr 2-phases (prec_fast=64, prec_full=80)
+════════════════════════════════════════════════════════════════════════════════════════
+v9 (2026-06-12) : brent_refine_adaptive remplace illinois_refine_bench
+
+Décisions v9 :
+  Méthode : Brent (IQI + sécante + bissection) — ordre ~1.84 vs Illinois 1.44
+  prec_fast = 64 bits : inchangé (1 limbe SIMD — déjà optimal)
+  prec_full = 80 bits : inchangé (optimal mesuré benchmark 11 juin)
+  ITER_SWITCH = 3     : Brent converge plus vite — moins d'iter phase 1 suffisent
+  MAX_ITER    = 50    : identique à v8 par sécurité (Brent converge plus vite)
+  W = 4 workers      : inchangé (W=8 contre-productif sur i7-7500U dual-core HT)
+
+Gain estimé v9 vs v8 : ~×1.2 → ~24 min T=100k
+Gain cumulé v1→v9    : estimé ×6 300 (21h → ~24 min)
+Date : 2026-06-12
+
 Corrige 5 erreurs architecturales de v4 :
 
   P1 — Détection : mpmath.siegelz → Z_batch() (RS numpy vectorisé)
@@ -56,7 +70,7 @@ from parallel_scanner      import partitionner, dedupliquer
 from turing_validation     import valider_turing, N_attendu
 from arb_wrapper           import arb_hardy_z, info_backend, ARB_DISPONIBLE
 
-# Instrumentation 3+1 phases (detection / illinois_C / mpmath_petit_t / turing)
+# Instrumentation 3+1 phases (detection / brent_C / mpmath_petit_t / turing)
 from chrono_phases         import chrono, snapshot, agreger, rapport
 
 # scan_arb — détection C pure (Z_double RS double + C0+C1)
@@ -139,7 +153,7 @@ def _partitionner_adaptatif(
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def worker_v4_1(args: tuple) -> Tuple[list, dict, dict]:
-    """Worker multiprocessing v4.1 — détection scan_arb.c + affinage illinois_refine.
+    """Worker multiprocessing v9 — détection scan_arb.c + affinage illinois_refine.
 
     Charge illinois_mpfr.so ET scan_arb.so APRÈS le fork() → pas de corruption GMP.
     Détection : scan_arb C (Z_double RS double + C0+C1, step=0.010)
@@ -165,12 +179,38 @@ def worker_v4_1(args: tuple) -> Tuple[list, dict, dict]:
         ctypes.c_double,  # tol
         ctypes.c_int,     # max_iter (100)
     ]
+    # v9 — affinage 2-phases via brent_refine_adaptive (Brent C/mpfr)
+    # Brent : ordre ~1.84 vs Illinois 1.44 — même coût/iter (1 seul appel Z_rs)
+    # prec_fast=64 bits : 1 limbe mpfr → SIMD AVX2 (optimal, inchangé)
+    # prec_full=80 bits : 2 limbes, optimal mesuré (benchmark 11 juin 2026)
+    ITER_SWITCH = 3   # Brent converge plus vite : 3 iter phase1 suffisent
+    MAX_ITER    = 50  # identique à v8 par sécurité (Brent converge plus vite dans ces 50)
+    PREC_FAST   = 64  # phase 1 — 1 limbe SIMD
+    PREC_FULL   = 80  # phase 2 — 80 bits optimal
+    lib.brent_refine_adaptive.restype  = ctypes.c_double
+    lib.brent_refine_adaptive.argtypes = [
+        ctypes.c_double,  # a
+        ctypes.c_double,  # b
+        ctypes.c_double,  # fa
+        ctypes.c_double,  # fb
+        ctypes.c_double,  # t (milieu du bracket — pour N_full)
+        ctypes.c_int,     # prec_fast_bits
+        ctypes.c_int,     # prec_full_bits
+        ctypes.c_int,     # iter_switch
+        ctypes.c_int,     # max_iter
+    ]
+    # Fallback illinois_refine_bench si brent échoue
+    lib.illinois_refine_bench.restype  = ctypes.c_double
+    lib.illinois_refine_bench.argtypes = [
+        ctypes.c_double, ctypes.c_double, ctypes.c_double, ctypes.c_double,
+        ctypes.c_double, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+    ]
 
     import mpmath as _mp
     _mp.mp.dps = 35
 
     zeros_segment = []
-    stats         = {"illinois_C": 0, "mpmath_petit_t": 0, "mpmath_fallback": 0}
+    stats         = {"brent_C": 0, "mpmath_petit_t": 0, "mpmath_fallback": 0}
     _log_palier   = 0
 
     # ── Détection : scan_arb C (1 appel) ou Z_vect_correct numpy (fallback) ──────
@@ -199,12 +239,23 @@ def worker_v4_1(args: tuple) -> Tuple[list, dict, dict]:
         t_mid = (a + b) / 2.0
         try:
             if t_mid >= T_SEUIL_ILLINOIS_C:
-                # Illinois C Option B — fa/fb depuis scan_arb, pas de recalcul C
-                with chrono("illinois_C"):
-                    zero = lib.illinois_refine(a, b, fa, fb, 170, tol, 100)
+                # v9 — brent_refine_adaptive (2-phases 64→80 bits, ordre ~1.84)
+                with chrono("brent_C"):
+                    try:
+                        zero = lib.brent_refine_adaptive(
+                            a, b, float(fa), float(fb), t_mid,
+                            PREC_FAST, PREC_FULL,
+                            ITER_SWITCH, MAX_ITER,
+                        )
+                    except Exception:
+                        # fallback illinois_refine_bench si brent échoue
+                        zero = lib.illinois_refine_bench(
+                            a, b, float(fa), float(fb), t_mid,
+                            ITER_SWITCH, MAX_ITER, PREC_FAST, PREC_FULL,
+                        )
                 if a - 1e-10 <= zero <= b + 1e-10:
                     zeros_segment.append(zero)
-                    stats["illinois_C"] += 1
+                    stats["brent_C"] += 1
                 else:
                     # Résultat hors intervalle → fallback Arb bracketed
                     with chrono("mpmath_fallback"):
@@ -236,7 +287,7 @@ def worker_v4_1(args: tuple) -> Tuple[list, dict, dict]:
 
     duree = time.time() - debut
     print(f"  [Worker {worker_id}] {len(zeros_segment)} zéros en {duree:.1f}s  "
-          f"| C:{stats['illinois_C']} mp_pt:{stats['mpmath_petit_t']} "
+          f"| C:{stats['brent_C']} mp_pt:{stats['mpmath_petit_t']} "
           f"fallback:{stats['mpmath_fallback']}")
     return zeros_segment, stats, snapshot()
 
@@ -273,7 +324,7 @@ def calculer_zeros_v4_1(
 
     # Fusion des listes, des statistiques et des profils
     zeros_bruts = []
-    stats_total = {"illinois_C": 0, "mpmath_petit_t": 0, "mpmath_fallback": 0}
+    stats_total = {"brent_C": 0, "mpmath_petit_t": 0, "mpmath_fallback": 0}
     snaps       = []
     for segment_zeros, segment_stats, segment_snap in resultats:
         zeros_bruts.extend(segment_zeros)
@@ -337,7 +388,7 @@ def visualiser(zeros: List[float], T_MAX: float, horodatage: str, dossier: Path)
     ecarts = np.diff(zeros)
     fig, axes = plt.subplots(1, 3, figsize=(18, 5))
     fig.suptitle(
-        f"Zéros de ζ(½+it) — v4.1 — {len(zeros)} zéros [T_MAX={T_MAX:.0f}]",
+        f"Zéros de ζ(½+it) — v9 — {len(zeros)} zéros [T_MAX={T_MAX:.0f}]",
         fontsize=13, fontweight="bold"
     )
 
@@ -394,8 +445,8 @@ def sauvegarder_csv(zeros, stats, T_MAX, STEP, N_WORKERS,
         "n":                 range(1, len(zeros) + 1),
         "partie_imaginaire": zeros,
         "T_MAX":             T_MAX,
-        "version":           "v4.1",
-        "methode_affinage":  "illinois_C_seuil300_mpmath_fallback",
+        "version":           "v9",
+        "methode_affinage":  "brent_C_seuil300_mpmath_fallback",
         "step":              STEP,
         "n_workers":         N_WORKERS,
         "calcule_le":        horodatage,
@@ -408,14 +459,14 @@ def sauvegarder_csv(zeros, stats, T_MAX, STEP, N_WORKERS,
 def ecrire_log(chemin_log, horodatage, T_MIN, T_MAX, STEP, N_WORKERS,
                tol, duree_s, zeros, stats, resultats_lmfdb,
                resultats_turing, chemin_csv):
-    """Journal d'exécution v4.1."""
+    """Journal d'exécution v9."""
     lignes = []
     sep    = "=" * 65
 
     def L(t=""): lignes.append(t)
 
     L(sep)
-    L("  JOURNAL D'EXÉCUTION — compute_zeros_v4_1.py  (Phase C)")
+    L("  JOURNAL D'EXÉCUTION — compute_zeros_v9.py  (Phase C)")
     L("  Projet : Hypothèse de Riemann — hprzeta")
     L(sep); L()
 
@@ -425,7 +476,7 @@ def ecrire_log(chemin_log, horodatage, T_MIN, T_MAX, STEP, N_WORKERS,
     L(f"      Durée  : {duree_s/60:.2f} min  ({duree_s:.1f} s)")
     L()
 
-    L("  [2] PARAMÈTRES v4.1")
+    L("  [2] PARAMÈTRES v9")
     L(f"      T_MIN              = {T_MIN}")
     L(f"      T_MAX              = {T_MAX}")
     L(f"      STEP               = {STEP}")
@@ -511,7 +562,7 @@ def _step_adaptatif(T_MAX: float) -> float:
 def saisir_parametres():
     print()
     print("=" * 65)
-    print("   CALCUL DES ZÉROS NON TRIVIAUX — v4.1 (Phase C)")
+    print("   CALCUL DES ZÉROS NON TRIVIAUX — v9 (Phase C)")
     print("=" * 65)
     print()
     scan_statut = "✓ scan_arb.so actif (Z_double C)" if SCAN_ARB_DISPONIBLE else "⚠ fallback Z_vect_correct"
@@ -574,7 +625,7 @@ def main():
     # ── Rapport ──────────────────────────────────────────────────────────────
     print()
     print("=" * 65)
-    print("  RÉSULTATS v4.1")
+    print("  RÉSULTATS v9")
     print("=" * 65)
     print(f"  Zéros trouvés     : {len(zeros)}")
     print(f"  Attendus (Weyl)   : {N_attendu(T_MAX):.0f}")
@@ -600,7 +651,7 @@ def main():
         resultats_turing = valider_turing(zeros, dps=30)
 
     # ── Profil des phases (localisation du goulot) ───────────────────────────
-    # NB : phases workers (detection/illinois_C/mpmath_*) cumulées sur N_WORKERS ;
+    # NB : phases workers (detection/brent_C/mpmath_*) cumulées sur N_WORKERS ;
     #      phase 'turing' = process parent seul. Colonnes 'temps_cumul' et
     #      'ms/appel' sont les indicateurs fiables ; '% mur×W' est indicatif.
     profil_total = agreger([profil_workers, snapshot()])
@@ -623,7 +674,7 @@ def main():
     # ── Conclusion ───────────────────────────────────────────────────────────
     print()
     print("=" * 65)
-    print(f"  v4.1 terminée — fichiers dans : {dossier}")
+    print(f"  v9 terminée — fichiers dans : {dossier}")
     if resultats_turing["complet"]:
         print("  Validation Turing : COMPLET (aucun zéro manqué)")
     else:

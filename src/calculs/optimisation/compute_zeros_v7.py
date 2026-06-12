@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-compute_zeros_v4_1.py — Phase C : Illinois C + Z_batch + parallèle
-══════════════════════════════════════════════════════════════════════
+compute_zeros_v7.py — illinois_refine_adaptive prec_fast=64 bits + prec_full=80 bits
+══════════════════════════════════════════════════════════════════════════════════
+v7 (basée sur v6) — benchmark 11 juin 2026 : prec_full=80 bits → ×1.06 vs prec_full=116
+Run T=100 000 estimé : ~29 min (vs 30.9 min avec prec_full=116)
+Levier : prec_full 116→80 bits (toujours 2 limbes, calculs légèrement plus courts)
+Décision : prec_fast=64 bits inchangé (1 limbe SIMD — déjà optimal)
+
 Corrige 5 erreurs architecturales de v4 :
 
   P1 — Détection : mpmath.siegelz → Z_batch() (RS numpy vectorisé)
@@ -165,6 +170,25 @@ def worker_v4_1(args: tuple) -> Tuple[list, dict, dict]:
         ctypes.c_double,  # tol
         ctypes.c_int,     # max_iter (100)
     ]
+    # v7 — affinage 2-phases via illinois_refine_bench (prec paramétrés)
+    # prec_fast=64 bits : 1 limbe mpfr → SIMD AVX2 (optimal, inchangé)
+    # prec_full=80 bits : 2 limbes, benchmark +6% vs 116 bits (×1.06)
+    ITER_SWITCH = 8   # calibré sur bench T=5000 : ~8 iter. pour réduire le bracket
+    MAX_ITER    = 50
+    PREC_FAST   = 64  # phase 1 — 1 limbe SIMD (inchangé vs référence)
+    PREC_FULL   = 80  # phase 2 — 80 bits optimal mesuré (benchmark 11 juin 2026)
+    lib.illinois_refine_bench.restype  = ctypes.c_double
+    lib.illinois_refine_bench.argtypes = [
+        ctypes.c_double,  # a
+        ctypes.c_double,  # b
+        ctypes.c_double,  # fa
+        ctypes.c_double,  # fb
+        ctypes.c_double,  # t (milieu du bracket)
+        ctypes.c_int,     # iter_switch
+        ctypes.c_int,     # max_iter
+        ctypes.c_int,     # prec_fast_bits
+        ctypes.c_int,     # prec_full_bits
+    ]
 
     import mpmath as _mp
     _mp.mp.dps = 35
@@ -199,9 +223,17 @@ def worker_v4_1(args: tuple) -> Tuple[list, dict, dict]:
         t_mid = (a + b) / 2.0
         try:
             if t_mid >= T_SEUIL_ILLINOIS_C:
-                # Illinois C Option B — fa/fb depuis scan_arb, pas de recalcul C
+                # v7 — illinois_refine_bench (2-phases 64→80 bits)
                 with chrono("illinois_C"):
-                    zero = lib.illinois_refine(a, b, fa, fb, 170, tol, 100)
+                    try:
+                        zero = lib.illinois_refine_bench(
+                            a, b, float(fa), float(fb), t_mid,
+                            ITER_SWITCH, MAX_ITER,
+                            PREC_FAST, PREC_FULL,
+                        )
+                    except Exception as _e:
+                        # fallback illinois_refine classique si bench échoue
+                        zero = lib.illinois_refine(a, b, fa, fb, 170, tol, 100)
                 if a - 1e-10 <= zero <= b + 1e-10:
                     zeros_segment.append(zero)
                     stats["illinois_C"] += 1
@@ -415,7 +447,7 @@ def ecrire_log(chemin_log, horodatage, T_MIN, T_MAX, STEP, N_WORKERS,
     def L(t=""): lignes.append(t)
 
     L(sep)
-    L("  JOURNAL D'EXÉCUTION — compute_zeros_v4_1.py  (Phase C)")
+    L("  JOURNAL D'EXÉCUTION — compute_zeros_v7.py  (Phase C)")
     L("  Projet : Hypothèse de Riemann — hprzeta")
     L(sep); L()
 
@@ -511,7 +543,7 @@ def _step_adaptatif(T_MAX: float) -> float:
 def saisir_parametres():
     print()
     print("=" * 65)
-    print("   CALCUL DES ZÉROS NON TRIVIAUX — v4.1 (Phase C)")
+    print("   CALCUL DES ZÉROS NON TRIVIAUX — v7 (Phase C)")
     print("=" * 65)
     print()
     scan_statut = "✓ scan_arb.so actif (Z_double C)" if SCAN_ARB_DISPONIBLE else "⚠ fallback Z_vect_correct"
@@ -574,7 +606,7 @@ def main():
     # ── Rapport ──────────────────────────────────────────────────────────────
     print()
     print("=" * 65)
-    print("  RÉSULTATS v4.1")
+    print("  RÉSULTATS v7")
     print("=" * 65)
     print(f"  Zéros trouvés     : {len(zeros)}")
     print(f"  Attendus (Weyl)   : {N_attendu(T_MAX):.0f}")
@@ -623,7 +655,7 @@ def main():
     # ── Conclusion ───────────────────────────────────────────────────────────
     print()
     print("=" * 65)
-    print(f"  v4.1 terminée — fichiers dans : {dossier}")
+    print(f"  v7 terminée — fichiers dans : {dossier}")
     if resultats_turing["complet"]:
         print("  Validation Turing : COMPLET (aucun zéro manqué)")
     else:

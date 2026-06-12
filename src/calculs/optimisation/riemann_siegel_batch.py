@@ -46,15 +46,23 @@ try:
     if n_devices > 0:
         props    = cp.cuda.runtime.getDeviceProperties(0)
         _GPU_NOM = props["name"].decode()
-        _GPU_DISPONIBLE = True
-        xp       = cp
-        print(f"  ✅  GPU détectée : {_GPU_NOM}")
-        print(f"       Backend      : CuPy (mode GPU)")
+        # Compute Capability — GTX 960M = 5.0 (sm_50), déprécié depuis CUDA 11.8
+        # NVRTC refuse sm_50 dans CUDA 12.x → forcer CPU pour éviter l'erreur nvrtc
+        cc_major = props.get("major", 0)
+        cc_minor = props.get("minor", 0)
+        if cc_major < 6:
+            print(f"  ⚠️   GPU {_GPU_NOM} (sm_{cc_major}{cc_minor}) : "
+                  f"Compute Capability < 6.0 non supportée par CUDA 12.x NVRTC → mode CPU")
+        else:
+            _GPU_DISPONIBLE = True
+            xp = cp
+            print(f"  ✅  GPU détectée : {_GPU_NOM} (sm_{cc_major}{cc_minor})")
+            print(f"       Backend      : CuPy (mode GPU)")
     else:
         print("  ⚠️   CuPy installé mais aucune GPU CUDA détectée → mode CPU")
 except ImportError:
     print("  ℹ️   CuPy absent → mode CPU numpy"
-          " (installer : pip install cupy-cuda11x)")
+          " (installer : pip install cupy-cuda12x)")
 except Exception as e:
     print(f"  ⚠️   CuPy erreur ({e}) → mode CPU numpy")
 

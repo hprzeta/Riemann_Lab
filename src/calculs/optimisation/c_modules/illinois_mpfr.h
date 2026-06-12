@@ -64,4 +64,34 @@ double illinois_mpfr_cb(double a_d, double b_d, double tol, z_func_t zfunc);
 double illinois_refine(double a, double b, double fa, double fb,
                        int prec_bits, double tol, int max_iter);
 
+/* Z_rs_mpfr_ntermes — Z(t) RS avec N_termes imposé (pas ⌊√(t/2π)⌋)
+ *
+ * Entrée : t_d      — point d'évaluation
+ * Entrée : N_termes — nombre de termes RS (N_fast = max(5, N_full/4) ou N_full)
+ * Entrée : prec     — précision mpfr (64 ou 116 bits selon la phase)
+ * Sortie : double — valeur approximée de Z(t) suffisante pour la détection de signe */
+double Z_rs_mpfr_ntermes(double t_d, int N_termes, mpfr_prec_t prec);
+
+/* illinois_refine_adaptive — Illinois 2-phases N_fast→N_full
+ *
+ * Entrée : a, b        — bornes avec fa·fb < 0
+ * Entrée : fa, fb      — Z(a), Z(b) fournis par Python (mpmath.siegelz)
+ * Entrée : t           — valeur centrale ≈ (a+b)/2, pour calculer N_full
+ * Entrée : iter_switch — itérations en phase N_fast (calibré ≈ 8)
+ * Entrée : max_iter    — max total itérations (ex: 50)
+ * Sortie : double — zéro affiné à 1e-12 */
+double illinois_refine_adaptive(double a, double b, double fa, double fb,
+                                double t, int iter_switch, int max_iter);
+
+/* illinois_refine_bench — variante benchmark, prec_fast/prec_full en paramètres
+ *
+ * Identique à illinois_refine_adaptive mais expose les précisions pour tester
+ * différentes configurations sans recompiler. Chemins de production inchangés.
+ *
+ * Entrée : prec_fast_bits — précision phase 1 (ex: 32, 48, 64)
+ * Entrée : prec_full_bits — précision phase 2 (ex: 80, 96, 116) */
+double illinois_refine_bench(double a, double b, double fa, double fb,
+                             double t, int iter_switch, int max_iter,
+                             int prec_fast_bits, int prec_full_bits);
+
 #endif /* ILLINOIS_MPFR_H */
