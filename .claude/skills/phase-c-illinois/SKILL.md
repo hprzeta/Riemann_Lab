@@ -235,3 +235,30 @@ Résultats mesurés (commit `50837f7`, branche `Riemann_Lab_C`) :
 
 ---
 *Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026 · 9 juin 2026 (Mur de latence RÉSOLU ×27) · 10 juin 2026 (STEP adaptatif validé T=10k v2)*
+
+---
+
+### v9 — brent_refine_adaptive (validé 2026-06-12)
+
+**Résultats :** 138 069 zéros · 0 manquant · Turing COMPLET · 26.6 min turbo · 28.0 min sans turbo
+
+**Pourquoi Brent gagne :**
+- Ordre ~1.84 vs Illinois ~1.44 → ~4 iter vs ~6 → même coût/iter (1 éval Z) → ×1.80 global
+
+**Turbo :** gain seulement ×1.05 (vs ×1.63 pour v7). Brent C limité par bande passante mémoire MPFR (ops 64→80 bits), pas par fréquence CPU.
+
+**Fichiers :**
+- `src/calculs/optimisation/c_modules/brent_mpfr.c`
+- `src/calculs/optimisation/c_modules/brent_mpfr.h`
+- `src/calculs/optimisation/compute_zeros_v9.py`
+
+**Paramètres validés :**
+- prec_fast=64 · prec_full=80 · tol=1e-11 · max_iter=50
+- STEP=0.010 fixe — NE JAMAIS MODIFIER
+- Charger `brent_mpfr.so` POST-FORK dans `worker_init()`
+
+**Sudoers :** `/etc/sudoers.d/zeta_turbo` fonctionnel depuis 2026-06-12.
+Toujours lancer `zeta_turbo_on.sh` avant run de production. Toujours `zeta_turbo_off.sh` après.
+
+---
+*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026 · 9 juin 2026 · 10 juin 2026 · **12 juin 2026 (v9 Brent validée, sudoers OK)***
