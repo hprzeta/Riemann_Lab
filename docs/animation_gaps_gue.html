@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Distribution des gaps — GUE vs STEP</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #0d1117; color: #e6edf3; line-height: 1.7;
+    padding: 1.8rem 1rem 3rem; max-width: 760px; margin: 0 auto;
+  }
+  h1 { font-size: 1.35rem; font-weight: 600; margin-bottom: 0.3rem; }
+  h2 { font-size: 1.05rem; font-weight: 500; color: #c9d1d9; margin: 2rem 0 0.7rem; }
+  .sub { color: #8b949e; font-size: 0.9rem; margin-bottom: 1.4rem; }
+  p  { color: #c9d1d9; font-size: 0.95rem; margin-bottom: 0.8rem; }
+  strong { color: #e6edf3; }
+  a  { color: #7F77DD; }
+  code {
+    font-family: ui-monospace, monospace; background: #161b22;
+    border: 1px solid #30363d; border-radius: 4px;
+    padding: 1px 5px; font-size: 0.85em; color: #9fe1cb;
+  }
+  .meta {
+    font-size: 0.8rem; color: #8b949e; border: 1px solid #30363d;
+    background: #161b22; border-radius: 8px; padding: 0.5rem 0.9rem;
+    margin-bottom: 1.6rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 6px;
+  }
+  .panel {
+    background: #161b22; border: 1px solid #30363d; border-radius: 10px;
+    padding: 1.1rem 1.2rem; margin: 1.2rem 0;
+  }
+  .panel-title { font-size: 0.85rem; color: #8b949e; margin-bottom: 0.8rem; }
+  .ctrl {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 0.83rem; color: #8b949e; margin-bottom: 0.7rem;
+  }
+  .ctrl span:first-child { min-width: 220px; }
+  input[type=range] { flex: 1; accent-color: #7F77DD; height: 4px; cursor: pointer; }
+  .val { font-weight: 600; color: #e6edf3; min-width: 80px; text-align: right; }
+  .katex-block {
+    background: #161b22; border: 1px solid #30363d; border-radius: 8px;
+    padding: 0.4rem 1rem; margin: 0.8rem 0; overflow-x: auto;
+  }
+  table { width: 100%; border-collapse: collapse; margin: 0.8rem 0; font-size: 0.86rem; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid #21262d; color: #c9d1d9; }
+  th { color: #8b949e; font-weight: 500; }
+  .ok { color: #1D9E75; } .ko { color: #E24B4A; } .mid { color: #EF9F27; }
+  .legend {
+    display: flex; gap: 18px; flex-wrap: wrap;
+    font-size: 0.78rem; color: #8b949e; margin-top: 0.7rem;
+  }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .dot { width: 10px; height: 10px; border-radius: 2px; }
+  canvas { display: block; width: 100%; border-radius: 6px; }
+  .readout {
+    background: #0d1117; border: 1px solid #30363d; border-radius: 6px;
+    padding: 0.5rem 0.9rem; margin: 0.7rem 0;
+    display: flex; gap: 1.5rem; flex-wrap: wrap;
+    font-size: 0.82rem; font-family: ui-monospace, monospace;
+  }
+  .readout-label { color: #8b949e; }
+  .readout-val   { color: #e6edf3; font-weight: 600; }
+  /* barres animées comparatif */
+  .bar-row { display: flex; align-items: center; gap: 10px; margin: 6px 0; font-size: 0.84rem; }
+  .bar-label { min-width: 90px; color: #8b949e; font-family: ui-monospace, monospace; }
+  .bar-track { flex: 1; background: #21262d; border-radius: 4px; height: 18px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; transition: width 1.2s cubic-bezier(.4,0,.2,1); width: 0; }
+  .bar-count { min-width: 120px; font-family: ui-monospace, monospace; font-size: 0.82rem; }
+</style>
+</head>
+<body>
+
+<div class="meta">
+  <span>Riemann_Lab — Cours animé · Gaps GUE et choix de STEP</span>
+  <span>Auteur : <b style="color:#c9d1d9">hprzeta</b> · Mise à jour : 11 juin 2026</span>
+</div>
+
+<h1>Distribution des gaps — GUE vs STEP</h1>
+<p class="sub">Pourquoi STEP=δ/3 échoue et STEP=0.010 réussit — la loi de Wigner explique les zéros manquants.</p>
+
+<p>Retour au <a href="index.html">tableau de bord</a> · <a href="animation_distribution_zeros.html">distribution des zéros</a> · <a href="animation_ntermes_rs.html">coût RS & bottleneck</a></p>
+
+<!-- ══════════════ 1. ESPACEMENT MOYEN δ(t) ══════════════ -->
+<h2>1. Espacement moyen δ(t) — formule de von Mangoldt</h2>
+<p>La densité locale des zéros au niveau $t$ est $\rho(t) = \tfrac{1}{2\pi}\ln\tfrac{t}{2\pi}$. L'espacement <strong>moyen</strong> entre deux zéros consécutifs est donc :</p>
+<div class="katex-block">$$\delta(t) = \frac{1}{\rho(t)} = \frac{2\pi}{\ln(t/2\pi)}$$</div>
+<p>À T=100 000, $\delta \approx 0.55$ — mais certains gaps sont bien plus petits (loi GUE).</p>
+
+<div class="panel">
+  <div class="panel-title">Animation A — Évolution de δ(t) avec t</div>
+  <canvas id="cv-delta" height="180"></canvas>
+  <div class="readout">
+    <span><span class="readout-label">t = </span><span class="readout-val" id="ro-t">10000</span></span>
+    <span><span class="readout-label">δ(t) = </span><span class="readout-val" id="ro-delta">—</span></span>
+    <span><span class="readout-label">δ/3 = </span><span class="readout-val" id="ro-delta3">—</span></span>
+    <span><span class="readout-label">STEP=0.010 / δ = </span><span class="readout-val" id="ro-ratio">—</span></span>
+  </div>
+  <div class="ctrl">
+    <span>Valeur de t</span>
+    <input type="range" id="sl-t" min="100" max="100000" value="10000" step="100">
+    <span class="val" id="val-t">10 000</span>
+  </div>
+  <div class="legend">
+    <span><span class="dot" style="background:#EF9F27"></span>δ(t) espacement moyen</span>
+    <span><span class="dot" style="background:#7F77DD"></span>STEP = 0.010 (fixe)</span>
+    <span><span class="dot" style="background:#E24B4A"></span>δ(t)/3 (ancienne règle)</span>
+  </div>
+</div>
+
+<!-- ══════════════ 2. LOI GUE + STEP ══════════════ -->
+<h2>2. Loi de Wigner (GUE) et fraction de gaps capturés</h2>
+<p>Les gaps normalisés $s = \delta_n / \delta(t)$ suivent la <strong>loi de Wigner</strong> :</p>
+<div class="katex-block">$$p_{\text{GUE}}(s) = \frac{\pi}{2}\,s\,e^{-\pi s^2/4}$$</div>
+<p>Un STEP fixe doit capturer <em>tous</em> les gaps réels, y compris les plus petits. La fraction de gaps inférieurs à un seuil $\varepsilon$ (normalisé) est $F(\varepsilon) = \int_0^\varepsilon p(s)\,ds$. Pour éviter les manquants, il faut que STEP $\leq g_{\min}/2$.</p>
+<div class="katex-block">$$g_{\min} \approx 0.019 \ll \frac{\delta}{3} \approx 0.22 \quad \Rightarrow \quad \text{STEP}_{\text{safe}} = 0.010 \leq \frac{g_{\min}}{2}$$</div>
+
+<div class="panel">
+  <div class="panel-title">Animation B — Histogramme GUE et STEP (déplacer le curseur)</div>
+  <canvas id="cv-gue" height="220"></canvas>
+  <div class="readout">
+    <span><span class="readout-label">STEP = </span><span class="readout-val" id="ro-step">0.100</span></span>
+    <span><span class="readout-label">s_step (normalisé, t=10k) = </span><span class="readout-val" id="ro-snorm">—</span></span>
+    <span><span class="readout-label">F(s_step) = </span><span class="readout-val" id="ro-frac">—</span></span>
+    <span><span class="readout-label">Risque manquants ≈ </span><span class="readout-val" id="ro-risk">—</span></span>
+  </div>
+  <div class="ctrl">
+    <span>STEP (absolu)</span>
+    <input type="range" id="sl-step" min="1" max="50" value="10" step="1">
+    <span class="val" id="val-step">0.100</span>
+  </div>
+  <div class="legend">
+    <span><span class="dot" style="background:#7F77DD"></span>p(s) GUE — loi de Wigner</span>
+    <span><span class="dot" style="background:#E24B4A"></span>zone à risque (gaps &lt; STEP)</span>
+    <span><span class="dot" style="background:#1D9E75"></span>STEP safe</span>
+  </div>
+</div>
+
+<!-- ══════════════ 3. COMPARATIF ══════════════ -->
+<h2>3. Tableau comparatif — STEP vs zéros manquants (T=100 000)</h2>
+<p>Résultats mesurés sur le run T=100 000 (138 069 zéros, 1h53min) :</p>
+
+<div class="panel">
+  <div class="panel-title">Comparatif animé — STEP et zéros manquants</div>
+  <div style="margin-bottom:0.6rem;">
+    <div class="bar-row">
+      <span class="bar-label">STEP=0.100</span>
+      <div class="bar-track"><div class="bar-fill" id="bar-1" style="background:#E24B4A;"></div></div>
+      <span class="bar-count ko" id="cnt-1">0 manquants</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">STEP=0.050</span>
+      <div class="bar-track"><div class="bar-fill" id="bar-2" style="background:#EF9F27;"></div></div>
+      <span class="bar-count" id="cnt-2">0 manquants</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">STEP=0.022</span>
+      <div class="bar-track"><div class="bar-fill" id="bar-3" style="background:#EF9F27;"></div></div>
+      <span class="bar-count" id="cnt-3">0 manquants</span>
+    </div>
+    <div class="bar-row">
+      <span class="bar-label">STEP=0.010</span>
+      <div class="bar-track"><div class="bar-fill" id="bar-4" style="background:#1D9E75;"></div></div>
+      <span class="bar-count ok" id="cnt-4">0 manquants</span>
+    </div>
+  </div>
+  <table>
+    <tr><th>STEP</th><th>STEP/δ(100k)</th><th>Zéros manquants</th><th>Résultat</th></tr>
+    <tr><td><code>0.100</code></td><td>0.18</td><td>17</td><td class="ko">❌ manquants</td></tr>
+    <tr><td><code>0.050</code></td><td>0.09</td><td>5</td><td class="mid">⚠ manquants</td></tr>
+    <tr><td><code>0.022</code></td><td>0.04</td><td>2072</td><td class="ko">❌ sur-échantillonnage → crash</td></tr>
+    <tr><td><code>0.010</code></td><td>0.018</td><td>0</td><td class="ok">✅ parfait</td></tr>
+  </table>
+  <p style="font-size:0.82rem;color:#8b949e;margin-top:0.5rem;">STEP=0.022 = δ/3 à T=100k → sur-échantillonnage massif (×5) → mémoire saturée.</p>
+</div>
+
+<!-- ══════════════ 4. CONCLUSION ══════════════ -->
+<h2>4. Règle de sécurité — STEP adaptatif v6</h2>
+<p>La règle <strong>STEP=δ/3</strong> semblait raisonnable mais ignore la queue de la loi GUE : même si le gap <em>moyen</em> est δ, certains gaps sont 20× plus petits. La règle sûre est :</p>
+<div class="katex-block">$$\text{STEP} \leq \frac{g_{\min}}{2} \approx 0.010, \quad g_{\min} = \min_n(\gamma_{n+1}-\gamma_n) \approx 0.019 \text{ (premiers 10k zéros)}$$</div>
+<p>En v6, STEP=0.010 est <strong>fixe</strong> (non adaptatif) — ce qui donne 0 manquant sur 138 069 zéros tout en restant 3× plus rapide que STEP=δ/3 (moins de détections parasites à retraiter).</p>
+
+<div class="meta" style="margin-top:2rem;margin-bottom:0;">
+  <span>Riemann_Lab · branche Riemann_Lab_IA · <code>docs/animation_gaps_gue.html</code></span>
+  <span>Mise à jour : 11 juin 2026 · Auteur : <b style="color:#c9d1d9">hprzeta</b> · <span id="nblignes"></span> lignes</span>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  renderMathInElement(document.body, {
+    delimiters: [
+      { left: "$$", right: "$$", display: true },
+      { left: "$",  right: "$",  display: false }
+    ],
+    throwOnError: false
+  });
+  initDelta();
+  initGUE();
+  animateBars();
+  document.getElementById('nblignes').textContent =
+    document.documentElement.outerHTML.split('\n').length;
+});
+
+var TWO_PI = 2 * Math.PI;
+
+/* ─── Animation A : δ(t) ─── */
+function delta(t) { return TWO_PI / Math.log(t / TWO_PI); }
+
+function initDelta() {
+  var sl = document.getElementById('sl-t');
+  sl.addEventListener('input', drawDelta);
+  drawDelta();
+}
+
+function drawDelta() {
+  var t0 = parseFloat(document.getElementById('sl-t').value);
+  document.getElementById('val-t').textContent = t0.toLocaleString('fr-FR');
+  var d = delta(t0);
+  document.getElementById('ro-t').textContent = t0.toLocaleString('fr-FR');
+  document.getElementById('ro-delta').textContent = d.toFixed(4);
+  document.getElementById('ro-delta3').textContent = (d/3).toFixed(4);
+  document.getElementById('ro-ratio').textContent = (0.010/d*100).toFixed(1) + ' %';
+
+  var cv = document.getElementById('cv-delta');
+  cv.width = cv.offsetWidth || 700;
+  var ctx = cv.getContext('2d');
+  var W = cv.width, H = cv.height;
+  ctx.clearRect(0, 0, W, H);
+
+  /* axes */
+  var px = 55, py = 15, pw = W - px - 20, ph = H - py - 35;
+  ctx.strokeStyle = '#30363d'; ctx.lineWidth = 1;
+  ctx.strokeRect(px, py, pw, ph);
+
+  var tMin = 100, tMax = 100000;
+  var dMin = 0, dMax = delta(tMin) * 1.05;
+
+  function xOf(t) { return px + (Math.log(t) - Math.log(tMin)) / (Math.log(tMax) - Math.log(tMin)) * pw; }
+  function yOf(d) { return py + ph - (d - dMin) / (dMax - dMin) * ph; }
+
+  /* grille */
+  ctx.strokeStyle = '#21262d'; ctx.lineWidth = 0.5;
+  [1000, 10000, 100000].forEach(function(tv) {
+    var x = xOf(tv);
+    ctx.beginPath(); ctx.moveTo(x, py); ctx.lineTo(x, py+ph); ctx.stroke();
+    ctx.fillStyle = '#8b949e'; ctx.font = '10px monospace';
+    ctx.fillText(tv >= 1000 ? (tv/1000)+'k' : tv, x - 10, py + ph + 14);
+  });
+
+  /* courbe δ(t) */
+  ctx.strokeStyle = '#EF9F27'; ctx.lineWidth = 2;
+  ctx.beginPath();
+  for (var i = 0; i <= pw; i++) {
+    var tv = Math.exp(Math.log(tMin) + i/pw * (Math.log(tMax)-Math.log(tMin)));
+    var dv = delta(tv);
+    if (i === 0) ctx.moveTo(px+i, yOf(dv)); else ctx.lineTo(px+i, yOf(dv));
+  }
+  ctx.stroke();
+
+  /* ligne STEP=0.010 */
+  ctx.strokeStyle = '#7F77DD'; ctx.lineWidth = 1.5; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(px, yOf(0.010)); ctx.lineTo(px+pw, yOf(0.010)); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#7F77DD'; ctx.font = '10px monospace';
+  ctx.fillText('STEP=0.010', px+4, yOf(0.010)-4);
+
+  /* ligne δ/3 à t courant */
+  ctx.strokeStyle = '#E24B4A'; ctx.lineWidth = 1.5; ctx.setLineDash([4,3]);
+  ctx.beginPath(); ctx.moveTo(px, yOf(d/3)); ctx.lineTo(px+pw, yOf(d/3)); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#E24B4A'; ctx.font = '10px monospace';
+  ctx.fillText('δ/3=' + (d/3).toFixed(3), px+pw-70, yOf(d/3)-4);
+
+  /* point courant */
+  ctx.fillStyle = '#EF9F27';
+  ctx.beginPath(); ctx.arc(xOf(t0), yOf(d), 5, 0, TWO_PI); ctx.fill();
+
+  /* axe Y labels */
+  ctx.fillStyle = '#8b949e'; ctx.font = '10px monospace';
+  [0.5, 1.0, 1.5, 2.0].forEach(function(dv) {
+    if (dv <= dMax) {
+      ctx.fillText(dv.toFixed(1), 5, yOf(dv)+4);
+    }
+  });
+}
+
+/* ─── Animation B : GUE + STEP ─── */
+function pGUE(s) { return Math.PI/2 * s * Math.exp(-Math.PI*s*s/4); }
+
+/* CDF GUE par intégration numérique (trapèzes, 200 pas) */
+function FGUE(sMax) {
+  var n = 200, h = sMax/n, sum = 0;
+  for (var i = 0; i < n; i++) {
+    sum += (pGUE(i*h) + pGUE((i+1)*h)) * h / 2;
+  }
+  return Math.min(sum, 1);
+}
+
+function initGUE() {
+  var sl = document.getElementById('sl-step');
+  sl.addEventListener('input', drawGUE);
+  drawGUE();
+}
+
+function drawGUE() {
+  /* STEP en centièmes (slider 1–50 → 0.01–0.50) */
+  var stepVal = parseFloat(document.getElementById('sl-step').value) / 100;
+  document.getElementById('val-step').textContent = stepVal.toFixed(3);
+  document.getElementById('ro-step').textContent = stepVal.toFixed(3);
+
+  /* espacement moyen à t=10000 */
+  var tRef = 10000;
+  var dRef = delta(tRef);
+  var sNorm = stepVal / dRef;
+  var frac  = FGUE(sNorm);
+  var risk  = (frac * 100).toFixed(1);
+
+  document.getElementById('ro-snorm').textContent = sNorm.toFixed(3);
+  document.getElementById('ro-frac').textContent  = (frac*100).toFixed(1) + ' %';
+
+  var riskEl = document.getElementById('ro-risk');
+  if (stepVal <= 0.015) {
+    riskEl.textContent = '~0 % ✅';
+    riskEl.style.color = '#1D9E75';
+  } else if (stepVal <= 0.03) {
+    riskEl.textContent = risk + ' % (faible)';
+    riskEl.style.color = '#EF9F27';
+  } else {
+    riskEl.textContent = risk + ' % ❌';
+    riskEl.style.color = '#E24B4A';
+  }
+
+  var cv = document.getElementById('cv-gue');
+  cv.width = cv.offsetWidth || 700;
+  var ctx = cv.getContext('2d');
+  var W = cv.width, H = cv.height;
+  ctx.clearRect(0, 0, W, H);
+
+  var px = 45, py = 15, pw = W - px - 20, ph = H - py - 35;
+  ctx.strokeStyle = '#30363d'; ctx.lineWidth = 1;
+  ctx.strokeRect(px, py, pw, ph);
+
+  var sMax = 3.0;
+  function xOf(s) { return px + s/sMax * pw; }
+  function yOf(p) { return py + ph - p/0.62 * ph; }
+
+  /* zone à risque (s < sNorm) */
+  if (sNorm > 0) {
+    ctx.fillStyle = 'rgba(226,75,74,0.18)';
+    ctx.beginPath();
+    ctx.moveTo(xOf(0), py+ph);
+    var nRisk = Math.min(200, Math.round(sNorm/sMax*200));
+    for (var i = 0; i <= nRisk; i++) {
+      var sv = i/200 * sMax;
+      ctx.lineTo(xOf(sv), yOf(pGUE(sv)));
+    }
+    ctx.lineTo(xOf(sNorm), py+ph);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  /* courbe GUE */
+  ctx.strokeStyle = '#7F77DD'; ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  for (var i = 0; i <= 300; i++) {
+    var sv = i/300 * sMax;
+    var pv = pGUE(sv);
+    if (i === 0) ctx.moveTo(xOf(sv), yOf(pv)); else ctx.lineTo(xOf(sv), yOf(pv));
+  }
+  ctx.stroke();
+
+  /* ligne STEP vertical */
+  var lineColor = stepVal <= 0.015 ? '#1D9E75' : (stepVal <= 0.03 ? '#EF9F27' : '#E24B4A');
+  ctx.strokeStyle = lineColor; ctx.lineWidth = 2; ctx.setLineDash([5,3]);
+  ctx.beginPath(); ctx.moveTo(xOf(sNorm), py); ctx.lineTo(xOf(sNorm), py+ph); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = lineColor; ctx.font = '10px monospace';
+  var lx = xOf(sNorm) + 4; if (lx > px+pw-55) lx = xOf(sNorm) - 60;
+  ctx.fillText('s=' + sNorm.toFixed(2), lx, py+16);
+
+  /* axes labels */
+  ctx.fillStyle = '#8b949e'; ctx.font = '10px monospace';
+  [0.5,1.0,1.5,2.0,2.5].forEach(function(sv) {
+    ctx.fillText(sv.toFixed(1), xOf(sv)-8, py+ph+14);
+  });
+  [0.2,0.4,0.6].forEach(function(pv) {
+    if (yOf(pv) >= py) ctx.fillText(pv.toFixed(1), 4, yOf(pv)+4);
+  });
+
+  /* label axe */
+  ctx.fillStyle = '#8b949e'; ctx.font = '11px sans-serif';
+  ctx.fillText('s (espacement normalisé)', px + pw/2 - 65, py+ph+28);
+  ctx.fillText('p(s)', 2, py+10);
+}
+
+/* ─── Animation barres comparatif ─── */
+function animateBars() {
+  /* données mesurées : manquants / total * 100 → % barre (plafonné) */
+  var data = [
+    { bar: 'bar-1', cnt: 'cnt-1', missing: 17,   color: '#E24B4A', label: '17 manquants ❌' },
+    { bar: 'bar-2', cnt: 'cnt-2', missing: 5,    color: '#EF9F27', label: '5 manquants ⚠' },
+    { bar: 'bar-3', cnt: 'cnt-3', missing: 2072, color: '#E24B4A', label: '2072 manquants ❌ (crash)' },
+    { bar: 'bar-4', cnt: 'cnt-4', missing: 0,    color: '#1D9E75', label: '0 manquant ✅' }
+  ];
+  var maxVal = 2072;
+  /* petit délai pour laisser le DOM se stabiliser */
+  setTimeout(function() {
+    data.forEach(function(d) {
+      var pct = d.missing === 0 ? 2 : (d.missing / maxVal * 96 + 2);
+      var bar = document.getElementById(d.bar);
+      var cnt = document.getElementById(d.cnt);
+      bar.style.background = d.color;
+      bar.style.width = pct + '%';
+      cnt.textContent = d.label;
+    });
+  }, 400);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<svg width="100%" viewBox="0 0 680 1420" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>Workflow post-version Riemann_Lab</title>
+<desc>Checklist complète des tâches à effectuer après chaque validation de version vN ou session de travail</desc>
+<defs>
+  <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="#534AB7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #1a1a1a; }
+    .th { font-size: 14px; font-weight: 500; }
+    .ts { font-size: 12px; font-weight: 400; fill: #3d3d3a; }
+    .arr { stroke: #888780; stroke-width: 1px; fill: none; }
+  </style>
+</defs>
+
+<!-- TITRE -->
+<rect x="40" y="20" width="600" height="52" rx="10" fill="#EEEDFE" stroke="#534AB7" stroke-width="0.5"/>
+<text class="th" x="340" y="44" text-anchor="middle" fill="#26215C">Workflow post-version — Riemann_Lab</text>
+<text class="ts" x="340" y="62" text-anchor="middle" fill="#3C3489">Checklist complète vN → vN+1 ou session de travail</text>
+
+<!-- DÉCLENCHEUR -->
+<line x1="340" y1="72" x2="340" y2="100" stroke="#888780" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+<rect x="180" y="100" width="320" height="44" rx="8" fill="#FAEEDA" stroke="#BA7517" stroke-width="0.5"/>
+<text class="th" x="340" y="125" text-anchor="middle" fill="#412402">Déclencheur</text>
+<text class="ts" x="340" y="158" text-anchor="middle">Turing COMPLET + 0 manquant validé</text>
+<text class="ts" x="340" y="172" text-anchor="middle">OU fin de session de travail significative</text>
+
+<!-- BLOC 0 — NOMMAGE -->
+<line x1="340" y1="182" x2="340" y2="205" stroke="#888780" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+<rect x="40" y="205" width="600" height="36" rx="6" fill="#FAECE7" stroke="#993C1D" stroke-width="0.5"/>
+<text class="th" x="340" y="223" text-anchor="middle" fill="#4A1B0C">0 — Nommage (EN PREMIER)</text>
+<text class="ts" x="60" y="256">□ Renommer compute_zeros_vN.py (vérifier PREFIX = "vN")</text>
+<text class="ts" x="60" y="272">□ Vérifier ls compute_zeros_v*.py → cohérence</text>
+<text class="ts" x="60" y="288">□ CLAUDE.md → règle nommage + alias zeta obligatoire</text>
+
+<!-- BLOC 1 — SESSION -->
+<line x1="340" y1="300" x2="340" y2="318" stroke="#888780" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+<rect x="40" y="318" width="600" height="36" rx="6" fill="#FAECE7" stroke="#993C1D" stroke-width="0.5"/>
+<text class="th" x="340" y="336" text-anchor="middle" fill="#4A1B0C">1 — Session et récap</text>
+<text class="ts" x="60" y="368">□ logs/session_AAAAMMJJ.md capturée (alias zeta) OU reconstituée</text>
+<text class="ts" x="60" y="384">□ claude-traitement-journalier/recap_session_AAAAMMJJ.md créé</text>
+<text class="ts" x="60" y="400">□ recap_session_AAAAMMJJ.pdf généré (build_pdf_riemann.sh)</text>
+
+<!-- SÉPARATEUR 2 COLONNES -->
+<line x1="340" y1="412" x2="340" y2="430" stroke="#888780" stroke-width="1" fill="none"/>
+<line x1="340" y1="430" x2="165" y2="450" stroke="#888780" stroke-width="0.5" fill="none" marker-end="url(#arrow)"/>
+<line x1="340" y1="430" x2="515" y2="450" stroke="#888780" stroke-width="0.5" fill="none" marker-end="url(#arrow)"/>
+
+<!-- COL GAUCHE — CODE -->
+<rect x="40" y="450" width="280" height="30" rx="6" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+<text class="th" x="180" y="465" text-anchor="middle" fill="#04342C">2 — Code et scripts</text>
+<text class="ts" x="52" y="495">□ compute_zeros_vN.py committé</text>
+<text class="ts" x="52" y="511">□ scan_arb.c / .so committé</text>
+<text class="ts" x="52" y="527">□ scan_arb_wrapper.py committé</text>
+<text class="ts" x="52" y="543">□ Makefile mis à jour</text>
+<text class="ts" x="52" y="559">□ ia_prompts_riemann_lab_complet.md</text>
+<text class="ts" x="52" y="575">  archivé (branche Riemann_Lab_IA)</text>
+
+<!-- COL DROITE — WIKI CORE -->
+<rect x="360" y="450" width="280" height="30" rx="6" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+<text class="th" x="500" y="465" text-anchor="middle" fill="#04342C">3 — Wiki core</text>
+<text class="ts" x="372" y="495">□ JOURNAL.md (append-only)</text>
+<text class="ts" x="372" y="511">□ STACK.md (tableau versions)</text>
+<text class="ts" x="372" y="527">□ Handoff.md local (NE PAS committer)</text>
+<text class="ts" x="372" y="543">□ ORGANISATION_FICHIERS.md</text>
+<text class="ts" x="372" y="559">□ Prompts-Claude-Code.md</text>
+
+<!-- REJOINDRE -->
+<line x1="180" y1="585" x2="180" y2="608" stroke="#888780" stroke-width="0.5" fill="none"/>
+<line x1="500" y1="585" x2="500" y2="608" stroke="#888780" stroke-width="0.5" fill="none"/>
+<line x1="180" y1="608" x2="338" y2="622" stroke="#888780" stroke-width="0.5" fill="none" marker-end="url(#arrow)"/>
+<line x1="500" y1="608" x2="342" y2="622" stroke="#888780" stroke-width="0.5" fill="none" marker-end="url(#arrow)"/>
+
+<!-- BLOC 4 — FORMULES -->
+<rect x="40" y="622" width="600" height="30" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text class="th" x="340" y="637" text-anchor="middle" fill="#042C53">4 — Formules et bibliothèques (wiki)</text>
+<text class="ts" x="60" y="665">□ Formules_zeta.md — nouveaux §N (formules, preuves, tables)</text>
+<text class="ts" x="60" y="681">□ Bibliotheques.md — nouveau run dans tableau (T, STEP, durée, manquants, Turing)</text>
+<text class="ts" x="60" y="697">□ Resynchroniser en-tête + pied de page + nb lignes sur chaque .md modifié</text>
+
+<!-- BLOC 5 — ANALYSES -->
+<line x1="340" y1="708" x2="340" y2="725" stroke="#888780" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+<rect x="40" y="725" width="600" height="30" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text class="th" x="340" y="740" text-anchor="middle" fill="#042C53">5 — Analyses et PDFs</text>
+<text class="ts" x="60" y="768">□ analyse_problemes_vN-1_vN.md créé (wiki) → PDF généré</text>
+<text class="ts" x="60" y="784">□ analyse_problemes_v4_1_vN_synthese.md (si saut multiple) → PDF</text>
+<text class="ts" x="60" y="800">□ PDFs dans pdf/optimisation/ + push repo + sync Proton Drive</text>
+<text class="ts" x="60" y="816">□ Vérifier liste complète : v2-v3, v3-v4, v4-v4.1, v4.1-v5, v5-v6...</text>
+
+<!-- BLOC 6 — SKILLS -->
+<line x1="340" y1="827" x2="340" y2="844" stroke="#888780" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+<rect x="40" y="844" width="600" height="30" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text class="th" x="340" y="859" text-anchor="middle" fill="#042C53">6 — Skills Claude Code</text>
+<text class="ts" x="60" y="886">□ ~/.claude/skills/phase-c-illinois/SKILL.md — résultats vN, règles, v(N+1) planifiée</text>
+<text class="ts" x="60" y="902">□ ~/.claude/skills/riemann-lab/SKILL.md — état projet, script actif, bottleneck</text>
+<text class="ts" x="60" y="918">□ Syncer .claude/skills/ → repo Riemann_Lab_C (git add + commit)</text>
+
+<!-- BLOC 7 — GUIDES -->
+<line x1="340" y1="929" x2="340" y2="946" stroke="#888780" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+<rect x="40" y="946" width="600" height="30" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
+<text class="th" x="340" y="961" text-anchor="middle" fill="#042C53">7 — Guides (wiki)</text>
+<text class="ts" x="60" y="988">□ Bonnes-Pratiques-Claude-Code.md — nouvelles règles de la session</text>
+<text class="ts" x="60" y="1004">□ Guide-Git-GitHub.md — pièges vécus, nouveaux patterns</text>
+<text class="ts" x="60" y="1020">□ Guide-VSCode-Bonnes-Pratiques.md — leçons IDE</text>
+
+<!-- BLOC 8 — COURS -->
+<line x1="340" y1="1031" x2="340" y2="1048" stroke="#888780" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+<rect x="40" y="1048" width="600" height="30" rx="6" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.5"/>
+<text class="th" x="340" y="1063" text-anchor="middle" fill="#173404">8 — Cours et page Etape-1 (wiki)</text>
+<text class="ts" x="60" y="1090">□ Etape-1-Calcul-des-zeros-non-triviaux.md — section "Suite optimisations vN"</text>
+<text class="ts" x="60" y="1106">  → tableau chronologie + 3 leçons + liens animations + liens formules</text>
+<text class="ts" x="60" y="1122">□ Autres pages cours si nouvelles formules (Etape-2, Etape-3...)</text>
+
+<!-- BLOC 9 — ANIMATIONS -->
+<line x1="340" y1="1133" x2="340" y2="1150" stroke="#888780" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+<rect x="40" y="1150" width="600" height="30" rx="6" fill="#EAF3DE" stroke="#3B6D11" stroke-width="0.5"/>
+<text class="th" x="340" y="1165" text-anchor="middle" fill="#173404">9 — Animations et site (Riemann_Lab_IA)</text>
+<text class="ts" x="60" y="1192">□ animation_[concept].html créée (dark theme, KaTeX, sliders)</text>
+<text class="ts" x="60" y="1208">□ index.html — nouveaux pavés ajoutés (même style exact)</text>
+<text class="ts" x="60" y="1224">□ SVGs plans/schémas → docs/images/ (branche Riemann_Lab_IA)</text>
+<text class="ts" x="60" y="1240">□ Commit Riemann_Lab_IA + sync main</text>
+
+<!-- BLOC 10 — PUSH FINAL -->
+<line x1="340" y1="1251" x2="340" y2="1268" stroke="#888780" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+<rect x="40" y="1268" width="600" height="30" rx="6" fill="#D3D1C7" stroke="#5F5E5A" stroke-width="0.5"/>
+<text class="th" x="340" y="1283" text-anchor="middle" fill="#2C2C2A">10 — Push final et vérification</text>
+<text class="ts" x="60" y="1310">□ Wiki : git add tous .md modifiés + commit daté + push master</text>
+<text class="ts" x="60" y="1326">□ Repo : git add code+skills+PDFs+session → commit + push Riemann_Lab_C</text>
+<text class="ts" x="60" y="1342">□ Sync main (merge Riemann_Lab_C + Riemann_Lab_IA)</text>
+<text class="ts" x="60" y="1358">□ Proton Drive rclone sync PDFs + récaps</text>
+<text class="ts" x="60" y="1374">□ /clear Claude Code + vérifier alias | grep zeta</text>
+
+<!-- FINAL -->
+<line x1="340" y1="1385" x2="340" y2="1400" stroke="#888780" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+<rect x="160" y="1400" width="360" height="36" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+<text class="th" x="340" y="1418" text-anchor="middle" fill="#04342C">Pret pour prompt v(N+1)</text>
+
+</svg>
