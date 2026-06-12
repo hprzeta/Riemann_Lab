@@ -10,7 +10,8 @@ all: illinois_mpfr.so scan_arb.so
 
 ## cible principale : .so partagé appelé via ctypes depuis Python
 ## Option B : z_function.c retiré — Z_double supprimé (détection côté Python)
-illinois_mpfr.so: illinois_mpfr.c
+## v9 : brent_mpfr.c ajouté dans le même .so (accès à Z_rs_mpfr_ntermes)
+illinois_mpfr.so: illinois_mpfr.c brent_mpfr.c
 	$(CC) $(CFLAGS) -shared -o $@ $^ $(LIBS)
 
 ## scan_arb.so — détection C pure via Z_double (RS double + C0+C1, Berry 1992)
