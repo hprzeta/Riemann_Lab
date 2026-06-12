@@ -6,8 +6,8 @@ description: >
   Se déclenche sur : "Phase C", "libmpfr", "Illinois en C", "affinage C",
   "illinois_mpfr", "ctypes", "Voie B", "module C", "branche Riemann_Lab_C",
   "post-fork", "mpfr_t", "accélération Illinois", "compute_zeros_v4_1".
-version: 0.3.0
-date: 2026-06-03
+version: 0.4.0
+date: 2026-06-11
 ---
 
 # Phase C — Affinage Illinois en C / libmpfr (Voie B)
@@ -158,7 +158,7 @@ mpfr-config --version
 
 ---
 
-## État Phase C au 3 juin 2026
+## État Phase C au 11 juin 2026
 
 | Jalon | Statut |
 |---|---|
@@ -169,8 +169,39 @@ mpfr-config --version
 | Run T=1000 — 649 zéros, 16.15 z/s, Turing COMPLET, LMFDB 19/20 | ✅ |
 | Run T=10 000 — 10 141 zéros, **18.65 z/s**, Turing COMPLET, LMFDB 19/20 | ✅ |
 | illinois_C 98.6 % sur T=10 000 (objectif 90 % dépassé) | ✅ |
-| Rapport `v5 → v4.1` (`pdf/optimisation/analyse_problemes_v5_v4_1.pdf`) | ⏳ à faire |
-| T=100 000 — estimation ~5 h, goulot O(√t) identifié | ⏳ planifier |
+| **v6 — STEP adaptatif + scan_arb, run T=100k** | ✅ **138 069 zéros, 0 manquant, Turing COMPLET, ~113 min** |
+| **v7 — `illinois_refine_adaptive` (64→116 bits)** (`8637098`) | ✅ **138 069, 0 manquant, Turing COMPLET, 30.9 min** |
+| v7 benchmark T=5k : 1.47 ms/appel, 1808 z/s → **×16 vs 170 bits** | ✅ |
+| v7 benchmark T=100k : 42.05 ms/appel, 74.49 z/s → **×3.7 global** | ✅ |
+
+---
+
+## v7 — Leçon technique clé (11 juin 2026)
+
+**Contre-intuition :** le gain vient de la **précision** (64 bits → 1 limb mpfr → SIMD),
+pas du nombre de termes RS. La théorie prédisait ×4.6 via N_termes ; la réalité est ×16 via précision.
+
+| Param. | v6 | v7 |
+|---|---|---|
+| Phase 1 précision | 170 bits (3 limbs) | **64 bits (1 limb)** |
+| Phase 2 précision | 170 bits | 116 bits (2 limbs) |
+| ms/appel T=5k | ~23.5 ms | **1.47 ms** |
+| ms/appel T=100k | ~130 ms | **42.05 ms** |
+
+**Règle v7 :** `N_full` termes dans les **deux** phases (N_fast = N_full/4 invalide les signes Z).
+`ITER_SWITCH=8`, `MAX_ITER=50`. `prec_fast=64`, `prec_full=116`.
+
+---
+
+## v8 — En préparation
+
+| Option | Description | Gain estimé | Cible T=100k |
+|---|---|---|---|
+| A — W=8 workers | Doubler les workers (8 cœurs logiques) | ×1.3 | ~24 min |
+| B — prec phase 2 = 80 bits | 80 bits = encore 2 limbs → tester si OK | à mesurer | ? |
+
+**Bottleneck restant :** `illinois_C` = **78.2 %** du temps CPU à T=100k.
+**TÂCHE 0 (obligatoire avant v8)** : benchmark empirique prec_fast ∈ {32,48,64,80,96} bits.
 
 ---
 
@@ -228,37 +259,12 @@ Résultats mesurés (commit `50837f7`, branche `Riemann_Lab_C`) :
 
 ---
 
-## Étapes restantes
+## Étapes restantes — v8
 
-1. Analyser run T=100 000 v2 (STEP adaptatif) — Turing-Backlund COMPLET attendu.
-2. Rédiger le rapport `v5 → v4.1` (même structure que `v2→v3`).
-
----
-*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026 · 9 juin 2026 (Mur de latence RÉSOLU ×27) · 10 juin 2026 (STEP adaptatif validé T=10k v2)*
-
----
-
-### v9 — brent_refine_adaptive (validé 2026-06-12)
-
-**Résultats :** 138 069 zéros · 0 manquant · Turing COMPLET · 26.6 min turbo · 28.0 min sans turbo
-
-**Pourquoi Brent gagne :**
-- Ordre ~1.84 vs Illinois ~1.44 → ~4 iter vs ~6 → même coût/iter (1 éval Z) → ×1.80 global
-
-**Turbo :** gain seulement ×1.05 (vs ×1.63 pour v7). Brent C limité par bande passante mémoire MPFR (ops 64→80 bits), pas par fréquence CPU.
-
-**Fichiers :**
-- `src/calculs/optimisation/c_modules/brent_mpfr.c`
-- `src/calculs/optimisation/c_modules/brent_mpfr.h`
-- `src/calculs/optimisation/compute_zeros_v9.py`
-
-**Paramètres validés :**
-- prec_fast=64 · prec_full=80 · tol=1e-11 · max_iter=50
-- STEP=0.010 fixe — NE JAMAIS MODIFIER
-- Charger `brent_mpfr.so` POST-FORK dans `worker_init()`
-
-**Sudoers :** `/etc/sudoers.d/zeta_turbo` fonctionnel depuis 2026-06-12.
-Toujours lancer `zeta_turbo_on.sh` avant run de production. Toujours `zeta_turbo_off.sh` après.
+1. Benchmark `prec_fast` ∈ {32, 48, 64, 80, 96} bits sur T=5k (TÂCHE 0 obligatoire).
+2. Choisir Option A (W=8) ou Option B (prec phase 2 réduite) selon benchmark.
+3. Implémenter v8, run T=100k, valider Turing.
+4. Cible : < 20 min pour T=100k.
 
 ---
-*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026 · 9 juin 2026 · 10 juin 2026 · **12 juin 2026 (v9 Brent validée, sudoers OK)***
+*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026 · 9 juin 2026 (Mur de latence RÉSOLU ×27) · 10 juin 2026 (STEP adaptatif) · 11 juin 2026 (v7 validée 30.9 min — prec_fast=64 bits SIMD)*
