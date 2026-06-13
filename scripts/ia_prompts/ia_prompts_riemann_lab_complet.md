@@ -814,4 +814,22 @@ push wiki + Riemann_Lab_C + Riemann_Lab_IA · prompts · Handoff.md local
 
 ---
 
-*ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_IA · hprzeta · MAJ 2026-06-03 · 9 juin 2026 · 10 juin 2026 (soir) · 11 juin 2026 · **12 juin 2026 (Prompts M-N v9 turbo)** · ~800 lignes*
+---
+
+## Session 2026-06-13 — Run v12 + documentation complète
+
+### Résultats v12
+
+- Version : v12 `illinois_refine_arb` (Illinois hybride 2-phases)
+- ~138 080 zéros · 0 manquant · 8.8 min (avec turbo) · ×16.9 vs v10 (benchmark T=10k) · ×2.69 direct T=100k
+- Turing-Backlund : COMPLET ✅ · LMFDB : 20/20 ✅
+- Algorithme : Phase 1 Z_rs_double (~0.015 ms) → bracket 1e-6 · Phase 2 2 Newton Z_arb (~3.5 ms)
+
+### Prompt documentation v12 utilisé
+
+Prompt multi-tâches (15 tâches) envoyé depuis Claude.ai web → Claude Code.
+Tâches : 2 rapports d'analyse créés, 9 pages wiki mises à jour, site mis à jour, Handoff réécrit.
+
+---
+
+*ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_IA · hprzeta · MAJ 2026-06-03 · 9 juin 2026 · 10 juin 2026 (soir) · 11 juin 2026 · 12 juin 2026 (Prompts M-N v9 turbo) · **13 juin 2026 (v12 documentation complète)** · ~830 lignes*

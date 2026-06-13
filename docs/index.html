@@ -533,7 +533,7 @@
     <div class="subtitle">
       <span class="badge gold">Ubuntu 24.04</span>
       <span class="badge gold">Python · mpmath</span>
-      <span class="badge gold">138 069 zéros validés</span>
+      <span class="badge gold">~138 080 zéros validés · v12 · 0 manquant ✅</span>
     </div>
   </header>
 
@@ -641,11 +641,11 @@
         <span class="step-num">01</span>
         <div class="step-body">
           <h3>Calcul des zéros non triviaux</h3>
-          <p>v10 opérationnel — Brent C/libmpfr (64→80 bits) + 8 workers (W=8 forcé).
-             <strong>138&nbsp;069 zéros</strong> calculés jusqu'à T=100&nbsp;000 en
-             <strong>23.7 min</strong> · 97.08 z/s (avec turbo). Turing-Backlund COMPLET, 19/20 LMFDB &lt; 10⁻¹⁰.
-             Gain total v1 → v10 : <strong>×5&nbsp;040</strong> (avec turbo).</p>
-          <div class="pill done">Opérationnel — v10</div>
+          <p>v12 opérationnel — Illinois hybride 2-phases (Z_rs_double + 2 Newton Z_arb + W=8).
+             <strong>~138&nbsp;080 zéros</strong> calculés jusqu'à T=100&nbsp;000 en
+             <strong>8.8 min</strong> · ~261 z/s (avec turbo) · <strong>0 manquant</strong>.
+             Turing-Backlund COMPLET ✅ · LMFDB 20/20 ✅ · ×16.9 vs v10.</p>
+          <div class="pill done">Opérationnel — v12</div>
         </div>
         <div class="step-stat status-done">
           138&nbsp;069<br>
@@ -945,11 +945,18 @@
             <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">×1.80 vs v8</td>
             <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">avec turbo</td>
           </tr>
+          <tr style="border-bottom:1px solid rgba(201,168,76,0.06);">
+            <td style="padding:0.6rem 1rem;color:var(--text2);">v10 W=8</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">97.08 z/s</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">23.7 min</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">×1.12 vs v9</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">avec turbo</td>
+          </tr>
           <tr style="background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.25);">
-            <td style="padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">v10 W=8 ✦</td>
-            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">97.08 z/s</td>
-            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">23.7 min</td>
-            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">×1.12 vs v9</td>
+            <td style="padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">v12 ✦</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">~261 z/s</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">8.8 min</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">×16.9 benchmark</td>
             <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">avec turbo</td>
           </tr>
         </tbody>
@@ -1084,10 +1091,15 @@
       <div style="font-size:22px; font-weight:500; color:#fff;">26.6m</div>
       <div style="font-size:11px; color:#444;">×1.80 vs v8</div>
     </div>
+    <div style="background:#1a1a1a; border-radius:8px; padding:0.75rem; text-align:center;">
+      <div style="font-size:12px; color:#666; margin-bottom:4px;">v10</div>
+      <div style="font-size:22px; font-weight:500; color:#fff;">23.7m</div>
+      <div style="font-size:11px; color:#444;">×1.12 vs v9</div>
+    </div>
     <div style="background:#1a2a3a; border:2px solid #c9a84c; border-radius:8px; padding:0.75rem; text-align:center;">
-      <div style="font-size:12px; color:#c9a84c; margin-bottom:4px;">v10</div>
-      <div style="font-size:22px; font-weight:500; color:#c9a84c;">23.7m</div>
-      <div style="font-size:11px; color:#c9a84c;">×1.12 vs v9</div>
+      <div style="font-size:12px; color:#c9a84c; margin-bottom:4px;">v12 ✦</div>
+      <div style="font-size:22px; font-weight:500; color:#c9a84c;">8.8m</div>
+      <div style="font-size:11px; color:#c9a84c;">×16.9 benchmark</div>
     </div>
   </div>
   <table style="width:100%; border-collapse:collapse; font-size:13px;">
@@ -1157,27 +1169,34 @@
         <td style="padding:10px 12px; color:#aaa;">Brent C/mpfr</td>
         <td style="padding:10px 12px; color:#666; font-size:12px;">IQI+sécante+bissection · ordre ~1.84 · T=100k · 26.6 min (turbo) · 28.0 min (sans)</td>
       </tr>
+      <tr style="border-bottom:1px solid #222;">
+        <td style="padding:10px 12px; color:#aaa; font-weight:500;">v10</td>
+        <td style="padding:10px 12px; color:#aaa;">97.08 z/s</td>
+        <td style="padding:10px 12px; color:#aaa;">×1.12 vs v9</td>
+        <td style="padding:10px 12px; color:#aaa;">Brent C/mpfr + W=8</td>
+        <td style="padding:10px 12px; color:#666; font-size:12px;">W=8 forcé · Brent grand t dilue overhead HT · T=100k · 23.7 min (turbo)</td>
+      </tr>
       <tr style="background:#0d1a0d;">
-        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">v10</td>
-        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">97.08 z/s</td>
-        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">×1.12 vs v9</td>
-        <td style="padding:10px 12px; color:#c9a84c;">Brent C/mpfr + W=8</td>
-        <td style="padding:10px 12px; color:#c9a84c; font-size:12px;">W=8 forcé · Brent grand t dilue overhead HT · T=100k · 23.7 min (turbo)</td>
+        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">v12 ✦</td>
+        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">~261 z/s</td>
+        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">×16.9 bench</td>
+        <td style="padding:10px 12px; color:#c9a84c;">Illinois hybride 2-phases</td>
+        <td style="padding:10px 12px; color:#c9a84c; font-size:12px;">Z_rs_double Phase1 (~0.015ms) + 2 Newton Z_arb · T=100k · 8.8 min · 0 manquant ✅ · Turing COMPLET ✅</td>
       </tr>
     </tbody>
   </table>
   <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:1rem;">
     <div style="background:#1a1a1a; border-radius:8px; padding:0.75rem;">
-      <div style="font-size:11px; color:#666; margin-bottom:2px;">Gain total v1→v10 (avec turbo)</div>
-      <div style="font-size:18px; font-weight:500; color:#fff;">×5 040</div>
+      <div style="font-size:11px; color:#666; margin-bottom:2px;">Gain v12 vs v10 (benchmark T=10k)</div>
+      <div style="font-size:18px; font-weight:500; color:#c9a84c;">×16.9</div>
     </div>
     <div style="background:#1a1a1a; border-radius:8px; padding:0.75rem;">
-      <div style="font-size:11px; color:#666; margin-bottom:2px;">Brent vs Illinois (v9)</div>
-      <div style="font-size:18px; font-weight:500; color:#fff;">×1.80</div>
+      <div style="font-size:11px; color:#666; margin-bottom:2px;">Durée T=100k v12</div>
+      <div style="font-size:18px; font-weight:500; color:#fff;">8.8 min</div>
     </div>
     <div style="background:#1a1a1a; border-radius:8px; padding:0.75rem;">
-      <div style="font-size:11px; color:#666; margin-bottom:2px;">Zéros validés (T=100k)</div>
-      <div style="font-size:18px; font-weight:500; color:#fff;">138 069</div>
+      <div style="font-size:11px; color:#666; margin-bottom:2px;">Zéros validés T=100k v12</div>
+      <div style="font-size:18px; font-weight:500; color:#fff;">~138 080</div>
     </div>
   </div>
 </section>
