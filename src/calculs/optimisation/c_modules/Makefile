@@ -1,4 +1,4 @@
-## Makefile — compile illinois_mpfr.so + scan_arb.so
+## Makefile — compile illinois_mpfr.so + scan_arb.so + illinois_arb.so
 ## Phase C — Riemann_Lab / hprzeta
 ## IMPORTANT : les recettes utilisent des TAB réels (0x09), pas des espaces
 
@@ -6,7 +6,11 @@ CC     = gcc
 CFLAGS = -O3 -march=native -fPIC -Wall -Wextra
 LIBS   = -lmpfr -lgmp -lm
 
-all: illinois_mpfr.so scan_arb.so
+## libflint bundlée avec python-flint (chemin absolu + rpath)
+LIBFLINT_DIR = $(HOME)/projet_zeta/zeta_env/lib/python3.12/site-packages/python_flint.libs
+LIBFLINT_SO  = libflint-24205715.so.21.0.0
+
+all: illinois_mpfr.so scan_arb.so illinois_arb.so
 
 ## cible principale : .so partagé appelé via ctypes depuis Python
 ## Option B : z_function.c retiré — Z_double supprimé (détection côté Python)
@@ -19,12 +23,23 @@ illinois_mpfr.so: illinois_mpfr.c brent_mpfr.c
 scan_arb.so: scan_arb.c
 	$(CC) $(CFLAGS) -shared -o $@ $< -lm
 
-## cible de test : compile + lance la validation Python
+## illinois_arb.so — v12 : Illinois via arb_fpwrap_cdouble_hardy_z (FLINT 3)
+## Pas de headers FLINT requis : prototype déclaré en forward dans illinois_arb.c
+illinois_arb.so: illinois_arb.c
+	$(CC) $(CFLAGS) -shared -o $@ $< \
+		-L$(LIBFLINT_DIR) -l:$(LIBFLINT_SO) \
+		-Wl,-rpath,$(LIBFLINT_DIR) \
+		-lm
+
+## cibles de test
 test: illinois_mpfr.so
 	python3 test_illinois.py
+
+test_arb: illinois_arb.so
+	python3 test_illinois_arb.py
 
 ## nettoyage
 clean:
 	rm -f *.so *.o
 
-.PHONY: all test clean
+.PHONY: all test test_arb clean
