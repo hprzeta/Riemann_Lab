@@ -23,7 +23,7 @@
 
 ## 🎯 Objectif du projet
 
-Ce modeste projet a pour but d'explorer numériquement et symboliquement la **fonction zêta de Riemann** ζ(s).
+Le projet hprzeta a pour but d'explorer numériquement et symboliquement la **fonction zêta de Riemann** ζ(s).
 Pierre angulaire de la théorie des nombres, l'**Hypothèse de Riemann** (non démontrée à ce jour) affirme que tous les zéros non triviaux de ζ(s) se trouvent sur la droite critique **Re(s) = 1/2**.
 
 Le projet combine :
