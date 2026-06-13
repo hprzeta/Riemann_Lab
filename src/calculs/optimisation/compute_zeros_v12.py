@@ -140,18 +140,46 @@ def worker_v12(args: tuple) -> Tuple[list, dict, dict]:
         ctypes.c_int,     # max_iter (50)
     ]
 
+    # Seuil petits t : scan_arb (Z_double) a N_RS=1–3 termes → peu précis
+    # En dessous de ce seuil, arb_hardy_z (Python) est utilisé pour la détection.
+    T_SEUIL_PETIT_T = 200.0
+
     zeros_segment = []
-    stats         = {"arb_C": 0, "mpmath_fallback": 0}
+    stats         = {"arb_C": 0, "mpmath_fallback": 0, "mpmath_petit_t": 0}
     _log_palier   = 0
+
+    # ── Petits t : détection + affinage via arb_hardy_z + mpmath ─────────────
+    # Évite les brackets spurieux de scan_arb (Z_double à N_RS faible).
+    if t_start < T_SEUIL_PETIT_T:
+        t_fin_pt = min(T_SEUIL_PETIT_T, t_end)
+        with chrono("mpmath_petit_t"):
+            t_arr_pt = np.arange(t_start, t_fin_pt, step, dtype=np.float64)
+            if len(t_arr_pt) >= 2:
+                Zv_pt = np.array([arb_hardy_z(float(t)) for t in t_arr_pt])
+                for j in np.where(np.diff(np.sign(Zv_pt)))[0]:
+                    try:
+                        z = float(mpmath.findroot(
+                            arb_hardy_z,
+                            (float(t_arr_pt[j]), float(t_arr_pt[j+1])),
+                            solver="illinois", tol=1e-12, maxsteps=80,
+                        ))
+                        zeros_segment.append(z)
+                        stats["mpmath_petit_t"] += 1
+                    except Exception:
+                        pass
+        # Continuer avec scan_arb pour la partie [T_SEUIL_PETIT_T, t_end]
+        t_start_main = t_fin_pt
+    else:
+        t_start_main = t_start
 
     # ── Détection : scan_arb C ou Z_vect_correct numpy (fallback) ────────────
     if SCAN_ARB_DISPONIBLE:
         with chrono("detection"):
-            brackets = scan_arb(t_start, t_end, step=step)
+            brackets = scan_arb(t_start_main, t_end, step=step) if t_start_main < t_end else []
     else:
         TAILLE_BLOC = 5000
         brackets    = []
-        t_courant   = t_start
+        t_courant   = t_start_main
         with chrono("detection"):
             while t_courant < t_end:
                 t_fin = min(t_courant + TAILLE_BLOC * step, t_end)

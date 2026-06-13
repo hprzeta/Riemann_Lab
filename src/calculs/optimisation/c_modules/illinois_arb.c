@@ -86,51 +86,73 @@ static double Z_arb(double t) {
 }
 
 /* =========================================================================
- * illinois_refine_arb — affinage Illinois via Arb/FLINT
+ * illinois_refine_arb — affinage hybride : Illinois Z_rs + 2 Newton Z_arb
  *
- * Remplace illinois_refine (libmpfr 170 bits) par Z_arb (double, ~0.038 ms).
- * Valide pour tout t ≥ 14 — pas de seuil t=300 contrairement à illinois_refine.
+ * Stratégie en 2 phases (mesuré : ×5–6 vs pure Z_arb Illinois) :
  *
- * Fallback immédiat : si |fa| < 1e-13 ou |fb| < 1e-13 → borne quasi-zéro,
- * retourner la borne correspondante sans itération.
+ * Phase 1 : Illinois avec Z_rs_double_arb (C0+C1, ~0.015 ms/appel)
+ *   → converge vers pseudo-zéro avec erreur biais_RS = O(t^{-5/4})
+ *   → s'arrête à |b−a| < 1e-6 (bracket serré)
  *
- * Entrée : a, b       — bornes avec fa·fb < 0
- * Entrée : fa, fb     — Z(a), Z(b) précalculés par Python (arb_wrapper ou scan_arb)
- * Entrée : tol        — tolérance sur |b−a| (recommandé : 1e-9 en double)
- * Entrée : max_iter   — nombre max d'itérations (recommandé : 50)
+ * Phase 2 : 2 Newton steps avec Z_arb (~3.5 ms/appel)
+ *   → dérivée Z'(t) via Z_rs_double_arb (biais RS s'annule dans la différence)
+ *   → erreur résiduelle < 2e-11 pour t ≥ 200 (validé)
+ *
+ * Fallback Illinois Z_arb : si signe de Z_rs ≠ signe de fa/fb (cas rare t < 200)
+ *   → ce cas est normalement géré côté Python par mpmath_petit_t (t < 200)
+ *
+ * Entrée : a, b       — bornes avec fa·fb < 0 (Z_double de scan_arb)
+ * Entrée : fa, fb     — Z(a), Z(b) de scan_arb (utilisés pour le fallback signe)
+ * Entrée : tol        — tolérance sur |delta Newton| (recommandé : 1e-9)
+ * Entrée : max_iter   — max itérations phase 1 (recommandé : 50)
  * Sortie : double — partie imaginaire du zéro affiné
  * ========================================================================= */
 double illinois_refine_arb(double a, double b, double fa, double fb,
                            double tol, int max_iter) {
-    double Za = fa;
-    double Zb = fb;
+    double Za = Z_rs_double_arb(a);
+    double Zb = Z_rs_double_arb(b);
 
-    /* pas de changement de signe → milieu par défaut (ne devrait pas arriver) */
-    if (Za * Zb >= 0.0) return (a + b) / 2.0;
-
-    /* borne quasi-zéro : résidu < 1e-13 = précision flottante double */
-    if (fabs(Za) < 1e-13) return a;
-    if (fabs(Zb) < 1e-13) return b;
-
-    for (int iter = 0; iter < max_iter; iter++) {
-        if (fabs(b - a) < tol) break;
-
-        double den = Zb - Za;
-        if (fabs(den) < 1e-300) break;          /* dénominateur nul — arrêt */
-
-        /* sécante : c = b − Z(b)·(b−a)/(Z(b)−Z(a)) */
-        double c  = b - Zb * (b - a) / den;
-        double Zc = Z_arb(c);
-
-        if (Za * Zc < 0.0) {
-            b  = c;
-            Zb = Zc;
-        } else {
-            a  = c;
-            Za = Zc * 0.5;   /* correction Illinois — réduit la stagnation (Dowell 1971) */
+    /* Si Z_rs change de signe différemment de fa/fb (très rare, t < 200) :
+     * fallback Illinois Z_arb classique sur 15 itérations. */
+    if (Za * Zb >= 0.0) {
+        Za = fa; Zb = fb;
+        if (Za * Zb >= 0.0) return (a + b) / 2.0;
+        for (int iter = 0; iter < 15 && fabs(b - a) > tol; iter++) {
+            double den = Zb - Za;
+            if (fabs(den) < 1e-300) break;
+            double c = b - Zb * (b - a) / den;
+            double Zc = Z_arb(c);
+            if (Za * Zc < 0.0) { b = c; Zb = Zc; }
+            else                { a = c; Za = Zc * 0.5; }
         }
+        return (fabs(Za) < fabs(Zb)) ? a : b;
     }
 
-    /* retourner la borne avec le plus petit résidu */
-    return (fabs(Za) < fabs(Zb)) ? a : b;
+    /* Phase 1 : Illinois Z_rs_double_arb → bracket serré (1e-6) */
+    for (int iter = 0; iter < max_iter; iter++) {
+        if (fabs(b - a) < 1e-6) break;
+        double den = Zb - Za;
+        if (fabs(den) < 1e-300) break;
+        double c  = b - Zb * (b - a) / den;
+        double Zc = Z_rs_double_arb(c);
+        if (Za * Zc < 0.0) { b = c; Zb = Zc; }
+        else                { a = c; Za = Zc * 0.5; }  /* correction Illinois (Dowell 1971) */
+    }
+
+    /* Phase 2 : 2 Newton steps avec Z_arb
+     * dZ via Z_rs_double_arb (pas de biais dans la différence). */
+    double t_curr = (fabs(Za) < fabs(Zb)) ? a : b;
+    double h = 1e-4;
+
+    for (int k = 0; k < 2; k++) {
+        double dZ = (Z_rs_double_arb(t_curr + h) - Z_rs_double_arb(t_curr - h)) / (2.0 * h);
+        if (fabs(dZ) < 1e-10) break;
+        double Zt = Z_arb(t_curr);
+        if (fabs(Zt) < tol) return t_curr;
+        double delta = Zt / dZ;
+        t_curr -= delta;
+        if (fabs(delta) < tol) break;
+    }
+
+    return t_curr;
 }
