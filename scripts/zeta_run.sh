@@ -35,7 +35,7 @@ sudo "${SCRIPT_DIR}/zeta_turbo_on.sh"
 
 echo ""
 echo "  Lancement du calcul en arrière-plan..."
-nohup bash -c "printf '${T_MAX}\nO\n' | python ${SRC_DIR}/compute_zeros_v4_1.py" \
+nohup bash -c "printf '${T_MAX}\nO\n' | python ${SRC_DIR}/compute_zeros_v12.py" \
     > "${LOG_FILE}" 2>&1 &
 PID=$!
 echo "$PID" > "$PID_FILE"
