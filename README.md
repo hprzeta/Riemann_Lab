@@ -20,6 +20,7 @@
 | Pipeline | **v4.1** · Illinois_C (170 bits) + Newton · ~41 z/s · GPU CuPy |
 | 🌐 Site | [https://hprzeta.github.io/Riemann_Lab/](https://hprzeta.github.io/Riemann_Lab/) |
 | 📚 Wiki | [https://github.com/hprzeta/Riemann_Lab/wiki](https://github.com/hprzeta/Riemann_Lab/wiki) |
+| 💡 Config matérielle | [Wiki — Configuration-Materielle-Logicielle](https://github.com/hprzeta/Riemann_Lab/wiki/Configuration-Materielle-Logicielle) |
 
 ## 🎯 Objectif du projet
 
