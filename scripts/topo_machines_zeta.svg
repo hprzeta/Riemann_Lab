@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="900" height="720" viewBox="0 0 900 720"
+<svg width="900" height="780" viewBox="0 0 900 780"
      xmlns="http://www.w3.org/2000/svg" font-family="monospace,sans-serif">
 <title>Topo materiel cluster Riemann_Lab</title>
-<rect width="900" height="720" fill="#ffffff"/>
+<rect width="900" height="780" fill="#ffffff"/>
 
 <!-- TITRE -->
 <rect x="0" y="0" width="900" height="52" fill="#f8f8f8"/>
 <line x1="0" y1="52" x2="900" y2="52" stroke="#e0e0e0" stroke-width="1"/>
 <text x="450" y="22" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a1a">Materiel cluster — Riemann_Lab</text>
-<text x="450" y="42" text-anchor="middle" font-size="12" fill="#666">Analyse capacite 3 machines pour calcul zeta · hprzeta 2026-06-13</text>
+<text x="450" y="42" text-anchor="middle" font-size="12" fill="#666">Analyse capacite calcul (3/4 noeuds, PC4=bastion hors-perimetre) · hprzeta 2026-06-15</text>
 
 <!-- EN-TETES COLONNES -->
 <rect x="20" y="60" width="280" height="28" rx="6" fill="#085041"/>
@@ -141,7 +141,7 @@
 <text x="740" y="618" text-anchor="middle" font-size="10" font-weight="700" fill="#534ab7">Hostname : zeta-livermore8</text>
 
 <line x1="0" y1="638" x2="900" y2="638" stroke="#e0e0e0" stroke-width="1"/>
-<rect x="0" y="638" width="900" height="82" fill="#f8f8f8"/>
+<rect x="0" y="638" width="900" height="142" fill="#f8f8f8"/>
 <text x="20" y="658" font-size="10" font-weight="700" fill="#333">Hostname conseille :</text>
 <rect x="20" y="664" width="200" height="18" rx="4" fill="#085041"/>
 <text x="120" y="677" text-anchor="middle" font-size="10" fill="#fff">zeta-icor7  ✓ actif</text>
@@ -149,5 +149,10 @@
 <text x="340" y="677" text-anchor="middle" font-size="10" fill="#fff">zeta-hp3647h  ✓ actif</text>
 <rect x="460" y="664" width="220" height="18" rx="4" fill="#3c3489"/>
 <text x="570" y="677" text-anchor="middle" font-size="10" fill="#fff">zeta-livermore8  ✓ actif</text>
-<text x="450" y="710" text-anchor="middle" font-size="10" fill="#888">topo_machines_zeta.svg · hprzeta · MAJ 2026-06-13</text>
+
+<text x="20" y="703" font-size="10" font-weight="700" fill="#333">4e noeud du cluster (hors perimetre calcul, 14-15/06) :</text>
+<rect x="20" y="709" width="660" height="20" rx="4" fill="#6b6b6b"/>
+<text x="350" y="723" text-anchor="middle" font-size="10" fill="#fff">zeta-secure (PC4) · OpenBSD 7.9/i386 · 192.168.1.54 · bastion VPN/pare-feu WireGuard — voir backup_cluster_map.svg</text>
+
+<text x="450" y="762" text-anchor="middle" font-size="10" fill="#888">topo_machines_zeta.svg · hprzeta · MAJ 2026-06-15</text>
 </svg>
