@@ -1,27 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="900" height="720" viewBox="0 0 900 720"
+<svg width="900" height="780" viewBox="0 0 900 780"
      xmlns="http://www.w3.org/2000/svg" font-family="monospace,sans-serif">
 <title>Topo materiel cluster Riemann_Lab</title>
-<rect width="900" height="720" fill="#ffffff"/>
+<rect width="900" height="780" fill="#ffffff"/>
 
 <!-- TITRE -->
 <rect x="0" y="0" width="900" height="52" fill="#f8f8f8"/>
 <line x1="0" y1="52" x2="900" y2="52" stroke="#e0e0e0" stroke-width="1"/>
 <text x="450" y="22" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a1a">Materiel cluster — Riemann_Lab</text>
-<text x="450" y="42" text-anchor="middle" font-size="12" fill="#666">Analyse capacite 3 machines pour calcul zeta · hprzeta 2026-06-13</text>
+<text x="450" y="42" text-anchor="middle" font-size="12" fill="#666">Analyse capacite calcul (3/4 noeuds, PC4=bastion hors-perimetre) · hprzeta 2026-06-15</text>
 
 <!-- EN-TETES COLONNES -->
 <rect x="20" y="60" width="280" height="28" rx="6" fill="#085041"/>
-<text x="160" y="79" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">zeta-icor7</text>
+<text x="160" y="79" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">zeta-lab</text>
 <rect x="314" y="60" width="268" height="28" rx="6" fill="#2c2c2a"/>
-<text x="448" y="79" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">zeta-hp3647h</text>
+<text x="448" y="79" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">zeta-calc-second</text>
 <rect x="596" y="60" width="284" height="28" rx="6" fill="#3c3489"/>
-<text x="738" y="79" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">zeta-livermore8</text>
+<text x="738" y="79" text-anchor="middle" font-size="13" font-weight="700" fill="#ffffff">zeta-backup</text>
 
 <!-- SOUS-TITRES -->
-<text x="160" y="106" text-anchor="middle" font-size="10" fill="#0f6e56">riemann@zeta-icor7</text>
-<text x="448" y="106" text-anchor="middle" font-size="10" fill="#5f5e5a">emmabuntus@zeta-hp3647h</text>
-<text x="738" y="106" text-anchor="middle" font-size="10" fill="#534ab7">pjexosql@zeta-livermore8</text>
+<text x="160" y="106" text-anchor="middle" font-size="10" fill="#0f6e56">riemann@zeta-lab</text>
+<text x="448" y="106" text-anchor="middle" font-size="10" fill="#5f5e5a">hprzeta@zeta-calc-second</text>
+<text x="738" y="106" text-anchor="middle" font-size="10" fill="#534ab7">hprzeta@zeta-backup</text>
 <text x="160" y="120" text-anchor="middle" font-size="11" font-weight="700" fill="#1a1a1a">192.168.1.24</text>
 <text x="448" y="120" text-anchor="middle" font-size="11" font-weight="700" fill="#1a1a1a">192.168.1.94</text>
 <text x="738" y="120" text-anchor="middle" font-size="11" font-weight="700" fill="#1a1a1a">192.168.1.22</text>
@@ -36,7 +36,7 @@
 <text x="448" y="148" text-anchor="middle" font-size="10" fill="#1a1a1a">HP Compaq 8000 Elite CMT</text>
 <text x="738" y="148" text-anchor="middle" font-size="10" fill="#1a1a1a">Compaq-Presario SG3210FR</text>
 <text x="448" y="162" text-anchor="middle" font-size="9" fill="#666">Carte mere : HP 3647h · BIOS 2009</text>
-<text x="738" y="162" text-anchor="middle" font-size="9" fill="#666">Carte mere : ECS Livermore8 · BIOS 2007</text>
+<text x="738" y="162" text-anchor="middle" font-size="9" fill="#666">Carte mere : ECS Livermore8 · Ubuntu 18.04 LTS</text>
 <line x1="10" y1="170" x2="890" y2="170" stroke="#e8e8e8" stroke-width="0.8"/>
 
 <!-- CPU -->
@@ -90,10 +90,10 @@
 <text x="16" y="352" font-size="10" font-weight="700" fill="#333">OS / Python</text>
 <text x="160" y="352" text-anchor="middle" font-size="10" fill="#0f6e56">Ubuntu · Python 3.12</text>
 <text x="448" y="352" text-anchor="middle" font-size="10" fill="#1a1a1a">Ubuntu · Python 3.x</text>
-<text x="738" y="352" text-anchor="middle" font-size="10" fill="#a32d2d">Ubuntu · Python 3.5 · Linux 4.4</text>
+<text x="738" y="352" text-anchor="middle" font-size="10" fill="#1a1a1a">Ubuntu 18.04 LTS · Pentium E2140</text>
 <text x="160" y="366" text-anchor="middle" font-size="9" fill="#0f6e56">mpmath · Arb/FLINT · CuPy · Claude Code</text>
 <text x="448" y="366" text-anchor="middle" font-size="9" fill="#666">config scripts</text>
-<text x="738" y="366" text-anchor="middle" font-size="9" fill="#a32d2d">crontab -e casse · tres ancien</text>
+<text x="738" y="366" text-anchor="middle" font-size="9" fill="#534ab7">backup nocturne rsync+rclone</text>
 <line x1="10" y1="374" x2="890" y2="374" stroke="#ccc" stroke-width="1"/>
 
 <!-- EVALUATION -->
@@ -111,8 +111,8 @@
 <text x="150" y="530" text-anchor="middle" font-size="11" font-weight="700" fill="#085041">Calcul zeros T=100k</text>
 <text x="150" y="546" text-anchor="middle" font-size="10" fill="#085041">runs · code · wiki · git</text>
 <text x="150" y="562" text-anchor="middle" font-size="10" fill="#085041">TOUT le projet vit ici</text>
-<text x="150" y="578" text-anchor="middle" font-size="10" fill="#085041">Cron 01h50 → rsync Acer</text>
-<text x="150" y="618" text-anchor="middle" font-size="10" font-weight="700" fill="#0f6e56">Hostname : zeta-icor7</text>
+<text x="150" y="578" text-anchor="middle" font-size="10" fill="#085041">Cron 01h50 → rsync zeta-backup</text>
+<text x="150" y="618" text-anchor="middle" font-size="10" font-weight="700" fill="#0f6e56">Hostname : zeta-lab</text>
 
 <rect x="310" y="406" width="260" height="220" rx="10" fill="#f1efe8" stroke="#5f5e5a" stroke-width="1.5"/>
 <text x="440" y="428" text-anchor="middle" font-size="13" font-weight="700" fill="#2c2c2a">NOEUD SECONDAIRE</text>
@@ -123,31 +123,36 @@
 <text x="440" y="510" text-anchor="middle" font-size="10" fill="#5f5e5a">+ 2 slots RAM libres</text>
 <text x="440" y="530" text-anchor="middle" font-size="11" font-weight="700" fill="#2c2c2a">Calcul leger possible</text>
 <text x="440" y="546" text-anchor="middle" font-size="10" fill="#2c2c2a">scripts · config · stockage</text>
-<text x="440" y="562" text-anchor="middle" font-size="10" fill="#2c2c2a">SSH manuel vers Acer</text>
+<text x="440" y="562" text-anchor="middle" font-size="10" fill="#2c2c2a">SSH manuel vers zeta-backup</text>
 <text x="440" y="578" text-anchor="middle" font-size="10" fill="#2c2c2a">Pas de wiki/pdf/logs</text>
-<text x="440" y="618" text-anchor="middle" font-size="10" font-weight="700" fill="#5f5e5a">Hostname : zeta-hp3647h</text>
+<text x="440" y="618" text-anchor="middle" font-size="10" font-weight="700" fill="#5f5e5a">Hostname : zeta-calc-second</text>
 
 <rect x="600" y="406" width="280" height="220" rx="10" fill="#eeedfe" stroke="#534ab7" stroke-width="1.5"/>
 <text x="740" y="428" text-anchor="middle" font-size="13" font-weight="700" fill="#3c3489">BACKUP H24</text>
 <text x="740" y="446" text-anchor="middle" font-size="10" fill="#a32d2d">- Pentium 1.6 GHz (lent)</text>
 <text x="740" y="462" text-anchor="middle" font-size="10" fill="#a32d2d">- 3 GB DDR2 667 MHz (lent)</text>
 <text x="740" y="478" text-anchor="middle" font-size="10" fill="#a32d2d">- Reseau 100 Mbit/s</text>
-<text x="740" y="494" text-anchor="middle" font-size="10" fill="#a32d2d">- Linux 4.4 · Python 3.5</text>
-<text x="740" y="510" text-anchor="middle" font-size="10" fill="#a32d2d">- crontab -e casse</text>
+<text x="740" y="494" text-anchor="middle" font-size="10" fill="#1a1a1a">Ubuntu 18.04 LTS</text>
+<text x="740" y="510" text-anchor="middle" font-size="10" fill="#534ab7">chrony · rsyslog · dnsmasq .lan</text>
 <text x="740" y="530" text-anchor="middle" font-size="11" font-weight="700" fill="#3c3489">Ne PAS calculer ici</text>
 <text x="740" y="546" text-anchor="middle" font-size="10" fill="#534ab7">backup nocturne cron 02h00</text>
 <text x="740" y="562" text-anchor="middle" font-size="10" fill="#534ab7">rclone → Proton Drive</text>
-<text x="740" y="578" text-anchor="middle" font-size="10" fill="#534ab7">Relais icor7 → cloud</text>
-<text x="740" y="618" text-anchor="middle" font-size="10" font-weight="700" fill="#534ab7">Hostname : zeta-livermore8</text>
+<text x="740" y="578" text-anchor="middle" font-size="10" fill="#534ab7">Relais zeta-lab → cloud</text>
+<text x="740" y="618" text-anchor="middle" font-size="10" font-weight="700" fill="#534ab7">Hostname : zeta-backup</text>
 
 <line x1="0" y1="638" x2="900" y2="638" stroke="#e0e0e0" stroke-width="1"/>
-<rect x="0" y="638" width="900" height="82" fill="#f8f8f8"/>
+<rect x="0" y="638" width="900" height="142" fill="#f8f8f8"/>
 <text x="20" y="658" font-size="10" font-weight="700" fill="#333">Hostname conseille :</text>
 <rect x="20" y="664" width="200" height="18" rx="4" fill="#085041"/>
-<text x="120" y="677" text-anchor="middle" font-size="10" fill="#fff">zeta-icor7  ✓ actif</text>
+<text x="120" y="677" text-anchor="middle" font-size="10" fill="#fff">zeta-lab (PC1)  ✓ actif</text>
 <rect x="240" y="664" width="200" height="18" rx="4" fill="#2c2c2a"/>
-<text x="340" y="677" text-anchor="middle" font-size="10" fill="#fff">zeta-hp3647h  ✓ actif</text>
+<text x="340" y="677" text-anchor="middle" font-size="10" fill="#fff">zeta-calc-second  ✓ actif</text>
 <rect x="460" y="664" width="220" height="18" rx="4" fill="#3c3489"/>
-<text x="570" y="677" text-anchor="middle" font-size="10" fill="#fff">zeta-livermore8  ✓ actif</text>
-<text x="450" y="710" text-anchor="middle" font-size="10" fill="#888">topo_machines_zeta.svg · hprzeta · MAJ 2026-06-13</text>
+<text x="570" y="677" text-anchor="middle" font-size="10" fill="#fff">zeta-backup  ✓ actif</text>
+
+<text x="20" y="703" font-size="10" font-weight="700" fill="#333">4e noeud du cluster (hors perimetre calcul, 14-15/06) :</text>
+<rect x="20" y="709" width="660" height="20" rx="4" fill="#6b6b6b"/>
+<text x="350" y="723" text-anchor="middle" font-size="10" fill="#fff">zeta-secure (PC4) · OpenBSD 7.9/i386 · 192.168.1.54 · bastion VPN/pare-feu WireGuard — voir backup_cluster_map.svg</text>
+
+<text x="450" y="762" text-anchor="middle" font-size="10" fill="#888">topo_machines_zeta.svg · hprzeta · MAJ 2026-06-16</text>
 </svg>

@@ -1,4 +1,4 @@
-<svg width="100%" viewBox="0 0 680 1420" role="img" xmlns="http://www.w3.org/2000/svg">
+<svg width="100%" viewBox="0 0 680 1436" role="img" xmlns="http://www.w3.org/2000/svg">
 <title>Workflow post-version Riemann_Lab</title>
 <desc>Checklist complète des tâches à effectuer après chaque validation de version vN ou session de travail</desc>
 <defs>
@@ -64,6 +64,7 @@
 <text class="ts" x="372" y="527">□ Handoff.md local (NE PAS committer)</text>
 <text class="ts" x="372" y="543">□ ORGANISATION_FICHIERS.md</text>
 <text class="ts" x="372" y="559">□ Prompts-Claude-Code.md</text>
+<text class="ts" x="372" y="575">□ Architecture-Cluster-Zeta.md (si evolution topologie/materiel)</text>
 
 <!-- REJOINDRE -->
 <line x1="180" y1="585" x2="180" y2="608" stroke="#888780" stroke-width="0.5" fill="none"/>
@@ -117,7 +118,7 @@
 <text class="th" x="340" y="1165" text-anchor="middle" fill="#173404">9 — Animations et site (Riemann_Lab_IA)</text>
 <text class="ts" x="60" y="1192">□ animation_[concept].html créée (dark theme, KaTeX, sliders)</text>
 <text class="ts" x="60" y="1208">□ index.html — nouveaux pavés ajoutés (même style exact)</text>
-<text class="ts" x="60" y="1224">□ SVGs plans/schémas → docs/images/ (branche Riemann_Lab_IA)</text>
+<text class="ts" x="60" y="1224">□ SVGs topo (topo_machines/backup_cluster_map) regen. si cluster a change → docs/images/ (IA)</text>
 <text class="ts" x="60" y="1240">□ Commit Riemann_Lab_IA + sync main</text>
 
 <!-- BLOC 10 — PUSH FINAL -->
@@ -129,10 +130,11 @@
 <text class="ts" x="60" y="1342">□ Sync main (merge Riemann_Lab_C + Riemann_Lab_IA)</text>
 <text class="ts" x="60" y="1358">□ Proton Drive rclone sync PDFs + récaps</text>
 <text class="ts" x="60" y="1374">□ /clear Claude Code + vérifier alias | grep zeta</text>
+<text class="ts" x="60" y="1390">□ git diff avant push : aucun secret (tokens, clés privées, .mcp.json)</text>
 
 <!-- FINAL -->
-<line x1="340" y1="1385" x2="340" y2="1400" stroke="#888780" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
-<rect x="160" y="1400" width="360" height="36" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
-<text class="th" x="340" y="1418" text-anchor="middle" fill="#04342C">Pret pour prompt v(N+1)</text>
+<line x1="340" y1="1401" x2="340" y2="1416" stroke="#888780" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
+<rect x="160" y="1416" width="360" height="36" rx="8" fill="#E1F5EE" stroke="#0F6E56" stroke-width="0.5"/>
+<text class="th" x="340" y="1434" text-anchor="middle" fill="#04342C">Pret pour prompt v(N+1)</text>
 
 </svg>
