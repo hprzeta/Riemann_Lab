@@ -129,7 +129,9 @@ def _partitionner_adaptatif(
 #  SECTION 2 — WORKER MULTIPROCESSING
 # ═══════════════════════════════════════════════════════════════════════════════
 
-TOL_ARB  = 1e-9   # tolérance illinois_refine_arb (double précision max utile)
+TOL_ARB  = 1e-12  # tolérance illinois_refine_arb — abaissée de 1e-9 à 1e-12
+                  # (double précision ~1e-15 → 1e-12 fiable ; 1e-9 trop proche du
+                  # seuil LMFDB et causait 16/20 au lieu de 20/20)
 MAX_ITER = 50     # max itérations Illinois (convergence rapide avec Arb)
 
 def worker_v13(args: tuple) -> Tuple[list, dict, dict]:
@@ -156,19 +158,30 @@ def worker_v13(args: tuple) -> Tuple[list, dict, dict]:
         ctypes.c_int,     # max_iter (50)
     ]
 
-    # v13 : seuil abaissé de 200 à 20 — limite de validité de θ(t) asymptotique
-    # (Abramowitz & Stegun 6.1.40 : valide pour t ≥ 20).
-    # Pour t ∈ [20, ∞) : scan_arb C (Z_double + C0+C1) détecte correctement.
-    # Spurieux éventuels (N_RS faible à t=20-100) filtrés par la borne [a,b]
-    # d'illinois_refine_arb qui retourne une valeur hors intervalle si pas de zéro.
-    T_SEUIL_PETIT_T = 20.0
+    # v13 : seuil abaissé de 200 → 65.
+    #
+    # Pourquoi 65 et pas 20 ?
+    #   scan_arb (Z_double) a N_RS=2 termes pour t ∈ [25, 57) et N_RS=3 pour t ∈ [57, 101).
+    #   À N_RS=2, l'erreur RS peut atteindre ~0.03 → le bracket [a,b] peut être décalé
+    #   de 0.01-0.05 par rapport au vrai zéro. illinois_refine_arb reçoit alors des
+    #   fa/fb de mauvais signe et converge vers une valeur décalée (écart constaté : ~3e-9).
+    #   Filtrer les brackets spurieux (re-évaluer fa/fb et sauter si même signe) efface
+    #   aussi les vrais zéros dont scan_arb a placé le bracket au mauvais endroit.
+    #   → seule solution correcte : garder arb_hardy_z+mpmath pour t < 65 (N_RS ≤ 2).
+    #
+    # Pourquoi pas 100 ?
+    #   (100-14)/0.01 = 8 600 évals mpmath → ~47s sur PC2 (6.4 → 14 z/s, sous critère 20 z/s).
+    #   (65-14)/0.01 = 5 100 évals mpmath → ~27s sur PC2 (6.4 → 24 z/s ✅).
+    #
+    # À t=65 (N_RS=3), les tests v13 montrent tous les zéros LMFDB ≥ t=65 conformes (< 1e-9).
+    T_SEUIL_PETIT_T = 65.0
 
     zeros_segment = []
     stats         = {"arb_C": 0, "mpmath_fallback": 0, "mpmath_petit_t": 0}
     _log_palier   = 0
 
-    # ── Petits t ∈ [14, 20] : détection + affinage via arb_hardy_z + mpmath ──
-    # ~600 évaluations au lieu de ~18 600 (économie ×30 vs v12 sur PC2).
+    # ── Petits t ∈ [14, 65] : détection + affinage via arb_hardy_z + mpmath ──
+    # ~5 100 évaluations au lieu de ~18 600 (économie ×3.6 vs v12 sur PC2).
     if t_start < T_SEUIL_PETIT_T:
         t_fin_pt = min(T_SEUIL_PETIT_T, t_end)
         with chrono("mpmath_petit_t"):
@@ -211,8 +224,9 @@ def worker_v13(args: tuple) -> Tuple[list, dict, dict]:
                                      float(Zv[j]),   float(Zv[j+1])))
                 t_courant = float(t_arr[-1]) + step
 
-    # ── Affinage : illinois_refine_arb (Arb) pour tout t ────────────────────
+    # ── Affinage : illinois_refine_arb (Arb) pour tout t ≥ T_SEUIL_PETIT_T ──
     # Pas de seuil t=300 : Arb est valide sans biais RS pour tout t ≥ 14.
+    # À t ≥ 65 : N_RS ≥ 3, erreur Z_double < 0.006 → signes fa/fb fiables.
     for a, b, fa, fb in brackets:
         try:
             with chrono("arb_C"):
@@ -429,7 +443,7 @@ def ecrire_log(chemin_log, horodatage, T_MIN, T_MAX, STEP, N_WORKERS,
     L(f"      STEP               = {STEP}")
     L(f"      TOL_ARB            = {tol:.0e}  (double, illinois_refine_arb)")
     L(f"      N_WORKERS          = {N_WORKERS}")
-    L(f"      T_SEUIL_PETIT_T    = 20.0  (abaissé de 200 — v13)")
+    L(f"      T_SEUIL_PETIT_T    = 65.0  (abaissé de 200 — v13 ; N_RS=2 fiable dès t=65)")
     L(f"      illinois_arb.so    : {SO_PATH}")
     scan_str = "scan_arb C (Z_double RS C0+C1)" if SCAN_ARB_DISPONIBLE else "Z_vect_correct numpy (fallback)"
     L(f"      Détection          : {scan_str} pour t ≥ 20")
@@ -518,7 +532,7 @@ def saisir_parametres():
     print(f"  Validation : Turing-Backlund")
     print(f"  .so : {SO_PATH}")
     print(f"  Backend Arb : {info_backend()}")
-    print(f"  Seuil petit-t : 20.0  (abaissé de 200 — correction bottleneck PC2)")
+    print(f"  Seuil petit-t : 65.0  (abaissé de 200 — N_RS=2 fiable dès t=65, 24 z/s sur PC2)")
     print()
     print(f"  Estimations (8 workers) :")
     print("    T =   1 000  →  ~  649 zéros  →  ~  < 5 sec")
