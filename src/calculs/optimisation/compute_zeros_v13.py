@@ -573,9 +573,28 @@ def saisir_parametres():
 
 def main():
     debut_global = time.time()
-    T_MIN = 14.0
 
-    T_MAX, N_WORKERS, STEP, horodatage, dossier = saisir_parametres()
+    # Mode CLI non-interactif pour la distribution : --t-min T --t-max T [--horodatage TS]
+    import argparse
+    _p = argparse.ArgumentParser(add_help=False)
+    _p.add_argument("--t-min",      type=float, default=None)
+    _p.add_argument("--t-max",      type=float, default=None)
+    _p.add_argument("--horodatage", type=str,   default=None)
+    _cli, _ = _p.parse_known_args()
+
+    if _cli.t_min is not None and _cli.t_max is not None:
+        T_MIN      = _cli.t_min
+        T_MAX      = _cli.t_max
+        N_WORKERS  = 8
+        STEP       = _step_adaptatif(T_MAX)
+        horodatage = _cli.horodatage or datetime.now().strftime("%Y%m%d_%H%M%S")
+        dossier    = Path("calculs") / f"v13_T{T_MIN:.0f}_{T_MAX:.0f}_{horodatage}"
+        dossier.mkdir(parents=True, exist_ok=True)
+        print(f"\n  [Mode distribué] [{T_MIN:.1f}, {T_MAX:.1f}] — "
+              f"{N_WORKERS} workers — STEP={STEP}")
+    else:
+        T_MIN = 14.0
+        T_MAX, N_WORKERS, STEP, horodatage, dossier = saisir_parametres()
 
     print(f"\n  Lancement — {N_WORKERS} workers, STEP={STEP}, "
           f"T_SEUIL_PETIT_T=20, illinois_refine_arb pour tout t...\n")
