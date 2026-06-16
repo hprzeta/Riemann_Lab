@@ -25,7 +25,7 @@ CMD_LINUX = ("python3 -c \""
     "la=open('/proc/loadavg').read().split()[:3];"
     "print('{0}|{1}|{2}|{3}|{4}|{5}|{6}'.format(cpu,mt//1024,round((mt-ma)/1024),mu,la[0],la[1],la[2]));"
     "\"")
-CMD_OPENBSD = ("MEM=$(sysctl -n hw.physmem 2>/dev/null || echo 0); echo \"?|$((MEM/1024/1024))|0|0|0.00|0.00|0.00\"")
+CMD_OPENBSD = ("MEM=$(sysctl -n hw.physmem 2>/dev/null || echo 0); IDLE=$(top -b -n 1 2>/dev/null | awk '/CPU states/{gsub(/%/,\"\",$((NF-1))); print $(NF-1)}'); CPU=$(echo \"$IDLE\" | awk '{printf \"%.1f\", 100-$1}'); echo \"$CPU|$((MEM/1024/1024))|0|0|0.00|0.00|0.00\"")
 
 def ssh_cmd(machine, cmd):
     if machine["host"] == "localhost":
