@@ -10,7 +10,7 @@ MACHINES = [
 ]
 
 REFRESH = 10
-CMD_LINUX = ("python3 -c \""
+CMD_LINUX = ("PYTHONNOUSERSITE=1 python3 -c \""
     "import os,time;"
     "s1=open('/proc/stat').readline().split();"
     "time.sleep(0.5);"
@@ -25,7 +25,7 @@ CMD_LINUX = ("python3 -c \""
     "la=open('/proc/loadavg').read().split()[:3];"
     "print('{0}|{1}|{2}|{3}|{4}|{5}|{6}'.format(cpu,mt//1024,round((mt-ma)/1024),mu,la[0],la[1],la[2]));"
     "\"")
-CMD_OPENBSD = ("MEM=$(sysctl -n hw.physmem 2>/dev/null || echo 0); IDLE=$(top -b -n 1 2>/dev/null | awk '/CPU states/{gsub(/%/,\"\",$((NF-1))); print $(NF-1)}'); CPU=$(echo \"$IDLE\" | awk '{printf \"%.1f\", 100-$1}'); echo \"$CPU|$((MEM/1024/1024))|0|0|0.00|0.00|0.00\"")
+CMD_OPENBSD = ("top -b -n 1 2>/dev/null | awk '/CPU states/{idle=$(NF-1); gsub(/%/,\"\",idle); printf \"%s|0|0|0|0.00|0.00|0.00\\n\", 100-idle}'")
 
 def ssh_cmd(machine, cmd):
     if machine["host"] == "localhost":
@@ -51,7 +51,7 @@ def poll_machine(machine):
             out, rc = ssh_cmd(machine, cmd)
             if rc == 0 and out and "|" in out:
                 p = out.split("|")
-                if len(p) >= 5:
+                if len(p) >= 7:
                     def safe(v, t=float):
                         try: return t(v)
                         except: return None
