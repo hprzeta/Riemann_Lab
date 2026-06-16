@@ -1,0 +1,31 @@
+#!/bin/bash
+SESSION="zeta-cluster"
+tmux kill-session -t $SESSION 2>/dev/null
+tmux new-session -d -s $SESSION -x 220 -y 50
+
+tmux split-window -h -t $SESSION
+tmux select-pane -t $SESSION:0.0
+tmux split-window -v -t $SESSION:0.0
+tmux split-window -v -t $SESSION:0.0
+tmux split-window -v -t $SESSION:0.2
+
+# PC2 zeta-calc-second — fond jaune
+tmux select-pane -t $SESSION:0.0 -P 'bg=yellow,fg=black'
+tmux send-keys -t $SESSION:0.0 "ssh -i ~/.ssh/id_acer -o IdentitiesOnly=yes hprzeta@192.168.1.52" Enter
+
+# PC3 zeta-backup — fond cyan
+tmux select-pane -t $SESSION:0.1 -P 'bg=cyan,fg=black'
+tmux send-keys -t $SESSION:0.1 "ssh -i ~/.ssh/id_acer -o IdentitiesOnly=yes hprzeta@192.168.1.22" Enter
+
+# PC4 zeta-secure — fond noir
+tmux select-pane -t $SESSION:0.2 -P 'bg=black,fg=green'
+tmux send-keys -t $SESSION:0.2 "ssh -i ~/.ssh/id_acer -o IdentitiesOnly=yes hprzeta@192.168.1.54" Enter
+
+# PC1 zeta-lab — fond magenta
+tmux select-pane -t $SESSION:0.3 -P 'bg=magenta,fg=white'
+tmux send-keys -t $SESSION:0.3 "cd ~/projet_zeta && source zeta_env/bin/activate" Enter
+
+# Monitor — fond par défaut
+tmux send-keys -t $SESSION:0.4 "cd ~/projet_zeta && source zeta_env/bin/activate && python3 scripts/zeta_monitor.py" Enter
+
+tmux attach-session -t $SESSION
