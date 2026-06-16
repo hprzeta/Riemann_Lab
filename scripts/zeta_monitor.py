@@ -25,9 +25,7 @@ CMD_LINUX = ("python3 -c \""
     "la=open('/proc/loadavg').read().split()[:3];"
     "print('{0}|{1}|{2}|{3}|{4}|{5}|{6}'.format(cpu,mt//1024,round((mt-ma)/1024),mu,la[0],la[1],la[2]));"
     "\"")
-CMD_OPENBSD = ("LOAD=$(sysctl -n vm.loadavg 2>/dev/null | awk '{print $2\"|\"$3\"|\"$4}');"
-    "MEM=$(sysctl -n hw.physmem 2>/dev/null || echo 0);"
-    "echo \"?|$(($MEM/1024/1024))|?|?|$LOAD\"")
+CMD_OPENBSD = ("MEM=$(sysctl -n hw.physmem 2>/dev/null || echo 0); echo \"?|$((MEM/1024/1024))|0|0|0.00|0.00|0.00\"")
 
 def ssh_cmd(machine, cmd):
     if machine["host"] == "localhost":
@@ -53,7 +51,7 @@ def poll_machine(machine):
             out, rc = ssh_cmd(machine, cmd)
             if rc == 0 and out and "|" in out:
                 p = out.split("|")
-                if len(p) >= 7:
+                if len(p) >= 5:
                     def safe(v, t=float):
                         try: return t(v)
                         except: return None
