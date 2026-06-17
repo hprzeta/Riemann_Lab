@@ -100,10 +100,16 @@ def _partitionner_adaptatif(
 ) -> list:
     """Segments équitables par inversion de N(T) — chaque worker reçoit N/W zéros.
 
-    Recherche binaire pour trouver T_i tels que N(T_i) = i × N(T_MAX)/W.
+    Recherche binaire pour trouver T_i tels que N(T_i) = N(T_MIN) + i × (N(T_MAX)-N(T_MIN))/W.
+    Cibles relatives à N(T_MIN) — indispensable dès que T_MIN ≠ 0 (sous-segment d'un run
+    distribué ou rescan ciblé) : sans cela, les cibles i×N(T_MAX)/W restent presque toutes
+    inférieures à N(T_MIN), la recherche binaire s'effondre vers T_MIN pour tous les workers
+    sauf le dernier, qui se retrouve à traiter tout l'intervalle seul (bug constaté le
+    17/06/2026 sur les rescans test_scan_fix_worker6/7 — 7 workers sur 8 inactifs).
     Overlap fixe 0.5 — couvre les brackets sur les bords de segment.
     """
-    N_total = _n_zeros_expected(T_MAX)
+    N_min   = _n_zeros_expected(T_MIN)
+    N_total = _n_zeros_expected(T_MAX) - N_min
     if N_total == 0 or N_WORKERS <= 1:
         return [(T_MIN, T_MAX)]
 
@@ -120,7 +126,7 @@ def _partitionner_adaptatif(
     OVERLAP  = 0.5
     t_prev   = T_MIN
     for i in range(1, N_WORKERS):
-        n_cible = i * N_total // N_WORKERS
+        n_cible = N_min + i * N_total // N_WORKERS
         t_next  = _t_pour_n(n_cible, T_MIN, T_MAX)
         segments.append((t_prev, min(t_next + OVERLAP, T_MAX)))
         t_prev  = t_next
