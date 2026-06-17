@@ -148,6 +148,36 @@ katex.render(expression, element, { throwOnError: false });
 
 ## 5. Code Python — conventions
 
+### État du projet (17 juin 2026)
+
+| Version | Méthode affinage | T=1000 vitesse | T=100k | Turing |
+|---|---|---|---|---|
+| v12 | illinois_refine_arb (Arb, tol=1e-9) | PC1: 195 z/s · PC2: 6.4 z/s | — | ✅ COMPLET |
+| **v13** | illinois_refine_arb (Arb, tol=1e-12) | **PC1: 624 z/s · PC2: 52 z/s** | en cours | ✅ COMPLET |
+
+**v13 — commit `77efd10` branche `Riemann_Lab_C` (2026-06-17) :**
+- `T_SEUIL_PETIT_T` : 200 → **65** (N_RS=2 défaillant à t<57 ; 65 = marge empirique)
+- `TOL_ARB` : 1e-9 → **1e-12** (marge LMFDB, coût nul en double précision)
+- Gains : PC1 ×3.2 · PC2 **×8.1** (bottleneck Worker 0 : 101s → 12.5s)
+
+**Leçon T_SEUIL :** scan_arb (Z_double, N_RS termes) a des brackets décalés si N_RS=2 (t<57).
+illinois_refine_arb reçoit des signes fa/fb faux → convergence décalée (jusqu'à 3e-9).
+Fix : garder arb_hardy_z+mpmath pour t < T_SEUIL (pas de re-éval fa/fb après coup — piège).
+
+**Leçon STEP GUE :** STEP = δ(t)/3 insuffisant — gap min GUE ≈ 0.019 à t=66 678,
+soit 0.028·δ. Formule safe : **STEP ≤ 0.010** (fixe). L'accélération vient de `scan_arb.c`.
+
+### STEP adaptatif — formule (et sa limite)
+
+```python
+# STEP safe pour 0 manquant (validé T=10k) :
+STEP = min(0.05, 0.010)  # 0.05 pour t<5k, 0.010 pour t≥5k
+
+# STEP δ/3 (commit d2f62c1) — INSUFFISANT pour T=100k :
+# STEP = max(0.05, min(0.5, 2*pi / (3*log(t/(2*pi)))))
+# → 0.22 à T=100k → 2072 manquants ❌
+```
+
 ### Bibliothèques privilégiées
 ```python
 import numpy as np
@@ -255,20 +285,7 @@ Pour des sujets plus approfondis, consulter :
 
 ---
 
-## 9. État courant du projet (11 juin 2026)
-
-| Objectif | État |
-|---|---|
-| **Obj. 1 — v7 validée T=100k** | ✅ **30.9 min, 74.49 z/s, 138 069 zéros, 0 manquant, Turing COMPLET** |
-| Script actif | `compute_zeros_v7.py` |
-| Levier v7 | `prec_fast=64 bits` (1 limb mpfr → SIMD ×16) |
-| Commit | `8637098` sur `Riemann_Lab_C` |
-| Bottleneck restant | `illinois_C` = 78.2 % du temps CPU |
-| **Obj. 2 — v8 en préparation** | Option A : W=8 workers (×1.3 estimé, ~24 min) · Option B : prec phase 2 = 80 bits (à tester) |
-
----
-
-## 10. Comportement attendu
+## 9. Comportement attendu
 
 - Toujours répondre en **français**
 - Toujours vérifier que le LaTeX est **compatible KaTeX** avant de le proposer
@@ -278,4 +295,4 @@ Pour des sujets plus approfondis, consulter :
 - Signaler explicitement si une formule risque de ne pas s'afficher sur GitHub
 
 ---
-*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 1ᵉʳ juin 2026*
+*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 1ᵉʳ juin 2026 · 10 juin 2026 (état v4, leçon STEP GUE, plan v6)*
