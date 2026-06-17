@@ -33,7 +33,10 @@ Invariants conservés depuis v12 :
   Seuil t=300       : SUPPRIMÉ — Arb calcule Z(t) avec garanties pour tout t ≥ 14
   Détection         : scan_arb C (Z_double RS + C0+C1, step=0.010)
   Workers           : 8 (forcé)
-  STEP              : 0.010 (gap-safe, gap min mesuré = 0.019 à t=66678)
+  STEP              : adaptatif κ·gap_moyen(T)·N(T)^(-1/3)/2 (corrigé 17/06/2026 —
+                       l'ancien STEP fixe 0.010 a manqué 6 zéros à T=500000, cf.
+                       _step_adaptatif() et claude-traitement-journalier/
+                       Process_Distribution_PC1_PC2_20260617.md)
 
 Auteur : hprzeta — Projet Hypothèse de Riemann — Phase C
 Date   : 2026-06-17
@@ -516,8 +519,40 @@ def ecrire_log(chemin_log, horodatage, T_MIN, T_MAX, STEP, N_WORKERS,
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def _step_adaptatif(T_MAX: float) -> float:
-    """STEP fixe 0.010 — gap-safe mesuré (gap min = 0.019 à t=66678 sur T=100k)."""
-    return 0.010
+    """STEP réellement adaptatif — recalibré le 17/06/2026 après échec Turing à T=500000.
+
+    L'ancien STEP fixe (0.010, gap-safe à T=100000 seulement) a manqué 6 zéros sur le
+    run distribué T=500000 (818408/818414, cf. claude-traitement-journalier/
+    Process_Distribution_PC1_PC2_20260617.md). Cause : si deux zéros tombent dans le
+    même pas STEP, Z(a) et Z(b) ont le MÊME signe (deux changements de signe
+    s'annulent) → la paire disparaît sans laisser de trace visible dans les données.
+
+    Constat empirique (mesuré sur les 818408 zéros du run T=500000) :
+        écart minimal SURVIVANT avec STEP=0.010 :
+            0.019   à T≈ 66678   (marge ×1.9)
+            0.01281 à T≈453540   (marge ×1.28 — quasi-échec)
+    L'écart minimal global décroît avec le NOMBRE TOTAL de zéros échantillonnés N(T),
+    pas seulement avec l'écart moyen (répulsion de niveaux GUE : la densité de paires
+    proches s'annule en ~r³ près de 0 ⇒ écart minimal attendu sur N tirages ~ N^(-1/3)).
+    Un STEP fixe, ou même proportionnel au seul écart moyen, échoue donc TOUJOURS à T
+    suffisamment grand.
+
+    Modèle retenu (ordre de grandeur, pas un théorème) :
+        min_gap(T) ≈ κ · gap_moyen(T) · N(T)^(-1/3)
+        STEP(T)    = min_gap(T) / MARGE_SECURITE
+
+    κ ≈ 1.357 calibré sur le seul point fiable (T=100000, run Turing COMPLET).
+    MARGE_SECURITE = 2.0 (facteur ×2 sous le pire cas observé) — à resserrer pour
+    aller plus vite, ou augmenter si un futur run échoue encore. Cette calibration
+    repose sur UN SEUL point de mesure : revalider sur le prochain run avant de la
+    considérer définitive.
+    """
+    KAPPA = 1.357
+    MARGE_SECURITE = 2.0
+    T = max(float(T_MAX), 100.0)  # garde-fou : log/N indéfinis sous 2πe
+    gap_moyen = 2 * math.pi / math.log(T / (2 * math.pi * math.e))
+    N_T = (T / (2 * math.pi)) * math.log(T / (2 * math.pi * math.e))
+    return KAPPA * gap_moyen * N_T ** (-1 / 3) / MARGE_SECURITE
 
 
 def saisir_parametres():
