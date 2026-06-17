@@ -514,6 +514,41 @@
   .katex * {
   text-transform: none !important;
   }
+
+  /* ── Cluster Zeta ── */
+  .cluster-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin: 2rem 0;
+  }
+  .machine {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1.2rem;
+    background: var(--bg2);
+  }
+  .machine h3 { color: var(--gold2); margin-top: 0; font-size: 1rem; font-weight: 500; }
+  .machine p  { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text2); margin: 0.2rem 0; }
+  .machine p strong { color: var(--text); }
+  .cluster-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    margin-top: 0.5rem;
+  }
+  .cluster-badge.green  { background: rgba(74,222,128,0.1);  color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
+  .cluster-badge.yellow { background: rgba(251,191,36,0.1);  color: var(--amber); border: 1px solid rgba(251,191,36,0.2); }
+  .cluster-badge.blue   { background: rgba(33,150,243,0.08); color: #90caf9;      border: 1px solid rgba(33,150,243,0.2); }
+  .cluster-perf { margin-top: 2rem; }
+  .cluster-perf h3 { font-size: 0.95rem; font-weight: 400; color: #f0ebe2; margin-bottom: 0.75rem; }
+  .cluster-perf table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .cluster-perf th, .cluster-perf td { border: 1px solid var(--border); padding: 0.5rem 1rem; text-align: left; }
+  .cluster-perf th { background: var(--bg2); color: var(--gold); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 400; }
+  .cluster-perf td { color: var(--text2); }
+  @media (max-width: 600px) { .cluster-grid { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -1201,6 +1236,71 @@
   </div>
 </section>
 <!-- FIN SECTION PROGRESSION V1→V5 -->
+
+  <!-- ══ CLUSTER ZETA ══ -->
+  <section id="cluster" style="margin: 3rem 0;">
+    <div class="section-title">Cluster Zeta — Infrastructure de calcul</div>
+
+    <div class="cluster-grid">
+
+      <div class="machine">
+        <h3>PC1 · zeta-lab</h3>
+        <p><strong>Rôle :</strong> Orchestrateur / Calcul principal</p>
+        <p><strong>CPU :</strong> Intel Core i7 — 4 cœurs</p>
+        <p><strong>RAM :</strong> 8 GB + 16 GB swap</p>
+        <p><strong>GPU :</strong> NVIDIA GTX 960M 4 GB</p>
+        <p><strong>OS :</strong> Ubuntu Linux</p>
+        <p><strong>Vitesse :</strong> 634 z/s (v13)</p>
+        <span class="cluster-badge green">✅ Actif — Calcul</span>
+      </div>
+
+      <div class="machine">
+        <h3>PC2 · zeta-calc-second</h3>
+        <p><strong>Rôle :</strong> Second nœud de calcul</p>
+        <p><strong>CPU :</strong> Intel Core2Duo E8400 — 2 cœurs</p>
+        <p><strong>RAM :</strong> 7.6 GB</p>
+        <p><strong>OS :</strong> Debian Linux</p>
+        <p><strong>Vitesse :</strong> 52 z/s (v13 + python-flint)</p>
+        <span class="cluster-badge green">✅ Actif — Calcul</span>
+      </div>
+
+      <div class="machine">
+        <h3>PC3 · zeta-backup</h3>
+        <p><strong>Rôle :</strong> Backup / Monitoring / DNS</p>
+        <p><strong>CPU :</strong> Intel Pentium E2140 — 2 cœurs</p>
+        <p><strong>RAM :</strong> 5.7 GB</p>
+        <p><strong>OS :</strong> Linux Lite</p>
+        <p><strong>Services :</strong> chrony, rsyslog, dnsmasq</p>
+        <span class="cluster-badge yellow">⚙️ Monitoring</span>
+      </div>
+
+      <div class="machine">
+        <h3>PC4 · zeta-secure</h3>
+        <p><strong>Rôle :</strong> Bastion VPN / WireGuard</p>
+        <p><strong>CPU :</strong> Intel Pentium 4</p>
+        <p><strong>OS :</strong> OpenBSD</p>
+        <p><strong>VPN :</strong> WireGuard 10.10.0.1/24</p>
+        <p><strong>DNS :</strong> zeta-secure.duckdns.org</p>
+        <span class="cluster-badge blue">🔒 Bastion VPN</span>
+      </div>
+
+    </div>
+
+    <div class="cluster-perf">
+      <h3>📊 Performances distribution PC1+PC2 — v13 — Milestone 2026-06-17</h3>
+      <table>
+        <tr><th>Configuration</th><th>Vitesse</th><th>Zéros</th><th>Statut</th></tr>
+        <tr><td>PC1 seul v12</td><td>195 z/s</td><td>—</td><td>référence</td></tr>
+        <tr><td>PC1 seul v13</td><td>634 z/s</td><td>—</td><td>×3.2 vs v12</td></tr>
+        <tr><td>PC1+PC2 v13 T=10 000</td><td>350 z/s</td><td>10 142</td><td>✅ Turing COMPLET</td></tr>
+        <tr><td>PC1+PC2 v13 T=100 000</td><td>270 z/s</td><td>138 069</td><td>✅ Turing COMPLET</td></tr>
+      </table>
+      <p style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);margin-top:0.75rem;">
+        <em>PC1+PC2 synchronisés à la seconde — 8.50 min chacun pour T=100k · pivot N(T) marge −15%</em>
+      </p>
+    </div>
+  </section>
+  <!-- FIN CLUSTER ZETA -->
 
   <footer>
     <p>hprzeta · Riemann Lab · juin 2026</p>
