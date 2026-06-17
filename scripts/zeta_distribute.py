@@ -114,7 +114,7 @@ def calculer_pivot(T_MAX: float, v1: float, v2: float) -> float:
     # Marge -5% sur la part de PC2 → PC2 reçoit moins de zéros → finit avant PC1
     # Raison : PC2 peut swapper ou partager CPU → ralentit imprévisiblement,
     #          ce qui bloquerait l'agrégation Turing si PC2 finit en dernier.
-    N_pc2   = int(N_pc2_eq * 0.95)
+    N_pc2   = int(N_pc2_eq * 0.85)
     N_pivot = N_total - N_pc2
     return _t_pour_n(N_pivot, 14.0, T_MAX)
 
