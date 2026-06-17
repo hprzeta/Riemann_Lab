@@ -124,11 +124,13 @@ def calculer_pivot(T_MAX: float, v1: float, v2: float) -> float:
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def _cmd_venv(commande: str) -> str:
-    """Enveloppe une commande dans l'activation du venv + PYTHONPATH."""
+    """Enveloppe une commande pour PC2 — Python3 système (pas de venv sur Debian 12).
+    PYTHONPATH = src/calculs/optimisation/ : tous les modules (arb_wrapper, turing…)
+    sont à plat dans ce dossier, pas dans un package Python structuré.
+    """
     return (
         f"cd {PC2_PROJET} && "
-        f"source zeta_env/bin/activate && "
-        f"export PYTHONPATH={PC2_PROJET}/src && "
+        f"export PYTHONPATH={PC2_PROJET}/src/calculs/optimisation && "
         f"{commande}"
     )
 
@@ -212,10 +214,12 @@ def _trouver_csv(dossier: Path, T_MIN: float, T_MAX: float, horodatage: str) -> 
 def recuperer_csv_pc2(T_PIVOT: float, T_MAX: float,
                        horodatage: str, dossier_local: Path) -> Path:
     """Récupère le CSV de PC2 via scp vers dossier_local/."""
+    # Dossier : v13_T{T_MIN:.0f}_{T_MAX:.0f}_{horodatage}/
+    # CSV     : zeros_v13_T{T_MAX:.0f}_{horodatage}.csv   ← T_MAX seul (convention sauvegarder_csv v13)
     chemin_remote = (
         f"{PC2_PROJET}/calculs/"
         f"v13_T{T_PIVOT:.0f}_{T_MAX:.0f}_{horodatage}/"
-        f"zeros_v13_T{T_PIVOT:.0f}_{T_MAX:.0f}_{horodatage}.csv"
+        f"zeros_v13_T{T_MAX:.0f}_{horodatage}.csv"
     )
     csv_local = dossier_local / f"zeros_pc2_T{T_PIVOT:.0f}_{T_MAX:.0f}_{horodatage}.csv"
     cmd = [
@@ -277,7 +281,7 @@ def fusionner_csv(csv_pc1: Path, csv_pc2: Path,
 
 def valider_turing_local(zeros: list, T_MAX: float) -> dict:
     """Validation Turing-Backlund en important turing_validation du projet."""
-    sys.path.insert(0, str(PROJET_DIR / "src"))
+    sys.path.insert(0, str(PROJET_DIR / "src" / "calculs" / "optimisation"))
     from turing_validation import valider_turing
     return valider_turing(zeros, dps=30)
 
