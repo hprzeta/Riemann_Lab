@@ -42,6 +42,10 @@ scripts/audit_extract_text*/
 # Etat de session volatil — local uniquement
 Handoff.md
 **/Handoff.md
+
+# Notes personnelles locales — non versionnees
+materielunixlitepc2.txt
+pcemmaus.txt
 # ===== FIN SOCLE COMMUN =====
 # (motifs specifiques a une branche, ex. *.so *.o pour C, a ajouter SOUS cette ligne)
 
