@@ -9,9 +9,10 @@
 | Externe #1 | Toshiba MQ04ABD200, 2 To USB3 | Clone Ubuntu bootable — `/dev/sdb` |
 | Externe #2 | Samsung M2 Portable, 500 Go USB3 | Clone Kali bootable — `/dev/sdc` → `sdb` |
 
-> **Périmètre exclu :** SSD Micron 1100 (boîtier Verbatim), ancien Windows/BitLocker — non touché.
+> **Périmètre exclu (au 21 juin) :** SSD Micron 1100 (boîtier Verbatim), ancien Windows/BitLocker — non touché.
+> *Mise à jour 22 juin 2026 — ce disque a depuis été reformaté pour un usage distinct (vault RAG), voir §11 Phase F.*
 
-Document généré le 21 juin 2026 — édition enrichie (captures intégrées).
+Document généré le 21 juin 2026 — édition enrichie (captures intégrées). Mis à jour le 22 juin 2026 (§11 Phase F).
 Projet : sauvegarde disque résiliente — système d'exploration de l'Hypothèse de Riemann.
 
 ---
@@ -28,9 +29,10 @@ Projet : sauvegarde disque résiliente — système d'exploration de l'Hypothès
 8. [Synthèse de tous les problèmes rencontrés et corrections](#8-synthèse-de-tous-les-problèmes-rencontrés-et-corrections)
 9. [État final et tableau de bord](#9-état-final-et-tableau-de-bord)
 10. [Leçons apprises et bonnes pratiques retenues](#10-leçons-apprises-et-bonnes-pratiques-retenues)
-11. [Annexe — Galerie complète des captures d'écran](#11-annexe--galerie-complète-des-captures-décran)
+11. [Phase F — Configuration du vault RAG sur le SSD Micron 1100](#11-phase-f--configuration-du-vault-rag-sur-le-ssd-micron-1100)
+12. [Annexe — Galerie complète des captures d'écran](#12-annexe--galerie-complète-des-captures-décran)
 
-> **Note sur cette édition.** Cette version du rapport intègre directement, dans chaque section concernée, les captures d'écran correspondantes (BIOS, kernel panic, menus GRUB, terminaux) plutôt que de s'y référer uniquement par le texte. Une annexe galerie (§11) regroupe en outre l'intégralité des 45 captures disponibles, dans l'ordre chronologique. Toutes les images sont référencées en chemin relatif `img/...` — conserver le sous-dossier `img/` à côté de ce fichier Markdown.
+> **Note sur cette édition.** Cette version du rapport intègre directement, dans chaque section concernée, les captures d'écran correspondantes (BIOS, kernel panic, menus GRUB, terminaux) plutôt que de s'y référer uniquement par le texte. Une annexe galerie (§12) regroupe en outre l'intégralité des 45 captures disponibles, dans l'ordre chronologique. Toutes les images sont référencées en chemin relatif `img/...` — conserver le sous-dossier `img/` à côté de ce fichier Markdown.
 
 ---
 
@@ -65,7 +67,7 @@ La toute première étape critique a été d'identifier précisément la nature 
 | `/dev/sda` | Seagate ST1000LM035 (HDD) | 931 GiB (1 To) | Ubuntu — système actif | Disque principal (inchangé) |
 | Toshiba (vu un temps comme `sdb`) | Toshiba MQ04ABD200 (HDD) | 2 000 GB (≈1,82 TiB) | Ancienne installation Kali Linux | Reformaté → clone Ubuntu bootable |
 | Samsung (vu un temps comme `sdc`) | Samsung M2 Portable | 500 GB | Ancienne installation Ubuntu inutilisée | Reformaté → clone Kali bootable |
-| Boîtier Verbatim | SSD Micron 1100 (MTFDDAK2) | 238 GiB (256 GB réel) | Windows + BitLocker + partition RE | Exclu — non touché |
+| Boîtier Verbatim | SSD Micron 1100 (MTFDDAK2) | 238 GiB (256 GB réel) | Windows + BitLocker + partition RE | Reformaté → vault RAG `/mnt/vault_rag` (22 juin, voir §11) |
 
 > ⚠️ **Problème rencontré — Hypothèse de taille erronée**
 > L'utilisateur pensait disposer d'un SSD externe de 2 To pour le clone Ubuntu ; l'inspection a révélé que le disque réellement câblé à ce moment-là (boîtier Verbatim) ne faisait que **256 Go**, et contenait en réalité une ancienne installation Windows/BitLocker.
@@ -650,7 +652,7 @@ cat /etc/os-release
 | `sda` — Seagate 1 To (interne) | Système principal Ubuntu | Inchangé | Inchangé | N/A — jamais interrompu | Hors périmètre de ce rapport |
 | Toshiba 2 To USB3 | Clone Ubuntu bootable (secours) | ✅ Corrigé | ✅ Installé | ✅ Confirmé au 1er essai | Non requise dans ce projet |
 | Samsung 500 Go USB3 | Clone Kali bootable | ✅ Corrigé | ✅ Installé (`--removable`) | ✅ Confirmé après corrections | ✅ Terminée — `RESUME=none` confirmé par reboot à froid |
-| SSD Micron (Verbatim) | Hors projet | Non touché | Non touché | Non concerné | Non concerné |
+| SSD Micron 1100 (ex-Verbatim) | Vault RAG ChromaDB/LlamaIndex — Objectif 2 (22 juin, §11) | ✅ ext4 + fstab (`/mnt/vault_rag`, UUID `9476fad5-8512-4e0d-8cd4-50c9acae01c2`) | N/A — volume de données, pas de boot | N/A | N/A |
 
 ### Reste à faire / maintenance continue
 
@@ -677,10 +679,72 @@ cat /etc/os-release
 
 ---
 
+## 11. Phase F — Configuration du vault RAG sur le SSD Micron 1100
+
+### 11.1 — Contexte
+
+Le SSD Micron 1100 (boîtier Verbatim, identifié au §2) avait été volontairement exclu de ce projet de clonage : il contenait une ancienne installation Windows protégée par BitLocker, jugée hors périmètre. Le 22 juin 2026, ce même disque a été réaffecté à un nouvel usage : **vault de stockage RAG** (Retrieval-Augmented Generation) pour ChromaDB et LlamaIndex, dans le cadre de l'Objectif 2 du projet Zêta (agent IA autonome de recherche mathématique).
+
+Le choix de réutiliser ce disque plutôt qu'un disque dédié neuf repose sur trois constats établis lors de l'inventaire initial (§2) :
+- Capacité réelle confirmée saine : 256 GB / 238,47 GiB (pas de fraude, contrairement à un autre SSD externe testé et rejeté séparément le 21 juin pour capacité frauduleuse — incident hors périmètre de ce rapport).
+- SMART `PASSED`, 89 % de durée de vie restante, usure normale pour un disque d'occasion.
+- Disque déjà physiquement présent et disponible, sans nouvel achat nécessaire.
+
+L'ancien contenu (Windows + BitLocker + partition de récupération) a été entièrement effacé : ce disque ne contient donc plus aucune donnée antérieure à cette opération.
+
+### 11.2 — Paramètres choisis et justification
+
+| Paramètre | Valeur | Justification |
+|---|---|---|
+| Table de partition | GPT, partition unique pleine disque | Volume de données simple, pas de boot requis |
+| Filesystem | ext4 | Standard Linux, robuste, bien supporté par ChromaDB/LlamaIndex |
+| `-i 8192` (bytes-per-inode) | ~31,3 M inodes (vs ~15,6 M par défaut à 16384) | Usage prévu = nombreux petits fichiers (chunks de corpus texte, cache LlamaIndex, segments ChromaDB) — plus d'inodes nécessaires que pour un usage de gros fichiers |
+| `-m 1` (réserve root) | 1 % au lieu des 5 % par défaut | Ce n'est pas un disque système — pas besoin de réserver autant d'espace pour root, libère ~2,4 Go supplémentaires |
+| `-L vault_rag` (label) | Label stable | Identification indépendante de la lettre `/dev/sdX`, conformément à la règle retenue au §2 |
+| Montage | `/mnt/vault_rag`, `fstab` avec `defaults,noatime` | `noatime` évite l'écriture du timestamp d'accès à chaque lecture — pertinent pour une base vectorielle interrogée fréquemment |
+
+### 11.3 — Commandes exactes
+
+```bash
+sudo wipefs -a /dev/sdb
+sudo parted /dev/sdb mklabel gpt
+sudo parted /dev/sdb mkpart primary ext4 0% 100%
+sudo mkfs.ext4 -i 8192 -m 1 -L vault_rag /dev/sdb1
+sudo mkdir -p /mnt/vault_rag
+sudo mount /dev/sdb1 /mnt/vault_rag
+echo "UUID=9476fad5-8512-4e0d-8cd4-50c9acae01c2  /mnt/vault_rag  ext4  defaults,noatime  0  2" | sudo tee -a /etc/fstab
+sudo systemctl daemon-reload
+sudo chown riemann:riemann /mnt/vault_rag
+mkdir -p /mnt/vault_rag/{chromadb,corpus,llamaindex_cache,agent_logs}
+```
+
+> ⚠️ **Point notable — fausse alerte `vfat` après formatage (bénin)**
+> Après le `mkfs.ext4` réussi, une commande `blkid /dev/sdb1` simple affichait à tort `TYPE="vfat"` avec l'ancien label `SYSTEM` (résidu d'une ancienne partition EFI Windows). `mkfs.ext4` ne touche jamais les 1024 premiers octets d'une partition (zone réservée pour compatibilité boot loader) ; combiné à un cache `blkid` non rafraîchi, l'ancienne signature pouvait sembler persister.
+
+> ✅ **Correction / vérification appliquée**
+> Sondage direct sans cache (`blkid -p /dev/sdb1`) et scan natif (`wipefs /dev/sdb1`, qui n'utilise jamais de cache) confirment tous deux une signature **unique : ext4**, label `vault_rag`, UUID `9476fad5-8512-4e0d-8cd4-50c9acae01c2`. Le montage effectif (`mount`, `findmnt`, `/proc/mounts`) confirmait déjà `type ext4` pendant toute l'opération — seul l'outil `blkid` sans option affichait une information périmée, sans impact réel sur les données.
+>
+> **Règle retenue :** ne jamais se fier à un `blkid` simple juste après un reformatage si le résultat semble incohérent avec le filesystem attendu — toujours revérifier avec `blkid -p` (sondage direct) ou `wipefs` (scan natif, sans cache) avant de s'inquiéter.
+
+### 11.4 — Arborescence finale
+
+```
+/mnt/vault_rag/                  (UUID 9476fad5-8512-4e0d-8cd4-50c9acae01c2, riemann:riemann)
+├── chromadb/                    ← segments HNSW + sqlite (ChromaDB)
+├── corpus/                      ← chunks texte (nombreux petits fichiers)
+├── llamaindex_cache/
+├── agent_logs/
+└── lost+found/                  (créé automatiquement par mkfs.ext4, root)
+```
+
+> ✅ **SUCCÈS** — Le SSD Micron 1100, précédemment hors périmètre de ce projet de clonage, est désormais opérationnel comme vault RAG pour ChromaDB/LlamaIndex sur `/mnt/vault_rag` (230 Go disponibles, 228 Go libres). Montage confirmé permanent via `fstab` (`rw,noatime`), permissions et arborescence en place. Prêt pour l'installation de ChromaDB et LlamaIndex (Objectif 2).
+
+---
+
 *Fin du corps du rapport — Projet Zêta / Riemann Lab — riemann@zeta-lab*
 
 ---
-## 11. Annexe — Galerie complète des captures d'écran
+## 12. Annexe — Galerie complète des captures d'écran
 
 Cette annexe regroupe l'intégralité des 45 captures d'écran disponibles pour ce projet, classées par ordre chronologique. Chaque capture déjà intégrée dans le corps du rapport (§2 à §7) est également listée ici à des fins d'indexation complète et de traçabilité.
 
