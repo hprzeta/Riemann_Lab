@@ -95,25 +95,34 @@ int scan_zeros_arb(
     int     max_brackets
 ) {
     int    n = 0;
-    double t = t_min;
+    long   k = 0;            /* compteur d'itérations — pas de dérive cumulative */
+    double t_prev = t_min;
     double z_prev, z_curr;
 
     /* évalue Z(t_min) — point de départ */
     z_prev = Z_double(t_min);
 
-    /* balayage pas à pas — boucle entièrement en C (pas d'overhead Python) */
-    while (t + step <= t_max && n < max_brackets) {
-        t += step;
-        z_curr = Z_double(t);
+    /* balayage pas à pas — t recalculé depuis t_min à chaque itération.
+     * NE PAS écrire "t += step" : sur un segment de plusieurs dizaines de
+     * milliers d'unités avec un step ~0.005, ça représente des millions
+     * d'additions en double précision, dont l'arrondi s'accumule (erreur de
+     * Kahan classique) — dérive mesurée jusqu'à ~2e-4 sur un run réel,
+     * suffisante pour décaler la grille d'échantillonnage et manquer un
+     * zéro (cf. claude-traitement-journalier, run T=500000 du 17/06/2026). */
+    while (t_min + (double)(k + 1) * step <= t_max && n < max_brackets) {
+        k++;
+        double t_curr = t_min + (double)k * step;   /* grille exacte */
+        z_curr = Z_double(t_curr);
 
         if (z_prev * z_curr < 0.0) {
-            brackets_a[n] = t - step;   /* borne gauche */
-            brackets_b[n] = t;           /* borne droite */
-            fa[n]         = z_prev;      /* Z(a) précalculé */
-            fb[n]         = z_curr;      /* Z(b) précalculé */
+            brackets_a[n] = t_prev;     /* borne gauche */
+            brackets_b[n] = t_curr;     /* borne droite */
+            fa[n]         = z_prev;     /* Z(a) précalculé */
+            fb[n]         = z_curr;     /* Z(b) précalculé */
             n++;
         }
         z_prev = z_curr;
+        t_prev = t_curr;
     }
     return n;
 }
