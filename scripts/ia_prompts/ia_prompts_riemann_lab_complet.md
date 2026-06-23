@@ -1,5 +1,6 @@
 > **Fichier :** ia_prompts_riemann_lab_complet.md · **Dossier :** scripts/ia_prompts/
-> **Branche :** Riemann_Lab_IA · **Auteur :** hprzeta · **MAJ :** 2026-06-03
+> **Branche :** Riemann_Lab_C · **Auteur :** hprzeta · **MAJ :** 2026-06-23
+> **Créé :** 2026-06-03
 
 # 📚 Recueil COMPLET des prompts — Riemann_Lab
 > Historique complet depuis le début du projet (mai → juin 2026)
@@ -832,4 +833,19 @@ Tâches : 2 rapports d'analyse créés, 9 pages wiki mises à jour, site mis à 
 
 ---
 
-*ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_IA · hprzeta · MAJ 2026-06-03 · 9 juin 2026 · 10 juin 2026 (soir) · 11 juin 2026 · 12 juin 2026 (Prompts M-N v9 turbo) · **13 juin 2026 (v12 documentation complète)** · ~830 lignes*
+## Session 23/06/2026
+
+- Alias `zeta-progress` vérifié dans `~/.bashrc` (préexistant depuis le 17/06, pas créé ce soir)
+- Run T=500 000 : trou de couverture au pivot PC1/PC2 diagnostiqué (`zeta_distribute.py` sans
+  overlap à la frontière, contrairement à l'overlap interne `OVERLAP=0.5` entre workers) — fix
+  `OVERLAP_PIVOT=2.0` appliqué (**toujours actif, pas annulé**) ; résultat seul : régression à
+  8 manquants (vs 5 référence) par cascade des frontières internes des workers
+  (`_partitionner_adaptatif()` recalculée entièrement avec le nouveau `T_MAX`)
+- `MARGE_SECURITE` 2.0→3.0 dans `_step_adaptatif()` (`compute_zeros_v13.py`), synchronisé sur
+  PC2 par `scp` direct
+- Run relancé 22:27:23 (overlap + marge×3) — en cours au moment de cette note, ETA estimée
+  ~23:13-23:16 (pas encore terminé)
+
+---
+
+*ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_C · hprzeta · MAJ 2026-06-03 · 9 juin 2026 · 10 juin 2026 (soir) · 11 juin 2026 · 12 juin 2026 (Prompts M-N v9 turbo) · 13 juin 2026 (v12 documentation complète) · **23 juin 2026 (run #6 T=500000 en cours, overlap pivot + marge×3)** · 851 lignes*
