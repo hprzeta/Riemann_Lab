@@ -568,7 +568,7 @@
     <div class="subtitle">
       <span class="badge gold">Ubuntu 24.04</span>
       <span class="badge gold">Python · mpmath</span>
-      <span class="badge gold">~138 080 zéros validés · v12 · 0 manquant ✅</span>
+      <span class="badge gold">818 409 zéros calculés · v13 · T=500k</span>
     </div>
   </header>
 
@@ -655,15 +655,15 @@
 
   <div class="stats">
     <div class="stat">
-      <span class="stat-val">138&nbsp;069</span>
-      <span class="stat-label">zéros validés</span>
+      <span class="stat-val">818&nbsp;409</span>
+      <span class="stat-label">zéros calculés</span>
     </div>
     <div class="stat">
       <span class="stat-val">10⁻¹⁵</span>
       <span class="stat-label">précision max</span>
     </div>
     <div class="stat">
-      <span class="stat-val">99&nbsp;999</span>
+      <span class="stat-val">499&nbsp;999</span>
       <span class="stat-label">t max atteint</span>
     </div>
   </div>
@@ -676,14 +676,15 @@
         <span class="step-num">01</span>
         <div class="step-body">
           <h3>Calcul des zéros non triviaux</h3>
-          <p>v12 opérationnel — Illinois hybride 2-phases (Z_rs_double + 2 Newton Z_arb + W=8).
-             <strong>~138&nbsp;080 zéros</strong> calculés jusqu'à T=100&nbsp;000 en
-             <strong>8.8 min</strong> · ~261 z/s (avec turbo) · <strong>0 manquant</strong>.
-             Turing-Backlund COMPLET ✅ · LMFDB 20/20 ✅ · ×16.9 vs v10.</p>
-          <div class="pill done">Opérationnel — v12</div>
+          <p>v13 distribué PC1+PC2 — Illinois hybride Arb/FLINT + scan C (scan_arb.c).
+             <strong>818&nbsp;409 zéros</strong> calculés jusqu'à T=500&nbsp;000 en
+             <strong>35.4 min</strong> (mur, PC1+PC2) · ~386 z/s effectifs.
+             Turing-Backlund INCOMPLET (5 manquants, accepté comme limitation connue) —
+             investigation en cours. T=100&nbsp;000 reste COMPLET ✅ (LMFDB 20/20 ✅).</p>
+          <div class="pill done">Opérationnel — v13</div>
         </div>
         <div class="step-stat status-done">
-          138&nbsp;069<br>
+          818&nbsp;409<br>
           <span style="color:var(--dim); font-size:10px;">zéros ✓</span>
         </div>
       </div>
@@ -987,12 +988,48 @@
             <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">×1.12 vs v9</td>
             <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">avec turbo</td>
           </tr>
+          <tr style="border-bottom:1px solid rgba(201,168,76,0.06);">
+            <td style="padding:0.6rem 1rem;color:var(--text2);">v12</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">~261 z/s</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">8.8 min</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">×16.9 benchmark</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">avec turbo</td>
+          </tr>
           <tr style="background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.25);">
-            <td style="padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">v12 ✦</td>
-            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">~261 z/s</td>
-            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">8.8 min</td>
-            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">×16.9 benchmark</td>
-            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">avec turbo</td>
+            <td style="padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">v13 ✦</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">271 z/s</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">8.5 min</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">×3.64 vs v7</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">PC1+PC2 distribué, turbo</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Tableau résultats T=500 000 -->
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:0.15em;margin-bottom:0.5rem;">T = 500 000 ZÉROS</div>
+    <div style="overflow-x:auto; margin-bottom:2rem;">
+      <table style="
+        width:100%;
+        border-collapse:collapse;
+        font-family:'JetBrains Mono',monospace;
+        font-size:13px;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);">
+            <th style="text-align:left;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Version</th>
+            <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Vitesse</th>
+            <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">T = 500 000</th>
+            <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Turing</th>
+            <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Conditions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.25);">
+            <td style="padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">v13 distribué</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">~386 z/s</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">35.4 min</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">818 409 / 818 414</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">PC1+PC2 · 5 manquants connus</td>
           </tr>
         </tbody>
       </table>
