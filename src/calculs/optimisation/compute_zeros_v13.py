@@ -42,6 +42,7 @@ Auteur : hprzeta — Projet Hypothèse de Riemann — Phase C
 Date   : 2026-06-17
 """
 
+import os
 import sys
 import math
 import time
@@ -166,6 +167,21 @@ def worker_v13(args: tuple) -> Tuple[list, dict, dict]:
         ctypes.c_double,  # tol (1e-9)
         ctypes.c_int,     # max_iter (50)
     ]
+    lib.arb_set_debug_log.restype   = None
+    lib.arb_set_debug_log.argtypes  = [ctypes.c_char_p]
+    lib.arb_close_debug_log.restype  = None
+    lib.arb_close_debug_log.argtypes = []
+
+    # Activation des logs brackets si ZETA_DEBUG_BRACKETS=<répertoire>
+    _dbg_dir = os.environ.get("ZETA_DEBUG_BRACKETS", "")
+    if _dbg_dir:
+        os.makedirs(_dbg_dir, exist_ok=True)
+        _scan_log = os.path.join(_dbg_dir, f"scan_w{worker_id}.log")
+        _arb_log  = os.path.join(_dbg_dir, f"arb_w{worker_id}.log")
+        if SCAN_ARB_DISPONIBLE:
+            from scan_arb_wrapper import scan_enable_debug_log
+            scan_enable_debug_log(_scan_log)
+        lib.arb_set_debug_log(_arb_log.encode())
 
     # v13 : seuil abaissé de 200 → 65.
     #
@@ -267,6 +283,13 @@ def worker_v13(args: tuple) -> Tuple[list, dict, dict]:
     duree = time.time() - debut
     print(f"  [Worker {worker_id}] {len(zeros_segment)} zéros en {duree:.1f}s  "
           f"| arb_C:{stats['arb_C']} fallback:{stats['mpmath_fallback']}")
+
+    if _dbg_dir:
+        if SCAN_ARB_DISPONIBLE:
+            from scan_arb_wrapper import scan_disable_debug_log
+            scan_disable_debug_log()
+        lib.arb_close_debug_log()
+
     return zeros_segment, stats, snapshot()
 
 
