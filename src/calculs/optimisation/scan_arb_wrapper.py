@@ -49,7 +49,23 @@ def _load_lib():
             ctypes.POINTER(ctypes.c_double),    # fb
             ctypes.c_int,                       # max_brackets
         ]
+        _lib.scan_set_debug_log.restype  = None
+        _lib.scan_set_debug_log.argtypes = [ctypes.c_char_p]
+        _lib.scan_close_debug_log.restype  = None
+        _lib.scan_close_debug_log.argtypes = []
     return _lib
+
+
+def scan_enable_debug_log(path: str) -> None:
+    """Active le log des brackets détectés vers le fichier path (post-fork)."""
+    lib = _load_lib()
+    lib.scan_set_debug_log(path.encode())
+
+
+def scan_disable_debug_log() -> None:
+    """Ferme et désactive le log des brackets."""
+    lib = _load_lib()
+    lib.scan_close_debug_log()
 
 
 def scan_arb(

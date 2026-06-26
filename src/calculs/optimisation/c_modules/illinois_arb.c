@@ -17,6 +17,20 @@
  * Phase C — Riemann_Lab / hprzeta — 2026-06-12 */
 
 #include <math.h>
+#include <stdio.h>
+
+/* ── Log de débogage (activé via arb_set_debug_log) ──────────────────────
+ * NULL = désactivé. Chaque worker-fork a sa propre copie → pas de race. */
+static FILE *g_arb_log = NULL;
+
+void arb_set_debug_log(const char *path) {
+    if (g_arb_log) { fclose(g_arb_log); g_arb_log = NULL; }
+    if (path && path[0]) g_arb_log = fopen(path, "a");
+}
+
+void arb_close_debug_log(void) {
+    if (g_arb_log) { fflush(g_arb_log); fclose(g_arb_log); g_arb_log = NULL; }
+}
 
 /* ── Déclaration forward arb_fpwrap_cdouble_hardy_z ─────────────────────────
  * Tirée de flint/arb_fpwrap.h (FLINT 3.x) — pas d'include pour éviter la
@@ -115,8 +129,16 @@ double illinois_refine_arb(double a, double b, double fa, double fb,
     /* Si Z_rs change de signe différemment de fa/fb (très rare, t < 200) :
      * fallback Illinois Z_arb classique sur 15 itérations. */
     if (Za * Zb >= 0.0) {
+        if (g_arb_log)
+            fprintf(g_arb_log, "FALLBACK_ZRS %.15f %.15f fa=%.10f fb=%.10f Za=%.10f Zb=%.10f\n",
+                    a, b, fa, fb, Za, Zb);
         Za = fa; Zb = fb;
-        if (Za * Zb >= 0.0) return (a + b) / 2.0;
+        if (Za * Zb >= 0.0) {
+            if (g_arb_log)
+                fprintf(g_arb_log, "REJECT %.15f %.15f fa=%.10f fb=%.10f Za_orig=%.10f Zb_orig=%.10f\n",
+                        a, b, fa, fb, Z_rs_double_arb(a), Z_rs_double_arb(b));
+            return (a + b) / 2.0;
+        }
         for (int iter = 0; iter < 15 && fabs(b - a) > tol; iter++) {
             double den = Zb - Za;
             if (fabs(den) < 1e-300) break;
@@ -148,6 +170,9 @@ double illinois_refine_arb(double a, double b, double fa, double fb,
         double dZ = (Z_rs_double_arb(t_curr + h) - Z_rs_double_arb(t_curr - h)) / (2.0 * h);
         if (fabs(dZ) < 1e-10) break;
         double Zt = Z_arb(t_curr);
+        if (g_arb_log && k == 1)
+            fprintf(g_arb_log, "NEWTON_FINAL %.15f Z=%.6e delta=%.6e\n",
+                    t_curr, Zt, Zt / (fabs(dZ) > 1e-10 ? dZ : 1.0));
         if (fabs(Zt) < tol) return t_curr;
         double delta = Zt / dZ;
         t_curr -= delta;
