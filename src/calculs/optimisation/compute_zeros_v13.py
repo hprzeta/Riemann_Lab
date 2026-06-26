@@ -230,9 +230,18 @@ def worker_v13(args: tuple) -> Tuple[list, dict, dict]:
         t_start_main = t_start
 
     # ── Détection : scan_arb C ou Z_vect_correct numpy (fallback) ────────────
+    # max_brackets dynamique : N(t_end) - N(t_start) × 2 — évite le dépassement
+    # silencieux du buffer (bug constaté run debug 26/06/2026 : chaque worker plafonnait
+    # à 100 000 brackets alors que T=500k en demande ~102 302 par worker → 16 107 manquants)
+    def _n_zeros_approx(T: float) -> float:
+        if T <= 14: return 0.0
+        return (T / (2 * math.pi)) * math.log(T / (2 * math.pi * math.e))
+    _max_brackets = max(150_000,
+                        int((_n_zeros_approx(t_end) - _n_zeros_approx(max(t_start, 14.1))) * 2))
+
     if SCAN_ARB_DISPONIBLE:
         with chrono("detection"):
-            brackets = scan_arb(t_start_main, t_end, step=step) if t_start_main < t_end else []
+            brackets = scan_arb(t_start_main, t_end, step=step, max_brackets=_max_brackets) if t_start_main < t_end else []
     else:
         TAILLE_BLOC = 5000
         brackets    = []
@@ -571,13 +580,16 @@ def _step_adaptatif(T_MAX: float) -> float:
         STEP(T)    = min_gap(T) / MARGE_SECURITE
 
     κ ≈ 1.357 calibré sur le seul point fiable (T=100000, run Turing COMPLET).
-    MARGE_SECURITE = 2.0 (facteur ×2 sous le pire cas observé) — à resserrer pour
-    aller plus vite, ou augmenter si un futur run échoue encore. Cette calibration
-    repose sur UN SEUL point de mesure : revalider sur le prochain run avant de la
+    MARGE_SECURITE = 3.0 (resserré le 23/06/2026 — le run distribué T=500000 avec
+    overlap pivot a quand même donné 8 manquants avec marge=2.0 ; le décalage des
+    frontières workers induit par l'overlap a déplacé certaines coupures vers des
+    zones à risque, révélant que la marge ×2 était insuffisante en pratique malgré
+    le point de calibration unique à T=100000. Cette calibration repose toujours
+    sur UN SEUL point de mesure : revalider sur le prochain run avant de la
     considérer définitive.
     """
     KAPPA = 1.357
-    MARGE_SECURITE = 2.0
+    MARGE_SECURITE = 3.0
     T = max(float(T_MAX), 100.0)  # garde-fou : log/N indéfinis sous 2πe
     gap_moyen = 2 * math.pi / math.log(T / (2 * math.pi * math.e))
     N_T = (T / (2 * math.pi)) * math.log(T / (2 * math.pi * math.e))
