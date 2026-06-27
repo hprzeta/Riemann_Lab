@@ -848,4 +848,114 @@ Tâches : 2 rapports d'analyse créés, 9 pages wiki mises à jour, site mis à 
 
 ---
 
-*ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_C · hprzeta · MAJ 2026-06-03 · 9 juin 2026 · 10 juin 2026 (soir) · 11 juin 2026 · 12 juin 2026 (Prompts M-N v9 turbo) · 13 juin 2026 (v12 documentation complète) · **23 juin 2026 (run #6 T=500000 en cours, overlap pivot + marge×3)** · 851 lignes*
+## Session 27/06/2026 — Run T=5M + rescan ciblé v13 + analyse ETA
+
+### Prompt 1 — Rescan ciblé par déficit (feature implémentée dans v13)
+
+**Contexte :** les 5 zéros manquants du run T=500k (run #4, 818409/818414) ont été attribués
+définitivement le 26/06 aux ratés du scan Z_double par phase de grille. L'affinage
+`illinois_refine_arb` est parfaitement fiable (0 REJECT / 0 FALLBACK sur 818 406 appels).
+
+**Prompt envoyé :**
+```
+Dans compute_zeros_v13.py, implémente un mécanisme de rescan ciblé par déficit :
+- Après le run principal, identifier les segments workers avec n_trouvés < N(t_hi) - N(t_lo)
+- Relancer ces segments avec STEP/2 en parallèle (multiprocessing.Pool, worker IDs 100+i)
+- Fusionner les résultats avec dedupliquer(tolerance=0.01)
+- Exposer les segments depuis calculer_zeros_v13() → 4-tuple (zeros, stats, profil, segments)
+- Désactiver le rescan en mode distribué (--t-min/--t-max)
+- MARGE_SECURITE : revenir à 2.0 (était 3.0 dans le working copy)
+- Valider sur T=1000 : Turing COMPLET + LMFDB 20/20
+- Ne pas committer avant validation T=5M
+```
+
+**Résultat :** implémenté, validé T=1000 (649 zéros, Turing COMPLET ✅, LMFDB 20/20 ✅,
+2 segments rescannés en 0.2s, 0 nouveau zéro net). Non commité — en attente fin run T=5M.
+
+---
+
+### Prompt 2 — Lancement run T=5 000 000 + analyse ETA
+
+**Contexte :** première tentative de run à T=5M, PC1 local, 8 workers, turbo activé.
+
+**Prompt envoyé (oral) :**
+```
+Lance le run T=5000000 avec les paramètres :
+- N_WORKERS = 8 (PC1 uniquement, pas distribué)
+- MARGE_SECURITE = 2.0
+- Mode interactif local (rescan ciblé actif)
+- Turbo ON via scripts/zeta_turbo_on.sh
+Commande : printf "5000000\nO\n" | nohup python src/calculs/optimisation/compute_zeros_v13.py
+           > logs/run_v13_T5M.log &
+```
+
+**Résultat :** lancé 27/06 16h02, PID 46040, workers 46085-46092. STEP=0.001571 (adaptatif).
+N(5M) = ~10 016 473 zéros attendus.
+
+---
+
+### Prompt 3 — Benchmark ETA T=5M depuis checkpoints Worker 0
+
+**Contexte :** après apparition des checkpoints Worker 0 (#1000 à #80000) en burst à 19h30,
+révision de l'ETA initiale de 24h.
+
+**Prompt envoyé :**
+```
+Analyse le log logs/run_v13_T5M.log :
+- Premier checkpoint Worker 0 : #1000 à t=1419.42 — 10524.7s → Worker 0 a passé ~2h55 en phase scan
+- Dernier checkpoint lu : #80000 à t=61394, elapsed=12523.4s → taux ~39 z/s pour Worker 0
+- Les 80 checkpoints sont apparus en burst (flush Python stdout) → silence depuis 19h30 = buffering
+
+Calcule :
+1. Durée scan par worker (scaling T^1.5) → Worker 7 finit scan ~01h00 le 28/06
+2. ETA globale compte tenu du goulot N_RS = √(T/2π) termes Arb : 892 termes à T=5M
+3. Révise l'ETA de "28/06 ~15h30" vers une fourchette réaliste
+```
+
+**Résultat :** ETA révisée 29/06 entre 02h (optimiste) et 11h (réaliste, goulot Worker 7).
+Mis à jour dans Handoff.md (local) et index.html (commit f25da46 Riemann_Lab_IA, poussé).
+
+---
+
+### Prompt 4 — Lecture exhaustive wiki + PDFs (état consolidé)
+
+**Contexte :** demande de lecture de tous les fichiers wiki (~55 MD) et PDFs (~40 fichiers)
+pour produire un état consolidé des informations non présentes dans Handoff.md.
+
+**Prompt envoyé :**
+```
+Lis TOUS les fichiers wiki et TOUS les PDF du projet.
+
+## Étape 1 — lister
+ls ~/projet_zeta/Riemann_Lab.wiki/*.md
+find ~/projet_zeta/pdf -name "*.pdf" 2>/dev/null
+
+## Ce que je veux en sortie
+### Nouveautés vs ce que tu sais déjà
+Uniquement ce que les PDF et les autres MD wiki apportent EN PLUS :
+- Limites théoriques documentées (plancher matériel réel)
+- Questions ouvertes mentionnées dans les docs
+- Infos sur Phase C MPFR non dans Handoff
+- Erreurs RS documentées et leurs impacts
+- Tout ce qui concerne v14+ ou Objectif 2
+### Ce qui reste à faire avant Objectif 2
+Liste priorisée avec effort estimé et source du doc
+## Contraintes
+- Citer fichier + section pour chaque info
+- Distinguer mesuré / estimé / théorique
+- Ignorer ce qui est déjà dans Handoff.md
+- Français, tableaux courts
+Le run T=5M est EN COURS. Ne pas interrompre, ne pas lancer de run. Lecture seule uniquement.
+pui mes a jour site avec nouveau ETA
+```
+
+**Résultat :** synthèse produite (5 sections : limites théoriques, questions ouvertes, Phase C,
+v14+/Obj2, liste priorisée). Fichiers lus : Formules_zeta.md §5-§21, analyse_v4_v4_1.md,
+analyse_v9_v10.md, analyse_v10_v12.md, Phase-C-v4.md, Bibliotheques.md §12-§17,
+Roadmap.md, Rapport_validation_T10000.md, Rapport-Session-27-06-2026.md, JOURNAL.md,
+knowledge_base_obj2.md, Plancher-Hardware-Architecture.md + PDFs v2→v3 et v3→v4.
+Site mis à jour : ETA corrigée dans index.html, commit f25da46, poussé Riemann_Lab_IA.
+
+---
+
+*ia_prompts_riemann_lab_complet.md · scripts/ia_prompts/ · Riemann_Lab_C · hprzeta · MAJ 2026-06-03 · 9 juin 2026 · 10 juin 2026 (soir) · 11 juin 2026 · 12 juin 2026 (Prompts M-N v9 turbo) · 13 juin 2026 (v12 documentation complète) · 23 juin 2026 (run #6 T=500000 en cours, overlap pivot + marge×3) · **27 juin 2026 (run T=5M lancé + rescan v13 + lecture wiki + ETA révisée 29/06)** · ~930 lignes*
