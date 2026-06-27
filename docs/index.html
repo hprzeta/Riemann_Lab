@@ -568,7 +568,7 @@
     <div class="subtitle">
       <span class="badge gold">Ubuntu 24.04</span>
       <span class="badge gold">Python · mpmath</span>
-      <span class="badge gold">818 409 zéros calculés · v13 · T=500k</span>
+      <span class="badge gold">818 409 zéros calculés · v13 · T=5M EN COURS ▶</span>
     </div>
   </header>
 
@@ -676,11 +676,10 @@
         <span class="step-num">01</span>
         <div class="step-body">
           <h3>Calcul des zéros non triviaux</h3>
-          <p>v13 distribué PC1+PC2 — Illinois hybride Arb/FLINT + scan C (scan_arb.c).
-             <strong>818&nbsp;409 zéros</strong> calculés jusqu'à T=500&nbsp;000 en
-             <strong>35.4 min</strong> (mur, PC1+PC2) · ~386 z/s effectifs.
-             Turing-Backlund INCOMPLET (5 manquants, accepté comme limitation connue) —
-             investigation en cours. T=100&nbsp;000 reste COMPLET ✅ (LMFDB 20/20 ✅).</p>
+          <p>v13 scan_arb.c + illinois_refine_arb + rescan ciblé STEP/2 (parallèle).
+             T=100&nbsp;000 : <strong>138&nbsp;069 zéros</strong> · COMPLET ✅ · 271 z/s · LMFDB 20/20 ✅.
+             T=500&nbsp;000 : <strong>818&nbsp;409 zéros</strong> (5 manquants identifiés — phase grille Z_double) · 385 z/s.
+             <strong>Run T=5&nbsp;000&nbsp;000 EN COURS</strong> depuis 27/06 16h02 — ~10M zéros attendus — ETA 28/06 ~15h30.</p>
           <div class="pill done">Opérationnel — v13</div>
         </div>
         <div class="step-stat status-done">
@@ -1035,6 +1034,35 @@
       </table>
     </div>
 
+    <!-- Tableau T=5 000 000 EN COURS -->
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:0.15em;margin-bottom:0.5rem;">T = 5 000 000 — EN COURS ▶</div>
+    <div style="overflow-x:auto; margin-bottom:2rem;">
+      <table style="
+        width:100%;
+        border-collapse:collapse;
+        font-family:'JetBrains Mono',monospace;
+        font-size:13px;">
+        <thead>
+          <tr style="border-bottom:1px solid var(--border);">
+            <th style="text-align:left;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Version</th>
+            <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Attendus</th>
+            <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Lancé</th>
+            <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">ETA</th>
+            <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background:rgba(100,180,255,0.05);border:1px solid rgba(100,180,255,0.25);">
+            <td style="padding:0.6rem 1rem;color:#7ec8e3;font-weight:500;">v13 local · 8 workers</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:#7ec8e3;">~10 016 473</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:#7ec8e3;">27/06 16h02</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:#7ec8e3;">28/06 ~15h30</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:#7ec8e3;font-weight:500;">⏳ EN COURS</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
     <!-- 3 leviers -->
     <div style="
       display:grid;
@@ -1169,9 +1197,9 @@
       <div style="font-size:11px; color:#444;">×1.12 vs v9</div>
     </div>
     <div style="background:#1a2a3a; border:2px solid #c9a84c; border-radius:8px; padding:0.75rem; text-align:center;">
-      <div style="font-size:12px; color:#c9a84c; margin-bottom:4px;">v12 ✦</div>
-      <div style="font-size:22px; font-weight:500; color:#c9a84c;">8.8m</div>
-      <div style="font-size:11px; color:#c9a84c;">×16.9 benchmark</div>
+      <div style="font-size:12px; color:#c9a84c; margin-bottom:4px;">v13 ✦</div>
+      <div style="font-size:22px; font-weight:500; color:#c9a84c;">8.5m</div>
+      <div style="font-size:11px; color:#c9a84c;">T=100k · PC1+PC2</div>
     </div>
   </div>
   <table style="width:100%; border-collapse:collapse; font-size:13px;">
@@ -1249,26 +1277,26 @@
         <td style="padding:10px 12px; color:#666; font-size:12px;">W=8 forcé · Brent grand t dilue overhead HT · T=100k · 23.7 min (turbo)</td>
       </tr>
       <tr style="background:#0d1a0d;">
-        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">v12 ✦</td>
-        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">~261 z/s</td>
-        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">×16.9 bench</td>
-        <td style="padding:10px 12px; color:#c9a84c;">Illinois hybride 2-phases</td>
-        <td style="padding:10px 12px; color:#c9a84c; font-size:12px;">Z_rs_double Phase1 (~0.015ms) + 2 Newton Z_arb · T=100k · 8.8 min · 0 manquant ✅ · Turing COMPLET ✅</td>
+        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">v13 ✦</td>
+        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">271 z/s</td>
+        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">×3.64 vs v7</td>
+        <td style="padding:10px 12px; color:#c9a84c;">scan_arb.c + illinois_refine_arb + rescan STEP/2</td>
+        <td style="padding:10px 12px; color:#c9a84c; font-size:12px;">T=100k · 8.5 min · 138 069 zéros ✅ · Turing COMPLET ✅ · PC1+PC2</td>
       </tr>
     </tbody>
   </table>
   <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:1rem;">
     <div style="background:#1a1a1a; border-radius:8px; padding:0.75rem;">
-      <div style="font-size:11px; color:#666; margin-bottom:2px;">Gain v12 vs v10 (benchmark T=10k)</div>
-      <div style="font-size:18px; font-weight:500; color:#c9a84c;">×16.9</div>
+      <div style="font-size:11px; color:#666; margin-bottom:2px;">Vitesse v13 PC1 (T=10k)</div>
+      <div style="font-size:18px; font-weight:500; color:#c9a84c;">634 z/s</div>
     </div>
     <div style="background:#1a1a1a; border-radius:8px; padding:0.75rem;">
-      <div style="font-size:11px; color:#666; margin-bottom:2px;">Durée T=100k v12</div>
-      <div style="font-size:18px; font-weight:500; color:#fff;">8.8 min</div>
+      <div style="font-size:11px; color:#666; margin-bottom:2px;">Durée T=100k v13</div>
+      <div style="font-size:18px; font-weight:500; color:#fff;">8.5 min</div>
     </div>
     <div style="background:#1a1a1a; border-radius:8px; padding:0.75rem;">
-      <div style="font-size:11px; color:#666; margin-bottom:2px;">Zéros validés T=100k v12</div>
-      <div style="font-size:18px; font-weight:500; color:#fff;">~138 080</div>
+      <div style="font-size:11px; color:#666; margin-bottom:2px;">Zéros validés T=100k v13</div>
+      <div style="font-size:18px; font-weight:500; color:#fff;">138 069</div>
     </div>
   </div>
 </section>
