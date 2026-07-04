@@ -67,7 +67,7 @@ echo "  [PC2] make illinois_mpfr.so"
 make illinois_mpfr.so
 
 echo "  [PC2] illinois_arb.so — détection libflint-arb système (pas python-flint)"
-LIBFLINT_PATH=$(ldconfig -p | grep -m1 'libflint-arb\.so' | awk '{print $NF}')
+LIBFLINT_PATH=$(PATH=/sbin:/usr/sbin:$PATH ldconfig -p 2>/dev/null | grep -m1 'libflint-arb\.so' | awk '{print $NF}')
 if [ -z "$LIBFLINT_PATH" ]; then
     echo "  ✗ libflint-arb introuvable sur PC2 (apt install libflint-arb2 ?)" >&2
     exit 1
