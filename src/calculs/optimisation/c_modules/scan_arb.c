@@ -16,6 +16,20 @@
  * Phase C — Riemann_Lab / hprzeta — 2026-06-10 */
 
 #include <math.h>
+#include <stdio.h>
+
+/* ── Log de débogage (activé via scan_set_debug_log) ──────────────────────
+ * NULL = désactivé. Chaque worker-fork a sa propre copie → pas de race. */
+static FILE *g_scan_log = NULL;
+
+void scan_set_debug_log(const char *path) {
+    if (g_scan_log) { fclose(g_scan_log); g_scan_log = NULL; }
+    if (path && path[0]) g_scan_log = fopen(path, "a");
+}
+
+void scan_close_debug_log(void) {
+    if (g_scan_log) { fflush(g_scan_log); fclose(g_scan_log); g_scan_log = NULL; }
+}
 
 /* ============================================================
  * theta(t) — asymptotique de Stirling jusqu'à 1/t^5
@@ -119,6 +133,9 @@ int scan_zeros_arb(
             brackets_b[n] = t_curr;     /* borne droite */
             fa[n]         = z_prev;     /* Z(a) précalculé */
             fb[n]         = z_curr;     /* Z(b) précalculé */
+            if (g_scan_log)
+                fprintf(g_scan_log, "BRACKET %.15f %.15f %.10f %.10f\n",
+                        t_prev, t_curr, z_prev, z_curr);
             n++;
         }
         z_prev = z_curr;
