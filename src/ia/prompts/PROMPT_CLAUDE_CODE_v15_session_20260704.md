@@ -1,3 +1,6 @@
+> ⚠️ **ARCHIVE (2026-07-04)** — document historique. Les infos cluster (IP, hostnames,
+> versions) peuvent être périmées. Source de vérité actuelle : Architecture-Cluster-Zeta.md
+
 # Prompt de reprise — Session v15 / Objectif 2 — 2026-07-04
 
 ## Contexte projet
