@@ -1356,6 +1356,22 @@
         <em>PC1+PC2 synchronisés à la seconde — 8.50 min chacun pour T=100k · pivot N(T) marge −15%</em>
       </p>
     </div>
+
+    <div class="cluster-perf" style="margin-top:1.5rem;">
+      <h3>📊 Run T=5 000 000 — v13 — PC1 seul — Terminé 30 juin 2026</h3>
+      <table>
+        <tr><th>Paramètre</th><th>Valeur</th></tr>
+        <tr><td>Zéros attendus N(5M)</td><td>10 016 473</td></tr>
+        <tr><td>Zéros trouvés</td><td>10 016 377</td></tr>
+        <tr><td>Manquants</td><td>96 — paires de zéros proches, pas de changement de signe visible sur grille Z_double</td></tr>
+        <tr><td>REJECT / FALLBACK arb</td><td>0 ✅ confirmé par ZETA_DEBUG_BRACKETS</td></tr>
+        <tr><td>Illinois</td><td>correct — tous les brackets fournis bien affinés</td></tr>
+        <tr><td>Durée</td><td>~35h (loi T^1.5)</td></tr>
+      </table>
+      <p style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);margin-top:0.75rem;">
+        <em>Piste : v15 T=5M (~17h, économie ×2 vs v13) — même STEP → 96 manquants probablement identiques · rescan ciblé STEP/2 pour réduction</em>
+      </p>
+    </div>
   </section>
   <!-- FIN CLUSTER ZETA -->
 
