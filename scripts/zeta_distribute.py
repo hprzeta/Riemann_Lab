@@ -9,21 +9,41 @@ Usage :
 
 Architecture :
     PC1 (zeta-lab, local)        : [14.0, T_PIVOT]   — turbo actif
-    PC2 (zeta-calc-second, SSH)  : [T_PIVOT, T_MAX]  — sans turbo
+    PC2 (zeta-calc-second, SSH)  : [T_PIVOT, T_MAX]   — sans turbo
+    Supplément pivot (local)     : [T_PIVOT-OVERLAP_PIVOT, T_PIVOT+OVERLAP_PIVOT]
+
+    Option B (24/06/2026) — overlap appliqué APRÈS le partitionnement, pas avant.
+    Tentative précédente (23/06, Option A) : étendre T_MAX de PC1 et T_MIN de PC2
+    de ±OVERLAP_PIVOT AVANT de les passer à compute_zeros_v13.py. Problème détecté :
+    _partitionner_adaptatif() recalcule TOUTES les frontières internes des workers
+    par recherche binaire sur N(T) en fonction de ce T_MAX/T_MIN — changer le pivot
+    fait donc glisser en cascade les 7 autres frontières de chaque machine, ce qui a
+    fait RÉGRESSER le run (5 → 8 manquants, cf. JOURNAL.md 23/06 soir) en déplaçant
+    la phase de grille vers des zones moins favorables (paires de zéros proches,
+    répulsion GUE).
+
+    Option B : PC1 et PC2 reçoivent T_PIVOT EXACT (comme le run #4 de référence,
+    frontières internes identiques, donc même phase de grille). Le trou de
+    couverture structurel au pivot (largeur < 1 STEP, cf. fix du 23/06) est comblé
+    par un 3e calcul, indépendant et minuscule, qui scanne uniquement la fenêtre
+    [T_PIVOT-OVERLAP_PIVOT, T_PIVOT+OVERLAP_PIVOT] — sans toucher au partitionnement
+    de PC1 ni de PC2. La déduplication (tolerance=0.01, fusionner_csv) absorbe le
+    chevauchement entre ce supplément et les deux runs principaux.
 
 Étapes :
     1. Calcule T_PIVOT pour équilibrer les deux runs (voir calculer_pivot)
     2. Active zeta_turbo_on.sh sur PC1 (sudo local)
-    3. Lance v13 CLI en parallèle : subprocess local + subprocess SSH
+    3. Lance v13 CLI en parallèle : subprocess local + subprocess SSH (bornes EXACTES)
     4. Attend la fin des deux processus
-    5. Récupère le CSV produit par PC2 via scp
-    6. Fusionne + déduplique les deux CSVs
-    7. Valide Turing global sur [14, T_MAX]
-    8. Génère un rapport de distribution
-    9. Désactive zeta_turbo_off.sh
+    5. Lance le supplément pivot (local, séquentiel, rapide — quelques zéros)
+    6. Récupère le CSV produit par PC2 via scp
+    7. Fusionne + déduplique les 3 CSVs (PC1 + PC2 + supplément pivot)
+    8. Valide Turing global sur [14, T_MAX]
+    9. Génère un rapport de distribution
+    10. Désactive zeta_turbo_off.sh
 
 Auteur : hprzeta — Projet Hypothèse de Riemann
-Date   : 2026-06-17
+Date   : 2026-06-17 · Option B 2026-06-24
 """
 
 import sys
@@ -52,6 +72,9 @@ PC2_PROJET  = "/home/hprzeta/projet_zeta"          # chemin absolu sur PC2
 V_PC1_DEFAULT = 624.0   # z/s — PC1 turbo + python-flint
 V_PC2_DEFAULT =  52.0   # z/s — PC2 sans turbo, sans python-flint
 #                1820.0  # z/s — PC2 si python-flint installé (estimation ×35)
+
+# ── Overlap à la frontière PC1/PC2 (fix 23/06/2026 — trou de couverture au pivot)
+OVERLAP_PIVOT = 2.0     # largement > 1 STEP (~0.0044 à T=500000)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -193,6 +216,46 @@ def lancer_pc2(T_PIVOT: float, T_MAX: float, horodatage: str, log_dir: Path) -> 
     return proc, log_pc2
 
 
+def lancer_pivot_supplement(T_PIVOT: float, overlap: float,
+                             horodatage: str, log_dir: Path) -> Path:
+    """Scan local indépendant de [T_PIVOT-overlap, T_PIVOT+overlap] (Option B).
+
+    Ne touche pas au partitionnement de PC1/PC2 (frontières internes inchangées,
+    même phase de grille que le run #4 de référence) — comble le trou de
+    couverture structurel au pivot par un calcul à part, minuscule (~quelques
+    zéros, largeur 2×overlap), lancé séquentiellement après PC1+PC2.
+    """
+    script   = SRC_DIR / "compute_zeros_v13.py"
+    t_min    = T_PIVOT - overlap
+    t_max    = T_PIVOT + overlap
+    log_pivot = log_dir / f"distribute_pivot_{horodatage}.log"
+    venv     = PROJET_DIR / "zeta_env" / "bin" / "python"
+
+    cmd = [
+        str(venv), str(script),
+        "--t-min",      str(t_min),
+        "--t-max",      str(t_max),
+        "--horodatage", horodatage,
+    ]
+    print(f"  [Pivot] [{t_min:.2f}, {t_max:.2f}] — supplément local …")
+
+    env = {
+        **__import__("os").environ,
+        "PYTHONPATH": str(PROJET_DIR / "src"),
+    }
+    ret = subprocess.run(
+        cmd,
+        stdout=open(log_pivot, "w"),
+        stderr=subprocess.STDOUT,
+        cwd=str(PROJET_DIR),
+        env=env,
+    )
+    if ret.returncode != 0:
+        raise RuntimeError(f"Supplément pivot échoué (code {ret.returncode}) — voir {log_pivot}")
+    print(f"  [Pivot] terminé — log → {log_pivot.name}")
+    return _trouver_csv(PROJET_DIR / "calculs", t_min, t_max, horodatage)
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 #  SECTION 3 — RÉCUPÉRATION ET FUSION
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -236,14 +299,12 @@ def recuperer_csv_pc2(T_PIVOT: float, T_MAX: float,
     return csv_local
 
 
-def fusionner_csv(csv_pc1: Path, csv_pc2: Path,
-                   dossier_out: Path, T_MAX: float) -> Path:
-    """Fusionne + déduplique les CSVs de PC1 et PC2, trie par partie_imaginaire."""
-    df1 = pd.read_csv(csv_pc1)
-    df2 = pd.read_csv(csv_pc2)
+def fusionner_csv(csv_paths: list, dossier_out: Path, T_MAX: float) -> Path:
+    """Fusionne + déduplique N CSVs (PC1 + PC2 [+ supplément pivot]), trie par partie_imaginaire."""
+    dfs = [pd.read_csv(p) for p in csv_paths]
 
     # Concaténer et trier
-    df = pd.concat([df1, df2], ignore_index=True)
+    df = pd.concat(dfs, ignore_index=True)
     df = df.sort_values("partie_imaginaire").reset_index(drop=True)
 
     # Déduplication : supprimer les doublons dans une fenêtre tolerance=0.01
@@ -269,8 +330,8 @@ def fusionner_csv(csv_pc1: Path, csv_pc2: Path,
     })
     csv_fusion = dossier_out / f"zeros_v13_distribue_T{T_MAX:.0f}_{horodatage}.csv"
     df_final.to_csv(csv_fusion, index=False)
-    print(f"\n  ✅ Fusion : {len(df1)} (PC1) + {len(df2)} (PC2)"
-          f" → {len(filtres)} zéros uniques")
+    detail = " + ".join(str(len(d)) for d in dfs)
+    print(f"\n  ✅ Fusion : {detail} (bruts) → {len(filtres)} zéros uniques")
     print(f"  CSV fusionné → {csv_fusion.name}")
     return csv_fusion
 
@@ -308,6 +369,8 @@ def ecrire_rapport(rapport_path: Path, T_MAX: float, T_PIVOT: float,
 
     L(f"  T_MAX          = {T_MAX:.0f}")
     L(f"  T_PIVOT        = {T_PIVOT:.2f}  ({T_PIVOT/T_MAX*100:.1f}% de T_MAX)")
+    L(f"  PC1/PC2 bornes = T_PIVOT exact (Option B — frontières internes inchangées vs run #4)")
+    L(f"  Supplément pivot = [{T_PIVOT-OVERLAP_PIVOT:.2f}, {T_PIVOT+OVERLAP_PIVOT:.2f}]  (3e calcul local, après PC1+PC2)")
     L(f"  N(T_PIVOT)     ≈ {n_zeros_expected(T_PIVOT)}")
     L(f"  N(T_MAX)       ≈ {n_zeros_expected(T_MAX)}")
     L()
@@ -377,10 +440,12 @@ def main():
         print(f"\n  ⛔  {e}")
         sys.exit(1)
 
-    print(f"\n  Segmentation :")
+    print(f"\n  Segmentation (Option B — overlap après partitionnement, pivot exact) :")
     print(f"    PC1 (local) : [14.0, {T_PIVOT:.2f}]  → N≈{n_zeros_expected(T_PIVOT)}")
     print(f"    PC2 (SSH)   : [{T_PIVOT:.2f}, {T_MAX:.0f}]"
           f"  → N≈{n_zeros_expected(T_MAX) - n_zeros_expected(T_PIVOT)}")
+    print(f"    Pivot (local, après) : [{T_PIVOT-OVERLAP_PIVOT:.2f}, {T_PIVOT+OVERLAP_PIVOT:.2f}]"
+          f"  → N≈{n_zeros_expected(T_PIVOT+OVERLAP_PIVOT) - n_zeros_expected(T_PIVOT-OVERLAP_PIVOT)}")
 
     t_prevu_pc1 = n_zeros_expected(T_PIVOT) / V1
     t_prevu_pc2 = (n_zeros_expected(T_MAX) - n_zeros_expected(T_PIVOT)) / V2
@@ -405,7 +470,7 @@ def main():
 
     debut_global = time.time()
 
-    # ── Lancement parallèle PC1 + PC2
+    # ── Lancement parallèle PC1 + PC2 (bornes EXACTES — Option B, pas d'overlap ici)
     print("\n  Lancement parallèle...")
     proc_pc1, log_pc1 = lancer_pc1(T_PIVOT, horodatage, LOG_DIR)
     proc_pc2, log_pc2 = lancer_pc2(T_PIVOT, T_MAX, horodatage, LOG_DIR)
@@ -423,19 +488,25 @@ def main():
     duree_pc2 = time.time() - t_debut_pc2
     print(f"  [PC2] terminé en {duree_pc2/60:.2f} min  (ret={ret_pc2})")
 
+    if ret_pc1 != 0:
+        subprocess.run(["sudo", str(SCRIPTS / "zeta_turbo_off.sh")], check=False)
+        print(f"  ❌ PC1 a échoué (code {ret_pc1}) — voir {log_pc1}")
+        sys.exit(1)
+    if ret_pc2 != 0:
+        subprocess.run(["sudo", str(SCRIPTS / "zeta_turbo_off.sh")], check=False)
+        print(f"  ❌ PC2 a échoué (code {ret_pc2}) — voir {log_pc2}")
+        sys.exit(1)
+
+    # ── Supplément pivot (Option B) — séquentiel, après PC1+PC2, avant turbo off
+    print("\n  Lancement du supplément pivot...")
+    csv_pivot = lancer_pivot_supplement(T_PIVOT, OVERLAP_PIVOT, horodatage, LOG_DIR)
+
     duree_total = time.time() - debut_global
 
     # ── Turbo off PC1
     subprocess.run(["sudo", str(SCRIPTS / "zeta_turbo_off.sh")], check=False)
 
-    if ret_pc1 != 0:
-        print(f"  ❌ PC1 a échoué (code {ret_pc1}) — voir {log_pc1}")
-        sys.exit(1)
-    if ret_pc2 != 0:
-        print(f"  ❌ PC2 a échoué (code {ret_pc2}) — voir {log_pc2}")
-        sys.exit(1)
-
-    # ── Récupération CSV PC2
+    # ── Récupération CSV PC2 (bornes exactes du pivot, sans overlap)
     print("\n  Récupération CSV PC2...")
     csv_pc2_local = recuperer_csv_pc2(T_PIVOT, T_MAX, horodatage, dossier_out)
 
@@ -444,10 +515,11 @@ def main():
         PROJET_DIR / "calculs", 14.0, T_PIVOT, horodatage
     )
     print(f"  CSV PC1 : {csv_pc1.name}")
+    print(f"  CSV pivot : {csv_pivot.name}")
 
-    # ── Fusion
+    # ── Fusion à 3 (PC1 + PC2 + supplément pivot)
     print("\n  Fusion des résultats...")
-    csv_fusion = fusionner_csv(csv_pc1, csv_pc2_local, dossier_out, T_MAX)
+    csv_fusion = fusionner_csv([csv_pc1, csv_pc2_local, csv_pivot], dossier_out, T_MAX)
 
     # ── Validation Turing globale
     df_fusion = pd.read_csv(csv_fusion)

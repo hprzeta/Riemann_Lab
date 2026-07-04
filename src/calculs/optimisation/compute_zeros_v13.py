@@ -42,6 +42,7 @@ Auteur : hprzeta — Projet Hypothèse de Riemann — Phase C
 Date   : 2026-06-17
 """
 
+import os
 import sys
 import math
 import time
@@ -166,6 +167,21 @@ def worker_v13(args: tuple) -> Tuple[list, dict, dict]:
         ctypes.c_double,  # tol (1e-9)
         ctypes.c_int,     # max_iter (50)
     ]
+    lib.arb_set_debug_log.restype   = None
+    lib.arb_set_debug_log.argtypes  = [ctypes.c_char_p]
+    lib.arb_close_debug_log.restype  = None
+    lib.arb_close_debug_log.argtypes = []
+
+    # Activation des logs brackets si ZETA_DEBUG_BRACKETS=<répertoire>
+    _dbg_dir = os.environ.get("ZETA_DEBUG_BRACKETS", "")
+    if _dbg_dir:
+        os.makedirs(_dbg_dir, exist_ok=True)
+        _scan_log = os.path.join(_dbg_dir, f"scan_w{worker_id}.log")
+        _arb_log  = os.path.join(_dbg_dir, f"arb_w{worker_id}.log")
+        if SCAN_ARB_DISPONIBLE:
+            from scan_arb_wrapper import scan_enable_debug_log
+            scan_enable_debug_log(_scan_log)
+        lib.arb_set_debug_log(_arb_log.encode())
 
     # v13 : seuil abaissé de 200 → 65.
     #
@@ -189,8 +205,11 @@ def worker_v13(args: tuple) -> Tuple[list, dict, dict]:
     stats         = {"arb_C": 0, "mpmath_fallback": 0, "mpmath_petit_t": 0}
     _log_palier   = 0
 
-    # ── Petits t ∈ [14, 65] : détection + affinage via arb_hardy_z + mpmath ──
+    # ── Petits t ∈ [14, 65] : détection arb_hardy_z + affinage mp.fp.siegelz ──
     # ~5 100 évaluations au lieu de ~18 600 (économie ×3.6 vs v12 sur PC2).
+    # Détection : arb_hardy_z (Arb/FLINT, signes garantis pour tout t ≥ 14).
+    # Affinage  : mp.fp.findroot + mp.fp.siegelz (float64 natif, sans overhead mpf).
+    # Pour t < 65 (N_RS ≤ 3 termes), float64 amplement suffisant pour tol=1e-12.
     if t_start < T_SEUIL_PETIT_T:
         t_fin_pt = min(T_SEUIL_PETIT_T, t_end)
         with chrono("mpmath_petit_t"):
@@ -199,8 +218,8 @@ def worker_v13(args: tuple) -> Tuple[list, dict, dict]:
                 Zv_pt = np.array([arb_hardy_z(float(t)) for t in t_arr_pt])
                 for j in np.where(np.diff(np.sign(Zv_pt)))[0]:
                     try:
-                        z = float(mpmath.findroot(
-                            arb_hardy_z,
+                        z = float(mpmath.fp.findroot(
+                            mpmath.fp.siegelz,
                             (float(t_arr_pt[j]), float(t_arr_pt[j+1])),
                             solver="illinois", tol=1e-12, maxsteps=80,
                         ))
@@ -214,9 +233,18 @@ def worker_v13(args: tuple) -> Tuple[list, dict, dict]:
         t_start_main = t_start
 
     # ── Détection : scan_arb C ou Z_vect_correct numpy (fallback) ────────────
+    # max_brackets dynamique : N(t_end) - N(t_start) × 2 — évite le dépassement
+    # silencieux du buffer (bug constaté run debug 26/06/2026 : chaque worker plafonnait
+    # à 100 000 brackets alors que T=500k en demande ~102 302 par worker → 16 107 manquants)
+    def _n_zeros_approx(T: float) -> float:
+        if T <= 14: return 0.0
+        return (T / (2 * math.pi)) * math.log(T / (2 * math.pi * math.e))
+    _max_brackets = max(150_000,
+                        int((_n_zeros_approx(t_end) - _n_zeros_approx(max(t_start, 14.1))) * 2))
+
     if SCAN_ARB_DISPONIBLE:
         with chrono("detection"):
-            brackets = scan_arb(t_start_main, t_end, step=step) if t_start_main < t_end else []
+            brackets = scan_arb(t_start_main, t_end, step=step, max_brackets=_max_brackets) if t_start_main < t_end else []
     else:
         TAILLE_BLOC = 5000
         brackets    = []
@@ -267,6 +295,13 @@ def worker_v13(args: tuple) -> Tuple[list, dict, dict]:
     duree = time.time() - debut
     print(f"  [Worker {worker_id}] {len(zeros_segment)} zéros en {duree:.1f}s  "
           f"| arb_C:{stats['arb_C']} fallback:{stats['mpmath_fallback']}")
+
+    if _dbg_dir:
+        if SCAN_ARB_DISPONIBLE:
+            from scan_arb_wrapper import scan_disable_debug_log
+            scan_disable_debug_log()
+        lib.arb_close_debug_log()
+
     return zeros_segment, stats, snapshot()
 
 
@@ -280,8 +315,12 @@ def calculer_zeros_v13(
     N_WORKERS : int,
     STEP      : float,
     TOL       : float = 1e-9,
-) -> Tuple[List[float], dict, dict]:
-    """Lance N_WORKERS processus sur [T_MIN, T_MAX], fusionne et déduplique."""
+) -> Tuple[List[float], dict, dict, list]:
+    """Lance N_WORKERS processus sur [T_MIN, T_MAX], fusionne et déduplique.
+
+    Retourne (zeros, stats, profil_workers, segments) — segments exposé pour
+    permettre le rescan ciblé par déficit en aval.
+    """
     segments  = _partitionner_adaptatif(T_MIN, T_MAX, N_WORKERS)
     args_list = [
         (t_min, t_max, STEP, SO_PATH, TOL, i)
@@ -307,7 +346,114 @@ def calculer_zeros_v13(
 
     profil_workers = agreger(snaps)
     zeros = dedupliquer(zeros_bruts, tolerance=0.01)
-    return zeros, stats_total, profil_workers
+    return zeros, stats_total, profil_workers, segments
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  SECTION 3b — RESCAN CIBLÉ PAR DÉFICIT
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def rescan_segments_deficit(
+    zeros         : List[float],
+    segments      : List[Tuple[float, float]],
+    T_MAX         : float,
+    step_original : float,
+) -> Tuple[List[float], List[dict]]:
+    """Rescan ciblé des segments workers en déficit avec STEP/2.
+
+    Après le run principal, compare pour chaque segment le nombre de zéros
+    trouvés au nombre attendu par N(T). Tout segment en déficit est re-scanné
+    avec STEP/2 — ce décalage de phase peut capturer les zéros manqués lors
+    du premier passage (cause confirmée 26/06/2026 : les manquants sont des
+    ratés du scan Z_double, pas des rejets illinois).
+
+    Le pipeline de rescan est identique à worker_v13 (même illinois_arb.so,
+    même TOL_ARB) — seul le STEP change.
+    Fonctionne sur PC1 uniquement (pas de distribution PC2).
+
+    Retourne (zeros_bruts_rescan, rapport) où zeros_bruts_rescan est la liste
+    brute des zéros trouvés dans les segments rescannés — la déduplication se
+    fait en aval dans main() via dedupliquer(zeros + zeros_bruts_rescan).
+    """
+    step_rescan  = step_original / 2.0
+    zeros_rescan = []  # bruts — déduplication en aval
+    rapport      = []
+
+    # Bornes non chevauchantes : start de chaque segment + T_MAX final.
+    # Segment i couvre [checkpoints[i], checkpoints[i+1]) pour le comptage ;
+    # le rescan utilise les bornes originales (avec overlap) pour ne pas rater
+    # les brackets de frontière.
+    checkpoints = [s[0] for s in segments] + [T_MAX]
+
+    print()
+    print("=" * 65)
+    print("  RESCAN CIBLÉ — vérification déficits par segment")
+    print(f"  STEP original = {step_original:.6f}  →  STEP rescan = {step_rescan:.6f}")
+    print("=" * 65)
+
+    # Première passe : identifier les segments en déficit
+    infos = []  # (i, seg_a, seg_b, t_lo, t_hi, deficit)
+    for i, (seg_a, seg_b) in enumerate(segments):
+        t_lo       = checkpoints[i]
+        t_hi       = checkpoints[i + 1]
+        n_trouves  = sum(1 for z in zeros if t_lo <= z < t_hi)
+        n_attendus = _n_zeros_expected(t_hi) - _n_zeros_expected(t_lo)
+        deficit    = n_attendus - n_trouves
+        sym        = "✅" if deficit <= 0 else f"⚠  déficit {deficit:+d}"
+        print(f"  Seg {i:>2}  [{t_lo:>10.1f}, {t_hi:>10.1f}]  "
+              f"{n_trouves:>7}/{n_attendus:<7}  {sym}")
+        infos.append((i, seg_a, seg_b, t_lo, t_hi, deficit))
+
+    segments_a_rescanner = [(i, seg_a, seg_b, t_lo, t_hi, d)
+                            for i, seg_a, seg_b, t_lo, t_hi, d in infos if d > 0]
+
+    if not segments_a_rescanner:
+        print(f"\n  Aucun déficit détecté — rescan inutile.")
+        print("=" * 65)
+        return [], []
+
+    print(f"\n  {len(segments_a_rescanner)} segment(s) en déficit → "
+          f"rescan parallèle STEP={step_rescan:.6f} ...", flush=True)
+    debut_rescan = time.time()
+
+    # Rescan parallèle : un worker par segment en déficit (Pool)
+    # worker_id 100+i pour distinguer dans les logs des workers principaux
+    args_rescan = [
+        (seg_a, seg_b, step_rescan, SO_PATH, TOL_ARB, 100 + i)
+        for i, seg_a, seg_b, t_lo, t_hi, d in segments_a_rescanner
+    ]
+    with multiprocessing.Pool(processes=len(args_rescan)) as pool:
+        resultats_rescan = pool.map(worker_v13, args_rescan)
+
+    duree_rescan = time.time() - debut_rescan
+    print(f"  Rescan terminé en {duree_rescan:.1f}s")
+
+    for (i, seg_a, seg_b, t_lo, t_hi, d), (zs, _, _) in zip(
+            segments_a_rescanner, resultats_rescan):
+        zeros_rescan.extend(zs)
+        print(f"  Seg {i:>2}  [{t_lo:>10.1f}, {t_hi:>10.1f}]  "
+              f"→ {len(zs)} zéros rescannés")
+        rapport.append({
+            "segment": i, "t_lo": t_lo, "t_hi": t_hi,
+            "deficit": d, "recuperes": len(zs),
+            "rescanne": True, "duree_s": duree_rescan,
+        })
+
+    # Compléter le rapport pour les segments non rescannés
+    rescannés_ids = {i for i, *_ in segments_a_rescanner}
+    for i, seg_a, seg_b, t_lo, t_hi, d in infos:
+        if i not in rescannés_ids:
+            rapport.append({
+                "segment": i, "t_lo": t_lo, "t_hi": t_hi,
+                "deficit": d, "recuperes": 0, "rescanne": False,
+            })
+    rapport.sort(key=lambda r: r["segment"])
+
+    total_brut = len(zeros_rescan)
+    print(f"\n  Segments rescannés : {len(segments_a_rescanner)}  —  "
+          f"{total_brut} zéros bruts (avant déduplication)")
+    print("=" * 65)
+    return zeros_rescan, rapport
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -428,7 +574,7 @@ def sauvegarder_csv(zeros, stats, T_MAX, STEP, N_WORKERS,
 
 def ecrire_log(chemin_log, horodatage, T_MIN, T_MAX, STEP, N_WORKERS,
                tol, duree_s, zeros, stats, resultats_lmfdb,
-               resultats_turing, chemin_csv):
+               resultats_turing, chemin_csv, rapport_rescan=None):
     """Journal d'exécution v13."""
     lignes = []
     sep    = "=" * 65
@@ -500,13 +646,28 @@ def ecrire_log(chemin_log, horodatage, T_MIN, T_MAX, STEP, N_WORKERS,
           f"  delta={v['delta']:>+5d}  {v.get('statut','')}")
     L()
 
-    L("  [7] FICHIERS GÉNÉRÉS")
+    L("  [7] RESCAN CIBLÉ PAR DÉFICIT")
+    if rapport_rescan is None:
+        L("      (non exécuté)")
+    else:
+        n_rescannés = sum(1 for r in rapport_rescan if r["rescanne"])
+        n_récupérés = sum(r["recuperes"] for r in rapport_rescan if r["rescanne"])
+        L(f"      Segments rescannés : {n_rescannés}/{len(rapport_rescan)}")
+        L(f"      Zéros bruts récupérés (avant dédup) : {n_récupérés}")
+        for r in rapport_rescan:
+            if r["rescanne"]:
+                duree_r = r.get("duree_s", 0)
+                L(f"      Seg {r['segment']:>2}  [{r['t_lo']:>10.1f}, {r['t_hi']:>10.1f}]"
+                  f"  déficit={r['deficit']:+d}  récupérés={r['recuperes']}  {duree_r:.1f}s")
+    L()
+
+    L("  [8] FICHIERS GÉNÉRÉS")
     L(f"      CSV → {chemin_csv}")
     L(f"      LOG → {chemin_log}")
     L()
 
     import platform
-    L("  [8] ENVIRONNEMENT")
+    L("  [9] ENVIRONNEMENT")
     L(f"      Python           = {sys.version.split()[0]}")
     L(f"      OS               = {platform.system()} {platform.release()}")
     L(f"      mpmath           = {mpmath.__version__}")
@@ -639,19 +800,19 @@ def main():
 
     print(f"\n  Lancement — {N_WORKERS} workers, STEP={STEP}, "
           f"T_SEUIL_PETIT_T=20, illinois_refine_arb pour tout t...\n")
-    zeros, stats, profil_workers = calculer_zeros_v13(
+    zeros, stats, profil_workers, segments = calculer_zeros_v13(
         T_MIN, T_MAX, N_WORKERS, STEP, TOL_ARB
     )
-    duree = time.time() - debut_global
+    duree_run_principal = time.time() - debut_global
 
     print()
     print("=" * 65)
-    print("  RÉSULTATS v13")
+    print("  RÉSULTATS v13 — run principal")
     print("=" * 65)
     print(f"  Zéros trouvés     : {len(zeros)}")
     print(f"  Attendus (Weyl)   : {N_attendu(T_MAX):.0f}")
-    print(f"  Durée             : {duree/60:.1f} min  ({duree:.1f} s)")
-    vitesse = len(zeros) / duree if duree > 0 else 0
+    print(f"  Durée run         : {duree_run_principal/60:.1f} min  ({duree_run_principal:.1f} s)")
+    vitesse = len(zeros) / duree_run_principal if duree_run_principal > 0 else 0
     print(f"  Vitesse           : {vitesse:.2f} zéros/s")
     print()
     print("  Répartition des méthodes d'affinage :")
@@ -664,6 +825,24 @@ def main():
         print(f"  t_n = {zeros[-1]:.12f}")
     print("=" * 65)
 
+    # ── Rescan ciblé des segments en déficit (PC1 uniquement) ───────────────
+    # Ne s'exécute que si le mode distribué n'est pas actif (T_MIN == 14.0),
+    # car les segments distribués (PC2) ne sont pas disponibles localement.
+    rapport_rescan = None
+    if _cli.t_min is None:  # mode interactif (run complet local)
+        zeros_bruts_rescan, rapport_rescan = rescan_segments_deficit(
+            zeros, segments, T_MAX, STEP
+        )
+        if zeros_bruts_rescan:
+            n_avant = len(zeros)
+            zeros   = dedupliquer(zeros + zeros_bruts_rescan, tolerance=0.01)
+            n_net   = len(zeros) - n_avant
+            print(f"\n  Après fusion rescan : {len(zeros)} zéros  "
+                  f"(+{n_net} nets après déduplication)")
+
+    duree = time.time() - debut_global  # durée totale incluant le rescan
+
+    # ── Vérification finale sur la liste complète ────────────────────────────
     resultats_lmfdb  = verifier_lmfdb(zeros, n_check=20)
 
     with chrono("turing"):
@@ -682,17 +861,21 @@ def main():
     chemin_log = dossier / nom_log
     ecrire_log(
         chemin_log, horodatage, T_MIN, T_MAX, STEP, N_WORKERS,
-        TOL_ARB, duree, zeros, stats, resultats_lmfdb, resultats_turing, chemin_csv
+        TOL_ARB, duree, zeros, stats, resultats_lmfdb, resultats_turing,
+        chemin_csv, rapport_rescan=rapport_rescan,
     )
 
     print()
     print("=" * 65)
     print(f"  v13 terminée — fichiers dans : {dossier}")
     if resultats_turing["complet"]:
-        print("  Validation Turing : COMPLET (aucun zéro manqué)")
+        print("  Validation Turing : ✅ COMPLET (aucun zéro manqué)")
     else:
         manq = resultats_turing["manquants_total"]
-        print(f"  Validation Turing : {manq} zéros manquants — réduire STEP")
+        print(f"  Validation Turing : ❌ {manq} zéros manquants")
+        if rapport_rescan is not None:
+            n_rescannés = sum(1 for r in rapport_rescan if r["rescanne"])
+            print(f"  Rescan ciblé      : {n_rescannés} segments rescannés")
     print("=" * 65)
 
 
