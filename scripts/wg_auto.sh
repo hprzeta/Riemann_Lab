@@ -41,3 +41,5 @@ else
         [ "$1" != "--quiet" ] && notifier "🧳 DÉPLACEMENT — WireGuard déjà activé" "Tunnel en place" "network-vpn"
     fi
 fi
+
+exit 0
