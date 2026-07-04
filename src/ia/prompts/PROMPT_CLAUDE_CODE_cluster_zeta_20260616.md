@@ -3,6 +3,11 @@
 
 ---
 
+> ⚠️ **ARCHIVE (2026-06-16)** — document historique. Les infos cluster (IP, hostnames,
+> versions) peuvent être périmées. Source de vérité actuelle : Architecture-Cluster-Zeta.md
+
+---
+
 # PROMPT CLAUDE CODE — Session cluster Zeta 16 juin 2026
 
 > Colle ce prompt dans Claude Code (terminal `~/projet_zeta/`).
@@ -38,7 +43,7 @@ fonctionnel via IPv6 depuis la nuit du 15/06.
 
 | # | Hostname OFFICIEL | Alias réseau | IP LAN | OS | CPU | Rôle | Statut |
 |---|---|---|---|---|---|---|---|
-| PC1 | `zeta-lab` | zeta-icor7 | [IP_LAN] | Ubuntu Linux | Intel i7-7500U | Orchestrateur / calcul principal (WiFi wlp2s0) | ✅ |
+| PC1 | `zeta-lab` | zeta-lab | [IP_LAN] | Ubuntu Linux | Intel i7-7500U | Orchestrateur / calcul principal (WiFi wlp2s0) | ✅ |
 | PC2 | `zeta-calc-second` | — | [IP_LAN] | Debian 6.1 amd64 | Core2Duo E8400 @3.0GHz | Calcul secondaire | ✅ |
 | PC3 | `zeta-backup` | — | [IP_LAN] | Ubuntu 18.04 LTS | Pentium E2140 @1.6GHz | Backup + log-dns-moni (pending) | ✅ |
 | PC4 | `zeta-secure` | zeta-del | [IP_LAN] | OpenBSD 7.9 i386 | Pentium 4 @2.4GHz | Bastion VPN/pare-feu | ✅ COMPLET |

@@ -3,6 +3,9 @@
 > Remplace `prompt_claude_code_phase_prompt_v4.1.md` et `..._reprendre_memo.md` (fusionnés ici).
 > Modèle conseillé : **Sonnet** (exécution de plan ; garder Opus pour la théorie Obj. 2).
 
+> ⚠️ **ARCHIVE (2026-05-31)** — document historique. Les infos cluster (IP, hostnames,
+> versions) peuvent être périmées. Source de vérité actuelle : Architecture-Cluster-Zeta.md
+
 ---
 
 ## ⚠️ RÈGLE ABSOLUE
