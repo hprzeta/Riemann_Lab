@@ -1,23 +1,46 @@
 /* illinois_arb.c — affinage Illinois via arb_fpwrap_cdouble_hardy_z
  *
- * Remplace Z_rs_mpfr_ntermes (libmpfr, ~42 ms/appel) par arb_fpwrap_cdouble_hardy_z
- * (Arb/FLINT, ~0.038 ms/appel) — gain mesuré ×1100.
+ * v14 (2026-07-04) — optimisation vs v13 :
+ *   Cache statique log_n_cache + isqrt_n_cache : évite log(n) et 1/sqrt(n)
+ *   à chaque évaluation Z_rs_double — gain ×1.3-2 sur Phase 1 et sur les
+ *   appels Z_rs de Phase 2 (dérivée numérique).
  *
- * Avantages vs Z_mpfr/Z_rs_mpfr_ntermes :
- *   - Aucun biais RS : Arb calcule Z(t) avec garanties d'erreur strictes
- *     → valide pour tout t, y compris t < 300 (N < 7 termes RS)
- *   - Double précision suffisante pour tol=1e-9 (libmpfr inutile)
- *   - Pas de dépendance aux headers FLINT : prototype déclaré en forward
+ * Note sur Phase 2 (inchangée depuis v13) :
+ *   La boucle fait 2 Newton Z_arb avec early-exit si |Zt| < tol.
+ *   Pour t > ~50 000 (biais Z_rs < 6e-7) : k=0 suffit → 1 seul Z_arb.
+ *   Pour t < 50 000 (biais Z_rs important) : 2 Z_arb nécessaires.
+ *   Ne PAS réduire à 1 Newton fixe : échoue pour t ≈ 65-77 (erreur 1e-6).
  *
- * Prototype ABI x86-64 System V (compatible avec ctypes Python) :
- *   typedef struct { double real; double imag; } arb_cdouble_t;
- *   int arb_fpwrap_cdouble_hardy_z(arb_cdouble_t *res, arb_cdouble_t t, int flags);
- *   struct{d;d} et _Complex double sont ABI-équivalents sur x86-64 → OK.
+ * Architecture 2 phases (inchangée depuis v12) :
+ *   Phase 1 : Illinois Z_rs (cache, ~0.010 ms/appel) → |b-a| < 1e-6
+ *   Phase 2 : 2 Newton Z_arb avec early-exit → erreur < 1e-12
  *
- * Phase C — Riemann_Lab / hprzeta — 2026-06-12 */
+ * Phase C — Riemann_Lab / hprzeta — 2026-07-04 */
 
 #include <math.h>
 #include <stdio.h>
+
+/* ── Constante π (évite acos(-1.0) répété à chaque évaluation Z) ─────────── */
+#define PI 3.14159265358979323846
+
+/* ── Cache log(n) et 1/sqrt(n) — initialisé une fois par worker ──────────────
+ * Couvre jusqu'à T≈27M (N_RS=2100 termes) — 33 KB total, tient en L2 cache.
+ * Dans multiprocessing (fork) : chaque worker a sa propre copie → pas de race. */
+#define N_MAX_CACHE 2100
+
+static double log_n_cache[N_MAX_CACHE + 1];
+static double isqrt_n_cache[N_MAX_CACHE + 1];
+static int    g_cache_ready = 0;
+
+static void init_rs_cache(void) {
+    if (g_cache_ready) return;
+    int n;
+    for (n = 1; n <= N_MAX_CACHE; n++) {
+        log_n_cache[n]   = log((double)n);
+        isqrt_n_cache[n] = 1.0 / sqrt((double)n);
+    }
+    g_cache_ready = 1;
+}
 
 /* ── Log de débogage (activé via arb_set_debug_log) ──────────────────────
  * NULL = désactivé. Chaque worker-fork a sa propre copie → pas de race. */
@@ -33,8 +56,6 @@ void arb_close_debug_log(void) {
 }
 
 /* ── Déclaration forward arb_fpwrap_cdouble_hardy_z ─────────────────────────
- * Tirée de flint/arb_fpwrap.h (FLINT 3.x) — pas d'include pour éviter la
- * dépendance aux headers FLINT au moment de la compilation.
  * flags = 0 : calcul standard (précision automatique avec certificat). */
 typedef struct {
     double real;
@@ -43,37 +64,42 @@ typedef struct {
 
 extern int arb_fpwrap_cdouble_hardy_z(arb_cdouble_t *res, arb_cdouble_t t, int flags);
 
-/* ── Z_rs_double — fallback RS double (C₀+C₁, Berry 1992) ─────────────────
- * Identique à Z_double dans scan_arb.c. Activé uniquement si arb_fpwrap
- * retourne un code d'erreur (jamais observé en pratique pour t ≥ 14). */
-static double theta_double_arb(double t) {
-    double pi = acos(-1.0);
-    double lt = log(t / (2.0 * pi));
+/* ── θ(t) asymptotique Stirling (valide t ≥ 20) ─────────────────────────── */
+static double theta_rs(double t) {
+    double lt = log(t / (2.0 * PI));
     return (t / 2.0) * lt
            - t / 2.0
-           - pi / 8.0
+           - PI / 8.0
            + 1.0 / (48.0 * t)
            + 7.0 / (5760.0 * t * t * t)
            - 31.0 / (80640.0 * t * t * t * t * t);
 }
 
-static double Z_rs_double_arb(double t) {
-    double pi  = acos(-1.0);
-    double tau = sqrt(t / (2.0 * pi));
+/* ── Z_rs_double — formule RS C0+C1 avec cache log_n/isqrt_n ────────────────
+ * Cache obligatoire : init_rs_cache() doit avoir été appelé. */
+static double Z_rs_double(double t) {
+    double tau = sqrt(t / (2.0 * PI));
     long   N   = (long)tau;
-    double th  = theta_double_arb(t);
+    double th  = theta_rs(t);
     double sum = 0.0;
     long   n;
 
-    for (n = 1; n <= N; n++)
-        sum += cos(th - t * log((double)n)) / sqrt((double)n);
+    /* boucle RS avec cache : lecture tableau au lieu de log()/sqrt() */
+    if (N <= N_MAX_CACHE) {
+        for (n = 1; n <= N; n++)
+            sum += cos(th - t * log_n_cache[n]) * isqrt_n_cache[n];
+    } else {
+        /* fallback sans cache si t dépasse T≈27M (cas théorique) */
+        for (n = 1; n <= N; n++)
+            sum += cos(th - t * log((double)n)) / sqrt((double)n);
+    }
     double S = 2.0 * sum;
 
-    /* terme de reste C₀+C₁ */
+    /* correction C0+C1 — terme de reste de la formule RS */
     double p  = tau - (double)N;
     double u  = 2.0 * p - 1.0;
-    double A  = pi * (u * u / 2.0 + 0.375);
-    double B  = pi * u;
+    double A  = PI * (u * u / 2.0 + 0.375);
+    double B  = PI * u;
     double cB = cos(B);
     if (fabs(cB) < 1e-10) return S;
 
@@ -81,53 +107,54 @@ static double Z_rs_double_arb(double t) {
     double cA   = cos(A);
     double sA   = sin(A);
     double C0   = cA / cB;
-    double dPsi = pi * (-u * sA * cB + cA * sB) / (cB * cB);
-    double C1   = dPsi * (u * u / 2.0 - 0.375) / (pi * tau);
+    double dPsi = PI * (-u * sA * cB + cA * sB) / (cB * cB);
+    double C1   = dPsi * (u * u / 2.0 - 0.375) / (PI * tau);
     int    sign = ((N - 1) % 2 == 0) ? 1 : -1;
     return S + sign * pow(tau, -0.5) * (C0 + C1);
 }
 
-/* ── Z_arb — évalue Z(t) via Arb, retourne la partie réelle ────────────────
- * Z(t) est réelle pour t réel (symétrie fonctionnelle de ζ).
- * flags=0 : précision automatique adaptative d'Arb.
- * Si ret ≠ 0 (erreur interne Arb, très rare) → fallback Z_rs_double. */
+/* ── Z_arb — évalue Z(t) via Arb (précision garantie) ──────────────────────
+ * Si ret ≠ 0 (erreur Arb, jamais observée pour t ≥ 14) → fallback Z_rs. */
 static double Z_arb(double t) {
     arb_cdouble_t res = {0.0, 0.0};
     arb_cdouble_t arg = {t, 0.0};
     int ret = arb_fpwrap_cdouble_hardy_z(&res, arg, 0);
-    if (ret != 0) return Z_rs_double_arb(t);
+    if (ret != 0) return Z_rs_double(t);
     return res.real;
 }
 
 /* =========================================================================
  * illinois_refine_arb — affinage hybride : Illinois Z_rs + 2 Newton Z_arb
  *
- * Stratégie en 2 phases (mesuré : ×5–6 vs pure Z_arb Illinois) :
+ * Stratégie en 2 phases (inchangée depuis v12, cache ajouté en v14) :
  *
- * Phase 1 : Illinois avec Z_rs_double_arb (C0+C1, ~0.015 ms/appel)
- *   → converge vers pseudo-zéro avec erreur biais_RS = O(t^{-5/4})
- *   → s'arrête à |b−a| < 1e-6 (bracket serré)
+ * Phase 1 : Illinois avec Z_rs (cache, ~0.010 ms/appel)
+ *   → converge vers pseudo-zéro (erreur biais_RS = O(t^{-5/4}))
+ *   → s'arrête à |b−a| < 1e-6
  *
- * Phase 2 : 2 Newton steps avec Z_arb (~3.5 ms/appel)
- *   → dérivée Z'(t) via Z_rs_double_arb (biais RS s'annule dans la différence)
- *   → erreur résiduelle < 2e-11 pour t ≥ 200 (validé)
+ * Phase 2 : jusqu'à 2 Newton Z_arb avec early-exit (~1.8 ms/appel)
+ *   → pour t > ~50 000 : k=0 suffit (biais_RS < 6e-7 → |Zt| < tol)
+ *   → pour t < 50 000 : 2 Newton nécessaires (biais_RS > 6e-7)
+ *   → NE PAS forcer 1 Newton : erreur ~1e-6 pour t ≈ 65-77 (constaté 04/07)
  *
- * Fallback Illinois Z_arb : si signe de Z_rs ≠ signe de fa/fb (cas rare t < 200)
- *   → ce cas est normalement géré côté Python par mpmath_petit_t (t < 200)
+ * Fallback Illinois Z_arb : si signe Z_rs ≠ fa/fb (rare, t < 65)
  *
- * Entrée : a, b       — bornes avec fa·fb < 0 (Z_double de scan_arb)
- * Entrée : fa, fb     — Z(a), Z(b) de scan_arb (utilisés pour le fallback signe)
- * Entrée : tol        — tolérance sur |delta Newton| (recommandé : 1e-9)
- * Entrée : max_iter   — max itérations phase 1 (recommandé : 50)
- * Sortie : double — partie imaginaire du zéro affiné
+ * Entrée : a, b       — bornes avec fa·fb < 0 (Z_rs de scan_arb)
+ * Entrée : fa, fb     — Z(a), Z(b) de scan_arb
+ * Entrée : tol        — tolérance (recommandé : 1e-12)
+ * Entrée : max_iter   — max itérations Phase 1 (recommandé : 50)
+ * Sortie : double — position du zéro affiné
  * ========================================================================= */
 double illinois_refine_arb(double a, double b, double fa, double fb,
                            double tol, int max_iter) {
-    double Za = Z_rs_double_arb(a);
-    double Zb = Z_rs_double_arb(b);
+    /* init cache au premier appel de ce worker */
+    init_rs_cache();
 
-    /* Si Z_rs change de signe différemment de fa/fb (très rare, t < 200) :
-     * fallback Illinois Z_arb classique sur 15 itérations. */
+    double Za = Z_rs_double(a);
+    double Zb = Z_rs_double(b);
+
+    /* Si Z_rs ne voit pas le changement de signe (rare, t < 65) :
+     * fallback Illinois Z_arb sur 15 itérations. */
     if (Za * Zb >= 0.0) {
         if (g_arb_log)
             fprintf(g_arb_log, "FALLBACK_ZRS %.15f %.15f fa=%.10f fb=%.10f Za=%.10f Zb=%.10f\n",
@@ -136,7 +163,7 @@ double illinois_refine_arb(double a, double b, double fa, double fb,
         if (Za * Zb >= 0.0) {
             if (g_arb_log)
                 fprintf(g_arb_log, "REJECT %.15f %.15f fa=%.10f fb=%.10f Za_orig=%.10f Zb_orig=%.10f\n",
-                        a, b, fa, fb, Z_rs_double_arb(a), Z_rs_double_arb(b));
+                        a, b, fa, fb, Z_rs_double(a), Z_rs_double(b));
             return (a + b) / 2.0;
         }
         for (int iter = 0; iter < 15 && fabs(b - a) > tol; iter++) {
@@ -150,24 +177,26 @@ double illinois_refine_arb(double a, double b, double fa, double fb,
         return (fabs(Za) < fabs(Zb)) ? a : b;
     }
 
-    /* Phase 1 : Illinois Z_rs_double_arb → bracket serré (1e-6) */
+    /* Phase 1 : Illinois Z_rs (cache) → bracket serré (1e-6) */
     for (int iter = 0; iter < max_iter; iter++) {
         if (fabs(b - a) < 1e-6) break;
         double den = Zb - Za;
         if (fabs(den) < 1e-300) break;
         double c  = b - Zb * (b - a) / den;
-        double Zc = Z_rs_double_arb(c);
+        double Zc = Z_rs_double(c);
         if (Za * Zc < 0.0) { b = c; Zb = Zc; }
         else                { a = c; Za = Zc * 0.5; }  /* correction Illinois (Dowell 1971) */
     }
 
-    /* Phase 2 : 2 Newton steps avec Z_arb
-     * dZ via Z_rs_double_arb (pas de biais dans la différence). */
+    /* Phase 2 : Newton Z_arb avec early-exit (jusqu'à 2 iter)
+     * Pour t > ~50 000 : k=0 retourne immédiatement (|Zt| < tol).
+     * Pour t < 50 000 : 2 iter nécessaires (biais_RS O(t^{-5/4}) important).
+     * Dérivée via Z_rs (différence → biais RS s'annule). */
     double t_curr = (fabs(Za) < fabs(Zb)) ? a : b;
     double h = 1e-4;
 
     for (int k = 0; k < 2; k++) {
-        double dZ = (Z_rs_double_arb(t_curr + h) - Z_rs_double_arb(t_curr - h)) / (2.0 * h);
+        double dZ = (Z_rs_double(t_curr + h) - Z_rs_double(t_curr - h)) / (2.0 * h);
         if (fabs(dZ) < 1e-10) break;
         double Zt = Z_arb(t_curr);
         if (g_arb_log && k == 1)
