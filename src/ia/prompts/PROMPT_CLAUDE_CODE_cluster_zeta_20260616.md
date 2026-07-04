@@ -3,6 +3,11 @@
 
 ---
 
+> ⚠️ **ARCHIVE (2026-06-16)** — document historique. Les infos cluster (IP, hostnames,
+> versions) peuvent être périmées. Source de vérité actuelle : Architecture-Cluster-Zeta.md
+
+---
+
 # PROMPT CLAUDE CODE — Session cluster Zeta 16 juin 2026
 
 > Colle ce prompt dans Claude Code (terminal `~/projet_zeta/`).
@@ -38,8 +43,8 @@ fonctionnel via IPv6 depuis la nuit du 15/06.
 
 | # | Hostname OFFICIEL | Alias réseau | IP LAN | OS | CPU | Rôle | Statut |
 |---|---|---|---|---|---|---|---|
-| PC1 | `zeta-lab` | zeta-icor7 | 192.168.1.24 | Ubuntu Linux | Intel i7-7500U | Orchestrateur / calcul principal (WiFi wlp2s0) | ✅ |
-| PC2 | `zeta-calc-second` | — | 192.168.1.94 | Debian 6.1 amd64 | Core2Duo E8400 @3.0GHz | Calcul secondaire | ✅ |
+| PC1 | `zeta-lab` | zeta-lab | 192.168.1.24 | Ubuntu Linux | Intel i7-7500U | Orchestrateur / calcul principal (WiFi wlp2s0) | ✅ |
+| PC2 | `zeta-calc-second` | — | 192.168.1.52 | Debian 6.1 amd64 | Core2Duo E8400 @3.0GHz | Calcul secondaire | ✅ |
 | PC3 | `zeta-backup` | — | 192.168.1.22 | Ubuntu 18.04 LTS | Pentium E2140 @1.6GHz | Backup + log-dns-moni (pending) | ✅ |
 | PC4 | `zeta-secure` | zeta-del | 192.168.1.54 | OpenBSD 7.9 i386 | Pentium 4 @2.4GHz | Bastion VPN/pare-feu | ✅ COMPLET |
 
@@ -126,7 +131,7 @@ PC1 distant (10.10.0.2) ──WireGuard──▶ PC4 ──▶ tout le LAN
 ### Connexions directes (LAN)
 ```bash
 ssh zeta-hp          # → riemann@zeta-lab (PC1 lui-même, local)
-ssh zeta-calc-second # → hprzeta@192.168.1.94 (PC2)
+ssh zeta-calc-second # → hprzeta@192.168.1.52 (PC2)
 ssh zeta-backup      # → hprzeta@192.168.1.22 (PC3)
 ssh zeta-secure      # → hprzeta@192.168.1.54 (PC4 OpenBSD)
 ```
@@ -137,7 +142,7 @@ ssh zeta-secure      # → hprzeta@192.168.1.54 (PC4 OpenBSD)
 #    Endpoint : zeta-secure.duckdns.org:51820
 # 2. Depuis le device, accès direct au LAN :
 ssh riemann@192.168.1.24   # PC1 zeta-lab
-ssh hprzeta@192.168.1.94   # PC2 zeta-calc-second
+ssh hprzeta@192.168.1.52   # PC2 zeta-calc-second
 ssh hprzeta@192.168.1.22   # PC3 zeta-backup
 ```
 
@@ -152,7 +157,7 @@ Script type dans `~/.ssh/config` ou wrapper ssh :
 ```bash
 # Changer couleur barre tmux à la connexion
 tmux set-option -g status-bg colour<N>
-ssh hprzeta@192.168.1.94
+ssh hprzeta@192.168.1.52
 tmux set-option -g status-bg colour<DEFAULT>   # restaurer au retour
 ```
 
@@ -197,7 +202,7 @@ find ~/projet_zeta/Riemann_Lab/docs/ -name "*.svg" | head -20
 | Machine | Hostname SVG | IP | OS | CPU | Couleur fond |
 |---|---|---|---|---|---|
 | PC1 | `zeta-lab` | 192.168.1.24 | Ubuntu Linux | Intel i7-7500U | #00CED1 (cyan) |
-| PC2 | `zeta-calc-second` | 192.168.1.94 | Debian 6.1 | Core2Duo E8400 | #FFD700 (jaune) |
+| PC2 | `zeta-calc-second` | 192.168.1.52 | Debian 6.1 | Core2Duo E8400 | #FFD700 (jaune) |
 | PC3 | `zeta-backup` | 192.168.1.22 | Ubuntu 18.04 LTS | Pentium E2140 | #87CEEB (cyan clair) |
 | PC4 | `zeta-secure` | 192.168.1.54 | OpenBSD 7.9 i386 | Pentium 4 @2.4GHz | #1a1a1a (noir) |
 
@@ -514,7 +519,7 @@ Réécrire complètement avec :
 | PC | Hostname | IP LAN | OS | Rôle | État |
 |---|---|---|---|---|---|
 | PC1 | zeta-lab | 192.168.1.24 | Ubuntu Linux i7 | Orchestrateur + calcul | ✅ |
-| PC2 | zeta-calc-second | 192.168.1.94 | Debian 6.1 amd64 | Calcul secondaire | ✅ |
+| PC2 | zeta-calc-second | 192.168.1.52 | Debian 6.1 amd64 | Calcul secondaire | ✅ |
 | PC3 | zeta-backup | 192.168.1.22 | Ubuntu 18.04 LTS | Backup + log (pending) | ✅ |
 | PC4 | zeta-secure | 192.168.1.54 | OpenBSD 7.9 i386 | Bastion VPN WireGuard | ✅ COMPLET |
 

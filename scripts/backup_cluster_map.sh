@@ -73,7 +73,7 @@ cat << 'SVGEOF'
 <rect x="30" y="330" width="250" height="130" rx="12" fill="#f1efe8" stroke="#5f5e5a" stroke-width="1.2"/>
 <text x="155" y="352" text-anchor="middle" font-size="15" font-weight="700" fill="#2c2c2a">zeta-hp3647h</text>
 <text x="155" y="368" text-anchor="middle" font-size="11" fill="#5f5e5a">emmabuntus@zeta-hp3647h</text>
-<text x="155" y="384" text-anchor="middle" font-size="13" font-weight="700" fill="#2c2c2a">192.168.1.94</text>
+<text x="155" y="384" text-anchor="middle" font-size="13" font-weight="700" fill="#2c2c2a">192.168.1.52</text>
 <text x="155" y="400" text-anchor="middle" font-size="10" fill="#888780">ethernet 1 Gbit/s · carte mere HP 3647h</text>
 <rect x="44" y="408" width="222" height="16" rx="3" fill="#e5e3db" stroke="#b4b2a9" stroke-width="0.7"/>
 <text x="54" y="420" font-size="9" fill="#2c2c2a">Noeud secondaire · scripts · config · stockage</text>
@@ -160,7 +160,7 @@ cat << 'SVGEOF'
 <text x="448" y="106" text-anchor="middle" font-size="10" fill="#5f5e5a">emmabuntus@zeta-hp3647h</text>
 <text x="738" y="106" text-anchor="middle" font-size="10" fill="#534ab7">pjexosql@zeta-livermore8</text>
 <text x="160" y="120" text-anchor="middle" font-size="11" font-weight="700" fill="#1a1a1a">192.168.1.24</text>
-<text x="448" y="120" text-anchor="middle" font-size="11" font-weight="700" fill="#1a1a1a">192.168.1.94</text>
+<text x="448" y="120" text-anchor="middle" font-size="11" font-weight="700" fill="#1a1a1a">192.168.1.52</text>
 <text x="738" y="120" text-anchor="middle" font-size="11" font-weight="700" fill="#1a1a1a">192.168.1.22</text>
 
 <line x1="10" y1="130" x2="890" y2="130" stroke="#e0e0e0" stroke-width="1"/>
