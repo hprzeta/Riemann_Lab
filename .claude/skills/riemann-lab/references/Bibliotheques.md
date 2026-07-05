@@ -1,7 +1,7 @@
 # Bibliothèques Python — Référence Zeta-Lab
 > Version enrichie — Projet Riemann_Lab · hprzeta
-> Mise à jour : 2026 — intègre tous les patterns de compute_zeros_v3.py
-> Dossier:/home/riemann/.claude/skills/zeta-lab/references
+> Mise à jour : 2 juin 2026 — patterns compute_zeros_v3.py + §12 Arb/FLINT (levier d'affinage, voir Formules_zeta §17)
+
 ---
 
 ## Environnement
@@ -330,7 +330,47 @@ pip install cupy-cuda12x --break-system-packages
 
 ---
 
-## 12. Tableau récapitulatif — rôle par bibliothèque
+## 12. Arb / FLINT — affinage rapide haute précision (levier Phase C)
+
+> **Pourquoi cette section** : la §17 de `Formules_zeta.md` (mur de latence) montre que le
+> goulot du calcul est la **latence d'un appel `mpmath.siegelz`** (~296 ms à $t\approx 9000$),
+> répétée ~27 fois par zéro. Le **seul levier réaliste** pour des positions $<10^{-10}$ sous
+> 30 min n'est ni le GPU ni la RAM (absents de la formule de coût), mais le remplacement de
+> `mpmath` par **Arb** à l'étape d'affinage.
+
+**Rôle** : évaluer $Z(t)$ de Hardy en arithmétique de boules (intervalles certifiés, en C),
+≈ ×10–20 plus vite que `mpmath.siegelz` à précision égale.
+
+```bash
+# ── Installation (Ubuntu) ────────────────────────────────────────────────
+sudo apt install libflint-dev libarb-dev            # bibliothèques C
+pip install python-flint --break-system-packages    # binding Python (FLINT + Arb)
+```
+
+```python
+# ── Précision en BITS (≈ dps · 3.33) ─────────────────────────────────────
+from flint import arb, ctx
+ctx.prec = 200    # ~60 chiffres décimaux
+
+# Fonction clé côté Arb : acb_dirichlet_hardy_z  → Z(t) de Hardy avec bornes
+# d'erreur rigoureuses. Si python-flint ne l'expose pas directement, l'appeler
+# via un petit wrapper ctypes vers libarb (acb_dirichlet_hardy_z).
+```
+
+> ⚠️ Le facteur ×10–20 est une **estimation à mesurer** : benchmark `affinage_arb.py`
+> contre `siegelz` sur $[300, 700]$ AVANT toute réécriture. Bonus à grand volume :
+> l'algorithme **Odlyzko–Schönhage** (multi-évaluation par FFT) casse le coût asymptotique —
+> pertinent seulement pour $T \gg 10\,000$.
+
+| Outil | Rôle | Statut projet |
+|---|---|---|
+| `mpmath.siegelz` | affinage actuel (Voie B) | production, lent à grand $t$ |
+| Arb `acb_dirichlet_hardy_z` | affinage cible (levier §17) | à benchmarker |
+| FLINT | dépendance d'Arb (entiers, polynômes) | requis pour Arb |
+
+---
+
+## 13. Tableau récapitulatif — rôle par bibliothèque
 
 | Bibliothèque | Usage dans v3 | Mode |
 |---|---|---|
@@ -344,6 +384,45 @@ pip install cupy-cuda12x --break-system-packages
 | `tqdm` | Barres de progression | Interface |
 | `sympy` | Exploration symbolique seulement | Hors prod. |
 | `psutil` | Monitoring CPU/RAM | Diagnostic |
+| `arb` / `python-flint` | Affinage Z(t) : `arb_fpwrap_cdouble_hardy_z` ≈ 1.8 ms/appel | CPU certifié |
 
 ---
-*Dernière mise à jour : 22 mai 2026 — 349 lignes*
+
+## §14 — v14/v15 : cache RS statique + Phase 2 adaptative (2026-07-04)
+
+### Cache log_n / isqrt_n (v14)
+
+```c
+#define N_MAX_CACHE 2100  /* 33 KB — tient en L2 — couvre T ≲ 27M */
+static double log_n_cache[N_MAX_CACHE + 1];
+static double isqrt_n_cache[N_MAX_CACHE + 1];
+```
+Init post-fork une fois par worker. Gain ×1.10 sur T=100k.
+
+### Coût arb_fpwrap_cdouble_hardy_z
+
+| T | Coût moyen | Part Illinois |
+|---|---|---|
+| T=100k (N_RS≈126) | ≈ 1.8 ms/appel | ≈ 98% du temps total |
+| T=5M (N_RS≈892) | ≈ 0.9 ms/appel | idem |
+
+### Phase 2 adaptative SEUIL_1NEWTON (v15)
+
+`int n_newton = (t < 20000.0) ? 2 : 1;`
+
+Biais Z_rs ≈ 0.305·t^{-5/4} → erreur 1 Newton ≈ biais² → < tol=1e-12 pour t≥20k.
+
+**Piège :** 1 Newton fixe → erreur ~1.75e-6 pour t≈65 (LMFDB 14/20). Toujours utiliser le seuil adaptatif.
+
+### Résultats T=100k
+
+| Version | Temps | Gain | Clé |
+|---|---|---|---|
+| v13 | 8.50 min | — | référence |
+| v14 | 7.7 min | ×1.10 | cache log_n/isqrt_n |
+| **v15** | **4.4 min** | **×1.93** | SEUIL_1NEWTON=20k |
+
+**Condition Objectif 2 atteinte le 04/07/2026 ✅**
+
+---
+*Auteur : hprzeta · Dernière mise à jour : 2 juin 2026 · **4 juillet 2026 (§14 cache RS + Phase 2 adaptative v14/v15)** · ~420 lignes*
