@@ -1,7 +1,11 @@
 # Formules de référence — Fonction zêta de Riemann
 > Version enrichie — Projet Riemann_Lab · hprzeta
-> Mise à jour : mai 2026 — intègre toutes les formules appliquées dans compute_zeros_v1/v2/v3
-> Dossier:/home/riemann/.claude/skills/zeta-lab/references
+> Mise à jour : 2 juin 2026 — formules v1/v2/v3 + leçons v4.1 (Z_vect_correct, troncature RS)
+>   + leçons Vérif A/B v4.1 : erreur de position (perturbation 1ᵉʳ ordre) et distinction comptage/position
+>   + leçon v4.2 : finition Newton (ordre 2, dérivée analytique, critère dps vs LMFDB absolu)
+>   + leçon v4.2 mesurée : Newton réfuté (Z' coûteux), goulot = mpmath.siegelz, pas l'algorithme
+>   + §17 modèle de coût complet (mur de latence) : $t_{\text{appel}} \propto N\,\text{dps}^2$, $T_{\text{total}} \approx n\,n_{\text{itér}}\,t_{\text{appel}}/W$, leviers et régimes
+
 ---
 
 ## 1. Définitions fondamentales
@@ -149,6 +153,104 @@ Z = 2.0 * np.dot(np.cos(phases), inv_sqn)                  # shape (M,)
 
 **Gain mesuré** : ×7 à ×15 (CPU numpy) · ×8 à ×12 supplémentaires (GPU GTX 960M).
 
+> ⚠️ **Le code ci-dessus est la version NAÏVE** (un $N_{\max}$ fixe pour tout le bloc).
+> Elle est **fausse** dès que le bloc couvre une large plage de $t$ — voir §5.4.
+
+### 5.4 ⚠️ Piège de la vectorisation naïve — $N(t)$ variable (bug détecté session v4.1)
+
+$N(t) = \lfloor\sqrt{t/2\pi}\rfloor$ **dépend de $t$** et change à chaque point du batch.
+Une version vectorisée naïve qui applique un $N_{\max}$ **fixe** (calculé sur le plus
+grand $t$ du bloc) à **tous** les points est **fausse** : pour un point $t_k$ donné, les
+termes $n > N(t_k)$ ne font pas partie de la somme de Riemann-Siegel et **faussent le
+signe** de $Z(t_k)$.
+
+**Symptôme mesuré (v4.1)** : la première version `Z_batch` produisait **359 désaccords
+de signe** vs `mpmath.siegelz` → autant de zéros potentiellement ratés lors d'un run long.
+
+**Solution `Z_vect_correct`** : masque booléen ligne par ligne
+
+$$
+\text{mask}[k, n] = \mathbb{1}\!\left[\, n \leq N(t_k) \,\right]
+$$
+
+Chaque ligne $k$ n'accumule alors que ses $N(t_k)$ termes exacts :
+
+```python
+N_k    = np.floor(np.sqrt(ts / (2*np.pi))).astype(int)   # N(t_k) propre à chaque point
+mask   = ns[None, :] <= N_k[:, None]                      # (M, N_max) booléen
+phases = thetas[:, None] - ts[:, None] * log_ns[None, :]
+Z      = 2.0 * np.sum(np.where(mask, np.cos(phases) * inv_sqn, 0.0), axis=1)
+```
+
+**Résultat après correction** : **0 désaccord** sur 4 plages testées
+($t \in [14,100]$, $[300,400]$, $[3000,3100]$, $[9900,10000]$).
+
+### 5.5 Erreur de troncature de Riemann-Siegel
+
+La somme tronquée à la correction $C_0 + C_1$ a une erreur résiduelle **structurelle**
+(c'est une limite mathématique, **pas un bug**) :
+
+$$
+\text{erreur}_{\text{RS}} = O\!\left(t^{-3/2}\right) \quad\text{(décroît quand } t \text{ augmente)}
+$$
+
+| Niveau de correction | Précision typique |
+|---|---|
+| RS sans correction | ~$10^{-1}$ |
+| RS + $C_0$ | ~$10^{-2}$ |
+| RS + $C_0 + C_1$ | ~$10^{-3}$ |
+| RS + 3–5 termes | ~$10^{-8}$ |
+| `mpmath.siegelz` | ~$10^{-12}$ |
+
+**Conséquence pratique (v4.1)** : l'écart $|Z_{\text{vect}}(t) - \text{siegelz}(t)|$ passe de
+$1.4\times10^{-2}$ ($t\approx 14$) à $1.2\times10^{-4}$ ($t\approx 9900$). Pour la
+**détection**, seul le **signe** compte → cette erreur n'empêche pas de localiser les bons
+intervalles ; l'**affinage Illinois** (§6) corrige ensuite la position exacte à $10^{-12}$.
+
+### 5.6 Erreur de **position** d'un zéro affiné sur $Z_{\text{mpfr}}$ (leçon Vérif B v4.1)
+
+> **Point clé** : l'erreur de troncature §5.5 est une erreur sur l'**amplitude** de $Z$.
+> Ce qui compte pour un zéro, c'est l'erreur de **position** qui en découle. Les deux sont
+> liées, mais ne sont **pas** du même ordre de grandeur — d'où le résultat de la Vérif B.
+
+Si l'affinage (Illinois en C, ou findroot) cherche une racine de la fonction **tronquée**
+$Z_{\text{mpfr}} = Z + R$ au lieu du vrai $Z$, il converge vers $\gamma_{\text{mpfr}}$ tel que
+$Z_{\text{mpfr}}(\gamma_{\text{mpfr}}) = 0$, c.-à-d. $Z(\gamma_{\text{mpfr}}) = -R(\gamma_{\text{mpfr}})$.
+Le **développement de Taylor au premier ordre** autour du vrai zéro $\gamma$ (où $Z(\gamma)=0$) donne :
+
+$$
+0 = Z_{\text{mpfr}}(\gamma_{\text{mpfr}}) \approx Z'(\gamma)\,(\gamma_{\text{mpfr}} - \gamma) + R(\gamma)
+\quad\Longrightarrow\quad
+\boxed{\;\big|\gamma_{\text{mpfr}} - \gamma\big| \;\approx\; \frac{|R(\gamma)|}{|Z'(\gamma)|}\;}
+$$
+
+**Lecture de la formule** — l'erreur de position est l'erreur d'amplitude **divisée par la
+pente** du croisement. Deux régimes :
+
+| Régime du croisement | Pente $|Z'(\gamma)|$ | Erreur de position |
+|---|---|---|
+| Croisement **raide** | grande | erreur faible (~$10^{-4}$) |
+| Croisement **plat** (zéro proche d'un extremum, ou paire de zéros proches) | petite | erreur amplifiée (jusqu'à ~$10^{-2}$) |
+
+C'est pourquoi le même reste $|R(\gamma)| \sim 10^{-3}$ produit une dispersion d'erreurs de
+position de $10^{-4}$ à $10^{-2}$ selon le zéro : la variabilité vient de $|Z'(\gamma)|$, pas de $R$.
+
+**Exemple mesuré (Vérif B, bracket $[350.400,\ 350.440]$)** :
+
+| Méthode | Racine trouvée | Cible |
+|---|---|---|
+| `illinois_mpfr.so` (RS tronquée $C_0+C_1$) | $350.424$ | racine de $Z_{\text{mpfr}}$ |
+| `mpmath.findroot(siegelz)` dps=50 | $350.408$ | vrai zéro de $Z$ |
+| **Écart** | $\mathbf{0.016}$ | $= |R|/|Z'|$ à $t\approx 350$ |
+
+L'écart $0.016 \approx 1.6\times10^{-2}$ est cohérent : à $t=350$, $N=\lfloor\sqrt{350/2\pi}\rfloor = 7$
+termes, $|R(t)|\sim\tau^{-5/2}\sim 10^{-3}$, et le croisement est ici relativement plat.
+
+**Conclusion architecturale** : Illinois_C **pur** sur $Z_{\text{mpfr}}$ ne peut **pas** atteindre
+le critère LMFDB $<10^{-10}$ — c'est une limite **structurelle** de la troncature, pas un bug.
+Pour des positions précises, il faut une **finition** sur le vrai $Z$ (`mpmath.siegelz`) après
+le pré-affinage C. Voir §6.4 pour les trois architectures comparées.
+
 ---
 
 ## 6. Méthode d'affinage Illinois (✅ correction v3 — 80–90% du temps de calcul)
@@ -192,6 +294,182 @@ $$
 **Problème v1** : Re(ζ) comme détecteur → faux positifs (voir §3.1).  
 **Problème v2** : `tol=1e-20` irréalisable à 50 dps (≈ 50 chiffres) → timeout / dépassement `maxsteps`.  
 **Solution v3** : `tol=1e-12` cohérent avec 35 dps (12 chiffres demandés < 35 disponibles).
+
+### 6.4 Trois architectures d'affinage — arbitrage vitesse / précision (leçon Vérif B v4.1)
+
+La Vérif B a fait apparaître une **tension fondamentale** : la racine que produit le C est
+rapide mais imprécise (§5.6), tandis que la racine `mpmath.siegelz` est précise mais lente.
+Trois architectures résolvent ce compromis différemment :
+
+| Architecture | Mécanisme de la racine finale | Vitesse | Précision position | Statut |
+|---|---|---|---|---|
+| **Illinois_C pur** (v4.1 brut) | racine de $Z_{\text{mpfr}}$ (RS $C_0+C_1$) en C | ~41 z/s | $10^{-4}$ à $10^{-2}$ ❌ | rejeté pour catalogue |
+| **Callback Python/C** (v5) | `siegelz` appelé *dans* la boucle C | ~1.1 z/s | $<10^{-13}$ ✅ | casse le parallélisme (GMP non thread-safe) |
+| **Hybride post-fork** (cible v4.2) | Illinois_C *pré-affine*, puis `findroot(siegelz)` *poli en Python* | à mesurer | $<10^{-10}$ ✅ (visé) | **architecture retenue** |
+
+**Pourquoi l'hybride post-fork préserve le parallélisme ×4** : la boucle C ne fait **aucun**
+appel Python (donc aucun verrou GMP partagé entre processus). Le C rend une borne approchée
+$\gamma_c$ ; **ensuite seulement**, et **hors** de la boucle C, Python exécute :
+
+$$
+\gamma = \texttt{mpmath.findroot}\big(\texttt{siegelz},\ \gamma_c\big),\qquad \text{dps}=30
+$$
+
+Comme $\gamma_c$ est déjà à $\sim10^{-2}$ du vrai zéro (§5.6), `findroot` converge en très peu
+d'itérations (la convergence superlinéaire de la sécante part d'un excellent point initial),
+ce qui limite le surcoût du raffinage exact.
+
+**Distinction à ne jamais confondre** : ce raffinage `siegelz` ne sert **qu'à la précision des
+positions** (comparaison LMFDB). Il n'est **pas** nécessaire pour *vérifier* HR jusqu'à $T$ —
+voir §11.1, qui montre que la vérification repose sur le **comptage**, pas sur les positions.
+
+### 6.5 Finition Newton sur le vrai $Z$ — ordre de convergence et précision (leçon v4.2)
+
+> **Mesure clé (validation hybride v4.2)** : la finition `findroot(siegelz)` après pré-affinage
+> C donne $\text{Écart}_P = 0.00$ (vs LMFDB) sur les trois plages $t\approx 350,\,1000,\,9900$ —
+> précision **parfaite**, critère $<10^{-10}$ largement battu. Reste à optimiser la **vitesse**
+> du raffinage, où le bon levier est le **nombre d'évaluations** de `siegelz`, pas le `dps`.
+
+#### 6.5.1 Pourquoi Newton plutôt qu'Illinois pour la finition
+
+La vitesse de convergence d'un solveur se mesure par son **ordre** $p$ : si $\varepsilon_n$ est
+l'erreur au pas $n$, alors $\varepsilon_{n+1} \approx C\,\varepsilon_n^{\,p}$.
+
+| Solveur | Ordre $p$ | Évaluations / pas | Évaluations pour passer $10^{-2} \to 10^{-10}$ |
+|---|---|---|---|
+| Illinois (sécante modifiée) | $\approx 1.44$ | 1 | ~27 |
+| **Newton** | $2$ (quadratique) | 2 ($Z$ et $Z'$) | **~6** (3 pas) |
+
+Partant du point initial fourni par le C, $\varepsilon_0 = 1.7\times10^{-2}$ (§5.6), Newton
+**double le nombre de chiffres exacts à chaque pas** :
+
+$$
+\varepsilon_0 = 1.7\times10^{-2}
+\;\to\; \varepsilon_1 \approx 3\times10^{-4}
+\;\to\; \varepsilon_2 \approx 1\times10^{-7}
+\;\to\; \varepsilon_3 \approx 1\times10^{-14}
+$$
+
+**3 pas suffisent** pour passer sous $10^{-10}$, soit ~6 évaluations contre ~27 pour Illinois.
+On pourrait croire à un gain $\approx 4.5\times$. **C'est faux ici** — et la mesure l'a confirmé
+(§6.5.5). Le coût total est $n_{\text{évals}} \times \text{coût/éval}$, mais les deux solveurs
+n'évaluent pas la même chose :
+
+- Illinois n'évalue que $Z$ (1 appel `siegelz` par pas, ~296 ms à $t\approx 9000$) ;
+- Newton évalue $Z$ **et** $Z'$ (2 appels par pas), or $Z'$ est **plus cher** que $Z$ (§6.5.2).
+
+Le produit $n_{\text{évals}} \times \text{coût/éval}$ finit donc comparable. **La réduction du
+nombre d'itérations est réelle mais sans effet**, parce que le coût par évaluation domine et que
+le goulot est la vitesse intrinsèque de `mpmath.siegelz` à grand $t$, **pas** le nombre de pas.
+
+> **Leçon épistémique** : l'analyse d'ordre de convergence ci-dessus était une **prédiction**
+> *a priori*, valable seulement sous l'hypothèse « coût/éval constant et $Z'$ aussi cheap que $Z$ ».
+> Cette hypothèse est **fausse** (§6.5.2) ; la mesure (§6.5.5) prime sur la prédiction.
+
+> **Garde-fou** : Newton n'est **pas borné**. Si le croisement est plat ($Z'$ petit, §5.6) ou
+> sur une paire de zéros proches, l'itéré peut sortir du bracket $[\gamma_c \pm \delta]$. Prévoir
+> un **fallback Illinois borné** dans ce cas.
+
+#### 6.5.2 Dérivée analytique obligatoire — annulation catastrophique
+
+Newton requiert $Z'(t)$. Une **différence finie** centrée
+
+$$
+Z'(t) \approx \frac{Z(t+h) - Z(t-h)}{2h}
+$$
+
+soustrait deux nombres quasi égaux : **annulation catastrophique** qui détruit ~la moitié des
+chiffres significatifs. Une dérivée imprécise abaisse l'ordre effectif de Newton ($2 \to \approx 1.6$,
+comme la sécante) et peut faire **échouer** la convergence à $10^{-14}$.
+
+**Solution** : la dérivée **analytique** `mpmath.siegelz(t, derivative=1)` (pas de différence finie).
+Elle est calculée exactement, sans annulation, et **garantit** la cascade quadratique du §6.5.1.
+
+> **⚠️ Mais elle n'est PAS gratuite** (idée fausse corrigée par la mesure, §6.5.5). `siegelz`
+> ne renvoie pas $Z'$ « en bonus » d'un calcul de $Z$ : il le **recalcule** à part. Or
+> $$\zeta'(s) = -\sum_{n\geq 1}\frac{\ln n}{n^{s}}$$
+> porte des **poids logarithmiques** $\ln n$ absents de $\zeta(s)=\sum n^{-s}$. Cette série
+> converge **plus lentement**, donc l'évaluation de $Z'$ est **plus coûteuse** que celle de $Z$,
+> pas comparable. C'est précisément ce qui annule le gain d'itérations de Newton (§6.5.1).
+
+#### 6.5.3 Choix du `dps` — critère LMFDB **absolu** vs chiffres significatifs
+
+> **Piège** : le critère LMFDB est **absolu** ($|\gamma_{\text{calc}} - \gamma_{\text{LMFDB}}| < 10^{-10}$),
+> alors que le `dps` contrôle un nombre de chiffres **significatifs**. Plus $\gamma$ est grand,
+> plus il faut de chiffres pour la **même** précision absolue.
+
+Pour garantir $10^{-10}$ **absolu** à hauteur $\gamma$, il faut un nombre de chiffres significatifs :
+
+$$
+\#\text{chiffres} \;\gtrsim\; \log_{10}(\gamma) \;+\; 10
+$$
+
+À $\gamma \approx 9999$ : $\log_{10}(9999) \approx 4$, donc $\#\text{chiffres} \gtrsim 14$.
+
+| `dps` | Chiffres dispo | Marge au-dessus de $10^{-10}$ absolu à $\gamma\approx 9999$ | Verdict |
+|---|---|---|---|
+| 15 | 15 | ~1 chiffre | ❌ insuffisant (aucune marge pour l'annulation RS interne) |
+| 20 | 20 | ~6 chiffres | ⚠️ à valider sur le sommet $t\approx 9900$ |
+| 25 | 25 | ~11 chiffres | ✅ sûr |
+| 30 | 30 | ~16 chiffres | ✅ confortable |
+
+> **⚠️ Le test sur T=1000 ne révèle PAS ce problème** : à T=1000, $\gamma < 396$ (~3 chiffres
+> avant la virgule), donc même `dps=15` paraît suffisant. Le risque n'apparaît qu'au **sommet**.
+> → **Valider tout abaissement de `dps` sur un échantillon $t\approx 9900$–$10\,000$, jamais sur T=1000.**
+
+#### 6.5.4 Heuristique de coût *a priori* (⚠️ réfutée par la mesure — voir §6.5.5)
+
+> Ce qui suit est la **prédiction** faite avant mesure. Elle s'est révélée **trop optimiste** :
+> elle suppose 6 évaluations toutes au même coût que $Z$, alors que les évaluations de $Z'$ sont
+> plus chères (§6.5.2). Conservée ici pour la traçabilité du raisonnement.
+
+Le coût d'une opération multi-précision croît comme $\text{dps}^2$. En passant de 30 à 25 dps :
+$(25/30)^2 \approx 0.69$. Avec Newton (6 évaluations, ~300 ms/éval à dps=30 et $t\approx 9000$) :
+
+$$
+6 \times (300\,\text{ms} \times 0.69) \approx 1.24\ \text{s/zéro}
+\;\Rightarrow\; \sim 0.8\ \text{z/s (1 worker)}
+\;\Rightarrow\; \sim 3.2\ \text{z/s} \times 4\ \text{workers}
+$$
+
+soit T=10000 en ~50 min. **Prédiction non confirmée** : la mesure donne ~0.4 z/s (§6.5.5).
+
+#### 6.5.5 Résultat **mesuré** — le goulot est `siegelz`, pas l'algorithme (leçon décisive v4.2)
+
+> **Mesure (Vérif B v3, dps=25, $t\approx 9000$)** : Newton + dps=25 donne **0.4 z/s** —
+> **plus lent** que Illinois + polish dps=30 (**0.5 z/s**). La prédiction du §6.5.1/§6.5.4 est
+> **réfutée**. Précision toujours parfaite ($\text{Écart}_P = 0.00$) dans les deux cas.
+
+**Bilan de performance — toutes les options comparées** ($\times 4$ workers, $t\approx 9000$) :
+
+| Approche | z/s ×4 | Précision (vs LMFDB) | Commentaire |
+|---|---|---|---|
+| Illinois_C pur (commit `d9bb267`) | **41** | ~$10^{-4}$ ❌ | racines de $Z_{\text{mpfr}}$, pas LMFDB (§5.6) |
+| Illinois + polish `findroot` dps=30 | 0.5 | $0.00$ ✅ | 27 itér × ~296 ms |
+| Newton + dps=25, 5 pas | 0.4 | $0.00$ ✅ | $Z'$ cher → aucun gain |
+
+**Cause racine confirmée** : à $t\approx 9000$, un appel `siegelz` coûte ~296 ms (somme RS à
+$N=\lfloor\sqrt{t/2\pi}\rfloor \approx 37$ termes, chaque opération multi-précision en $O(\text{dps}^2)$).
+Newton consomme ~2 appels/pas (dont $Z'$, plus cher, §6.5.2). **Le goulot est la vitesse
+intrinsèque de `mpmath.siegelz` à grand $t$, pas le nombre d'itérations.** Réduire les itérations
+ne sert donc à rien : il n'y a **pas d'optimisation algorithmique possible à ce niveau** tant que
+l'affinage final passe par `siegelz`.
+
+**Conséquence — deux livrables, deux régimes** (rappel §11.1, distinction comptage/position) :
+
+| Run | Zéros | Temps ×4 estimé | Usage |
+|---|---|---|---|
+| T=300 | 138 | ~60 s (mesuré, tout en fallback mpmath $t<300$) | test |
+| T=1000 | ~396 | ~16 min | validation complète faisable |
+| T=10000 | ~10 142 | ~7 h | **catalogue de positions $<10^{-10}$ → run de nuit** |
+
+Les **20 premières références LMFDB** ($t<78$) tombent toutes dans la zone de fallback
+`mpmath` ($t<300$) : elles sont **toujours** précises à $<10^{-10}$, sans aucun polish.
+
+> **Décision ouverte** : pour *vérifier HR jusqu'à T=10000*, Illinois_C pur (41 z/s, ~5 min)
+> suffit déjà (comptage Turing, §11.1). Le polish lent (~7 h) n'est requis **que** pour produire
+> un **catalogue de positions** comparables à LMFDB — or ce catalogue existe déjà via v2/v3
+> (CSV 10 142 zéros, 50 dps). À trancher selon le livrable visé, **pas** à subir par défaut.
 
 ---
 
@@ -346,6 +624,56 @@ Critère de complétude du calcul :
 
 Appliqué aux points de contrôle $T \in \{T_{10\%},\, T_{25\%},\, T_{50\%},\, T_{75\%},\, T_{\max}\}$.
 
+### 11.1 Comptage vs position — pourquoi Vérif A réussit alors que Vérif B échoue
+
+> **Idée centrale (leçon Vérif B v4.1)** : *vérifier HR jusqu'à $T$* et *cataloguer les
+> positions précises des zéros* sont **deux objectifs distincts** qui ne demandent pas la
+> même chose. La méthode de Turing valide le **nombre** de zéros, jamais leur position.
+
+La vérification numérique de HR sur $[0,T]$ par Turing-Backlund repose sur l'égalité :
+
+$$
+\underbrace{n_{\text{calc}}}_{\text{nombre de changements de signe de } Z(t) \text{ sur } [0,T]}
+\;=\;
+\underbrace{N(T)}_{\tfrac{\theta(T)}{\pi} + 1 + S(T)\ \text{(comptage théorique)}}
+$$
+
+Si cette égalité tient, alors $Z(t)$ possède exactement $N(T)$ zéros réels sur $[0,T]$ ;
+or $Z$ a autant de zéros réels que $\zeta$ en a sur la droite critique jusqu'à hauteur $T$,
+et $N(T)$ compte **tous** les zéros non triviaux de cette bande jusqu'à $T$. L'égalité force
+donc **tous** ces zéros à être simples et sur la droite critique : **HR est vérifiée jusqu'à $T$.**
+
+**Conséquence directe** — cette condition ne fait intervenir que le **dénombrement** des
+changements de signe. Déplacer chaque position raffinée de $\gamma$ vers $\gamma_{\text{mpfr}}$
+d'un montant $\sim10^{-2}$ (§5.6) **ne change pas** combien il y a de changements de signe.
+D'où le résultat de validation v4.1, qui n'est **pas** contradictoire :
+
+| Vérif | Ce qu'elle teste | Résultat v4.1 | Interprétation |
+|---|---|---|---|
+| **A** | comptage Turing + LMFDB sur les 20 premiers (fallback mpmath, $t<78$) | ✅ 138/138, Turing COMPLET | la **vérification de HR** tient |
+| **B** | précision des positions à grand $t$ (Illinois_C pur) | ❌ erreurs $\sim10^{-2}$ | le **catalogue de positions** exige une finition mpmath (§6.4) |
+
+**En résumé** : v4.1 (Illinois_C pur, 41 z/s) suffit pour **vérifier** HR jusqu'à $T=10\,000$
+via Turing ; il ne suffit **pas** pour produire un catalogue de positions $<10^{-10}$. Ces deux
+livrables sont séparés.
+
+### 11.2 ⚠️ Condition de validité — la détection ne doit ni rater ni inventer un croisement
+
+L'argument §11.1 tient **sous une hypothèse** : que le comptage des changements de signe soit
+**exact**, c.-à-d. que la détection ne **manque** aucun croisement et n'en **invente** aucun.
+Près d'un zéro où $|Z|$ est minuscule, l'erreur d'amplitude de la troncature (§5.5) pourrait
+**inverser un signe** et fausser le comptage — c'est exactement le mécanisme du **bug
+`Z_batch` float64** (jusqu'à 359 désaccords de signe, voir §5.4), corrigé par `Z_vect_correct`.
+
+Garde-fous en place :
+- détection via `Z_vect_correct` (masque $n \leq N(t_k)$) → 0 désaccord sur les 4 plages testées (§5.4) ;
+- pas de balayage STEP sécurisé (§7) → évite de sauter une paire de zéros proches ;
+- **Turing COMPLET** sur le run = preuve *a posteriori* que le comptage est bon (aucun manquant).
+
+> Tant que Turing ressort COMPLET, l'égalité §11.1 est satisfaite et HR est vérifiée sur
+> l'intervalle — indépendamment de la précision des positions individuelles. C'est le point
+> de vigilance n°1 à surveiller au-delà de $T=10\,000$.
+
 ---
 
 ## 12. 20 premiers zéros (référence LMFDB)
@@ -497,4 +825,145 @@ def affiner_zero(t_gauche: float, t_droite: float, tol: float = 1e-20) -> float:
 
 ---
 
-*Dernière mise à jour : 23 mai 2026 — 563 lignes*
+## 17. Le mur de latence du calcul — modèle de coût complet (synthèse)
+
+> Synthèse des formules établies le 2 juin 2026. Version animée : `docs/animation_mur_latence.html`.
+> Rassemble en un seul endroit le coût de localisation d'un zéro précis et les leviers d'optimisation.
+> Renvois : troncature §5.5, erreur de position §5.6, goulot mesuré §6.5.5, espacement §7.1, comptage §8 et §11.1.
+
+### 17.1 Trois niveaux de coût emboîtés
+
+Localiser **un** zéro précis n'est pas une opération atomique : c'est une chaîne d'évaluations de $Z$, chacune étant elle-même une somme de $N$ termes. Trois niveaux s'emboîtent.
+
+**Niveau 1 — coût d'une évaluation $Z(t)$.** La somme de Riemann-Siegel (§5.1) a $N$ termes, et chaque opération multi-précision à $\text{dps}$ chiffres coûte $O(\text{dps}^2)$ :
+
+$$
+t_{\text{appel}} \;\propto\; N \cdot \text{dps}^2,
+\qquad N = \left\lfloor\sqrt{\tfrac{t}{2\pi}}\right\rfloor.
+$$
+
+Conséquence directe : $t_{\text{appel}}$ **croît avec la hauteur $t$** (via $N \sim \sqrt{t}$).
+
+**Niveau 2 — coût d'un zéro.** L'affinage (sécante / Illinois, §6.1) est une **récurrence** : l'itération $k+1$ a besoin du résultat de l'itération $k$.
+
+$$
+c = b - Z_b \cdot \frac{b - a}{Z_b - Z_a}
+\qquad\Longrightarrow\qquad
+c_{\text{zéro}} \approx n_{\text{itér}} \cdot t_{\text{appel}},
+\quad n_{\text{itér}} \approx 27.
+$$
+
+Il n'existe **aucun** parallélisme *à l'intérieur* d'un zéro.
+
+**Niveau 3 — coût du run complet.** Les $n$ zéros sont **indépendants** → parallélisables sur $W$ workers :
+
+$$
+\boxed{\;T_{\text{total}} \;\approx\; \frac{n \cdot n_{\text{itér}} \cdot t_{\text{appel}}}{W}\;}
+$$
+
+### 17.2 Exemple chiffré à $t \approx 9000$
+
+| Grandeur | Calcul | Valeur |
+|---|---|---|
+| Termes $N$ | $\lfloor\sqrt{9000/2\pi}\rfloor = \lfloor 37{,}85\rfloor$ | 37 |
+| Coût d'un appel `siegelz` | mesuré (dps ≈ 30) | ≈ 296 ms |
+| Itérations / zéro | findroot Illinois | ≈ 27 |
+| Coût d'un zéro $c_{\text{zéro}}$ | $27 \times 296$ ms | ≈ 8,0 s |
+| Débit (4 workers) | $4 / 8{,}0$ | ≈ 0,5 z/s |
+| Run $T = 10000$ | $\approx 10\,142 / 0{,}5$ (queue plus lente) | ≈ 5–7 h |
+
+> La latence d'un appel `siegelz` à grand $t$ est le **goulot mesuré** (§6.5.5) : à $t \approx 9000$, ~296 ms pour $N \approx 37$ termes. Réduire $n_{\text{itér}}$ (Newton) ne sert à rien — c'est $t_{\text{appel}}$ qu'il faut attaquer.
+
+### 17.3 Facteur d'accélération requis et leviers
+
+Pour passer de ~7 h à la cible de 30 min :
+
+$$
+\text{facteur} = \frac{T_{\text{actuel}}}{T_{\text{cible}}} \approx \frac{7\ \text{h}}{0{,}5\ \text{h}} = 14.
+$$
+
+Position de chaque levier dans $T_{\text{total}} = \dfrac{n \, n_{\text{itér}} \, t_{\text{appel}}}{W}$ :
+
+| Levier | Agit sur | Gain | Réaliste (i7, 4 cœurs) |
+|---|---|---|---|
+| Cœurs $W$ | dénominateur (linéaire) | ×14 ⇒ $W \approx 56$ | ❌ |
+| GPU GTX 960M | détection seule (10–20 %) | nul sur l'affinage | ❌ |
+| RAM / swap | hors formule (compute-bound) | nul (swap ≈ ×1000 plus lent) | ❌ |
+| $n_{\text{itér}}$ (Newton) | numérateur | réfuté §6.5.5 | ❌ |
+| $\text{dps}$ | $t_{\text{appel}} \propto \text{dps}^2$ | ≈ ×1,4 (plancher §17.4) | ⚠️ marginal |
+| **Librairie Arb** | $t_{\text{appel}}$ ÷ 10–20 | ≈ ×10–20 | ✅ → ~20–25 min |
+
+Nombre de cœurs requis pour la cible (librairie mpmath inchangée) :
+
+$$
+W_{\text{cible}} = W_0 \cdot \frac{T_0}{T_{\text{cible}}} \approx 4 \times 14 = 56\ \text{cœurs}.
+$$
+
+**Le vrai levier est logiciel, pas matériel** : seule la bascule `mpmath.siegelz` → Arb (`acb_dirichlet_hardy_z`, arithmétique de boules en C) réduit $t_{\text{appel}}$ d'un ordre de grandeur à précision égale.
+
+### 17.4 Plancher de précision (rappel §6.5.3)
+
+La précision **absolue** requise à hauteur $\gamma$ impose un nombre minimal de chiffres significatifs :
+
+$$
+\#\text{chiffres} \;\gtrsim\; \log_{10}(\gamma) + 10
+\quad\Longrightarrow\quad
+\approx 14\ \text{à}\ \gamma \approx 9999.
+$$
+
+On ne peut donc pas réduire $\text{dps}$ sous ~25 sans perdre le critère LMFDB ($< 10^{-10}$). Tout abaissement se valide sur un échantillon $t \approx 9900$, **jamais** sur T=1000.
+
+### 17.5 Deux régimes, deux livrables
+
+Le mur de latence ne pèse que dans **un** des deux objectifs (rappel §11.1) :
+
+| Objectif | Méthode | Temps T=10000 |
+|---|---|---|
+| Vérifier HR jusqu'à $T$ (comptage $n_{\text{calc}} = N(T)$) | Illinois_C pur, sans polish `siegelz` | ≈ 41 z/s ⇒ ~4 min |
+| Catalogue de positions $< 10^{-10}$ | polish `siegelz`, ou **réutiliser le CSV v2 existant** | ~7 h, ou 0 min |
+
+> Pour la simple **vérification de HR**, le niveau 2 lent disparaît : le coût d'un appel `siegelz` (§17.1) ne pèse que dans le régime « catalogue de positions ». Ce catalogue existe déjà (CSV v2, 10 142 zéros, 50 dps).
+
+---
+
+## §18 — Biais Z_rs et SEUIL_1NEWTON (v15, 2026-07-04)
+
+### Biais de la formule RS double précision
+
+La somme RS tronquée à $C_0 + C_1$ a un biais structurel :
+
+$$\text{biais}(t) \approx 0{,}305 \cdot t^{-5/4}$$
+
+calibré sur 20 zéros LMFDB le 04/07/2026. Ce biais positionne le pseudo-zéro Phase 1
+à une distance $\delta \approx \text{biais}(t)$ du vrai zéro.
+
+### Erreur après 1 Newton
+
+Depuis le pseudo-zéro $\tilde{t}$ à distance $\delta$ du vrai zéro $t_0$ :
+
+$$\varepsilon_{\text{Newton}} \approx \frac{\delta^2 \cdot Z''(t_0)}{2 \cdot Z'(t_0)}
+\approx C^2 \cdot t^{-5/2} \approx 0{,}093 \cdot t^{-5/2}$$
+
+| t | biais(t) | ε 1 Newton | ε 2 Newton |
+|---|---|---|---|
+| 65 | 5.0e-3 | 1.75e-6 >> tol | < 1e-11 |
+| 1 000 | 6.6e-5 | 3.1e-9 >> tol | < 1e-15 |
+| 10 000 | 3.7e-6 | 9.8e-12 ≈ tol | — |
+| **20 000** | **6.4e-7** | **4e-13 < tol ✅** | — |
+| 100 000 | 5.4e-8 | 2.9e-15 | — |
+
+### Seuil et règle C
+
+`SEUIL_1NEWTON = 20 000` : marge ×2.4 sur le minimum strict (~16 000).
+
+```c
+/* Dans illinois_arb.c Phase 2 */
+int n_newton = (t_curr < SEUIL_1NEWTON) ? 2 : 1;
+```
+
+**Règle impérative :** ne jamais réduire à 1 Newton fixe pour tout t.
+Pour t < 200, le biais Z_rs est en O(10^{-3}) — 1 Newton donne erreur ~O(10^{-6}).
+
+---
+
+*Auteur : hprzeta · Dernière mise à jour : 2 juin 2026 · **4 juillet 2026 (§18 biais Z_rs + SEUIL_1NEWTON v15)** · ~980 lignes*
