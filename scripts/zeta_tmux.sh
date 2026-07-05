@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Monter WireGuard si pas déjà actif
-sudo wg show wg0 > /dev/null 2>&1 || sudo wg-quick up wg0
+# Bascule WireGuard automatique maison/déplacement (avec message d'état)
+bash "$(dirname "$0")/wg_auto.sh"
 
 SESSION="zeta-cluster"
 tmux kill-session -t $SESSION 2>/dev/null
