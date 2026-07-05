@@ -6,8 +6,8 @@ description: >
   Se déclenche sur : "Phase C", "libmpfr", "Illinois en C", "affinage C",
   "illinois_mpfr", "ctypes", "Voie B", "module C", "branche Riemann_Lab_C",
   "post-fork", "mpfr_t", "accélération Illinois", "compute_zeros_v4_1".
-version: 0.3.0
-date: 2026-06-03
+version: 0.5.0
+date: 2026-07-06
 ---
 
 # Phase C — Affinage Illinois en C / libmpfr (Voie B)
@@ -158,7 +158,7 @@ mpfr-config --version
 
 ---
 
-## État Phase C au 4 juillet 2026
+## État Phase C au 5 juillet 2026 (chronologie complète v4.1 → v15)
 
 | Jalon | Statut |
 |---|---|
@@ -168,15 +168,42 @@ mpfr-config --version
 | **Option B — `illinois_refine` fa/fb (`581e34d`)** | ✅ **validé T=300, T=1000, T=10 000** |
 | Run T=1000 — 649 zéros, 16.15 z/s, Turing COMPLET, LMFDB 19/20 | ✅ |
 | Run T=10 000 — 10 141 zéros, **18.65 z/s**, Turing COMPLET, LMFDB 19/20 | ✅ |
+| illinois_C 98.6 % sur T=10 000 (objectif 90 % dépassé) | ✅ |
+| **v6 — STEP adaptatif + scan_arb, run T=100k** | ✅ **138 069 zéros, 0 manquant, Turing COMPLET, ~113 min** |
+| **v7 — `illinois_refine_adaptive` (64→116 bits)** (`8637098`) | ✅ **138 069, 0 manquant, Turing COMPLET, 30.9 min** |
+| v7 benchmark T=5k : 1.47 ms/appel, 1808 z/s → **×16 vs 170 bits** | ✅ |
+| v7 benchmark T=100k : 42.05 ms/appel, 74.49 z/s → **×3.7 global** | ✅ |
+| **v9 — `brent_refine_adaptive`** (remplace le plan v8 prec_fast/W=8) — T=100k 26.6 min turbo | ✅ |
 | **v12 — illinois_refine_arb (Arb, tol=1e-12, 2 phases)** — T=100k 8.8 min · LMFDB 20/20 ✅ | ✅ |
 | **v13 — T_SEUIL 200→65, TOL 1e-9→1e-12** — T=100k 8.50 min · commit `77efd10` | ✅ |
 | **v14 — cache log_n/isqrt_n** — T=100k 7.7 min (×1.10) · commit `d4b3611` | ✅ |
 | **v15 — SEUIL_1NEWTON=20k (Phase 2 adaptative)** — T=100k **4.4 min (×1.93)** · LMFDB 20/20 ✅ | ✅ ⭐ |
 | **Condition Objectif 2 : T=100k < 5 min** | ✅ **ATTEINTE le 04/07/2026** |
 | Run T=5 000 000 v13 — 10 016 377 / 10 016 473 zéros · 96 manquants (grille Z_double) | ✅ terminé |
+| Rapport `analyse_problemes_v13_v15.md` + PDF | ✅ FAIT — wiki `2f845e4` · pdf `fda4fb9` |
+| RAG vault BrainVault (`/mnt/vault_rag`) — 838 chunks, `rag_monitor.py` | ✅ (05/07/2026) |
 | Rapport `v5 → v4.1` (`pdf/optimisation/analyse_problemes_v5_v4_1.pdf`) | ⏳ à faire |
-| Rapport `analyse_problemes_v13_v15.md` + PDF | ⏳ à faire |
 | Run T=5M avec v15 — investigation 96 manquants | ⏳ prochaine session |
+
+---
+
+## v7 — Leçon technique clé (11 juin 2026)
+
+**Contre-intuition :** le gain vient de la **précision** (64 bits → 1 limb mpfr → SIMD),
+pas du nombre de termes RS. La théorie prédisait ×4.6 via N_termes ; la réalité est ×16 via précision.
+
+| Param. | v6 | v7 |
+|---|---|---|
+| Phase 1 précision | 170 bits (3 limbs) | **64 bits (1 limb)** |
+| Phase 2 précision | 170 bits | 116 bits (2 limbs) |
+| ms/appel T=5k | ~23.5 ms | **1.47 ms** |
+| ms/appel T=100k | ~130 ms | **42.05 ms** |
+
+**Règle v7 :** `N_full` termes dans les **deux** phases (N_fast = N_full/4 invalide les signes Z).
+`ITER_SWITCH=8`, `MAX_ITER=50`. `prec_fast=64`, `prec_full=116`.
+
+> **v8 (piste prec_fast ∈ {32,48,64,80,96} bits / W=8) — abandonnée au profit de v9 Brent.**
+> Détail de l'analyse comparative : `analyse_problemes_v8_v9.md` (wiki).
 
 ---
 
@@ -233,18 +260,31 @@ Résultats mesurés :
 | **T=10k v2** | **0.05 pour t≥5k** | **2.0 fixe** | **✅ 0 manquant** (commit `50837f7`) |
 | T=100k v1 adaptatif | 0.1/0.05/0.02 | 2.0 fixe | ❌ 30 manquants (t>50k) |
 | T=100k v2 adaptatif | 0.1/0.05/0.02 | 2.0 fixe | ❌ 68 manquants · 105 min (STEP=0.02 insuffisant) |
-| **T=100k v3** | **0.05/0.010** | **2.0 fixe** | **EN COURS (2026-06-10 16h42)** |
+| **T=100k v3** | **0.05/0.010** | **2.0 fixe** | **✅ 0 manquant, Turing COMPLET** |
 
 ---
 
-## Étapes restantes
+## v9 — `brent_refine_adaptive` (validé 2026-06-12)
 
-1. Analyser run T=100 000 v3 (STEP=0.05/0.010) — Turing-Backlund COMPLET attendu.
-2. Si ✅ : documenter résultat dans §23.4 de `Formules_zeta.md` + STACK.md.
-3. Rédiger le rapport `v5 → v4.1` (même structure que `v2→v3`).
+**Résultats :** 138 069 zéros · 0 manquant · Turing COMPLET · 26.6 min turbo · 28.0 min sans turbo
 
----
-*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026 · 9 juin 2026 (Mur de latence RÉSOLU ×27) · 10 juin 2026 (STEP v3 0.05/0.010 lancé T=100k)*
+**Pourquoi Brent gagne :**
+- Ordre ~1.84 vs Illinois ~1.44 → ~4 iter vs ~6 → même coût/iter (1 éval Z) → ×1.80 global
+
+**Turbo :** gain seulement ×1.05 (vs ×1.63 pour v7). Brent C limité par bande passante mémoire MPFR (ops 64→80 bits), pas par fréquence CPU.
+
+**Fichiers :**
+- `src/calculs/optimisation/c_modules/brent_mpfr.c`
+- `src/calculs/optimisation/c_modules/brent_mpfr.h`
+- `src/calculs/optimisation/compute_zeros_v9.py`
+
+**Paramètres validés :**
+- prec_fast=64 · prec_full=80 · tol=1e-11 · max_iter=50
+- STEP=0.010 fixe — NE JAMAIS MODIFIER
+- Charger `brent_mpfr.so` POST-FORK dans `worker_init()`
+
+**Sudoers :** `/etc/sudoers.d/zeta_turbo` fonctionnel depuis 2026-06-12.
+Toujours lancer `zeta_turbo_on.sh` avant run de production. Toujours `zeta_turbo_off.sh` après.
 
 ---
 
@@ -315,27 +355,14 @@ for (int k = 0; k < n_newton; k++) {
 
 ---
 
-### v9 — brent_refine_adaptive (validé 2026-06-12)
+## Étapes restantes
 
-**Résultats :** 138 069 zéros · 0 manquant · Turing COMPLET · 26.6 min turbo · 28.0 min sans turbo
+> 📍 Liste vivante — voir `Handoff.md` (wiki) → section « REPRENDRE ICI » pour la
+> priorité courante. Ne pas dupliquer ici.
 
-**Pourquoi Brent gagne :**
-- Ordre ~1.84 vs Illinois ~1.44 → ~4 iter vs ~6 → même coût/iter (1 éval Z) → ×1.80 global
-
-**Turbo :** gain seulement ×1.05 (vs ×1.63 pour v7). Brent C limité par bande passante mémoire MPFR (ops 64→80 bits), pas par fréquence CPU.
-
-**Fichiers :**
-- `src/calculs/optimisation/c_modules/brent_mpfr.c`
-- `src/calculs/optimisation/c_modules/brent_mpfr.h`
-- `src/calculs/optimisation/compute_zeros_v9.py`
-
-**Paramètres validés :**
-- prec_fast=64 · prec_full=80 · tol=1e-11 · max_iter=50
-- STEP=0.010 fixe — NE JAMAIS MODIFIER
-- Charger `brent_mpfr.so` POST-FORK dans `worker_init()`
-
-**Sudoers :** `/etc/sudoers.d/zeta_turbo` fonctionnel depuis 2026-06-12.
-Toujours lancer `zeta_turbo_on.sh` avant run de production. Toujours `zeta_turbo_off.sh` après.
+1. Rapport `v5 → v4.1` (`pdf/optimisation/analyse_problemes_v5_v4_1.pdf`).
+2. Run T=5M avec v15 — investigation des 96 manquants (~18h estimé).
+3. Industrialiser la boucle RAG (retrieval + génération) — voir `STACK.md` § Objectif 2.
 
 ---
-*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026 · 9 juin 2026 · 10 juin 2026 · 12 juin 2026 (v9 Brent validée, sudoers OK) · **4 juillet 2026 (v14 cache RS, v15 SEUIL_1NEWTON, Obj2 ✅, T=5M 96 manquants)***
+*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026 · 9 juin 2026 (Mur de latence RÉSOLU ×27) · 10 juin 2026 (STEP adaptatif v2) · 11 juin 2026 (v7 validée 30.9 min — prec_fast=64 bits SIMD) · 12 juin 2026 (v9 Brent validée, sudoers OK) · 4 juillet 2026 (v14 cache RS, v15 SEUIL_1NEWTON, Obj2 ✅, T=5M 96 manquants) · **5 juillet 2026 (fusion des deux lignées v7/v8 et v9-v15 — RAG vault en service)***
