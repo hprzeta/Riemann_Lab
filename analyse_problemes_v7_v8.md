@@ -147,7 +147,7 @@ Les prochains gains nécessitent du matériel différent.
 > du i7-7500U. Chaque optimisation algorithmique restante donne moins que
 > la précédente. La loi des rendements décroissants s'applique.
 
-Voir aussi : [[Formules_zeta §24]] · [[analyse_problemes_v6_v7]] · [[STACK]]
+Voir aussi : [[Formules_zeta]] · [[analyse_problemes_v6_v7]] · [[STACK]]
 
 ---
 
