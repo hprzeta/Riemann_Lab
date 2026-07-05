@@ -617,3 +617,166 @@ chrono.rapport()
 
 ---
 *Auteur : hprzeta — Riemann_Lab — Mise à jour : 6 juin 2026 (§15 ajouté) · 9 juin 2026 (§12 mis à jour, VALIDÉ ×27) · 10 juin 2026 (résultats runs Arb §12 : v2 terminé 68 manquants, v3 0.05/0.010 EN COURS)*
+
+---
+
+## §16 — brent_mpfr.c + zeta_turbo sudoers (v9, 2026-06-12)
+
+### brent_mpfr.c
+
+| Attribut | Valeur |
+|---|---|
+| Fichier | `src/calculs/optimisation/c_modules/brent_mpfr.c` |
+| Dépendances | `libmpfr-dev`, `libgmp-dev` |
+| Compilation | `gcc -O3 -march=native -shared -fPIC -o brent_mpfr.so brent_mpfr.c -lmpfr -lgmp` |
+| Chargement | POST-FORK uniquement (segfault sinon) |
+| Phase 1 | prec_fast=64 bits → 1 limb mpfr → SIMD AVX2 → ×16 local |
+| Phase 2 | prec_full=80 bits → validation finale < 1e-11 |
+
+### zeta_turbo — sudoers (installé 2026-06-12)
+
+Fichier : `/etc/sudoers.d/zeta_turbo`
+
+Commandes NOPASSWD :
+- `/usr/bin/cpupower frequency-set -g performance`
+- `/usr/bin/cpupower frequency-set -g powersave`
+- `/usr/sbin/sysctl -w vm.swappiness=10`  ← `/usr/sbin/` sur Ubuntu 24.04
+- `/usr/sbin/sysctl -w vm.swappiness=60`
+- `/usr/bin/systemctl stop NetworkManager`
+- `/usr/bin/systemctl start NetworkManager`
+
+⚠️ Sur Ubuntu 24.04 : `sysctl` est à `/usr/sbin/sysctl`, pas `/sbin/sysctl`.
+
+Gain turbo mesuré : 26.6 min T=100k (vs 28.0 min sans turbo — gain ×1.05 seulement)
+
+---
+
+## §17 — illinois_arb.c — Illinois hybride 2-phases (v12, 2026-06-13)
+
+### Principe
+
+`illinois_arb.c` remplace `brent_mpfr.c` comme backend d'affinage. Algorithme à 2 phases :
+
+| Phase | Fonction | Coût | Précision | Condition |
+|---|---|---|---|---|
+| Phase 1 | `Z_rs_double` (Illinois C, double natif) | **~0.015 ms/appel** | ~2e-16 | itérer jusqu'à $\|b-a\| < 10^{-6}$ |
+| Phase 2 | 2 Newton steps `Z_arb` (Arb/FLINT) | **~3.5 ms × 2** | $< 10^{-12}$ | 2 pas fixes |
+| Fallback | Illinois `Z_arb` classique | ~3.5 ms/iter | $< 10^{-12}$ | $t < 200$ ou signe incohérent |
+
+### Attributs
+
+| Attribut | Valeur |
+|---|---|
+| Fichier | `src/calculs/optimisation/c_modules/illinois_arb.c` |
+| Dépendances | `libflint-dev`, `libgmp-dev` (Arb/FLINT intégré depuis FLINT 3.x) |
+| Compilation | `gcc -O3 -march=native -shared -fPIC -o illinois_arb.so illinois_arb.c -lflint -lgmp` |
+| Chargement | POST-FORK uniquement |
+| Phase 1 backend | `arb_fpwrap_cdouble_hardy_z` — double natif IEEE 754 |
+| Phase 2 backend | `arb_cdouble_hardy_z` — Arb adaptative ~3.5 ms |
+
+### Formule du coût par zéro
+
+$$C_{\text{zéro}} = n_1 \times C_{\text{Phase1}} + 2 \times C_{\text{Phase2}}$$
+
+avec :
+- $C_{\text{Phase1}} \approx 0.015\,\text{ms}$ (Z_rs_double double natif)
+- $C_{\text{Phase2}} \approx 3.5\,\text{ms}$ (Z_arb Arb/FLINT)
+- $n_1 \approx 24$ itérations Phase 1 (bracket 0.010 → 1e-6)
+
+**Coût moyen observé T=100k :** $\approx 4.7\,\text{ms/zéro}$ (vs 64 ms Brent/MPFR v10 → **×13.6**)
+
+### Résultats v12 (T=100 000)
+
+| Indicateur | Valeur |
+|---|---|
+| Zéros | ~138 080 / 138 069 attendus |
+| Manquants | **0 ✅** |
+| Durée | **8.8 min** (vs 23.7 min v10) |
+| Gain vs v10 | **×2.69** direct · **×16.9** benchmark |
+| Turing-Backlund | **COMPLET ✅** |
+| LMFDB | **20/20 ✅** |
+| Phase 1 utilisée | ~99.94 % des zéros |
+| Fallback mpmath | ~0.06 % (t < 200) |
+
+Voir [[analyse_problemes_v10_v12]] pour l'analyse complète.
+
+---
+
+## §17 — v13→v15 : cache RS statique + Phase 2 adaptative (2026-07-04)
+
+### Cache log_n / isqrt_n (v14)
+
+**Fichiers :** `illinois_arb.c` et `scan_arb.c`
+
+```c
+#define N_MAX_CACHE 2100  /* couvre T ≲ 27M (N_RS=2100 termes) */
+
+static double log_n_cache[N_MAX_CACHE + 1];   /* log(n) pour n=1..2100 */
+static double isqrt_n_cache[N_MAX_CACHE + 1]; /* 1/sqrt(n) */
+static int    g_cache_ready = 0;
+
+static void init_rs_cache(void) {
+    if (g_cache_ready) return;
+    for (int n = 1; n <= N_MAX_CACHE; n++) {
+        log_n_cache[n]   = log((double)n);
+        isqrt_n_cache[n] = 1.0 / sqrt((double)n);
+    }
+    g_cache_ready = 1;
+}
+```
+
+**Taille mémoire :** 2 × 2101 × 8 octets = **33 KB** — tient en cache L2.
+**Initialisation :** appelée une fois par worker après `fork()`. Idempotente.
+**Couverture :** $T \lesssim 27\,\text{M}$ (pour $T > 27\text{M}$ : fallback sans cache).
+
+**Impact dans la boucle RS :**
+```c
+/* avant v14 */
+sum += cos(th - t * log((double)n)) / sqrt((double)n);   /* log + sqrt à chaque terme */
+/* v14+ */
+sum += cos(th - t * log_n_cache[n]) * isqrt_n_cache[n]; /* lecture tableau : ~4 cycles */
+```
+
+**Gain mesuré :** ×1.10 sur T=100k (log/sqrt ≈ 50 cycles chacun vs accès L2 ≈ 4 cycles).
+
+### Coût arb_fpwrap_cdouble_hardy_z (calibré 04/07/2026)
+
+| Indicateur | Valeur |
+|---|---|
+| Coût moyen à T=100k ($N_\text{RS} \approx 126$ termes) | **≈ 1,8 ms/appel** |
+| Coût à T=5M ($N_\text{RS} \approx 892$ termes) | **≈ 0,9 ms/appel** |
+| Flags standard | `flags=0` (précision automatique avec garantie d'erreur) |
+| Part Illinois dans T=100k | **≈ 98 %** du temps total |
+
+> Le coût Z_arb diminue relativement avec T car Arb ajuste sa précision interne.
+> À T=5M, chaque appel traite plus de termes mais avec une précision suffisante
+> plus facilement détectable — coût sub-linéaire en $N_\text{RS}$.
+
+### Phase 2 adaptative — SEUIL_1NEWTON (v15)
+
+**Principe :** le biais Z_rs $\approx C \cdot t^{-5/4}$ ($C \approx 0{,}305$) fait que
+le pseudo-zéro Phase 1 est à une distance $\sim \text{biais}(t)$ du vrai zéro.
+Erreur après 1 Newton $\approx \text{biais}^2 \approx C^2 \cdot t^{-5/2}$.
+Seuil : $C^2 \cdot t^{-5/2} < 10^{-12} \Leftrightarrow t \gtrsim 16\,000$.
+Par marge ×1.25 : **SEUIL_1NEWTON = 20 000**.
+
+```c
+int n_newton = (t_curr < SEUIL_1NEWTON) ? 2 : 1;
+```
+
+**Résultats v12 → v15 (T=100 000) :**
+
+| Version | Temps | Vitesse | Algorithme Phase 2 |
+|---|---|---|---|
+| v12 | 8.8 min | 261 z/s | 2 Newton Z_arb (early-exit naturel t>50k) |
+| v13 | 8.50 min | 271 z/s | idem + T_SEUIL_PETIT_T=65 |
+| v14 | 7.7 min | 299 z/s | v13 + cache log_n/isqrt_n |
+| **v15** | **4.4 min** | **517 z/s** | v14 + SEUIL_1NEWTON=20k |
+
+**Condition Objectif 2 atteinte le 4 juillet 2026 : T=100k < 5 min ✅**
+
+**Piège confirmé :** 1 Newton fixe pour tout $t$ → erreur $\sim 1{,}75 \times 10^{-6}$
+à $t \approx 65$ (LMFDB 14/20). Voir [[Formules_zeta]] §30.
+
+---
+*Auteur : hprzeta — Riemann_Lab — Mise à jour : 6 juin 2026 (§15 ajouté) · 9 juin 2026 (§12 mis à jour, VALIDÉ ×27) · 10 juin 2026 (résultats runs Arb §12) · 12 juin 2026 (§16 brent_mpfr.c + sudoers) · **4 juillet 2026 (§17 cache RS + Phase 2 adaptative v14/v15, condition Obj2 ✅)** · ~760 lignes*

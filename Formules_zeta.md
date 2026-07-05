@@ -1199,7 +1199,7 @@ $$
 
 ---
 
-## §18. Benchmark Arb/FLINT vs mpmath — résultats mesurés (2026-06-09)
+## §25. Benchmark Arb/FLINT vs mpmath — résultats mesurés (2026-06-09)
 
 | Méthode | temps/appel (ms) | Speedup | T_total estimé |
 |---|---|---|---|
@@ -1393,4 +1393,251 @@ $$\left\lceil \frac{32}{64} \right\rceil = \left\lceil \frac{64}{64} \right\rcei
 | GPU CUDA détection Z_double | ~×100 détection | mais détection = 0.2% du temps |
 
 ---
-*Auteur : hprzeta — Riemann_Lab — Mise à jour : 3 juin 2026 (§19–21) · 6 juin 2026 (§22) · 9 juin 2026 (§18) · 10 juin 2026 (§23 STEP adaptatif) · **11 juin 2026 (§24 benchmark v8 plancher i7)** · ~1385 lignes*
+*Auteur : hprzeta — Riemann_Lab — Mise à jour : 3 juin 2026 (§19–21) · 6 juin 2026 (§22) · 9 juin 2026 (§25) · 10 juin 2026 (§23 STEP adaptatif) · **11 juin 2026 (§24 benchmark v8 plancher i7)** · ~1385 lignes*
+
+---
+
+## §27 — Brent C/mpfr deux phases (v9, 2026-06-12)
+
+### Algorithme — priorités d'interpolation
+1. Interpolation inverse quadratique (si 3 points distincts)
+2. Méthode de la sécante (si 2 points)
+3. Bisection (fallback garanti — convergence assurée)
+
+### Ordre de convergence comparé
+
+| Méthode | Ordre φ | Évals Z/iter | Iter typique | Verdict |
+|---|---|---|---|---|
+| Illinois | ~1.44 | 1 | ~6 | v7/v8 |
+| **Brent** | **~1.84** | **1** | **~4** | **✅ v9** |
+| Newton | 2.0 | 2 | ~3 | neutre |
+
+Nombre d'itérations (tol=1e-11, δ₀=0.01) :
+$$n_{\text{Brent}} \approx \frac{\ln(10^9)}{\ln 1.84} \approx 4 \quad \text{vs} \quad n_{\text{Illinois}} \approx \frac{\ln(10^9)}{\ln 1.44} \approx 6$$
+
+### Signature C
+```c
+double brent_refine_adaptive(
+    double a, double b,
+    double fa, double fb,
+    int prec_fast,    // = 64 bits (phase 1, 1 limb SIMD AVX2)
+    int prec_full,    // = 80 bits (phase 2, validation finale)
+    double tol,       // = 1e-11
+    int max_iter      // = 50
+);
+```
+
+### Résultats v9 mesurés
+- T=100 000 : 138 069 / 138 069 zéros (0 manquant)
+- Sans turbo : 28.0 min · 82.15 z/s · ×1.80 vs v8
+- Avec turbo : 26.6 min · 86.5 z/s · gain turbo ×1.05 (bottleneck MPFR/mémoire)
+- Turing-Backlund : COMPLET ✅ · LMFDB : 19/20 ✅
+- Brent C utilisé : 99.9% · fallback mpmath : 0.1% (t < 300)
+- Gain cumulé v1→v9 turbo : ×4 500
+
+---
+
+## §28 — Illinois hybride 2-phases (v12, 2026-06-13)
+
+### Principe général
+
+v12 introduit un algorithme d'affinage à 2 phases combinant la vitesse de `Z_rs_double` (double natif) avec la précision de `Z_arb` (Arb/FLINT) :
+
+| Phase | Fonction | Ordre | Coût | Cible |
+|---|---|---|---|---|
+| Phase 1 | Illinois `Z_rs_double` (C0+C1) | ~1.44 | ~0.015 ms | $\|b-a\| < 10^{-6}$ |
+| Phase 2 | Newton `Z_arb` × 2 | 2.0 (quadratique) | ~3.5 ms | $< 10^{-12}$ |
+
+### Convergence Phase 1 — Illinois modifié
+
+$$c_{n+1} = b_n - f(b_n) \cdot \frac{b_n - a_n}{f(b_n) - f(a_n)}$$
+
+**Modificateur Illinois** (accélère la convergence superlinéaire) :
+$$\text{si } f(a_n) \cdot f(c_{n+1}) < 0 : \quad f(a_n) \leftarrow \frac{f(a_n)}{2}$$
+
+Nombre d'itérations Phase 1 estimé (bracket $\delta_0 = 0.010$ → cible $10^{-6}$) :
+$$n_1 \approx \frac{\ln(\delta_0 / \varepsilon_1)}{\ln \phi_{\text{Illinois}}} = \frac{\ln(10^4)}{\ln 1.44} \approx 24$$
+
+Coût Phase 1 total : $24 \times 0.015 \approx 0.36\,\text{ms}$ — **négligeable**.
+
+### Phase 2 — 2 Newton steps sur Z_arb
+
+Depuis le bracket Phase 1 : $|b'-a'| < 10^{-6}$. Départ : $x_0 = (a'+b')/2$.
+
+$$x_{n+1} = x_n - \frac{Z(x_n)}{Z'(x_n)}, \quad Z'(x) \approx \frac{Z(x+h) - Z(x-h)}{2h}, \quad h = 10^{-8}$$
+
+Convergence quadratique depuis $|x_0 - \rho| < 5 \times 10^{-7}$ :
+
+$$|x_2 - \rho| \lesssim (5 \times 10^{-7})^{2^2} = (5 \times 10^{-7})^4 \approx 6 \times 10^{-26} \ll 10^{-12}$$
+
+2 Newton steps suffisent largement pour la tolérance $10^{-12}$.
+
+### Condition de bascule Phase 1 → Phase 2
+
+$$|b - a| < 10^{-6} \implies \text{bascule vers Phase 2 Newton}$$
+
+### Conditions de fallback
+
+```
+t < 200.0            → mpmath_petit_t (Z_arb trop imprécis à très petit t)
+signe_incohérent     → Illinois Z_arb classique (convergence garantie)
+```
+
+Le fallback concerne **~0.06 %** des zéros sur T=100 000 ($t < 200$ → environ 87 zéros).
+
+### Formule du coût total par zéro
+
+$$C_{\text{zéro}} = \underbrace{n_1 \times C_1}_{\approx 0.36\,\text{ms}} + \underbrace{2 \times 2 \times C_2}_{\approx 14\,\text{ms}} + C_{\text{overhead}}$$
+
+avec $C_1 = 0.015\,\text{ms}$ (Z_rs_double) et $C_2 = 3.5\,\text{ms}$ (Z_arb).
+
+**Coût moyen observé T=100k :** $\approx 4.7\,\text{ms/zéro}$
+
+### Comparaison backends d'affinage
+
+| Version | Backend | Coût/zéro | Précision | Turing T=100k |
+|---|---|---|---|---|
+| v7/v8 | Illinois MPFR prec=64/116 bits | ~10–130 ms | 1e-11 | ✅ |
+| v9 | Brent MPFR prec=64/80 bits | ~64 ms | 1e-11 | ✅ |
+| v10 | Brent MPFR prec=64/80 bits + W=8 | ~64 ms | 1e-11 | ✅ |
+| **v12** | **Illinois hybride Z_rs_double + Newton Z_arb** | **~4.7 ms** | **1e-12** | **✅** |
+
+Gain v10 → v12 : $64 / 4.7 \approx \times 13.6$ par zéro · $\times 16.9$ sur benchmark T=10k.
+
+### Résultats v12 mesurés (T=100 000, 2026-06-13)
+
+- ~138 080 zéros · **0 manquant** · **8.8 min** · **Turing COMPLET ✅** · **LMFDB 20/20 ✅**
+- Gain vs v10 : ×2.69 direct (T=100k) · ×16.9 (benchmark T=10k vs Z_arb pur)
+- Phase 1 utilisée : 99.94 % · Fallback mpmath : 0.06 % (t < 200)
+
+---
+
+## §29 — Découpage par fenêtres T — distribution multi-machines (15 juin 2026)
+
+> Méthode validée mathématiquement (Claude.ai web, 14 juin 2026).
+> Applicable à v13+ pour distribuer le scan sur plusieurs machines sans re-scanner
+> depuis $T = 0$.
+
+### Principe : $N(T)$ comme index de zéros
+
+La formule de Riemann-von Mangoldt :
+
+$$N(T) = \frac{\theta(T)}{\pi} + 1 + S(T)$$
+
+avec l'approximation de Stirling (valide pour $T \geq 20$) :
+
+$$\theta(T) \approx \frac{T}{2}\ln\!\left(\frac{T}{2\pi e}\right) - \frac{\pi}{8}$$
+
+permet à un worker de **démarrer son scan à l'indice $N(T_{\text{start}})$** pour une
+borne $T_{\text{start}}$ arbitraire — sans repartir de $t = 14{,}134...$
+
+**Conséquence pratique** : pour scanner $[100\,000, 200\,000]$, le worker commence à
+l'indice $N(100\,000) = 138\,069$ et ne calcule que sa tranche.
+
+### Condition STEP — certification locale
+
+La condition de pas adaptatif :
+
+$$\text{STEP}(t) < \frac{\pi}{\ln(t / 2\pi)}$$
+
+est **locale** (dépend uniquement de $t$, pas de l'historique). Un worker peut donc
+**s'auto-certifier** "0 manquant" sur sa fenêtre $[T_{\text{start}}, T_{\text{end}}]$
+via Turing/Backlund local, sans connaître les zéros des autres fenêtres.
+
+### Recouvrement de fenêtres
+
+Pour éviter de manquer un zéro tombant sur une frontière, chaque worker scanne avec un
+recouvrement de $\pm 5 \times \text{STEP}(t) \approx \pm 0{,}05$ :
+
+$$\tilde{T}_{\text{start}} = T_{\text{start}} - 0{,}05, \quad
+  \tilde{T}_{\text{end}}   = T_{\text{end}}   + 0{,}05$$
+
+Fusion des résultats : dédupliquer les doublons de la zone de recouvrement par :
+$$|t_i - t_j| < 10^{-8}$$
+
+### Validation globale = somme des validations locales
+
+Si chaque worker valide « $N_k$ zéros trouvés dans $[T_k, T_{k+1}]$, 0 manquant »,
+la validation globale est $\sum_k N_k$ — sans re-scanner depuis 0.
+
+**Vérification d'intégrité** : comparer $\sum_k N_k$ avec $N(T_{\max})$ Riemann-von
+Mangoldt (tolérance $|\Delta N| \leq 1$).
+
+### Valeurs de référence $N(T)$
+
+| $T$ | $N(T)$ exact | $N(T)$ Stirling sans $S(T)$ |
+|---|---|---|
+| 10 000 | 10 142 | ≈ 10 140 |
+| 100 000 | 138 069 | ≈ 138 069 |
+| 200 000 | 303 372 | ≈ 303 300 |
+| 1 000 000 | 1 747 146 | ≈ 1 746 900 |
+
+L'approximation Stirling peut être à $\pm 5$ zéros près pour les grandes hauteurs —
+suffisant pour indexer un démarrage de worker, insuffisant pour une validation exacte
+(utiliser la valeur LMFDB ou un calcul $N(T)$ rigoureux pour la validation finale).
+
+---
+## §30 — Biais Z_rs et seuil SEUIL_1NEWTON (v15, 2026-07-04)
+
+### Biais de Z_rs_double (formule RS tronquée C0+C1)
+
+La formule Riemann-Siegel tronquée $Z_{\text{rs}}(t)$ diffère de la valeur exacte $Z(t)$
+d'un biais structurel :
+
+$$\text{biais}(t) \;=\; |Z(t) - Z_{\text{rs}}(t)| \;\approx\; C \cdot t^{-5/4}$$
+
+Constante $C \approx 0{,}305$ calibrée sur les 20 premiers zéros LMFDB le 4 juillet 2026.
+
+| $t$ | $\text{biais}(t)$ approx. |
+|---|---|
+| 65 | $\approx 5{,}2 \times 10^{-3}$ |
+| 200 | $\approx 3{,}2 \times 10^{-4}$ |
+| 1 000 | $\approx 1{,}7 \times 10^{-5}$ |
+| 10 000 | $\approx 1{,}7 \times 10^{-6}$ |
+| 20 000 | $\approx 6{,}4 \times 10^{-7}$ |
+| 50 000 | $\approx 1{,}9 \times 10^{-7}$ |
+
+### Pseudo-zéro de Z_rs
+
+La Phase 1 Illinois converge vers le **pseudo-zéro** $\tilde{t}$ tel que $Z_{\text{rs}}(\tilde{t}) = 0$,
+décalé du vrai zéro $t_0$ d'environ :
+
+$$|\tilde{t} - t_0| \;\approx\; \frac{\text{biais}(t)}{|Z'(t_0)|}$$
+
+Pour $|Z'| \approx 1$ (ordre de grandeur typique), $|\tilde{t} - t_0| \approx \text{biais}(t)$.
+
+### Erreur après 1 Newton Z_arb depuis le pseudo-zéro
+
+Après la Phase 1, on dispose du pseudo-zéro $\tilde{t}$ à distance $d = \text{biais}(t)$ du vrai zéro.
+Un pas Newton avec $Z_{\text{arb}}$ exact en valeur et $Z_{\text{rs}}$ pour la dérivée donne :
+
+$$|\text{erreur après 1 Newton}| \;\approx\; d^2 \cdot \frac{|Z''(t_0)|}{2\,|Z'(t_0)|^2}
+  \;\approx\; \text{biais}(t)^2 \;\approx\; C^2 \cdot t^{-5/2}$$
+
+### Seuil SEUIL_1NEWTON (v15)
+
+La condition $\text{erreur} < \text{tol} = 10^{-12}$ donne :
+
+$$C^2 \cdot t^{-5/2} < 10^{-12} \quad \Longleftrightarrow \quad t > \left(\frac{C^2}{10^{-12}}\right)^{2/5}
+  \;\approx\; (0{,}093 \times 10^{12})^{0{,}4} \;\approx\; 16\,000$$
+
+Par marge de sécurité (×1.25 sur le seuil théorique), v15 utilise :
+
+$$\boxed{\text{SEUIL\_1NEWTON} = 20\,000}$$
+
+À $t = 20\,000$ : erreur estimée $\approx 4 \times 10^{-13} < 10^{-12}$ ✅ (marge ×2,4 sur tol).
+
+### Règle d'usage (dans illinois_arb.c)
+
+```c
+int n_newton = (t_curr < SEUIL_1NEWTON) ? 2 : 1;
+```
+
+- $t < 20\,000$ (12,8\% des zéros à $T=100\,000$) : 2 Newton Z_arb
+- $t \geq 20\,000$ (87,2\%) : 1 Newton Z_arb
+
+**Piège confirmé le 04/07/2026 :** forcer 1 Newton pour tout $t$ donne
+une erreur $\sim 1{,}75 \times 10^{-6}$ à $t \approx 65$ → score LMFDB 14/20.
+
+---
+*Auteur : hprzeta — Riemann_Lab — Mise à jour : 3 juin 2026 (§19–21) · 6 juin 2026 (§22) · 9 juin 2026 (§25) · 10 juin 2026 (§23 STEP adaptatif) · 11 juin 2026 (§24 benchmark v8 plancher i7) · 12 juin 2026 (§27 Brent C/mpfr v9) · 13 juin 2026 (§28 Illinois hybride 2-phases v12) · 15 juin 2026 (§29 découpage fenêtres T) · **4 juillet 2026 (§30 biais Z_rs + SEUIL_1NEWTON v15)** · ~1 630 lignes*
