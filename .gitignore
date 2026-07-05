@@ -1,0 +1,38 @@
+# ===== inbox-ia — branche de staging Markdown (RAG BrainVault) =====
+# Cette branche ne suit QUE des fichiers .md à la racine. Tout le reste
+# provient du même worktree que les autres branches (Riemann_Lab_C, ...) et
+# ne doit jamais être ajouté ici.
+
+# SECRETS — ne jamais committer
+.mcp.json
+
+# Dossiers/fichiers du code et de l'environnement (hors périmètre inbox-ia)
+zeta_env/
+src/
+docs/
+scripts/
+calculs/
+pdf/
+logs/
+handoff/
+test-results/
+claude-traitement-journalier/
+Riemann_Lab.wiki/
+
+# Notes personnelles locales — non versionnées
+materielunixlitepc2.txt
+pcemmaus.txt
+
+# IDE
+.vscode/
+.spyder-py3/
+
+# Environnement / bruit générique
+__pycache__/
+*.pyc
+*.log
+*.tmp
+*.bak
+.DS_Store
+.ipynb_checkpoints/
+# ===== FIN =====
