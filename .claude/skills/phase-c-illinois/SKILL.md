@@ -6,8 +6,8 @@ description: >
   Se déclenche sur : "Phase C", "libmpfr", "Illinois en C", "affinage C",
   "illinois_mpfr", "ctypes", "Voie B", "module C", "branche Riemann_Lab_C",
   "post-fork", "mpfr_t", "accélération Illinois", "compute_zeros_v4_1".
-version: 0.4.0
-date: 2026-06-11
+version: 0.5.0
+date: 2026-07-06
 ---
 
 # Phase C — Affinage Illinois en C / libmpfr (Voie B)
@@ -158,7 +158,7 @@ mpfr-config --version
 
 ---
 
-## État Phase C au 11 juin 2026
+## État Phase C au 5 juillet 2026 (chronologie complète v4.1 → v15)
 
 | Jalon | Statut |
 |---|---|
@@ -173,6 +173,17 @@ mpfr-config --version
 | **v7 — `illinois_refine_adaptive` (64→116 bits)** (`8637098`) | ✅ **138 069, 0 manquant, Turing COMPLET, 30.9 min** |
 | v7 benchmark T=5k : 1.47 ms/appel, 1808 z/s → **×16 vs 170 bits** | ✅ |
 | v7 benchmark T=100k : 42.05 ms/appel, 74.49 z/s → **×3.7 global** | ✅ |
+| **v9 — `brent_refine_adaptive`** (remplace le plan v8 prec_fast/W=8) — T=100k 26.6 min turbo | ✅ |
+| **v12 — illinois_refine_arb (Arb, tol=1e-12, 2 phases)** — T=100k 8.8 min · LMFDB 20/20 ✅ | ✅ |
+| **v13 — T_SEUIL 200→65, TOL 1e-9→1e-12** — T=100k 8.50 min · commit `77efd10` | ✅ |
+| **v14 — cache log_n/isqrt_n** — T=100k 7.7 min (×1.10) · commit `d4b3611` | ✅ |
+| **v15 — SEUIL_1NEWTON=20k (Phase 2 adaptative)** — T=100k **4.4 min (×1.93)** · LMFDB 20/20 ✅ | ✅ ⭐ |
+| **Condition Objectif 2 : T=100k < 5 min** | ✅ **ATTEINTE le 04/07/2026** |
+| Run T=5 000 000 v13 — 10 016 377 / 10 016 473 zéros · 96 manquants (grille Z_double) | ✅ terminé |
+| Rapport `analyse_problemes_v13_v15.md` + PDF | ✅ FAIT — wiki `2f845e4` · pdf `fda4fb9` |
+| RAG vault BrainVault (`/mnt/vault_rag`) — 838 chunks, `rag_monitor.py` | ✅ (05/07/2026) |
+| Rapport `v5 → v4.1` (`pdf/optimisation/analyse_problemes_v5_v4_1.pdf`) | ⏳ à faire |
+| Run T=5M avec v15 — investigation 96 manquants | ⏳ prochaine session |
 
 ---
 
@@ -191,17 +202,8 @@ pas du nombre de termes RS. La théorie prédisait ×4.6 via N_termes ; la réal
 **Règle v7 :** `N_full` termes dans les **deux** phases (N_fast = N_full/4 invalide les signes Z).
 `ITER_SWITCH=8`, `MAX_ITER=50`. `prec_fast=64`, `prec_full=116`.
 
----
-
-## v8 — En préparation
-
-| Option | Description | Gain estimé | Cible T=100k |
-|---|---|---|---|
-| A — W=8 workers | Doubler les workers (8 cœurs logiques) | ×1.3 | ~24 min |
-| B — prec phase 2 = 80 bits | 80 bits = encore 2 limbs → tester si OK | à mesurer | ? |
-
-**Bottleneck restant :** `illinois_C` = **78.2 %** du temps CPU à T=100k.
-**TÂCHE 0 (obligatoire avant v8)** : benchmark empirique prec_fast ∈ {32,48,64,80,96} bits.
+> **v8 (piste prec_fast ∈ {32,48,64,80,96} bits / W=8) — abandonnée au profit de v9 Brent.**
+> Détail de l'analyse comparative : `analyse_problemes_v8_v9.md` (wiki).
 
 ---
 
@@ -229,7 +231,8 @@ Inexistant dans v3 (mpmath pur plafonné à ~296 ms/appel constant). Pertinent p
 - `arb_wrapper.py` : détection auto libflint bundlée, fallback `mpmath` si absent
 - Run T=100 000 (2026-06-10) : 137 904 zéros · 99.35 min · 23.14 z/s
 - 356 manquants → cause : STEP=0.1 trop grand à grand t (espacement min = 0.028)
-- Fix 2026-06-10 : `step_pour_t()` → STEP 0.1/0.05/0.02 selon tranche t
+- Fix v1 (commit `7467731`) : `step_pour_t()` → STEP 0.1/0.05/0.02 selon tranche t
+- Fix v2 (commit `181fdd1`) : STEP 0.05/0.010 — gap min mesuré 0.01940 à t=66678 (< 0.02)
 - Segmentation 1/√t → charge équilibrée entre workers
 
 ---
@@ -240,31 +243,126 @@ Inexistant dans v3 (mpmath pur plafonné à ~296 ms/appel constant). Pertinent p
 
 $$\text{STEP}(t) < \frac{\pi}{\ln(t/2\pi)}$$
 
-Valeurs implémentées (`step_pour_t` dans `compute_zeros_v4_1.py`) :
+Valeurs implémentées (`step_pour_t` dans `compute_zeros_v4_1.py`) — **v2, commit `181fdd1`** :
 
 | Tranche $t$ | STEP | Justification |
 |---|---|---|
-| $t < 5\,000$ | 0.1 | $\delta_{\min} \approx 0.5$ → ratio safe |
-| $t \in [5\,000, 50\,000]$ | 0.05 | $\delta_{\min} \approx 0.038$ mesuré à T=10k |
-| $t > 50\,000$ | 0.02 | $\delta_{\min}$ encore plus petit |
+| $t < 5\,000$ | 0.05 | $\delta_{\min} \approx 0.5$ — large marge |
+| $t \geq 5\,000$ | **0.010** | gap min mesuré 0.01940 à t=66678 — STEP=0.02 capturait des faux brackets |
 
 **Overlap :** toujours **fixe = 2.0** (jamais proportionnel au STEP).
 
-Résultats mesurés (commit `50837f7`, branche `Riemann_Lab_C`) :
+Résultats mesurés :
 
 | Test | STEP | Overlap | Turing |
 |---|---|---|---|
 | T=10k v1 | 0.1 fixe | ×4 STEP | ❌ 6 manquants |
-| **T=10k v2** | **0.05 pour t≥5k** | **2.0 fixe** | **✅ 0 manquant** |
+| **T=10k v2** | **0.05 pour t≥5k** | **2.0 fixe** | **✅ 0 manquant** (commit `50837f7`) |
+| T=100k v1 adaptatif | 0.1/0.05/0.02 | 2.0 fixe | ❌ 30 manquants (t>50k) |
+| T=100k v2 adaptatif | 0.1/0.05/0.02 | 2.0 fixe | ❌ 68 manquants · 105 min (STEP=0.02 insuffisant) |
+| **T=100k v3** | **0.05/0.010** | **2.0 fixe** | **✅ 0 manquant, Turing COMPLET** |
 
 ---
 
-## Étapes restantes — v8
+## v9 — `brent_refine_adaptive` (validé 2026-06-12)
 
-1. Benchmark `prec_fast` ∈ {32, 48, 64, 80, 96} bits sur T=5k (TÂCHE 0 obligatoire).
-2. Choisir Option A (W=8) ou Option B (prec phase 2 réduite) selon benchmark.
-3. Implémenter v8, run T=100k, valider Turing.
-4. Cible : < 20 min pour T=100k.
+**Résultats :** 138 069 zéros · 0 manquant · Turing COMPLET · 26.6 min turbo · 28.0 min sans turbo
+
+**Pourquoi Brent gagne :**
+- Ordre ~1.84 vs Illinois ~1.44 → ~4 iter vs ~6 → même coût/iter (1 éval Z) → ×1.80 global
+
+**Turbo :** gain seulement ×1.05 (vs ×1.63 pour v7). Brent C limité par bande passante mémoire MPFR (ops 64→80 bits), pas par fréquence CPU.
+
+**Fichiers :**
+- `src/calculs/optimisation/c_modules/brent_mpfr.c`
+- `src/calculs/optimisation/c_modules/brent_mpfr.h`
+- `src/calculs/optimisation/compute_zeros_v9.py`
+
+**Paramètres validés :**
+- prec_fast=64 · prec_full=80 · tol=1e-11 · max_iter=50
+- STEP=0.010 fixe — NE JAMAIS MODIFIER
+- Charger `brent_mpfr.so` POST-FORK dans `worker_init()`
+
+**Sudoers :** `/etc/sudoers.d/zeta_turbo` fonctionnel depuis 2026-06-12.
+Toujours lancer `zeta_turbo_on.sh` avant run de production. Toujours `zeta_turbo_off.sh` après.
 
 ---
-*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026 · 9 juin 2026 (Mur de latence RÉSOLU ×27) · 10 juin 2026 (STEP adaptatif) · 11 juin 2026 (v7 validée 30.9 min — prec_fast=64 bits SIMD)*
+
+## v13 → v15 — Chronologie et résultats (2026-07-04)
+
+### v14 — Cache RS statique
+
+**Principe :** éviter `log(n)` + `1/sqrt(n)` à chaque terme de la somme RS.
+
+```c
+#define N_MAX_CACHE 2100  /* couvre T ≲ 27M */
+static double log_n_cache[N_MAX_CACHE + 1];
+static double isqrt_n_cache[N_MAX_CACHE + 1];
+static int    g_cache_ready = 0;
+
+static void init_rs_cache(void) {
+    if (g_cache_ready) return;
+    for (int n = 1; n <= N_MAX_CACHE; n++) {
+        log_n_cache[n]   = log((double)n);
+        isqrt_n_cache[n] = 1.0 / sqrt((double)n);
+    }
+    g_cache_ready = 1;
+}
+/* boucle RS : */
+sum += cos(th - t * log_n_cache[n]) * isqrt_n_cache[n];
+```
+
+Gain ×1.10 sur T=100k. L'init est appelée une fois au premier appel du worker (post-fork).
+Fichiers modifiés : `illinois_arb.c` et `scan_arb.c` — commit `d4b3611`.
+
+### v15 — Phase 2 adaptative SEUIL_1NEWTON
+
+**Principe mathématique :**
+- Biais Z_rs ≈ C·t^{-5/4} avec C ≈ 0.305 (calibré LMFDB 04/07)
+- Erreur après 1 Newton ≈ biais² ≈ C²·t^{-5/2}
+- Pour t ≥ 20 000 : biais ≈ 6.4e-7, erreur ≈ 4e-13 < tol=1e-12
+- SEUIL_1NEWTON = 20 000 (marge ×2.4 par rapport au minimum strict ≈ 16 000)
+
+```c
+#define SEUIL_1NEWTON 20000.0
+
+int n_newton = (t_curr < SEUIL_1NEWTON) ? 2 : 1;
+for (int k = 0; k < n_newton; k++) {
+    double dZ = (Z_rs_double(t_curr + h) - Z_rs_double(t_curr - h)) / (2.0 * h);
+    if (fabs(dZ) < 1e-10) break;
+    double Zt = Z_arb(t_curr);
+    if (fabs(Zt) < tol) return t_curr;
+    double delta = Zt / dZ;
+    t_curr -= delta;
+    if (fabs(delta) < tol) break;
+}
+```
+
+**Piège absolu :** ne jamais réduire à 1 Newton pour TOUT t.
+1 Newton fixe → erreur ~1.75e-6 à t≈65 (biais_RS=5e-3 → LMFDB 14/20).
+
+**Résultats v12→v15 (T=100k, PC1 turbo) :**
+
+| Version | Temps | z/s | Phase 2 |
+|---|---|---|---|
+| v12 | 8.8 min | 261 | 2 Newton Z_arb (early-exit naturel) |
+| v13 | 8.50 min | 271 | idem + T_SEUIL=65 |
+| v14 | 7.7 min | 299 | v13 + cache log_n/isqrt_n |
+| **v15** | **4.4 min** | **517** | v14 + SEUIL_1NEWTON=20k |
+
+**Gain cumulé v13→v15 : ×1.93. Gain global v1→v15 : ×28 600+**
+**Condition Objectif 2 (T=100k < 5 min) : ATTEINTE le 04/07/2026 ✅**
+
+---
+
+## Étapes restantes
+
+> 📍 Liste vivante — voir `Handoff.md` (wiki) → section « REPRENDRE ICI » pour la
+> priorité courante. Ne pas dupliquer ici.
+
+1. Rapport `v5 → v4.1` (`pdf/optimisation/analyse_problemes_v5_v4_1.pdf`).
+2. Run T=5M avec v15 — investigation des 96 manquants (~18h estimé).
+3. Industrialiser la boucle RAG (retrieval + génération) — voir `STACK.md` § Objectif 2.
+
+---
+*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026 · 9 juin 2026 (Mur de latence RÉSOLU ×27) · 10 juin 2026 (STEP adaptatif v2) · 11 juin 2026 (v7 validée 30.9 min — prec_fast=64 bits SIMD) · 12 juin 2026 (v9 Brent validée, sudoers OK) · 4 juillet 2026 (v14 cache RS, v15 SEUIL_1NEWTON, Obj2 ✅, T=5M 96 manquants) · **5 juillet 2026 (fusion des deux lignées v7/v8 et v9-v15 — RAG vault en service)***
