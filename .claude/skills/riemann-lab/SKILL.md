@@ -50,6 +50,14 @@ T_{10%}             →  utiliser T_{10\%}  (% = commentaire KaTeX !)
 \left\{             →  seul sans \right\} → erreur (souvent causé par % commentaire)
 ```
 
+### 🔒 Règles d'échappement systématiques (audit 05/07/2026)
+- Underscore brut dans `\text{...}` → toujours `\_` (ex: `\text{gap\_moyen}`)
+- `%` brut en mode math, y compris dans les indices (ex: `T_{10%}`) → toujours `\%`
+- Accolades d'ensemble littérales (notation `{...}`) → toujours `\{ ... \}`
+  (ne pas confondre avec les accolades d'arguments de commande `\frac{}{}`, `\text{}`,
+  `\sqrt{}`, les exposants/indices `^{}` `_{}`, ou l'idiome virgule française `{,}` —
+  ceux-là restent des accolades non échappées, ce sont des arguments LaTeX légitimes)
+
 ### ⚠️ Pièges spécifiques GitHub KaTeX (découverts en production)
 
 **Piège 1 — Le `%` est un commentaire dans KaTeX**
@@ -148,21 +156,36 @@ katex.render(expression, element, { throwOnError: false });
 
 ## 5. Code Python — conventions
 
-### État du projet (17 juin 2026)
+### État du projet (4 juillet 2026)
 
-| Version | Méthode affinage | T=1000 vitesse | T=100k | Turing |
+| Version | Méthode affinage | T=100k | Turing | Commit |
 |---|---|---|---|---|
-| v12 | illinois_refine_arb (Arb, tol=1e-9) | PC1: 195 z/s · PC2: 6.4 z/s | — | ✅ COMPLET |
-| **v13** | illinois_refine_arb (Arb, tol=1e-12) | **PC1: 624 z/s · PC2: 52 z/s** | en cours | ✅ COMPLET |
+| v12 | illinois_refine_arb (Arb, tol=1e-9) | 8.8 min | ✅ COMPLET | `f0e8430` |
+| v13 | illinois_refine_arb (Arb, tol=1e-12) | 8.50 min | ✅ COMPLET | `77efd10` |
+| v14 | v13 + cache log_n/isqrt_n | 7.7 min (×1.10) | ✅ COMPLET | `d4b3611` |
+| **v15** ⭐ | v14 + Phase 2 adaptative SEUIL=20k | **4.4 min (×1.93)** | ✅ COMPLET | `adf5d2a` |
 
-**v13 — commit `77efd10` branche `Riemann_Lab_C` (2026-06-17) :**
-- `T_SEUIL_PETIT_T` : 200 → **65** (N_RS=2 défaillant à t<57 ; 65 = marge empirique)
-- `TOL_ARB` : 1e-9 → **1e-12** (marge LMFDB, coût nul en double précision)
-- Gains : PC1 ×3.2 · PC2 **×8.1** (bottleneck Worker 0 : 101s → 12.5s)
+**Condition Objectif 2 atteinte le 04/07/2026 : T=100k = 4.4 min < 5 min ✅**
+
+**v14 — commit `d4b3611` (2026-07-04) :**
+- Cache statique `log_n_cache[2101]` + `isqrt_n_cache[2101]` dans `illinois_arb.c` et `scan_arb.c`
+- 33 KB total — tient en L2 cache — initialisation unique post-fork par worker
+- Couvre T≲27M (N_MAX_CACHE=2100 termes RS)
+- Gain ×1.10 (évite `log()` + `sqrt()` ≈ 100 cycles/terme → lecture L2 ≈ 4 cycles)
+
+**v15 — commit `adf5d2a` (2026-07-04) :**
+- `#define SEUIL_1NEWTON 20000.0` dans `illinois_arb.c` Phase 2
+- Biais Z_rs ≈ 0.305·t^{-5/4} → erreur 1 Newton ≈ biais² ≈ 4e-13 < tol pour t≥20k
+- 87% des zéros T=100k ont t≥20k → économie 1 appel Z_arb (≈1.8 ms) par zéro
+- LMFDB 20/20 validé (vs 14/20 avec 1 Newton fixe pour t<200)
 
 **Leçon T_SEUIL :** scan_arb (Z_double, N_RS termes) a des brackets décalés si N_RS=2 (t<57).
 illinois_refine_arb reçoit des signes fa/fb faux → convergence décalée (jusqu'à 3e-9).
 Fix : garder arb_hardy_z+mpmath pour t < T_SEUIL (pas de re-éval fa/fb après coup — piège).
+
+**Piège 1 Newton fixe :** réduire à 1 Newton pour TOUT t → erreur ~1.75e-6 à t≈65 (LMFDB 14/20).
+Cause : biais_RS(65) ≈ 5e-3 → 1 Newton depuis 5e-3 → erreur ≈ 1.75e-6 >> tol=1e-12.
+Solution : `int n_newton = (t < SEUIL_1NEWTON) ? 2 : 1;`
 
 **Leçon STEP GUE :** STEP = δ(t)/3 insuffisant — gap min GUE ≈ 0.019 à t=66 678,
 soit 0.028·δ. Formule safe : **STEP ≤ 0.010** (fixe). L'accélération vient de `scan_arb.c`.
@@ -295,4 +318,4 @@ Pour des sujets plus approfondis, consulter :
 - Signaler explicitement si une formule risque de ne pas s'afficher sur GitHub
 
 ---
-*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 1ᵉʳ juin 2026 · 10 juin 2026 (état v4, leçon STEP GUE, plan v6)*
+*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 1ᵉʳ juin 2026 · 10 juin 2026 (état v4, leçon STEP GUE, plan v6) · **4 juillet 2026 (v14/v15, Obj2 ✅, piège 1-Newton)***
