@@ -33,6 +33,7 @@ Date   : 2026-07-19
 import argparse
 import datetime
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -50,15 +51,23 @@ MODELE_LLM_DEFAUT = "mathstral"
 RAM_LIBRE_SEUIL_MO = 1500   # avertissement en dessous (leçon crash 06/07)
 
 PROMPT_TEMPLATE = """Tu es un assistant technique du projet Riemann_Lab. Réponds \
-UNIQUEMENT à partir du contexte ci-dessous (extraits du wiki/code du projet). \
-Si le contexte ne contient pas la réponse, dis-le clairement — n'invente rien.
+UNIQUEMENT à partir du contexte ci-dessous (extraits du wiki/code du projet, \
+chacun précédé de son fichier source entre crochets, ex. [fichier.md]).
+
+Règle stricte de citation : pour CHAQUE fait, chiffre ou valeur exacte que tu \
+donnes, recopie-le TEL QUEL depuis l'extrait source et fais suivre immédiatement \
+d'une citation entre crochets avec le nom du fichier exact, ex. « 192.168.1.52 \
+[Architecture-Cluster-Zeta.md] ». N'arrondis pas, ne reformule pas, ne déduis pas \
+une valeur par analogie avec une autre. Si une information demandée n'apparaît \
+mot pour mot dans AUCUN extrait ci-dessous, écris « non trouvé dans le contexte » \
+pour cette information précise plutôt que de l'inventer ou de l'estimer.
 
 --- CONTEXTE ---
 {contexte}
 --- FIN CONTEXTE ---
 
 Question : {question}
-Réponse :"""
+Réponse (avec citation [fichier] après chaque fait) :"""
 
 
 def ssd_monte() -> bool:
@@ -125,6 +134,43 @@ def generation(question: str, chunks: list, modele_llm: str) -> tuple:
     t_generation = time.time() - t0
 
     return reponse.json().get("response", "").strip(), t_generation
+
+
+CITATION_RE = re.compile(r"\b([\w\-]+\.(?:md|py|c|h))\b")   # nom de fichier, quels que soient les délimiteurs autour
+VALEUR_RE = re.compile(r"\b(?:\d{1,3}(?:\.\d{1,3}){3}|\d+(?:[.,]\d+)?)\b")   # IP ou nombre
+
+
+def citations_douteuses(texte_reponse: str, chunks: list) -> list:
+    """Fichiers cités dans la réponse (entre crochets, parenthèses, ou combinaison des
+    deux — mathstral n'est pas cohérent sur le format malgré la consigne) mais absents
+    des chunks retrouvés — la citation elle-même est fabriquée.
+
+    Ne prouve PAS que le fait cité est faux : mathstral peut citer une source réelle
+    pour une valeur inventée (cf. incident IP cluster 19/07/2026, où les 4 citations
+    étaient correctes mais les 4 valeurs fausses) — voir valeurs_non_ancrees() pour
+    la vérification qui compte réellement.
+    """
+    sources_connues = {meta.get("file", meta.get("source", "?")) for _, meta, _ in chunks}
+    citees = set(CITATION_RE.findall(texte_reponse))
+    return sorted(c for c in citees if c not in sources_connues)
+
+
+def valeurs_non_ancrees(texte_reponse: str, chunks: list) -> list:
+    """Nombres/IP de la réponse absents (littéralement) du texte des chunks retrouvés.
+
+    Vérification programmatique indépendante de ce que le modèle prétend citer —
+    un chiffre halluciné n'apparaît dans aucun chunk source, quelle que soit la
+    citation accolée. Ignore les petits entiers (1-2 chiffres, ex. numérotation de
+    liste "1.", "2.") pour limiter les faux positifs.
+    """
+    contexte_brut = "\n".join(doc for doc, _, _ in chunks)
+    non_ancres = []
+    for m in VALEUR_RE.findall(texte_reponse):
+        est_ip = m.count(".") == 3
+        significatif = est_ip or len(re.sub(r"[.,]", "", m)) >= 3
+        if significatif and m not in contexte_brut:
+            non_ancres.append(m)
+    return sorted(set(non_ancres))
 
 
 def ecrire_log(question: str, chunks: list, texte_reponse: str, latences: dict) -> Path:
@@ -195,6 +241,20 @@ def main() -> None:
             latences["generation"] = t_generation
             print("  génération : {:.1f} s".format(t_generation))
             print("\n{}".format(texte_reponse))
+
+            non_ancrees = valeurs_non_ancrees(texte_reponse, chunks)
+            if non_ancrees:
+                print("\n🚫 valeur(s) ABSENTE(S) du contexte source (hallucination probable) : {} "
+                      "— ces chiffres n'apparaissent dans AUCUN chunk retrouvé, quelle que soit "
+                      "la citation donnée par le modèle.".format(", ".join(non_ancrees)))
+
+            douteuses = citations_douteuses(texte_reponse, chunks)
+            if douteuses:
+                print("⚠️  citation(s) fabriquée(s) (fichier cité absent des chunks retrouvés) : {}"
+                      .format(", ".join(douteuses)))
+            elif not CITATION_RE.search(texte_reponse):
+                print("⚠️  aucune citation [fichier] dans la réponse malgré la consigne — "
+                      "faits non traçables, à vérifier manuellement.")
         except requests.exceptions.ConnectionError:
             print("❌ ollama injoignable sur {} — `ollama serve` est-il actif ? "
                   "(systemctl status ollama)".format(OLLAMA_HOST))
