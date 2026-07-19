@@ -140,7 +140,7 @@ def test_latence_requete() -> None:
         sources = res.get("metadatas", [[]])[0]
         if sources:
             print("  top-3 sources : " + " · ".join(
-                str(m.get("file_name", m.get("source", "?"))) for m in sources))
+                str(m.get("file", m.get("source", "?"))) for m in sources))
     except ImportError as e:
         print("  ❌ dépendance manquante : {} (activer zeta_env)".format(e))
     except Exception as e:
