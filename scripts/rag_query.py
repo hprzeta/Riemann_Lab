@@ -149,10 +149,27 @@ def citations_douteuses(texte_reponse: str, chunks: list) -> list:
     pour une valeur inventée (cf. incident IP cluster 19/07/2026, où les 4 citations
     étaient correctes mais les 4 valeurs fausses) — voir valeurs_non_ancrees() pour
     la vérification qui compte réellement.
+
+    Compare sur le nom de base (`os.path.basename`) : les fichiers de code sont
+    indexés avec leur chemin complet (`src/.../illinois_arb.c`, voir
+    rag_ingest_corpus.py) mais CITATION_RE n'extrait que le nom de fichier — une
+    comparaison stricte sur le chemin complet donnait de faux positifs (testé
+    19/07/2026 : `illinois_arb.c` signalé "fabriqué" alors qu'il était bien retrouvé).
     """
-    sources_connues = {meta.get("file", meta.get("source", "?")) for _, meta, _ in chunks}
+    sources_connues = {
+        os.path.basename(meta.get("file", meta.get("source", "?")))
+        for _, meta, _ in chunks
+    }
     citees = set(CITATION_RE.findall(texte_reponse))
-    return sorted(c for c in citees if c not in sources_connues)
+    return sorted(c for c in citees if os.path.basename(c) not in sources_connues)
+
+
+def normaliser_separateurs_milliers(s: str) -> str:
+    """Supprime les virgules/espaces utilisés comme séparateurs de milliers
+    (20,000 ou 20 000 → 20000) sans toucher aux virgules/espaces suivis d'autre
+    chose qu'un chiffre — évite de casser du texte normal ("Newton, la...").
+    """
+    return re.sub(r"[,\s](?=\d)", "", s)
 
 
 def valeurs_non_ancrees(texte_reponse: str, chunks: list) -> list:
@@ -162,14 +179,24 @@ def valeurs_non_ancrees(texte_reponse: str, chunks: list) -> list:
     un chiffre halluciné n'apparaît dans aucun chunk source, quelle que soit la
     citation accolée. Ignore les petits entiers (1-2 chiffres, ex. numérotation de
     liste "1.", "2.") pour limiter les faux positifs.
+
+    Compare aussi les formes normalisées (séparateur de milliers ôté) : mathstral
+    reformate parfois une valeur correcte (`20000.0` en source → `20,000.0` en
+    réponse) — un faux positif observé le 19/07/2026 sinon.
     """
     contexte_brut = "\n".join(doc for doc, _, _ in chunks)
+    contexte_norm = normaliser_separateurs_milliers(contexte_brut)
     non_ancres = []
     for m in VALEUR_RE.findall(texte_reponse):
         est_ip = m.count(".") == 3
         significatif = est_ip or len(re.sub(r"[.,]", "", m)) >= 3
-        if significatif and m not in contexte_brut:
-            non_ancres.append(m)
+        if not significatif:
+            continue
+        if m in contexte_brut:
+            continue
+        if normaliser_separateurs_milliers(m) in contexte_norm:
+            continue
+        non_ancres.append(m)
     return sorted(set(non_ancres))
 
 
