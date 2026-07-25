@@ -1,6 +1,6 @@
 # ~/projet_zeta/CLAUDE.md — Contexte projet Riemann_Lab
 > **Fichier :** CLAUDE.md - **Dossier :** racine repo (`~/projet_zeta/`)
-> **Branche :** Riemann_Lab_C (source) -> sync main - IA - Test - **Auteur :** hprzeta - **MAJ :** 2026-06-03
+> **Branche :** Riemann_Lab_C (source) -> sync main - IA - Test - **Auteur :** hprzeta - **MAJ :** 2026-07-25
 
 ---
 
@@ -17,6 +17,19 @@ sécurité). **Aucun état de session ici.** L'état courant, l'historique et la
 
 > En début de session : **lire `Handoff.md`**, pas ce fichier (chargé automatiquement).
 > Ne jamais recopier l'état du Handoff ici.
+
+---
+
+## 📍 Mécanisme « point projet »
+
+Sur demande **« point projet »** / **« où en est-on »** : lire
+`~/riemann_handoff/Handoff.md` (local, hors repo) et afficher **tel quel** le bloc
+entre `<!-- PROMPT_REPRISE_DEBUT -->` et `<!-- PROMPT_REPRISE_FIN -->`, puis résumer
+l'état en 3 lignes (version pipeline, dernier commit, prochaine action). **Ne rien
+exécuter sans OK explicite de hprzeta.**
+
+En fin de session : mettre à jour ce bloc `PROMPT_REPRISE` de
+`~/riemann_handoff/Handoff.md` avec la prochaine action réelle.
 
 ---
 
@@ -258,4 +271,4 @@ sudo scripts/zeta_turbo_off.sh
 > (elle change à chaque session ; ce fichier doit rester stable).
 
 ---
-*CLAUDE.md - racine - source Riemann_Lab_C (sync 4 branches) - hprzeta - MAJ 2026-06-03 - 235 lignes*
+*CLAUDE.md - racine - source Riemann_Lab_C (sync 4 branches) - hprzeta - MAJ 2026-07-25 - 274 lignes*
