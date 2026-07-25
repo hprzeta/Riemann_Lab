@@ -222,7 +222,7 @@ def ecrire_log(question: str, chunks: list, texte_reponse: str, latences: dict) 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Boucle RAG BrainVault — retrieval + génération")
     parser.add_argument("question", help="question en langage naturel")
-    parser.add_argument("--k", type=int, default=3, help="nombre de chunks retrouvés (défaut 3)")
+    parser.add_argument("--k", type=int, default=8, help="nombre de chunks retrouvés (défaut 8 — voir Guide-Ollama-Pratique.md §5.1 : k=3/6 ratent le chunk clé au rang 7 sur SEUIL_1NEWTON, 25/07/2026)")
     parser.add_argument("--modele", default=MODELE_LLM_DEFAUT, help="modèle ollama (défaut mathstral)")
     parser.add_argument("--no-llm", action="store_true", help="retrieval seul, sans appel LLM")
     parser.add_argument("--log", action="store_true", help="écrire un log dans agent_logs")
