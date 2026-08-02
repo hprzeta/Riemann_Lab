@@ -93,7 +93,10 @@ def retrieval(question: str, k: int) -> tuple:
     import chromadb
 
     t0 = time.time()
-    modele = SentenceTransformer(MODELE_EMBEDDING)
+    # device="cpu" forcé : torch 2.11.0+cu130 a abandonné le support Maxwell
+    # (CC 5.0, GTX 960M) — plante en CUDA sur l'embedding (incident 25/07/2026).
+    # mathstral n'est pas affecté (moteur CUDA natif d'ollama, indépendant de torch).
+    modele = SentenceTransformer(MODELE_EMBEDDING, device="cpu")
     t_chargement = time.time() - t0
 
     t0 = time.time()
