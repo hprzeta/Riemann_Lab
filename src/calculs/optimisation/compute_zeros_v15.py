@@ -728,13 +728,42 @@ def _step_adaptatif(T_MAX: float) -> float:
     retenu. Conclusion : MARGE_SECURITE reste le seul levier fiable ici ; κ=1.357
     est conservé tel quel, en gardant explicitement à l'esprit que le modèle
     entier (répulsion GUE, loi de Montgomery) est une **heuristique physique,
-    pas un théorème démontré**, et que même MARGE=3.0 n'a AUCUNE garantie
-    statistique de suffire à T=5M — seul un nouveau run (ou une mesure non
-    censurée, ex. rescan ciblé très fin sur les zones suspectes) le confirmerait.
+    pas un théorème démontré**.
+    ────────────────────────────────────────────────────────────────────────
+
+    ── Mesure NON censurée par rescan ciblé fin (02/08/2026) ──────────────────
+    Pour lever l'incertitude ci-dessus sans lancer un nouveau run T=5M complet :
+    rescan de 3 fenêtres étroites (~4 unités en t) avec arb_hardy_z (Arb/FLINT,
+    précis, pas l'approximation Z_double du scan normal) à STEP/10, comparé à
+    une simulation du scan normal (κ=1.357, MARGE=3.0) sur les MÊMES fenêtres :
+
+        Zone                     N zéros (fin) vs (normal MARGE=3.0)   Manquants
+        T≈130 060  (anomalie CSV T=500k)        6 vs 6                    0
+        T≈865 898  (anomalie CSV T=5M, T modéré) 7 vs 7                    0
+        T≈4 862 705 (anomalie CSV T=5M, T haut)  8 vs 6                    2 ❌
+
+    Résultat clé : **MARGE=3.0 échoue réellement à T≈4,86M** (2 zéros confirmés
+    manquants par comparaison directe fin/normal — pas une inférence indirecte).
+    Bisection sur cette même fenêtre (STEP_normal/n, n=1..10) :
+        n=3  (MARGE≈9)   → 7/8 trouvés (encore 1 manquant)
+        n=4  (MARGE≈12)  → 8/8 trouvés (seuil de suffisance mesuré)
+        n=5  (MARGE≈15)  → 8/8 trouvés (confirmé, cushion)
+
+    Donc à T≈4,86M, la marge réellement nécessaire est ≈×4 plus grande que
+    MARGE=3.0, soit MARGE≈12 pile, ≈15 avec coussin. Les zones à T plus bas
+    (130k, 866k) n'ont PAS montré ce besoin (0 manquant même à MARGE=3.0) —
+    signe que le besoin de marge croît avec T plus vite que ne le prédit
+    l'exposant N^(-1/3) fixe du modèle (cohérent avec le exposant ajusté ≈-0.018
+    trouvé plus haut sur données censurées : le modèle sous-estime la croissance
+    du risque avec T). **MARGE_SECURITE relevée à 15.0** sur cette base — mesure
+    directe sur UNE seule zone à T≈4,86M, traitée comme borne inférieure
+    actionnable, pas comme constante universelle prouvée sur tout T ∈[14,5M].
+    κ reste inchangé (1.357) : c'est MARGE_SECURITE qui absorbe cette
+    incertitude, conformément à la conclusion de la section précédente.
     ────────────────────────────────────────────────────────────────────────
     """
     KAPPA = 1.357
-    MARGE_SECURITE = 3.0
+    MARGE_SECURITE = 15.0
     T = max(float(T_MAX), 100.0)  # garde-fou : log/N indéfinis sous 2πe
     gap_moyen = 2 * math.pi / math.log(T / (2 * math.pi * math.e))
     N_T = (T / (2 * math.pi)) * math.log(T / (2 * math.pi * math.e))
