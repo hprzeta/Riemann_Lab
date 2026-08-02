@@ -755,15 +755,39 @@ def _step_adaptatif(T_MAX: float) -> float:
     signe que le besoin de marge croît avec T plus vite que ne le prédit
     l'exposant N^(-1/3) fixe du modèle (cohérent avec le exposant ajusté ≈-0.018
     trouvé plus haut sur données censurées : le modèle sous-estime la croissance
-    du risque avec T). **MARGE_SECURITE relevée à 15.0** sur cette base — mesure
+    du risque avec T). MARGE_SECURITE relevée à 15.0 sur cette base — mesure
     directe sur UNE seule zone à T≈4,86M, traitée comme borne inférieure
     actionnable, pas comme constante universelle prouvée sur tout T ∈[14,5M].
     κ reste inchangé (1.357) : c'est MARGE_SECURITE qui absorbe cette
     incertitude, conformément à la conclusion de la section précédente.
+
+    ── Redescente à MARGE=10.0 (02/08/2026, après validation ciblée) ──────────
+    3 zones re-testées à MARGE=6/8/10 (dont la zone T≈4,86M ci-dessus) :
+    MARGE=6 et 8 → encore 1 manquant sur la zone haute-T ; MARGE=10 → 0 manquant
+    sur les 3 zones (6/6, 7/7, 8/8). C'est la plus basse des valeurs testées qui
+    passe partout — pas de coussin au-delà du seuil mesuré.
+
+    Test supplémentaire, spécifique à la distribution PC1+PC2 (cf.
+    scripts/zeta_distribute.py) : le pivot T_PIVOT réel pour un run T=5M
+    (T≈3 469 744, calculé sur les vitesses PC1/PC2 mesurées le 02/08/2026)
+    n'avait jamais été testé À MARGE=10 précisément à cet endroit — seul
+    MARGE=15 l'avait été (Turing COMPLET + vérification indépendante 14/14).
+    Run réel (PC1 local + PC2 SSH + supplément pivot, mêmes bornes que le
+    script complet) sur une fenêtre de 40 unités centrée sur ce T_PIVOT exact,
+    MARGE=10 : 84 zéros fusionnés, **0 manquant** vs scan de référence
+    indépendant (arb_hardy_z, STEP/10). Les 3 écarts apparents dans cette
+    comparaison se sont révélés être des faux négatifs du script de
+    vérification (dérive d'arrondi cumulative de np.arange sur ~1,1M points —
+    exactement le piège que ce fichier évite déjà en C, cf. scan_arb.c,
+    "t recalculé depuis t_min à chaque itération"), pas des zéros manqués par
+    le pipeline réel.
+
+    MARGE_SECURITE = 10.0 : validée à la fois en solo (3 zones dont T≈4,86M)
+    et en distribution PC1+PC2 (au vrai pivot du run T=5M cible).
     ────────────────────────────────────────────────────────────────────────
     """
     KAPPA = 1.357
-    MARGE_SECURITE = 15.0
+    MARGE_SECURITE = 10.0
     T = max(float(T_MAX), 100.0)  # garde-fou : log/N indéfinis sous 2πe
     gap_moyen = 2 * math.pi / math.log(T / (2 * math.pi * math.e))
     N_T = (T / (2 * math.pi)) * math.log(T / (2 * math.pi * math.e))
