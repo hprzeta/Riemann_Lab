@@ -16,8 +16,8 @@
 
 set -e
 
-PC2_HOST="hprzeta@192.168.1.52"
-PC2_KEY="$HOME/.ssh/id_acer"
+PC2_HOST="zeta-calc-second"
+PC2_KEY="$HOME/.ssh/zeta_cluster"
 PC2_PROJET="/home/hprzeta/projet_zeta"
 
 PROJET_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
