@@ -701,6 +701,37 @@ def _step_adaptatif(T_MAX: float) -> float:
     manquants, avec rescan STEP/2 récupérant seulement +1 zéro net. Cette baisse
     2.0 annulait sans le documenter le correctif du 23/06 (commit 7914fa3), déjà
     posé après que le run T=500000 distribué eut donné 8 manquants avec marge=2.0.
+
+    ── Tentative de recalibration de κ (analyse offline, 02/08/2026) ──────────
+    3 points réels disponibles (CSV existants, aucun nouveau run) :
+
+        T        N(T) Weyl   "Espacement min" logué   κ_estimé = min/(gap_moyen·N^-1/3)
+        100 000     138 069   0.014705  (0 manquant)              1.049
+        500 000     818 413   0.012811  (8 manquants)              1.961
+        5 000 000 10 016 473   0.010094 (96 manquants)              4.359
+
+    **Ces 3 points ne permettent PAS une recalibration fiable de κ, et κ N'A PAS
+    été changé** (reste 1.357). Raison : "Espacement min" logué n'est PAS l'écart
+    minimal réel entre zéros — c'est l'écart minimal parmi les SEULS zéros
+    détectés, plafonné par en-dessous par le pouvoir de résolution du scan
+    (≈ STEP lui-même). Dès qu'un run a des manquants (500k, 5M), les paires les
+    plus proches — justement celles qu'on voudrait mesurer — sont invisibles
+    par construction (censure à gauche). Preuve : injecter κ_estimé=1.961 (point
+    500k) avec MARGE=3.0 donne STEP(5M)=0.0015140, à peine 3,6 % plus fin que le
+    STEP=0.0015712 qui a déjà échoué (96 manquants) — la "recalibration" annule
+    quasiment le bénéfice du passage MARGE 2.0→3.0 (qui seul donne STEP×0.667,
+    soit 33 % plus fin). Augmenter κ à partir de données censurées est donc
+    contre-productif ici : cela réduit la marge réelle au lieu de l'augmenter.
+    Un ajustement de l'exposant -1/3 a aussi été tenté (2 points propres 100k/
+    500k) : exposant ajusté ≈ -0.018 au lieu de -0.333 — beaucoup trop instable
+    (2 points bruités, réalisation unique de statistique d'extrême) pour être
+    retenu. Conclusion : MARGE_SECURITE reste le seul levier fiable ici ; κ=1.357
+    est conservé tel quel, en gardant explicitement à l'esprit que le modèle
+    entier (répulsion GUE, loi de Montgomery) est une **heuristique physique,
+    pas un théorème démontré**, et que même MARGE=3.0 n'a AUCUNE garantie
+    statistique de suffire à T=5M — seul un nouveau run (ou une mesure non
+    censurée, ex. rescan ciblé très fin sur les zones suspectes) le confirmerait.
+    ────────────────────────────────────────────────────────────────────────
     """
     KAPPA = 1.357
     MARGE_SECURITE = 3.0
