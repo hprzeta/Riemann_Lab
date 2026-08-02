@@ -696,13 +696,14 @@ def _step_adaptatif(T_MAX: float) -> float:
         STEP(T)    = min_gap(T) / MARGE_SECURITE
 
     κ ≈ 1.357 calibré sur le seul point fiable (T=100000, run Turing COMPLET).
-    MARGE_SECURITE = 2.0 (facteur ×2 sous le pire cas observé) — à resserrer pour
-    aller plus vite, ou augmenter si un futur run échoue encore. Cette calibration
-    repose sur UN SEUL point de mesure : revalider sur le prochain run avant de la
-    considérer définitive.
+    MARGE_SECURITE = 3.0 (restaurée le 02/08/2026 — avait été abaissée à 2.0 juste
+    avant le run T=5M du 27-29/06/2026 (commit a0e6e41), qui a donné 96 zéros
+    manquants, avec rescan STEP/2 récupérant seulement +1 zéro net. Cette baisse
+    2.0 annulait sans le documenter le correctif du 23/06 (commit 7914fa3), déjà
+    posé après que le run T=500000 distribué eut donné 8 manquants avec marge=2.0.
     """
     KAPPA = 1.357
-    MARGE_SECURITE = 2.0
+    MARGE_SECURITE = 3.0
     T = max(float(T_MAX), 100.0)  # garde-fou : log/N indéfinis sous 2πe
     gap_moyen = 2 * math.pi / math.log(T / (2 * math.pi * math.e))
     N_T = (T / (2 * math.pi)) * math.log(T / (2 * math.pi * math.e))
