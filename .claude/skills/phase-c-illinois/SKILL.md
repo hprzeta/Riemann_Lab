@@ -355,6 +355,36 @@ for (int k = 0; k < n_newton; k++) {
 
 ---
 
+## Architecture scan-puis-affinage — comportement normal, pas un blocage (2026-08-05)
+
+`compute_zeros_v15.py` (mode distribué et solo) exécute, par worker, **deux phases
+séquentielles distinctes** :
+
+1. **Scan** : `scan_arb(t_start, t_end, step, ...)` — un seul appel bloquant qui
+   parcourt l'intégralité du segment du worker et retourne la liste des brackets
+   candidats. Aucune sortie n'est produite pendant cette phase.
+2. **Affinage** : boucle sur les brackets, produit les lignes
+   `[Worker N] zéro #... à t=... — ...s` (celles que lit `zeta_run_progress.py`).
+
+**Conséquence pratique :** un worker peut rester silencieux pendant une **très longue
+durée** (plusieurs heures sur un run T=5M) sans que ce soit un signe de blocage — le
+scan avance réellement, simplement sans instrumentation de progression. Observé sur le
+run T=5M du 04-05/08/2026 : 0 ligne de log pendant les 4 premières heures (confirmé
+aussi sur la tentative du 02/08, tuée après 4h+ sans avoir jamais produit une seule
+ligne). Le coût du scan par point croît de plus avec t (plus de termes Riemann-Siegel),
+donc les workers sur les segments à t élevé restent silencieux plus longtemps que ceux
+à t bas — ordre de complétion cohérent avec ça, pas aléatoire.
+
+**Pour vérifier qu'un worker silencieux calcule réellement** (pas bloqué/mort) :
+```bash
+ps -o pid,pcpu,stat,etimes,cmd -p <PID>   # état R/S + %CPU non nul + ELAPSED qui croît
+```
+Un worker en état `R` avec du CPU consommé en continu est normal, même sans ligne de
+log. `zeta_run_progress.py` (détail workers, touche `d`) n'affiche un worker qu'après
+sa première ligne de progression — c'est voulu, pas un bug d'affichage.
+
+---
+
 ## Étapes restantes
 
 > 📍 Liste vivante — voir `Handoff.md` (wiki) → section « REPRENDRE ICI » pour la
@@ -365,4 +395,4 @@ for (int k = 0; k < n_newton; k++) {
 3. Industrialiser la boucle RAG (retrieval + génération) — voir `STACK.md` § Objectif 2.
 
 ---
-*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026 · 9 juin 2026 (Mur de latence RÉSOLU ×27) · 10 juin 2026 (STEP adaptatif v2) · 11 juin 2026 (v7 validée 30.9 min — prec_fast=64 bits SIMD) · 12 juin 2026 (v9 Brent validée, sudoers OK) · 4 juillet 2026 (v14 cache RS, v15 SEUIL_1NEWTON, Obj2 ✅, T=5M 96 manquants) · **5 juillet 2026 (fusion des deux lignées v7/v8 et v9-v15 — RAG vault en service)***
+*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026 · 9 juin 2026 (Mur de latence RÉSOLU ×27) · 10 juin 2026 (STEP adaptatif v2) · 11 juin 2026 (v7 validée 30.9 min — prec_fast=64 bits SIMD) · 12 juin 2026 (v9 Brent validée, sudoers OK) · 4 juillet 2026 (v14 cache RS, v15 SEUIL_1NEWTON, Obj2 ✅, T=5M 96 manquants) · **5 juillet 2026 (fusion des deux lignées v7/v8 et v9-v15 — RAG vault en service)** · **5 août 2026 (architecture scan-puis-affinage documentée)***
