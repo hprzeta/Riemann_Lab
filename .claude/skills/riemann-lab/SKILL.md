@@ -258,6 +258,28 @@ def tracer_Z(t_min: float, t_max: float, points: int = 1000):
 
 ---
 
+### Runs longs non surveillés — vérification alimentation obligatoire (2026-08-05)
+
+**PC1 (`zeta-lab`) est un portable.** Avant tout lancement d'un run long
+(`zeta-distribute`, `zeta_run.sh`) destiné à tourner sans surveillance :
+
+```bash
+upower -i $(upower -e | grep -i AC)   # doit afficher : online: yes
+```
+
+**Pourquoi c'est nécessaire :** `nohup`/`setsid` protègent un process d'une fermeture
+de session ou d'une déconnexion SSH, **pas** d'un vrai `poweroff`/reboot machine. Un run
+T=5M lancé le 02/08/2026 a tourné sur batterie (débranché, non détecté) et a été tué par
+3 redémarrages non planifiés en moins de 24h : `CriticalPowerAction=HybridSleep` (UPower)
+à batterie critique n'a pas pu reprendre proprement (`resume=` non câblé côté kernel
+malgré une swapfile disponible) et a dégénéré en extinction sauvage. Correctif appliqué :
+`CriticalPowerAction=PowerOff` dans `/etc/UPower/UPower.conf` (arrêt propre et
+prévisible en dernier recours). Détail complet → `JOURNAL.md` wiki, entrée 04/08/2026 ;
+`Guide-Linux-Commandes.md` §19.
+
+PC2/PC3/PC4 sont alimentés en continu (pas de batterie) — cette vérification ne les
+concerne pas.
+
 ## 6. Commits Git — Conventional Commits
 
 Toujours en **anglais** (convention), mais les messages de corps peuvent être en français.
@@ -318,4 +340,4 @@ Pour des sujets plus approfondis, consulter :
 - Signaler explicitement si une formule risque de ne pas s'afficher sur GitHub
 
 ---
-*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 1ᵉʳ juin 2026 · 10 juin 2026 (état v4, leçon STEP GUE, plan v6) · **4 juillet 2026 (v14/v15, Obj2 ✅, piège 1-Newton)***
+*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 1ᵉʳ juin 2026 · 10 juin 2026 (état v4, leçon STEP GUE, plan v6) · **4 juillet 2026 (v14/v15, Obj2 ✅, piège 1-Newton)** · **5 août 2026 (vérification alimentation obligatoire avant run long PC1)***
