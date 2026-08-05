@@ -38,6 +38,8 @@ scripts/audit_extract_text*/
 
 # SECRETS — ne jamais committer
 .mcp.json
+.env
+.env.local
 
 # Etat de session volatil — local uniquement
 Handoff.md
