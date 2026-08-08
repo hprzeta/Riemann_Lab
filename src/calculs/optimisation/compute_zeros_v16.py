@@ -1,32 +1,42 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-compute_zeros_v15.py — Phase C v15 : Phase 2 adaptative (SEUIL_1NEWTON=20k)
+compute_zeros_v16.py — Phase C v16 : Z_arb à précision fixe (acb_dirichlet_hardy_z)
 ═════════════════════════════════════════════════════════════════════════════
-v15 (2026-07-04) : optimisation Phase 2 Illinois dans illinois_arb.c.
+v16 (2026-08-08) : remplacement de Z_arb dans illinois_arb.c.
 
-Diagnostic v14 T=100k (7.7 min, 299 z/s) :
-  Illinois Phase 2 domine (~98% du temps) — 2 Newton Z_arb systématiques.
-  Pour t > ~50k : early-exit au k=0 déjà → 1 seul Z_arb effectif.
-  Pour t ∈ [20k, 50k] : early-exit rare → 2 Z_arb toujours exécutés.
+Diagnostic (perf record, session 08/08/2026) :
+  arb_fpwrap_cdouble_hardy_z(flags=0) escalade en interne 64→128→...→8192
+  bits jusqu'à certifier ~1e-16 (confirmé depuis le code source FLINT 3.3.1,
+  src/arb_fpwrap/fpwrap.c) — largement plus que notre besoin réel (tol=1e-12,
+  ~40 bits). 91% du temps mesuré dans GMP+FLINT via cette fonction.
 
-Optimisation v15 :
-  SEUIL_1NEWTON = 20 000 dans illinois_arb.c Phase 2.
-  t ≥ 20 000 : 1 Newton Z_arb (biais_RS ≈ 6.4e-7 → erreur ~4e-13 < tol=1e-12).
-  t < 20 000 : 2 Newton Z_arb inchangé (biais_RS trop grand pour 1 Newton).
-  N(20k)/N(100k) ≈ 12.8% des zéros gardent 2 Newton.
-  Gain estimé : ×1.77 sur Illinois → T=100k 7.7 → ~4.3 min.
+Optimisation v16 :
+  Z_arb (Phase 2, illinois_arb.c) appelle désormais acb_dirichlet_hardy_z
+  directement à précision FIXE 64 bits (UN SEUL calcul, pas d'escalade), au
+  lieu de arb_fpwrap_cdouble_hardy_z. Nécessite c_modules/flint-headers-3.3.1/
+  (headers vendorisés en source — apt libflint-dev = 3.0.1, ABI incompatible).
+  Précision 64 bits choisie : coïncide avec WP_INITIAL de arb_fpwrap, marge
+  ~7 décimales au-dessus des ~40 bits nécessaires pour tol=1e-12.
 
-Invariants conservés depuis v14 :
+  Validé sur run réel T=10000 avant intégration (compute_zeros_v15_test_
+  lowprec.py, prototype isolé) : Turing-Backlund COMPLET, LMFDB 20/20,
+  10 142 zéros identiques à v15, gain bout-en-bout mesuré ×1.98
+  (20,2s → 10,2s ; le ×5.75 mesuré sur 300 brackets isolés surestimait le
+  gain réel — la phase Illinois ne pèse que ~77% du temps mur d'un run réel).
+  Détail complet → Handoff.md/JOURNAL.md wiki, entrée 08/08/2026.
+
+Invariants conservés depuis v15 (architecture Phase 1/2 inchangée) :
+  SEUIL_1NEWTON = 20 000 : t ≥ 20k → 1 Newton, t < 20k → 2 Newton (inchangé)
   Cache log_n/isqrt_n : illinois_arb.c + scan_arb.c (inchangé)
   Phase 1 : Illinois Z_rs C → |b-a| < 1e-6 (inchangé)
   T_SEUIL_PETIT_T : 65.0 (inchangé)
   TOL_ARB : 1e-12 (inchangé)
-  STEP    : adaptatif κ·gap_moyen(T)·N(T)^(-1/3)/2 (inchangé)
+  STEP    : adaptatif κ·gap_moyen(T)·N(T)^(-1/3)/10 (inchangé)
   Workers : 8 (inchangé)
 
 Auteur : hprzeta — Projet Hypothèse de Riemann — Phase C
-Date   : 2026-07-04
+Date   : 2026-08-08
 """
 
 import os
@@ -131,8 +141,8 @@ TOL_ARB  = 1e-12  # tolérance illinois_refine_arb — abaissée de 1e-9 à 1e-1
                   # seuil LMFDB et causait 16/20 au lieu de 20/20)
 MAX_ITER = 50     # max itérations Illinois (convergence rapide avec Arb)
 
-def worker_v15(args: tuple) -> Tuple[list, dict, dict]:
-    """Worker v15 — détection scan_arb.c + affinage illinois_refine_arb.
+def worker_v16(args: tuple) -> Tuple[list, dict, dict]:
+    """Worker v16 — détection scan_arb.c + affinage illinois_refine_arb.
 
     Charge illinois_arb.so APRÈS le fork() → pas de corruption mémoire partagée.
     Détection : scan_arb C (Z_double RS + C0+C1, step=0.010) pour t ≥ 20
@@ -296,7 +306,7 @@ def worker_v15(args: tuple) -> Tuple[list, dict, dict]:
 #  SECTION 3 — ORCHESTRATEUR PARALLÈLE
 # ═══════════════════════════════════════════════════════════════════════════════
 
-def calculer_zeros_v15(
+def calculer_zeros_v16(
     T_MIN     : float,
     T_MAX     : float,
     N_WORKERS : int,
@@ -320,7 +330,7 @@ def calculer_zeros_v15(
     print()
 
     with multiprocessing.Pool(processes=N_WORKERS) as pool:
-        resultats = pool.map(worker_v15, args_list)
+        resultats = pool.map(worker_v16, args_list)
 
     zeros_bruts = []
     stats_total = {"arb_C": 0, "mpmath_fallback": 0}
@@ -354,7 +364,7 @@ def rescan_segments_deficit(
     du premier passage (cause confirmée 26/06/2026 : les manquants sont des
     ratés du scan Z_double, pas des rejets illinois).
 
-    Le pipeline de rescan est identique à worker_v14 (même illinois_arb.so,
+    Le pipeline de rescan est identique à worker_v16 (même illinois_arb.so,
     même TOL_ARB) — seul le STEP change.
     Fonctionne sur PC1 uniquement (pas de distribution PC2).
 
@@ -410,7 +420,7 @@ def rescan_segments_deficit(
         for i, seg_a, seg_b, t_lo, t_hi, d in segments_a_rescanner
     ]
     with multiprocessing.Pool(processes=len(args_rescan)) as pool:
-        resultats_rescan = pool.map(worker_v15, args_rescan)
+        resultats_rescan = pool.map(worker_v16, args_rescan)
 
     duree_rescan = time.time() - debut_rescan
     print(f"  Rescan terminé en {duree_rescan:.1f}s")
@@ -494,7 +504,7 @@ def visualiser(zeros: List[float], T_MAX: float, horodatage: str, dossier: Path)
     ecarts = np.diff(zeros)
     fig, axes = plt.subplots(1, 3, figsize=(18, 5))
     fig.suptitle(
-        f"Zéros de ζ(½+it) — v14 — {len(zeros)} zéros [T_MAX={T_MAX:.0f}]",
+        f"Zéros de ζ(½+it) — v16 — {len(zeros)} zéros [T_MAX={T_MAX:.0f}]",
         fontsize=13, fontweight="bold"
     )
 
@@ -530,7 +540,7 @@ def visualiser(zeros: List[float], T_MAX: float, horodatage: str, dossier: Path)
     ax.set_xlim(0, 1); ax.legend(); ax.grid(True, alpha=0.3)
 
     plt.tight_layout()
-    nom_png = f"zeros_v15_T{T_MAX:.0f}_{horodatage}.png"
+    nom_png = f"zeros_v16_T{T_MAX:.0f}_{horodatage}.png"
     plt.savefig(str(dossier / nom_png), dpi=150)
     plt.close()
     print(f"  Graphique → {nom_png}")
@@ -542,13 +552,13 @@ def visualiser(zeros: List[float], T_MAX: float, horodatage: str, dossier: Path)
 
 def sauvegarder_csv(zeros, stats, T_MAX, STEP, N_WORKERS,
                     horodatage, dossier) -> Path:
-    nom        = f"zeros_v15_T{T_MAX:.0f}_{horodatage}.csv"
+    nom        = f"zeros_v16_T{T_MAX:.0f}_{horodatage}.csv"
     chemin_csv = dossier / nom
     df = pd.DataFrame({
         "n":                 range(1, len(zeros) + 1),
         "partie_imaginaire": zeros,
         "T_MAX":             T_MAX,
-        "version":           "v15",
+        "version":           "v16",
         "methode_affinage":  "arb_C_pur",
         "step":              STEP,
         "n_workers":         N_WORKERS,
@@ -562,14 +572,14 @@ def sauvegarder_csv(zeros, stats, T_MAX, STEP, N_WORKERS,
 def ecrire_log(chemin_log, horodatage, T_MIN, T_MAX, STEP, N_WORKERS,
                tol, duree_s, zeros, stats, resultats_lmfdb,
                resultats_turing, chemin_csv, rapport_rescan=None):
-    """Journal d'exécution v14."""
+    """Journal d'exécution v16."""
     lignes = []
     sep    = "=" * 65
 
     def L(t=""): lignes.append(t)
 
     L(sep)
-    L("  JOURNAL D'EXÉCUTION — compute_zeros_v15.py  (Phase C)")
+    L("  JOURNAL D'EXÉCUTION — compute_zeros_v16.py  (Phase C)")
     L("  Projet : Hypothèse de Riemann — hprzeta")
     L(sep); L()
 
@@ -579,7 +589,7 @@ def ecrire_log(chemin_log, horodatage, T_MIN, T_MAX, STEP, N_WORKERS,
     L(f"      Durée  : {duree_s/60:.2f} min  ({duree_s:.1f} s)")
     L()
 
-    L("  [2] PARAMÈTRES v14")
+    L("  [2] PARAMÈTRES v16")
     L(f"      T_MIN              = {T_MIN}")
     L(f"      T_MAX              = {T_MAX}")
     L(f"      STEP               = {STEP}")
@@ -797,7 +807,7 @@ def _step_adaptatif(T_MAX: float) -> float:
 def saisir_parametres():
     print()
     print("=" * 65)
-    print("   CALCUL DES ZÉROS NON TRIVIAUX — v14 (Phase C / Arb)")
+    print("   CALCUL DES ZÉROS NON TRIVIAUX — v16 (Phase C / Arb, précision fixe)")
     print("=" * 65)
     print()
     scan_statut = "✓ scan_arb.so actif (Z_double C)" if SCAN_ARB_DISPONIBLE else "⚠ fallback Z_vect_correct"
@@ -836,7 +846,7 @@ def saisir_parametres():
         sys.exit(0)
 
     horodatage = datetime.now().strftime("%Y%m%d_%H%M%S")
-    dossier    = Path("calculs") / f"v15_T{T_MAX:.0f}_{horodatage}"
+    dossier    = Path("calculs") / f"v16_T{T_MAX:.0f}_{horodatage}"
     dossier.mkdir(parents=True, exist_ok=True)
     return T_MAX, N_WORKERS, STEP, horodatage, dossier
 
@@ -862,7 +872,7 @@ def main():
         N_WORKERS  = 8
         STEP       = _step_adaptatif(T_MAX)
         horodatage = _cli.horodatage or datetime.now().strftime("%Y%m%d_%H%M%S")
-        dossier    = Path("calculs") / f"v15_T{T_MIN:.0f}_{T_MAX:.0f}_{horodatage}"
+        dossier    = Path("calculs") / f"v16_T{T_MIN:.0f}_{T_MAX:.0f}_{horodatage}"
         dossier.mkdir(parents=True, exist_ok=True)
         print(f"\n  [Mode distribué] [{T_MIN:.1f}, {T_MAX:.1f}] — "
               f"{N_WORKERS} workers — STEP={STEP}")
@@ -872,14 +882,14 @@ def main():
 
     print(f"\n  Lancement — {N_WORKERS} workers, STEP={STEP}, "
           f"T_SEUIL_PETIT_T=20, illinois_refine_arb pour tout t...\n")
-    zeros, stats, profil_workers, segments = calculer_zeros_v15(
+    zeros, stats, profil_workers, segments = calculer_zeros_v16(
         T_MIN, T_MAX, N_WORKERS, STEP, TOL_ARB
     )
     duree_run_principal = time.time() - debut_global
 
     print()
     print("=" * 65)
-    print("  RÉSULTATS v15 — run principal")
+    print("  RÉSULTATS v16 — run principal")
     print("=" * 65)
     print(f"  Zéros trouvés     : {len(zeros)}")
     print(f"  Attendus (Weyl)   : {N_attendu(T_MAX):.0f}")
@@ -929,7 +939,7 @@ def main():
     )
     visualiser(zeros, T_MAX, horodatage, dossier)
 
-    nom_log    = f"execution_v15_T{T_MAX:.0f}_{horodatage}.log"
+    nom_log    = f"execution_v16_T{T_MAX:.0f}_{horodatage}.log"
     chemin_log = dossier / nom_log
     ecrire_log(
         chemin_log, horodatage, T_MIN, T_MAX, STEP, N_WORKERS,
@@ -939,7 +949,7 @@ def main():
 
     print()
     print("=" * 65)
-    print(f"  v15 terminée — fichiers dans : {dossier}")
+    print(f"  v16 terminée — fichiers dans : {dossier}")
     if resultats_turing["complet"]:
         print("  Validation Turing : ✅ COMPLET (aucun zéro manqué)")
     else:
