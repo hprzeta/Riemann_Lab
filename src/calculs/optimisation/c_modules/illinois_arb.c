@@ -1,11 +1,24 @@
-/* illinois_arb.c — affinage Illinois via arb_fpwrap_cdouble_hardy_z
+/* illinois_arb.c — affinage Illinois via acb_dirichlet_hardy_z (précision fixe)
+ *
+ * v16 (2026-08-08) — remplacement de Z_arb vs v15 :
+ *   arb_fpwrap_cdouble_hardy_z(flags=0) escalade en interne 64→128→...→8192
+ *   bits jusqu'à certifier ~1e-16 (confirmé depuis le code source FLINT
+ *   3.3.1, src/arb_fpwrap/fpwrap.c) — largement plus que notre besoin réel
+ *   (tol=1e-12, ~40 bits). Remplacé par acb_dirichlet_hardy_z appelé à
+ *   precision FIXE 64 bits (UN SEUL calcul, pas d'escalade).
+ *   Gain mesuré : ×1.98 bout-en-bout sur run réel T=10000 (Turing COMPLET,
+ *   LMFDB 20/20, résultats identiques à v15) — voir Handoff.md/JOURNAL.md
+ *   wiki, entrée 08/08/2026. 64 bits choisi (coïncide avec WP_INITIAL de
+ *   arb_fpwrap, marge ~7 décimales au-dessus des ~40 bits nécessaires).
+ *   Nécessite c_modules/flint-headers-3.3.1/ (headers vendorisés en source —
+ *   apt libflint-dev = 3.0.1, ABI incompatible avec la .so runtime 3.3.1).
  *
  * v14 (2026-07-04) — optimisation vs v13 :
  *   Cache statique log_n_cache + isqrt_n_cache : évite log(n) et 1/sqrt(n)
  *   à chaque évaluation Z_rs_double — gain ×1.3-2 sur Phase 1 et sur les
  *   appels Z_rs de Phase 2 (dérivée numérique).
  *
- * Note sur Phase 2 (inchangée depuis v13) :
+ * Note sur Phase 2 (architecture inchangée depuis v13, seul Z_arb change en v16) :
  *   La boucle fait 2 Newton Z_arb avec early-exit si |Zt| < tol.
  *   Pour t > ~50 000 (biais Z_rs < 6e-7) : k=0 suffit → 1 seul Z_arb.
  *   Pour t < 50 000 (biais Z_rs important) : 2 Z_arb nécessaires.
@@ -15,10 +28,14 @@
  *   Phase 1 : Illinois Z_rs (cache, ~0.010 ms/appel) → |b-a| < 1e-6
  *   Phase 2 : 2 Newton Z_arb avec early-exit → erreur < 1e-12
  *
- * Phase C — Riemann_Lab / hprzeta — 2026-07-04 */
+ * Phase C — Riemann_Lab / hprzeta — 2026-08-08 */
 
 #include <math.h>
 #include <stdio.h>
+#include "flint.h"
+#include "acb.h"
+#include "acb_dirichlet.h"
+#include "dirichlet.h"
 
 /* ── Constante π (évite acos(-1.0) répété à chaque évaluation Z) ─────────── */
 #define PI 3.14159265358979323846
@@ -55,14 +72,26 @@ void arb_close_debug_log(void) {
     if (g_arb_log) { fflush(g_arb_log); fclose(g_arb_log); g_arb_log = NULL; }
 }
 
-/* ── Déclaration forward arb_fpwrap_cdouble_hardy_z ─────────────────────────
- * flags = 0 : calcul standard (précision automatique avec certificat). */
-typedef struct {
-    double real;
-    double imag;
-} arb_cdouble_t;
+/* ── Groupe/caractère Dirichlet trivial (q=1) — zêta pure ────────────────────
+ * Initialisé une fois par worker (fork), comme le cache RS. acb_dirichlet_
+ * hardy_z nécessite ces types même pour la fonction zêta simple (caractère
+ * principal mod 1). Pattern confirmé sur le test officiel FLINT
+ * acb_dirichlet/test/t-hardy_z.c. */
+static dirichlet_group_t g_G;
+static dirichlet_char_t  g_chi;
+static int g_dirichlet_ready = 0;
 
-extern int arb_fpwrap_cdouble_hardy_z(arb_cdouble_t *res, arb_cdouble_t t, int flags);
+static void init_dirichlet_trivial(void) {
+    if (g_dirichlet_ready) return;
+    dirichlet_group_init(g_G, 1);
+    dirichlet_char_init(g_chi, g_G);
+    dirichlet_char_index(g_chi, g_G, 0);   /* caractère principal mod 1 */
+    g_dirichlet_ready = 1;
+}
+
+/* Précision fixe Phase 2 — voir en-tête de fichier pour la justification
+ * (v16, 08/08/2026). NE PAS baisser sans revalider LMFDB + Turing complet. */
+#define PREC_BITS_ARB 64
 
 /* ── θ(t) asymptotique Stirling (valide t ≥ 20) ─────────────────────────── */
 static double theta_rs(double t) {
@@ -113,14 +142,23 @@ static double Z_rs_double(double t) {
     return S + sign * pow(tau, -0.5) * (C0 + C1);
 }
 
-/* ── Z_arb — évalue Z(t) via Arb (précision garantie) ──────────────────────
- * Si ret ≠ 0 (erreur Arb, jamais observée pour t ≥ 14) → fallback Z_rs. */
+/* ── Z_arb — évalue Z(t) via acb_dirichlet_hardy_z à precision fixe (v16) ───
+ * UN SEUL calcul à PREC_BITS_ARB bits, pas d'escalade (contrairement à
+ * l'ancien arb_fpwrap_cdouble_hardy_z qui visait ~1e-16 en interne). */
 static double Z_arb(double t) {
-    arb_cdouble_t res = {0.0, 0.0};
-    arb_cdouble_t arg = {t, 0.0};
-    int ret = arb_fpwrap_cdouble_hardy_z(&res, arg, 0);
-    if (ret != 0) return Z_rs_double(t);
-    return res.real;
+    init_dirichlet_trivial();
+
+    acb_t s, res;
+    acb_init(s);
+    acb_init(res);
+    acb_set_d(s, t);
+
+    acb_dirichlet_hardy_z(res, s, g_G, g_chi, 1, (slong)PREC_BITS_ARB);
+    double result = arf_get_d(arb_midref(acb_realref(res)), ARF_RND_NEAR);
+
+    acb_clear(s);
+    acb_clear(res);
+    return result;
 }
 
 /* =========================================================================
