@@ -158,7 +158,7 @@ mpfr-config --version
 
 ---
 
-## État Phase C au 5 juillet 2026 (chronologie complète v4.1 → v15)
+## État Phase C au 8 août 2026 (chronologie complète v4.1 → v16)
 
 | Jalon | Statut |
 |---|---|
@@ -177,13 +177,14 @@ mpfr-config --version
 | **v12 — illinois_refine_arb (Arb, tol=1e-12, 2 phases)** — T=100k 8.8 min · LMFDB 20/20 ✅ | ✅ |
 | **v13 — T_SEUIL 200→65, TOL 1e-9→1e-12** — T=100k 8.50 min · commit `77efd10` | ✅ |
 | **v14 — cache log_n/isqrt_n** — T=100k 7.7 min (×1.10) · commit `d4b3611` | ✅ |
-| **v15 — SEUIL_1NEWTON=20k (Phase 2 adaptative)** — T=100k **4.4 min (×1.93)** · LMFDB 20/20 ✅ | ✅ ⭐ |
-| **Condition Objectif 2 : T=100k < 5 min** | ✅ **ATTEINTE le 04/07/2026** |
+| **v15 — SEUIL_1NEWTON=20k (Phase 2 adaptative)** — T=100k **4.4 min (×1.93)** · LMFDB 20/20 ✅ | ✅ |
+| **v16 — Z_arb à précision fixe (acb_dirichlet_hardy_z, 64 bits)** — T=100k **1.6 min (×2.75)** · LMFDB 20/20 ✅ | ✅ ⭐ |
+| **Condition Objectif 2 : T=100k < 5 min** | ✅ **ATTEINTE le 04/07/2026, améliorée le 08/08/2026 (1.6 min)** |
 | Run T=5 000 000 v13 — 10 016 377 / 10 016 473 zéros · 96 manquants (grille Z_double) | ✅ terminé |
 | Rapport `analyse_problemes_v13_v15.md` + PDF | ✅ FAIT — wiki `2f845e4` · pdf `fda4fb9` |
 | RAG vault BrainVault (`/mnt/vault_rag`) — 838 chunks, `rag_monitor.py` | ✅ (05/07/2026) |
 | Rapport `v5 → v4.1` (`pdf/optimisation/analyse_problemes_v5_v4_1.pdf`) | ⏳ à faire |
-| Run T=5M avec v15 — investigation 96 manquants | ⏳ prochaine session |
+| Run T=5M avec v16 — investigation 96 manquants | ⏳ prochaine session |
 
 ---
 
@@ -341,23 +342,90 @@ for (int k = 0; k < n_newton; k++) {
 **Piège absolu :** ne jamais réduire à 1 Newton pour TOUT t.
 1 Newton fixe → erreur ~1.75e-6 à t≈65 (biais_RS=5e-3 → LMFDB 14/20).
 
-**Résultats v12→v15 (T=100k, PC1 turbo) :**
+**Résultats v12→v16 (T=100k, PC1 turbo) :**
 
 | Version | Temps | z/s | Phase 2 |
 |---|---|---|---|
 | v12 | 8.8 min | 261 | 2 Newton Z_arb (early-exit naturel) |
 | v13 | 8.50 min | 271 | idem + T_SEUIL=65 |
 | v14 | 7.7 min | 299 | v13 + cache log_n/isqrt_n |
-| **v15** | **4.4 min** | **517** | v14 + SEUIL_1NEWTON=20k |
+| v15 | 4.4 min | 517 | v14 + SEUIL_1NEWTON=20k |
+| **v16** | **1.6 min** | **1407** | v15 + Z_arb précision fixe 64 bits |
 
-**Gain cumulé v13→v15 : ×1.93. Gain global v1→v15 : ×28 600+**
-**Condition Objectif 2 (T=100k < 5 min) : ATTEINTE le 04/07/2026 ✅**
+**Gain cumulé v13→v15 : ×1.93. Gain v15→v16 : ×2.75. Gain global v1→v16 : ×78 650+**
+**Condition Objectif 2 (T=100k < 5 min) : ATTEINTE le 04/07/2026, améliorée le 08/08/2026 (1.6 min) ✅**
+
+---
+
+### v16 — Z_arb à précision fixe (acb_dirichlet_hardy_z, 08/08/2026)
+
+**Diagnostic (`perf record` réel sur `illinois_refine_arb`, 08/08/2026) :**
+91% du temps dans GMP+FLINT, exclusivement via `arb_fpwrap_cdouble_hardy_z` (Phase 2).
+Mécanisme confirmé depuis le code source FLINT 3.3.1 (`src/arb_fpwrap/fpwrap.c`) :
+boucle d'escalade `wp=64` puis doublement (64→128→...→8192 bits), recalcul complet à
+chaque niveau, jusqu'à certifier une précision **~1e-16** — largement plus que le besoin
+réel (tol=1e-12, ~40 bits). `flags=0` (déjà utilisé) est déjà la variante la moins chère
+de l'API `fpwrap` — **aucun gain possible en jouant sur `flags` seul**.
+
+**Solution :** appel direct à la fonction bas niveau `acb_dirichlet_hardy_z(res, t, G,
+chi, len, prec)` — précision fixe explicite, UN SEUL calcul, pas d'escalade. Nécessite
+`dirichlet_group_t`/`dirichlet_char_t` (q=1 = caractère principal = zêta pure, pattern
+confirmé sur le test officiel FLINT `acb_dirichlet/test/t-hardy_z.c`), initialisés une
+fois par worker (fork) comme le cache RS.
+
+```c
+static void init_dirichlet_trivial(void) {
+    if (g_dirichlet_ready) return;
+    dirichlet_group_init(g_G, 1);
+    dirichlet_char_init(g_chi, g_G);
+    dirichlet_char_index(g_chi, g_G, 0);   /* caractère principal mod 1 */
+    g_dirichlet_ready = 1;
+}
+
+#define PREC_BITS_ARB 64   /* coïncide avec WP_INITIAL de arb_fpwrap */
+
+static double Z_arb(double t) {
+    init_dirichlet_trivial();
+    acb_t s, res;
+    acb_init(s); acb_init(res);
+    acb_set_d(s, t);
+    acb_dirichlet_hardy_z(res, s, g_G, g_chi, 1, (slong)PREC_BITS_ARB);
+    double result = arf_get_d(arb_midref(acb_realref(res)), ARF_RND_NEAR);
+    acb_clear(s); acb_clear(res);
+    return result;
+}
+```
+
+**Dépendance nouvelle :** headers FLINT 3.3.1 vendorisés en source
+(`c_modules/flint-headers-3.3.1/`) — `apt libflint-dev` = 3.0.1, ABI incompatible
+(`dirichlet_group_t`/`dirichlet_char_t` activement modifiés entre versions FLINT, risque
+de corruption mémoire silencieuse). `Makefile` : `-I flint-headers-3.3.1` ajouté à la
+cible `illinois_arb.so`.
+
+**Précision 64 bits choisie** (vs 48 bits, aussi validé bit-identique à l'ancienne
+production sur 300 brackets) : coïncide avec `WP_INITIAL` de `arb_fpwrap` lui-même, marge
+~7 décimales au-dessus des ~40 bits nécessaires — jugée plus sûre que 48 bits (~2,4
+décimales de marge) face à un cas limite non couvert par l'échantillon de test.
+
+**Validation avant intégration** (isolation stricte — `illinois_arb.c` de production
+jamais touché avant validation complète) :
+1. Prototype isolé (`compute_zeros_v15_test_lowprec.py`, `illinois_arb_lowprec.so`)
+   validé sur run réel **T=10000** : Turing COMPLET, LMFDB 20/20, 10 142 zéros identiques
+   à v15, gain bout-en-bout **×1.98** (20,2s → 10,2s).
+2. Intégration dans `illinois_arb.c` (v16) revalidée à **T=100000** (protocole standard
+   du projet, comme pour v12→v15) : 138 069/138 069 zéros, Turing COMPLET, LMFDB 20/20,
+   gain **×2.75** (4.4 min → 1.6 min).
+
+**Piège écarté :** MPFR pur (`illinois_refine`, PREC=170 bits, sans Arb) testé en
+comparaison — 11,88× **plus lent** ET ~4 ordres de grandeur **moins précis** que la
+version Arb (biais structurel de la RS tronquée, même à haute précision). Ne pas
+reproposer cette piste.
 
 ---
 
 ## Architecture scan-puis-affinage — comportement normal, pas un blocage (2026-08-05)
 
-`compute_zeros_v15.py` (mode distribué et solo) exécute, par worker, **deux phases
+`compute_zeros_v16.py` (mode distribué et solo, même architecture que v15) exécute, par worker, **deux phases
 séquentielles distinctes** :
 
 1. **Scan** : `scan_arb(t_start, t_end, step, ...)` — un seul appel bloquant qui
@@ -391,8 +459,8 @@ sa première ligne de progression — c'est voulu, pas un bug d'affichage.
 > priorité courante. Ne pas dupliquer ici.
 
 1. Rapport `v5 → v4.1` (`pdf/optimisation/analyse_problemes_v5_v4_1.pdf`).
-2. Run T=5M avec v15 — investigation des 96 manquants (~18h estimé).
+2. Run T=5M avec v16 — investigation des 96 manquants (~18h estimé, réduit par le gain v16).
 3. Industrialiser la boucle RAG (retrieval + génération) — voir `STACK.md` § Objectif 2.
 
 ---
-*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026 · 9 juin 2026 (Mur de latence RÉSOLU ×27) · 10 juin 2026 (STEP adaptatif v2) · 11 juin 2026 (v7 validée 30.9 min — prec_fast=64 bits SIMD) · 12 juin 2026 (v9 Brent validée, sudoers OK) · 4 juillet 2026 (v14 cache RS, v15 SEUIL_1NEWTON, Obj2 ✅, T=5M 96 manquants) · **5 juillet 2026 (fusion des deux lignées v7/v8 et v9-v15 — RAG vault en service)** · **5 août 2026 (architecture scan-puis-affinage documentée)***
+*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026 · 9 juin 2026 (Mur de latence RÉSOLU ×27) · 10 juin 2026 (STEP adaptatif v2) · 11 juin 2026 (v7 validée 30.9 min — prec_fast=64 bits SIMD) · 12 juin 2026 (v9 Brent validée, sudoers OK) · 4 juillet 2026 (v14 cache RS, v15 SEUIL_1NEWTON, Obj2 ✅, T=5M 96 manquants) · **5 juillet 2026 (fusion des deux lignées v7/v8 et v9-v15 — RAG vault en service)** · **5 août 2026 (architecture scan-puis-affinage documentée)** · **8 août 2026 (v16 — Z_arb précision fixe acb_dirichlet_hardy_z, T=100k 1.6 min, Obj2 amélioré)***
