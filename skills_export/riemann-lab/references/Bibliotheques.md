@@ -384,7 +384,7 @@ ctx.prec = 200    # ~60 chiffres décimaux
 | `tqdm` | Barres de progression | Interface |
 | `sympy` | Exploration symbolique seulement | Hors prod. |
 | `psutil` | Monitoring CPU/RAM | Diagnostic |
-| `arb` / `python-flint` | Affinage Z(t) : `arb_fpwrap_cdouble_hardy_z` ≈ 1.8 ms/appel | CPU certifié |
+| `arb` / `python-flint` | Affinage Z(t) : `acb_dirichlet_hardy_z` précision fixe 64 bits (v16, remplace `arb_fpwrap_cdouble_hardy_z`) | CPU certifié |
 
 ---
 
@@ -420,9 +420,23 @@ Biais Z_rs ≈ 0.305·t^{-5/4} → erreur 1 Newton ≈ biais² → < tol=1e-12 p
 |---|---|---|---|
 | v13 | 8.50 min | — | référence |
 | v14 | 7.7 min | ×1.10 | cache log_n/isqrt_n |
-| **v15** | **4.4 min** | **×1.93** | SEUIL_1NEWTON=20k |
+| v15 | 4.4 min | ×1.93 | SEUIL_1NEWTON=20k |
+| **v16** | **1.6 min** | **×2.75** | Z_arb précision fixe 64 bits (acb_dirichlet_hardy_z) |
 
-**Condition Objectif 2 atteinte le 04/07/2026 ✅**
+**Condition Objectif 2 atteinte le 04/07/2026, améliorée le 08/08/2026 ✅**
+
+### §15 — v16 : Z_arb à précision fixe (2026-08-08)
+
+`arb_fpwrap_cdouble_hardy_z(flags=0)` escalade en interne 64→8192 bits visant une
+précision certifiée ~1e-16 (confirmé depuis le code source FLINT 3.3.1,
+`src/arb_fpwrap/fpwrap.c`) — largement plus que le besoin réel (tol=1e-12, ~40 bits).
+Remplacé par `acb_dirichlet_hardy_z(res, t, G, chi, len, prec)` à précision fixe 64 bits,
+un seul calcul, pas d'escalade. Nécessite `dirichlet_group_t`/`dirichlet_char_t` (q=1,
+caractère principal = zêta pure) et les headers FLINT 3.3.1 vendorisés en source
+(`c_modules/flint-headers-3.3.1/` — `apt libflint-dev`=3.0.1 incompatible ABI).
+
+Validé run réel T=10000 (prototype isolé, gain ×1.98) puis T=100000 (intégré en
+production, gain ×2.75) — Turing COMPLET + LMFDB 20/20 aux deux échelles.
 
 ---
-*Auteur : hprzeta · Dernière mise à jour : 2 juin 2026 · **4 juillet 2026 (§14 cache RS + Phase 2 adaptative v14/v15)** · ~420 lignes*
+*Auteur : hprzeta · Dernière mise à jour : 2 juin 2026 · **4 juillet 2026 (§14 cache RS + Phase 2 adaptative v14/v15)** · **8 août 2026 (§15 Z_arb précision fixe v16)** · ~445 lignes*

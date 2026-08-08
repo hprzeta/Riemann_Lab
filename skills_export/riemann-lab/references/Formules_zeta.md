@@ -966,4 +966,17 @@ Pour t < 200, le biais Z_rs est en O(10^{-3}) — 1 Newton donne erreur ~O(10^{-
 
 ---
 
-*Auteur : hprzeta · Dernière mise à jour : 2 juin 2026 · **4 juillet 2026 (§18 biais Z_rs + SEUIL_1NEWTON v15)** · ~980 lignes*
+## §19 — Z_arb à précision fixe (v16, 2026-08-08)
+
+Le seuil `SEUIL_1NEWTON` et la logique ci-dessus (§18) restent **inchangés** en v16 —
+seule l'évaluation de $Z_{\text{arb}}(t)$ dans la boucle Newton change : au lieu de
+`arb_fpwrap_cdouble_hardy_z` (qui escalade en interne 64→8192 bits jusqu'à certifier
+~1e-16), Phase 2 appelle désormais `acb_dirichlet_hardy_z` à precision **fixe 64 bits**,
+un seul calcul. Le biais $\delta \approx 0{,}305 \cdot t^{-5/4}$ (Phase 1, Z_rs) et
+l'erreur après Newton restent gouvernés par la même analyse — seule la précision
+*interne* de l'appel à $Z_{\text{arb}}$ change, pas la précision *cible* du résultat
+final (tol=1e-12 inchangée, validée LMFDB 20/20 à T=100k).
+
+---
+
+*Auteur : hprzeta · Dernière mise à jour : 2 juin 2026 · **4 juillet 2026 (§18 biais Z_rs + SEUIL_1NEWTON v15)** · **8 août 2026 (§19 Z_arb précision fixe v16)** · ~995 lignes*
