@@ -568,7 +568,7 @@
     <div class="subtitle">
       <span class="badge gold">Ubuntu 24.04</span>
       <span class="badge gold">Python · mpmath</span>
-      <span class="badge gold">138 069 zéros validés · v15 · 0 manquant ✅ · Obj2 atteint 04/07/2026</span>
+      <span class="badge gold">138 069 zéros validés · v16 · 0 manquant ✅ · Obj2 atteint 04/07/2026, amélioré 08/08/2026</span>
     </div>
   </header>
 
@@ -676,11 +676,13 @@
         <span class="step-num">01</span>
         <div class="step-body">
           <h3>Calcul des zéros non triviaux</h3>
-          <p>v15 opérationnel — Illinois hybride 2-phases + cache RS 33 KB + Phase 2 adaptative
-             (SEUIL_1NEWTON=20k). <strong>138&nbsp;069 zéros</strong> calculés jusqu'à T=100&nbsp;000 en
-             <strong>4.4 min</strong> · 517 z/s (avec turbo) · <strong>0 manquant</strong>.
-             Turing-Backlund COMPLET ✅ · LMFDB 20/20 ✅ · ×28 600+ vs v1.</p>
-          <div class="pill done">Opérationnel — v15 ⭐ · Objectif 2 atteint ✅</div>
+          <p>v16 opérationnel — Illinois hybride 2-phases + cache RS 33 KB + Phase 2 adaptative
+             (SEUIL_1NEWTON=20k) + <strong>Z_arb à précision fixe</strong> (acb_dirichlet_hardy_z,
+             64 bits, remplace l'escalade automatique arb_fpwrap ~1e-16 surdimensionnée vs le
+             besoin réel 1e-12). <strong>138&nbsp;069 zéros</strong> calculés jusqu'à T=100&nbsp;000 en
+             <strong>1.6 min</strong> · 1407 z/s (avec turbo) · <strong>0 manquant</strong>.
+             Turing-Backlund COMPLET ✅ · LMFDB 20/20 ✅ · ×2.75 vs v15 · ×78 650+ vs v1.</p>
+          <div class="pill done">Opérationnel — v16 ⭐ · Objectif 2 largement dépassé ✅</div>
         </div>
         <div class="step-stat status-done">
           138&nbsp;069<br>
@@ -893,7 +895,7 @@
       align-items: center;
       gap: 0.75rem;">
       <span style="display:inline-block;width:24px;height:1px;background:var(--gold);"></span>
-      Performances — De 21h à 4.4 min · T=100&nbsp;000 · v15 ⭐
+      Performances — De 21h à 1.6 min · T=100&nbsp;000 · v16 ⭐
     </div>
 
     <!-- Tableau versions T=10 000 -->
@@ -1008,12 +1010,19 @@
             <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">×1.10 vs v13</td>
             <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">avec turbo</td>
           </tr>
+          <tr style="border-bottom:1px solid rgba(201,168,76,0.06);">
+            <td style="padding:0.6rem 1rem;color:var(--text2);">v15</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">517 z/s</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">4.4 min</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">×1.93 vs v13</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">avec turbo · Obj2 ✅</td>
+          </tr>
           <tr style="background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.25);">
-            <td style="padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">v15 ✦</td>
-            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">517 z/s</td>
-            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">4.4 min</td>
-            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">×1.93 vs v13</td>
-            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">avec turbo · Obj2 ✅</td>
+            <td style="padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">v16 ✦</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">1407 z/s</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">1.6 min</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">×2.75 vs v15</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">avec turbo · Obj2 ✅✅</td>
           </tr>
         </tbody>
       </table>
@@ -1083,22 +1092,22 @@
       <div style="text-align:center;">
         <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:0.1em;margin-bottom:0.4rem;">LMFDB</div>
         <div style="font-size:1.1rem;color:#4ade80;font-family:'JetBrains Mono',monospace;">20 / 20</div>
-        <div style="font-size:11px;color:var(--text2);margin-top:2px;">&lt; 10⁻¹² · v15</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;">&lt; 10⁻¹² · v16</div>
       </div>
       <div style="text-align:center;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:0.1em;margin-bottom:0.4rem;">PHASE 2 ADAPTATIVE</div>
-        <div style="font-size:1.1rem;color:#f0ebe2;font-family:'JetBrains Mono',monospace;">87 %</div>
-        <div style="font-size:11px;color:var(--text2);margin-top:2px;">zéros avec 1 Newton</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:0.1em;margin-bottom:0.4rem;">Z_ARB PRÉCISION FIXE</div>
+        <div style="font-size:1.1rem;color:#f0ebe2;font-family:'JetBrains Mono',monospace;">64 bits</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;">acb_dirichlet_hardy_z, sans escalade</div>
       </div>
       <div style="text-align:center;">
         <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:0.1em;margin-bottom:0.4rem;">COMMIT</div>
-        <div style="font-size:1.1rem;color:var(--gold);font-family:'JetBrains Mono',monospace;">adf5d2a</div>
-        <div style="font-size:11px;color:var(--text2);margin-top:2px;">Riemann_Lab_C · v15</div>
+        <div style="font-size:1.1rem;color:var(--gold);font-family:'JetBrains Mono',monospace;">00abe5c</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;">Riemann_Lab_C · v16</div>
       </div>
       <div style="text-align:center;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:0.1em;margin-bottom:0.4rem;">T=100K — GAIN v13→v15</div>
-        <div style="font-size:1.1rem;color:#4ade80;font-family:'JetBrains Mono',monospace;">×1.93</div>
-        <div style="font-size:11px;color:var(--text2);margin-top:2px;">avec turbo · 4 juil. 2026</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:0.1em;margin-bottom:0.4rem;">T=100K — GAIN v15→v16</div>
+        <div style="font-size:1.1rem;color:#4ade80;font-family:'JetBrains Mono',monospace;">×2.75</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:2px;">avec turbo · 8 août 2026</div>
       </div>
     </div>
 
@@ -1109,7 +1118,7 @@
 <section style="padding: 3rem 2rem; max-width: 900px; margin: 0 auto;">
   <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
     <div style="width: 2rem; height: 1px; background: #c9a84c;"></div>
-    <span style="font-size: 0.75rem; letter-spacing: 0.15em; color: #c9a84c;">PROGRESSION V1 → V15</span>
+    <span style="font-size: 0.75rem; letter-spacing: 0.15em; color: #c9a84c;">PROGRESSION V1 → V16</span>
   </div>
   <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 1.5rem;">
     <div style="background:#1a1a1a; border-radius:8px; padding:0.75rem; text-align:center;">
@@ -1167,10 +1176,15 @@
       <div style="font-size:22px; font-weight:500; color:#aaa;">7.7m</div>
       <div style="font-size:11px; color:#555;">×1.10</div>
     </div>
+    <div style="background:#1a1a1a; border-radius:8px; padding:0.75rem; text-align:center;">
+      <div style="font-size:12px; color:#666; margin-bottom:4px;">v15</div>
+      <div style="font-size:22px; font-weight:500; color:#aaa;">4.4m</div>
+      <div style="font-size:11px; color:#555;">×1.93 · Obj2 ✅</div>
+    </div>
     <div style="background:#1a2a3a; border:2px solid #c9a84c; border-radius:8px; padding:0.75rem; text-align:center;">
-      <div style="font-size:12px; color:#c9a84c; margin-bottom:4px;">v15 ✦</div>
-      <div style="font-size:22px; font-weight:500; color:#c9a84c;">4.4m</div>
-      <div style="font-size:11px; color:#c9a84c;">×1.93 · Obj2 ✅</div>
+      <div style="font-size:12px; color:#c9a84c; margin-bottom:4px;">v16 ✦</div>
+      <div style="font-size:22px; font-weight:500; color:#c9a84c;">1.6m</div>
+      <div style="font-size:11px; color:#c9a84c;">×2.75 · Obj2 ✅✅</div>
     </div>
   </div>
   <table style="width:100%; border-collapse:collapse; font-size:13px;">
@@ -1268,31 +1282,38 @@
         <td style="padding:10px 12px; color:#aaa;">v13 + cache RS statique</td>
         <td style="padding:10px 12px; color:#666; font-size:12px;">log_n_cache[2101] + isqrt_n_cache[2101] · 33 KB · init post-fork · T=100k · 7.7 min</td>
       </tr>
+      <tr style="border-bottom:1px solid #222;">
+        <td style="padding:10px 12px; color:#aaa; font-weight:500;">v15</td>
+        <td style="padding:10px 12px; color:#aaa;">517 z/s</td>
+        <td style="padding:10px 12px; color:#aaa;">×1.93 vs v13</td>
+        <td style="padding:10px 12px; color:#aaa;">v14 + Phase 2 adaptative</td>
+        <td style="padding:10px 12px; color:#666; font-size:12px;">SEUIL_1NEWTON=20k · 87% zéros 1 Newton · T=100k · 4.4 min · LMFDB 20/20 ✅ · Obj2 ✅</td>
+      </tr>
       <tr style="background:#0d1a0d;">
-        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">v15 ✦</td>
-        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">517 z/s</td>
-        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">×1.93 vs v13</td>
-        <td style="padding:10px 12px; color:#c9a84c;">v14 + Phase 2 adaptative</td>
-        <td style="padding:10px 12px; color:#c9a84c; font-size:12px;">SEUIL_1NEWTON=20k · 87% zéros 1 Newton · T=100k · 4.4 min · LMFDB 20/20 ✅ · Obj2 ✅</td>
+        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">v16 ✦</td>
+        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">1407 z/s</td>
+        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">×2.75 vs v15</td>
+        <td style="padding:10px 12px; color:#c9a84c;">v15 + Z_arb précision fixe</td>
+        <td style="padding:10px 12px; color:#c9a84c; font-size:12px;">acb_dirichlet_hardy_z 64 bits (remplace arb_fpwrap, escalade ~1e-16 surdimensionnée) · T=100k · 1.6 min · LMFDB 20/20 ✅ · Obj2 ✅✅</td>
       </tr>
     </tbody>
   </table>
   <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:1rem;">
     <div style="background:#1a2a3a; border:1px solid rgba(201,168,76,0.3); border-radius:8px; padding:0.75rem;">
-      <div style="font-size:11px; color:#666; margin-bottom:2px;">Gain v15 vs v13 (T=100k)</div>
-      <div style="font-size:18px; font-weight:500; color:#c9a84c;">×1.93</div>
+      <div style="font-size:11px; color:#666; margin-bottom:2px;">Gain v16 vs v15 (T=100k)</div>
+      <div style="font-size:18px; font-weight:500; color:#c9a84c;">×2.75</div>
     </div>
     <div style="background:#1a2a3a; border:1px solid rgba(201,168,76,0.3); border-radius:8px; padding:0.75rem;">
-      <div style="font-size:11px; color:#666; margin-bottom:2px;">Durée T=100k v15 ⭐</div>
-      <div style="font-size:18px; font-weight:500; color:#c9a84c;">4.4 min</div>
+      <div style="font-size:11px; color:#666; margin-bottom:2px;">Durée T=100k v16 ⭐</div>
+      <div style="font-size:18px; font-weight:500; color:#c9a84c;">1.6 min</div>
     </div>
     <div style="background:#1a2a3a; border:1px solid rgba(201,168,76,0.3); border-radius:8px; padding:0.75rem;">
-      <div style="font-size:11px; color:#666; margin-bottom:2px;">Gain global v1 → v15</div>
-      <div style="font-size:18px; font-weight:500; color:#c9a84c;">×28 600+</div>
+      <div style="font-size:11px; color:#666; margin-bottom:2px;">Gain global v1 → v16</div>
+      <div style="font-size:18px; font-weight:500; color:#c9a84c;">×78 650+</div>
     </div>
   </div>
 </section>
-<!-- FIN SECTION PROGRESSION V1→V5 -->
+<!-- FIN SECTION PROGRESSION V1→V16 -->
 
   <!-- ══ CLUSTER ZETA ══ -->
   <section id="cluster" style="margin: 3rem 0;">
@@ -1307,7 +1328,7 @@
         <p><strong>RAM :</strong> 8 GB + 16 GB swap</p>
         <p><strong>GPU :</strong> NVIDIA GTX 960M 4 GB</p>
         <p><strong>OS :</strong> Ubuntu Linux</p>
-        <p><strong>Vitesse :</strong> 517 z/s (v15) · 634 z/s (v13)</p>
+        <p><strong>Vitesse :</strong> 1407 z/s (v16) · 517 z/s (v15)</p>
         <span class="cluster-badge green">✅ Actif — Calcul</span>
       </div>
 
@@ -1356,11 +1377,27 @@
         <em>PC1+PC2 synchronisés à la seconde — 8.50 min chacun pour T=100k · pivot N(T) marge −15%</em>
       </p>
     </div>
+
+    <div class="cluster-perf" style="margin-top:1.5rem;">
+      <h3>📊 Run T=5 000 000 — v13 — PC1 seul — Terminé 30 juin 2026</h3>
+      <table>
+        <tr><th>Paramètre</th><th>Valeur</th></tr>
+        <tr><td>Zéros attendus N(5M)</td><td>10 016 473</td></tr>
+        <tr><td>Zéros trouvés</td><td>10 016 377</td></tr>
+        <tr><td>Manquants</td><td>96 — paires de zéros proches, pas de changement de signe visible sur grille Z_double</td></tr>
+        <tr><td>REJECT / FALLBACK arb</td><td>0 ✅ confirmé par ZETA_DEBUG_BRACKETS</td></tr>
+        <tr><td>Illinois</td><td>correct — tous les brackets fournis bien affinés</td></tr>
+        <tr><td>Durée</td><td>~35h (loi T^1.5)</td></tr>
+      </table>
+      <p style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);margin-top:0.75rem;">
+        <em>Piste : v16 T=5M (gain ×2.75 supplémentaire vs v15 mesuré à T=100k, non encore mesuré à cette échelle) — même STEP → 96 manquants probablement identiques · rescan ciblé STEP/2 pour réduction</em>
+      </p>
+    </div>
   </section>
   <!-- FIN CLUSTER ZETA -->
 
   <footer>
-    <p>hprzeta · Riemann Lab · juillet 2026</p>
+    <p>hprzeta · Riemann Lab · août 2026</p>
     <p>
       <a href="https://github.com/hprzeta/Riemann_Lab" target="_blank">GitHub</a>
       &nbsp;·&nbsp;
