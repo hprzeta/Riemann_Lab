@@ -23,10 +23,12 @@ illinois_mpfr.so: illinois_mpfr.c brent_mpfr.c
 scan_arb.so: scan_arb.c
 	$(CC) $(CFLAGS) -shared -o $@ $< -lm
 
-## illinois_arb.so — v12 : Illinois via arb_fpwrap_cdouble_hardy_z (FLINT 3)
-## Pas de headers FLINT requis : prototype déclaré en forward dans illinois_arb.c
+## illinois_arb.so — v16 : Illinois via acb_dirichlet_hardy_z (précision fixe 64 bits)
+## Headers FLINT 3.3.1 vendorisés en source (apt libflint-dev = 3.0.1, ABI incompatible
+## avec dirichlet_group_t/dirichlet_char_t) — voir flint-headers-3.3.1/README.md
+FLINT_HEADERS = flint-headers-3.3.1
 illinois_arb.so: illinois_arb.c
-	$(CC) $(CFLAGS) -shared -o $@ $< \
+	$(CC) $(CFLAGS) -I$(FLINT_HEADERS) -shared -o $@ $< \
 		-L$(LIBFLINT_DIR) -l:$(LIBFLINT_SO) \
 		-Wl,-rpath,$(LIBFLINT_DIR) \
 		-lm
