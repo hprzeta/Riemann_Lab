@@ -156,16 +156,27 @@ katex.render(expression, element, { throwOnError: false });
 
 ## 5. Code Python — conventions
 
-### État du projet (4 juillet 2026)
+### État du projet (8 août 2026)
 
 | Version | Méthode affinage | T=100k | Turing | Commit |
 |---|---|---|---|---|
 | v12 | illinois_refine_arb (Arb, tol=1e-9) | 8.8 min | ✅ COMPLET | `f0e8430` |
 | v13 | illinois_refine_arb (Arb, tol=1e-12) | 8.50 min | ✅ COMPLET | `77efd10` |
 | v14 | v13 + cache log_n/isqrt_n | 7.7 min (×1.10) | ✅ COMPLET | `d4b3611` |
-| **v15** ⭐ | v14 + Phase 2 adaptative SEUIL=20k | **4.4 min (×1.93)** | ✅ COMPLET | `adf5d2a` |
+| v15 | v14 + Phase 2 adaptative SEUIL=20k | 4.4 min (×1.93) | ✅ COMPLET | `adf5d2a` |
+| **v16** ⭐ | v15 + Z_arb précision fixe (acb_dirichlet_hardy_z, 64 bits) | **1.6 min (×2.75)** | ✅ COMPLET | `00abe5c` |
 
-**Condition Objectif 2 atteinte le 04/07/2026 : T=100k = 4.4 min < 5 min ✅**
+**Condition Objectif 2 atteinte le 04/07/2026, améliorée le 08/08/2026 : T=100k = 1.6 min < 5 min ✅**
+
+**v16 — commit `00abe5c` (2026-08-08) :**
+- `arb_fpwrap_cdouble_hardy_z(flags=0)` escalade en interne 64→8192 bits visant ~1e-16
+  (confirmé depuis le code source FLINT 3.3.1) — surdimensionné vs tol=1e-12 (~40 bits)
+- Remplacé par `acb_dirichlet_hardy_z` à précision FIXE 64 bits (un seul calcul)
+- Nécessite `c_modules/flint-headers-3.3.1/` (headers vendorisés en source, `apt
+  libflint-dev`=3.0.1 incompatible ABI `dirichlet_group_t`/`dirichlet_char_t`)
+- Validé run réel T=10000 (prototype isolé, ×1.98) puis T=100000 (intégré, ×2.75)
+  avant adoption — Turing COMPLET + LMFDB 20/20 aux deux échelles
+- Piste MPFR pur testée et écartée : 11.88× plus lent ET ~4 ordres moins précis
 
 **v14 — commit `d4b3611` (2026-07-04) :**
 - Cache statique `log_n_cache[2101]` + `isqrt_n_cache[2101]` dans `illinois_arb.c` et `scan_arb.c`
@@ -340,4 +351,4 @@ Pour des sujets plus approfondis, consulter :
 - Signaler explicitement si une formule risque de ne pas s'afficher sur GitHub
 
 ---
-*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 1ᵉʳ juin 2026 · 10 juin 2026 (état v4, leçon STEP GUE, plan v6) · **4 juillet 2026 (v14/v15, Obj2 ✅, piège 1-Newton)** · **5 août 2026 (vérification alimentation obligatoire avant run long PC1)***
+*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 1ᵉʳ juin 2026 · 10 juin 2026 (état v4, leçon STEP GUE, plan v6) · **4 juillet 2026 (v14/v15, Obj2 ✅, piège 1-Newton)** · **5 août 2026 (vérification alimentation obligatoire avant run long PC1)** · **8 août 2026 (v16 — Z_arb précision fixe, Obj2 amélioré à 1.6 min)***
