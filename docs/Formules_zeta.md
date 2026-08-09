@@ -1,6 +1,6 @@
 # Formules de référence — Fonction zêta de Riemann
 > Version enrichie — Projet Riemann_Lab · hprzeta
-> Mise à jour : 2 juin 2026 — formules v1/v2/v3 + leçons v4.1 (Z_vect_correct, troncature RS)
+> Mise à jour : 2 juin 2026 · Auteur : hprzeta
 >   + leçons Vérif A/B v4.1 : erreur de position (perturbation 1ᵉʳ ordre) et distinction comptage/position
 >   + leçon v4.2 : finition Newton (ordre 2, dérivée analytique, critère dps vs LMFDB absolu)
 >   + leçon v4.2 mesurée : Newton réfuté (Z' coûteux), goulot = mpmath.siegelz, pas l'algorithme
@@ -927,3 +927,730 @@ Le mur de latence ne pèse que dans **un** des deux objectifs (rappel §11.1) :
 ---
 
 *Auteur : hprzeta · Dernière mise à jour : 2 juin 2026 — ~929 lignes*
+---
+
+## §18 — Profil de pipeline v4.1 : résultats mesurés et leçon workprec (3 juin 2026)
+
+### 18.1 Profil mesuré (T=1000, 4 workers, branche `Riemann_Lab_C`)
+
+| Phase | temps cumulé (4 workers) | appels | ms/appel | % mur×W |
+|---|---|---|---|---|
+| `mpmath_petit_t` | 11.27 s | 138 | 81.65 | 35.6 % |
+| `illinois_C` | 5.22 s | 511 | 10.21 | 16.5 % |
+| `turing` | 2.33 s | 1 | 2 330.99 | 7.4 % |
+| `detection` | 0.09 s | 4 | 21.53 | 0.3 % |
+
+**Vitesse globale : 82 z/s (×80 vs v3 à 1.02 z/s).** Turing COMPLET, LMFDB 19/20.
+
+### 18.2 Interprétation du profil
+
+Le noyau Illinois_C est **réellement rapide** en pipeline (10 ms/appel). Le goulot
+résiduel est `mpmath_petit_t` : les 138 zéros à $t < 300$ affinés par `mpmath.siegelz`
+à `dps=35`. Ce coût croît en $\mathcal{O}(\sqrt{t})$ par le nombre de termes RS :
+
+$$N(t) = \left\lfloor\sqrt{\frac{t}{2\pi}}\right\rfloor \quad \text{termes dans la somme principale}$$
+
+À $t < 300$, $N < 7$ — la somme est courte, mais l'arithmétique multi-précision
+(`dps=35` ≈ 116 bits) coûte cher par terme. La détection (`Z_vect_correct`) est négligeable.
+
+### 18.3 Leçon workprec — piège mpmath
+
+**Tentative :** `with _mp.workprec(50): _mp.findroot(_mp.siegelz, (a,b), ...)`.
+
+**Résultat :** gain marginal (~12 %). Cause : `mpmath.siegelz` re-lit `mp.dps`
+**global** (35) à chaque appel interne. Le contexte `workprec` contrôle la précision
+de la boucle d'itération Illinois, pas la précision des évaluations de la fonction.
+
+$$\text{workprec}(50) \not\Rightarrow \text{siegelz à 50 bits}$$
+
+**La seule façon** d'appeler siegelz en float64 natif :
+```python
+_mp.fp.siegelz(t)   # float64 pur — précision ~1e-15, coût ~×40 plus faible
+```
+
+### 18.4 Prochain levier : fp.siegelz pour t < 300
+
+Pour $t < 300$, $N < 7$ termes et `tol = 1e-12` → `fp.siegelz` (float64) est
+amplement suffisant. La précision float64 ($\varepsilon \approx 10^{-16}$) est bien
+sous la tolérance, et l'erreur de bracket est dominée par `STEP = 0.1`.
+
+Gain estimé : 81 ms → ~2 ms par appel → 138 zéros en ~0.3 s au lieu de 11.3 s
+→ pipeline T=1000 : **~6 s → ~200+ z/s**.
+
+---
+*Auteur : hprzeta — Riemann_Lab — Mise à jour : 3 juin 2026*
+
+---
+
+## §19 — Option B : `illinois_refine` — ancrage fa/fb et résultats (3 juin 2026)
+
+> Commit `581e34d` — branche `Riemann_Lab_C`. Contexte : la version antérieure
+> `illinois_mpfr(a, b, tol)` recalculait $Z(a)$ et $Z(b)$ en C via $Z_{\text{mpfr}}$
+> (RS tronquée $C_0+C_1$). Si `Z_vect_correct` (Python) et $Z_{\text{mpfr}}$ (C)
+> divergeaient en signe sur les bornes, Illinois cherchait un « pseudo-zéro RS »
+> décalé de ~0.3 — sans déclencher de fallback.
+
+### 19.1 Cause du biais ~0.3 (diagnostic)
+
+Pour $t < 300$ ($N < 7$ termes RS), l'erreur de troncature $|R(t)| \sim 10^{-3}$ est
+comparable à l'amplitude locale de $Z(t)$. Deux évaluateurs donnant des signes opposés
+sur $[a, b]$ obligent Illinois à chercher une **racine de $Z_{\text{mpfr}}$** dans le
+mauvais intervalle, produisant un résultat décalé de $\sim 0.3$ — soit deux ordres de
+grandeur au-dessus de la tolérance $10^{-12}$.
+
+### 19.2 Solution — passage de fa/fb depuis Python
+
+Nouvelle signature C :
+
+```c
+double illinois_refine(double a, double b,
+                       double fa, double fb,       // ← passés depuis Python
+                       int prec_bits,
+                       double tol, int max_iter);
+```
+
+`fa = Z_vals[i]` et `fb = Z_vals[i+1]` sont les valeurs **déjà calculées** par
+`Z_vect_correct` lors du balayage → **zéro recalcul**, et l'encadrement initial est
+garanti cohérent avec $\zeta(\tfrac{1}{2}+it)$ (pas avec $Z_{\text{mpfr}}$ tronquée).
+
+**Interface ctypes correspondante :**
+
+```python
+lib.illinois_refine.restype  = ctypes.c_double
+lib.illinois_refine.argtypes = [
+    ctypes.c_double,   # a
+    ctypes.c_double,   # b
+    ctypes.c_double,   # fa  = Z(a) calculé par Z_vect_correct
+    ctypes.c_double,   # fb  = Z(b)
+    ctypes.c_int,      # prec_bits (170 par défaut)
+    ctypes.c_double,   # tol
+    ctypes.c_int,      # max_iter
+]
+```
+
+Les itérations **intermédiaires** évaluent $Z_{\text{mpfr}}$ en C (précision 170 bits,
+correcte pour $t \geq 300$, $N \geq 7$ termes RS). Seules les **bornes initiales**
+$f_a, f_b$ proviennent de Python. `Z_double` est supprimé du `.so`.
+
+### 19.3 Résultats mesurés
+
+| Test | Valeur | Statut |
+|---|---|---|
+| `test_illinois.py` (10 premiers LMFDB) | **10/10** illinois_C pur · erreurs ~$10^{-13}$ · 0 fallback | ✅ |
+| Benchmark $t \in [500, 638]$ | **×30.78** vs `mpmath.findroot` (objectif ×5–10 dépassé) | ✅ |
+| Run T=1000 — zéros / vitesse / Turing / LMFDB | 649/649 · **16.15 z/s** · COMPLET · 19/20 | ✅ |
+| Run T=10 000 — zéros / vitesse / Turing / LMFDB | 10 141 · **18.65 z/s** · COMPLET · 19/20 | ✅ |
+| illinois_C (t ≥ 300) sur T=10 000 | **98.6 %** (10 004 zéros) · 0 fallback | ✅ |
+
+**Profil phases — Run T=10 000 (cumulé 4 workers) :**
+
+| Phase | Temps cumulé | Appels | ms/appel |
+|---|---|---|---|
+| `illinois_C` | 1 592.5 s | 10 004 | **159 ms** |
+| `mpmath_petit_t` ($t < 300$) | 79.5 s | 138 | 576 ms |
+| `turing` | 35.0 s | 1 | — |
+| `detection` | 2.8 s | 20 | 138 ms |
+
+> **Point de vigilance — LMFDB 19/20 :** le zéro $n°20$ ($\gamma_{20} = 77.1448\ldots$)
+> donne un écart de $8.06 \times 10^{-10}$ dans tous les runs (T=300, T=1000, T=10 000).
+> Ce cas limite est **stable et reproductible** : il ne constitue pas un bug, mais un
+> zéro dont le croisement est suffisamment plat pour que l'erreur de position §5.6
+> s'approche du seuil $10^{-10}$ sans le franchir.
+
+---
+
+## §20 — Goulot $O(\!\sqrt{t}\,)$ — croissance du coût illinois_C avec la hauteur
+
+### 20.1 Formule du coût d'un appel Z_mpfr(t) en C
+
+L'évaluation de $Z_{\text{mpfr}}(t)$ en C reproduit la somme principale de Riemann-Siegel
+avec $N_{\text{RS}} = \lfloor\sqrt{t/2\pi}\rfloor$ termes à `PREC = 170 bits` ($\approx 51$ décimales) :
+
+$$
+t_{\text{appel}} \;\propto\; N_{\text{RS}}(t) \;\cdot\; \text{PREC}^2
+\qquad\text{avec}\quad
+N_{\text{RS}}(t) = \left\lfloor\sqrt{\frac{t}{2\pi}}\right\rfloor.
+$$
+
+Comme $N_{\text{RS}} \sim \sqrt{t}$, le coût d'un appel croît **comme $\sqrt{t}$** à précision fixée.
+
+### 20.2 Croissance mesurée sur le run T=10 000
+
+| Plage de $t$ | $N_{\text{RS}}$ typique | ms/appel illinois_C mesuré |
+|---|---|---|
+| $[300, 500]$ | 7–8 | ~58.9 ms |
+| $[500, 700]$ | 8–10 | ~70 ms |
+| $[3000, 5000]$ | 21–28 | ~100 ms |
+| $[7500, 10000]$ | 34–39 | ~159 ms |
+
+**Rapport de coût :** $159\,\text{ms} / 58.9\,\text{ms} \approx 2.7$. Valeur théorique :
+$\sqrt{8750/400} \approx 4.7$ → légèrement plus faible, car une partie des opérations
+(initialisation, gestion des bornes) est indépendante de $t$.
+
+### 20.3 Impact sur T = 100 000
+
+À $T = 100\,000$, $N_{\text{RS}} \approx \lfloor\sqrt{100000/2\pi}\rfloor \approx 126$ termes.
+Extrapolation depuis $t \approx 8750$ ($N \approx 37$) :
+
+$$
+t_{\text{appel}}(T=100000) \;\approx\; 159\,\text{ms} \times \frac{126}{37} \;\approx\; 540\,\text{ms}.
+$$
+
+Avec $N(100000) \approx 138\,067$ zéros et 4 workers :
+$$
+T_{\text{total}} \approx \frac{138\,067 \times 540\,\text{ms}}{4} \approx 5.2\,\text{h}.
+$$
+
+> Ce goulot est **incompressible** sans changer de bibliothèque (Arb `acb_dirichlet_hardy_z`,
+> §12 de Bibliotheques.md) ou de formule (Odlyzko–Schönhage). Aucune optimisation algorithmique
+> à l'intérieur de la boucle Illinois ne peut le réduire.
+
+---
+
+## §21 — Déséquilibre workers — cause et quantification (3 juin 2026)
+
+### 21.1 Deux sources de déséquilibre
+
+Le pipeline v4.1 utilise 4 workers sur des segments équilibrés en largeur d'intervalle,
+**pas** en nombre de zéros. Deux causes indépendantes créent un déséquilibre :
+
+| Source | Worker affecté | Cause |
+|---|---|---|
+| **Goulot $t < 300$** (`mpmath_petit_t`) | Worker 0 $[14,\, 261]$ | Concentre les 138 zéros dont l'affinage passe par `mpmath.fp.siegelz` ou `mp.siegelz` (fallback légitime, seuil `T_SEUIL = 300`) |
+| **Goulot $O(\sqrt{t})$** | Worker 3 $[7503,\, 10000]$ | $N_{\text{RS}}$ est maximal dans cet intervalle → chaque appel illinois_C est plus coûteux (~159 ms vs ~58.9 ms pour worker 1) |
+
+### 21.2 Profil mesuré — Run T=10 000 (par worker)
+
+| Worker | Plage | Durée | Zéros affinés illinois_C | Cause dominante |
+|---|---|---|---|---|
+| 0 | $[14,\; 2 502]$ | ~450 s | ~2 372 | mpmath_petit_t (138 zéros) + illinois_C moyen-t |
+| 1 | $[2 502,\; 5 001]$ | ~530 s | ~2 500 | illinois_C moyen-t |
+| 2 | $[5 001,\; 7 502]$ | ~535 s | ~2 630 | illinois_C grand-t |
+| 3 | $[7 503,\; 10 000]$ | **~543 s** | ~2 500 | illinois_C grand-t ($N_{\text{RS}} \leq 39$) |
+
+Le worker 3 détermine la durée totale du run ($543\,\text{s} \approx 9.1\,\text{min}$).
+
+### 21.3 Impact à T=10 000 — déséquilibre marginalisé
+
+Pour T=10 000, les 138 zéros à $t < 300$ représentent $138 / 10\,142 \approx 1.4\,\%$ du total.
+Le goulot `mpmath_petit_t` (576 ms/appel dans ces run, 79.5 s total) est absorbé dans la
+durée totale sans effet dominant. En pratique, les workers 1–3 compensent ce déséquilibre.
+
+**Résolution possible** : partitionner les segments en **volume de zéros** estimé via $N(T)$
+plutôt qu'en largeur d'intervalle. Pour T=10 000, l'espacement moyen $\langle\delta\rangle$
+est quasi-constant dans chaque tiers → l'équilibrage géométrique suffit. L'enjeu devient
+pertinent pour T=100 000, où la plage de $t$ (et donc $N_{\text{RS}}$) varie d'un facteur $\sqrt{10}$.
+
+### 21.4 Rappel du bilan global
+
+| Métrique | Run T=1000 | Run T=10 000 |
+|---|---|---|
+| Vitesse globale | 16.15 z/s | **18.65 z/s** |
+| Illinois_C (%) | 78.7 % | **98.6 %** |
+| mpmath_petit_t | 138 zéros (21.3 %) | 138 zéros (1.4 %) |
+| Turing | COMPLET | COMPLET |
+| LMFDB | 19/20 | 19/20 |
+| Durée | ~40 s (4 workers) | **~9.1 min** (4 workers) |
+
+> **Comparaison v3** : v3 (`compute_zeros_v3.py`) atteignait ~3.59 z/s.
+> v4.1 Option B atteint 18.65 z/s → **gain ×5.2** sur un run réel T=10 000.
+
+---
+
+## §22 — Vérif B — synthèse positions Illinois_C (6 juin 2026)
+
+> Entrée rapide pour retrouver les chiffres clés de Vérif B sans relire §5.6 et §6.4–6.5.
+
+### 22.1 Formule centrale
+
+L'erreur de **position** d'un zéro affiné par Illinois_C pur (sur $Z_{\text{mpfr}}$ tronquée
+$C_0 + C_1$) est donnée par le développement de Taylor au premier ordre (§5.6) :
+
+$$
+\boxed{\;\big|\gamma_{\text{Illinois\_C}} - \gamma_{\text{réf}}\big|
+       \;\approx\; \frac{|R(\gamma)|}{|Z'(\gamma)|}\;}
+$$
+
+### 22.2 Résultats chiffrés
+
+| Méthode d'affinage | Erreur amplitude RS $|R(\gamma)|$ | Erreur position typique | Critère LMFDB |
+|---|---|---|---|
+| **Illinois_C pur** (Z_mpfr RS $C_0+C_1$) | $\sim 10^{-3}$ | $10^{-4}$ à $10^{-2}$ | ❌ |
+| **Illinois_C + polish** `mpmath.siegelz` | — | $< 10^{-10}$ | ✅ |
+
+**Exemple mesuré (Vérif B, bracket $[350.400,\, 350.440]$) :**
+
+| Méthode | Racine trouvée | Cible LMFDB |
+|---|---|---|
+| `illinois_refine` C/libmpfr (Z_mpfr $C_0+C_1$) | $350.424$ | — |
+| `mpmath.findroot(siegelz)` dps=50 | $350.408$ | $\gamma_{\text{réf}}$ |
+| **Écart** | **$0.016 \approx 1.6\times10^{-2}$** | $= |R|/|Z'|$ à $t\approx 350$ |
+
+### 22.3 Interprétation — comptage vs catalogue
+
+| Objectif | Illinois_C pur | Avec polish siegelz |
+|---|---|---|
+| Vérifier HR (comptage Turing) | ✅ suffit (~41 z/s) | non requis |
+| Catalogue de positions LMFDB | ❌ (~1e-2 erreur) | ✅ (<1e-10, ~0.5 z/s) |
+
+> La variabilité $10^{-4}$ à $10^{-2}$ vient de $|Z'(\gamma)|$ (pente du croisement),
+> **pas** de $|R(\gamma)|$ qui est quasi-constante à hauteur fixée.
+> Références approfondies : §5.6 (analyse Taylor), §6.4 (architectures), §6.5 (Newton vs Illinois).
+
+---
+
+## §25. Benchmark Arb/FLINT vs mpmath — résultats mesurés (2026-06-09)
+
+| Méthode | temps/appel (ms) | Speedup | T_total estimé |
+|---|---|---|---|
+| `mpmath.siegelz` dps=35 | 21.13 ms | 1× | ~21 min |
+| `arb_fpwrap_cdouble_hardy_z` | 0.77 ms | ×27 | ~1–15 min |
+
+Speedup par tranche :
+- $t \in [100, 1000]$ → ×29
+- $t \in [1000, 5000]$ → ×28
+- $t \in [5000, 10000]$ → ×26
+
+**Erreur :** $|Z_{\text{arb}} - Z_{\text{mpmath}}| = 0$ sub-ULP $< 2.2\times10^{-16}$
+
+**Explication :** `mpmath` utilise MPFR (allocations heap, ~1000 malloc/free par zéro).
+Arb reste en double IEEE 754 (registres CPU, 0 allocation).
+Illinois converge à `tol=1e-12` — précision double largement suffisante.
+
+**Accès :** ctypes + libflint bundlée python-flint 0.8.0 (pas de `sudo apt`).
+**Module :** `src/calculs/optimisation/arb_wrapper.py` (commit `b563db2`)
+
+---
+
+## §23. STEP adaptatif — théorie et valeurs mesurées (2026-06-10)
+
+### 23.1 Densité des zéros et espacement moyen
+
+La densité locale des zéros de $\zeta$ sur la droite critique à hauteur $t$ :
+
+$$\rho(t) = \frac{dN}{dt} \approx \frac{1}{2\pi} \ln\frac{t}{2\pi}$$
+
+L'espacement moyen entre deux zéros consécutifs est son inverse :
+
+$$\delta(t) = \frac{1}{\rho(t)} = \frac{2\pi}{\ln(t/2\pi)}$$
+
+Valeurs numériques :
+
+| $t$ | $\delta(t)$ espacement moyen | STEP recommandé |
+|---|---|---|
+| 100 | ~1.21 | 0.1 |
+| 1 000 | ~0.91 | 0.1 |
+| 5 000 | ~0.80 | 0.1 → 0.05 (seuil) |
+| 10 000 | ~0.73 | 0.05 |
+| 50 000 | ~0.63 | 0.05 → 0.02 (seuil) |
+| 100 000 | ~0.59 | 0.02 |
+
+### 23.2 Condition de non-manquant
+
+Pour garantir qu'un bracket $[t, t + \text{STEP}]$ ne contient au plus qu'un zéro :
+
+$$\text{STEP}(t) < \frac{\delta(t)}{2} = \frac{\pi}{\ln(t/2\pi)}$$
+
+En pratique, on prend STEP $\approx \delta(t)/10$ pour une marge de sécurité face aux
+**paires de zéros proches** (distribution GUE — espacements poissonniens de queue).
+L'espacement minimum mesuré à $T=10\,000$ est $0.038$, soit $\delta_{\min} \approx 0.038$.
+
+STEP adaptatif implémenté dans `compute_zeros_v4_1.py` (`step_pour_t`) — **v2 (commit `181fdd1`)** :
+
+| Tranche $t$ | STEP | Justification |
+|---|---|---|
+| $t < 5\,000$ | 0.05 | $\delta_{\min} \approx 0.5$ — large marge |
+| $t \geq 5\,000$ | **0.010** | gap min mesuré 0.01940 à $t=66678$ — STEP=0.02 insuffisant |
+
+> **Historique :** v1 (commit `7467731`) : 0.1/0.05/0.02 → 30 manquants sur T=100k.
+> v2 (commit `181fdd1`) : cap à 0.010 pour $t \geq 5000$ (STEP ÷5 et ÷2 respectivement).
+
+### 23.3 Overlap aux frontières de segments
+
+Condition minimale pour qu'aucun bracket ne soit raté à la frontière :
+
+$$\text{overlap} \geq 2 \times \text{STEP}_{\max}$$
+
+| Version | Overlap | Suffisant ? |
+|---|---|---|
+| v1 (2026-06-10) | proportionnel (×4 STEP) ≈ 0.4 | ❌ trop petit si STEP change en milieu de segment |
+| v2 (2026-06-10) | fixe 2.0 | ✅ couvre ≥ 40 × STEP dans la tranche la plus dense |
+
+### 23.4 Résultats mesurés
+
+**Test T=10 000 v1** (STEP=0.1 pour tout $t < 10\,000$, overlap proportionnel ×4) :
+
+| Indicateur | Valeur |
+|---|---|
+| Zéros trouvés | 10 137 / 10 142 |
+| Manquants | 6 (Turing-Backlund INCOMPLET) |
+| Durée | 2.58 min · 65.50 z/s |
+
+**Test T=10 000 v2** (STEP=0.05 pour $t \geq 5\,000$, overlap=2.0 fixe) :
+
+| Indicateur | Valeur |
+|---|---|
+| Zéros trouvés | **10 141 / 10 142** |
+| Manquants | **0 — Turing-Backlund COMPLET ✅** |
+| Durée | **2.60 min · 64.97 z/s** |
+| Commit | `50837f7` — `Riemann_Lab_C` |
+
+Le surcoût du STEP plus fin est quasi nul (+0.02 min) car les brackets supplémentaires
+sont traités par Z_batch vectorisé (numpy, 0 appel Python par point).
+
+**Run T=100 000 v1 adaptatif** (STEP=0.1/0.05/0.02, overlap=2.0, commit `7467731`) :
+
+| Indicateur | Valeur |
+|---|---|
+| Zéros trouvés | — |
+| Manquants | ~30 (t > 50 000) |
+| Cause | STEP=0.02 < gap min mesuré 0.01940 à t=66678 |
+
+**Run T=100 000 v2 adaptatif** (STEP=0.1/0.05/0.02, overlap=2.0, commit `50837f7`) :
+
+| Indicateur | Valeur |
+|---|---|
+| Zéros trouvés | 138 039 / 138 069 |
+| Manquants | **68 — Turing-Backlund INCOMPLET ❌** |
+| Durée | 105.1 min · 21.89 z/s |
+| Cause | STEP=0.02 toujours insuffisant pour $t > 50\,000$ |
+
+**Run T=100 000 v3** (STEP=0.05 pour $t < 5\,000$ / STEP=0.010 pour $t \geq 5\,000$, commit `181fdd1`) :
+
+| Indicateur | Valeur |
+|---|---|
+| Zéros trouvés | TUÉ — régression ×11 (5M points scan, ~0.5 z/s) |
+| Turing-Backlund | non atteint — run interrompu |
+
+**Run T=100 000 v4** (STEP=δ(t)/3, continu, commit `d2f62c1`) :
+
+| Indicateur | Valeur |
+|---|---|
+| Zéros trouvés | 135 997 / 138 069 |
+| Manquants | **2 072 — Turing-Backlund INCOMPLET ❌** |
+| Durée | 113 min · 20.05 z/s |
+| LMFDB | 19/20 ✅ |
+| Cause | STEP≈0.22 à $t=100\,000$ — ×11 le gap min (0.019) — GUE non protégé |
+
+**Leçon v4 :** STEP=δ/3 est **pire que v1** (2072 vs 356 manquants). La formule δ/3 est basée
+sur l'espacement moyen ; la queue GUE produit des gaps $\ll \delta$.
+Condition de sécurité réelle : STEP $\leq 0.014 \cdot \delta(t)$ (pour gap_min/δ ≈ 0.028 à T=100k).
+**Seule stratégie validée : STEP ≤ 0.010. L'accélération doit venir de `scan_arb.c` (×7.5 C pur).**
+
+### 23.5 Tableau récapitulatif — runs T=100 000
+
+| Run | STEP | Zéros | Manquants | Durée | Turing |
+|---|---|---|---|---|---|
+| v1 (paliers) | 0.1/0.05/0.02 | 137 711 | 356 | 1h58 | ❌ |
+| v2 (paliers) | 0.1/0.05/0.02 | 138 001 | 68 | 105 min | ❌ |
+| v3 (cap 0.010) | 0.010 pour $t \geq 5k$ | TUÉ | — | — | — |
+| **v4 (δ/3)** | **~0.22 à T=100k** | **135 997** | **2 072 ❌** | **113 min** | **❌** |
+
+**Prochaine étape (v6) :** scan_arb.c (×7.5) + STEP≤0.010 + W=8 → cible ~15 min, 0 manquant.
+
+---
+
+## §24 — Benchmark v8 : plancher hardware i7-7500U (11 juin 2026)
+
+### Résultats mesurés
+
+| Config (prec_fast, prec_full) | Limbes ph1+ph2 | ms/appel | Gain vs ref |
+|---|---|---|---|
+| (64, 116) | 1+2 | 0.443 ms | ×1.00 — référence v7 |
+| (48, 116) | 1+2 | 0.559 ms | ×0.79 ❌ |
+| (32, 116) | 1+2 | 0.875 ms | ×0.51 ❌ |
+| (64,  96) | 1+2 | 0.476 ms | ×0.93 ❌ |
+| **(64, 80)** | **1+2** | **0.416 ms** | **×1.06 ✅ optimal** |
+
+W=4 : 2 505.8 z/s · W=8 : 2 474.0 z/s (×0.99 — context-switching, contre-productif)
+
+### Conclusion
+
+`prec_full = 80 bits` est optimal sur i7-7500U (×1.06 vs 116 bits). Gain marginal.
+W=8 est contre-productif sur dual-core HT (4 threads logiques, `nproc=4`).
+
+### Plancher hardware atteint
+
+$$t_{\text{zéro}}^{\min}(i7) \approx \frac{10 \times 0{,}416\text{ ms}}{4\text{ workers}} \approx 1\text{ ms/zéro}$$
+
+Durée T=100k plancher : $138\,069 \times 1\text{ ms} / 4 \approx 34\text{ s}$ (inatteignable en pratique).
+Durée réaliste v8 : **~29 min** (gain ×1.06 vs v7).
+
+### Explication : pourquoi prec=32 est plus lent ?
+
+Contre-intuitif : `prec=32` (1 limbe) est plus lent que `prec=64` (1 limbe aussi).
+Raison : mpfr alloue toujours un minimum de 64 bits par limbe (granularité de l'architecture 64 bits).
+`prec=32` déclenche des conversions d'arrondi supplémentaires sans réduire la taille mémoire.
+
+$$\left\lceil \frac{32}{64} \right\rceil = \left\lceil \frac{64}{64} \right\rceil = 1 \text{ limbe} \quad \text{mais overhead arrondi supérieur pour prec}=32$$
+
+### Prochains leviers au-delà du i7-7500U
+
+| Levier | Gain estimé | Condition |
+|---|---|---|
+| CPU 8 cœurs physiques (i9, Ryzen 9) | ×2 (W=8 réel) | ~15 min T=100k |
+| Arb `acb_dirichlet_hardy_z` pour affinage | à benchmarker | — |
+| GPU CUDA détection Z_double | ~×100 détection | mais détection = 0.2% du temps |
+
+---
+*Auteur : hprzeta — Riemann_Lab — Mise à jour : 3 juin 2026 (§19–21) · 6 juin 2026 (§22) · 9 juin 2026 (§25) · 10 juin 2026 (§23 STEP adaptatif) · **11 juin 2026 (§24 benchmark v8 plancher i7)** · ~1385 lignes*
+
+---
+
+## §27 — Brent C/mpfr deux phases (v9, 2026-06-12)
+
+### Algorithme — priorités d'interpolation
+1. Interpolation inverse quadratique (si 3 points distincts)
+2. Méthode de la sécante (si 2 points)
+3. Bisection (fallback garanti — convergence assurée)
+
+### Ordre de convergence comparé
+
+| Méthode | Ordre φ | Évals Z/iter | Iter typique | Verdict |
+|---|---|---|---|---|
+| Illinois | ~1.44 | 1 | ~6 | v7/v8 |
+| **Brent** | **~1.84** | **1** | **~4** | **✅ v9** |
+| Newton | 2.0 | 2 | ~3 | neutre |
+
+Nombre d'itérations (tol=1e-11, δ₀=0.01) :
+$$n_{\text{Brent}} \approx \frac{\ln(10^9)}{\ln 1.84} \approx 4 \quad \text{vs} \quad n_{\text{Illinois}} \approx \frac{\ln(10^9)}{\ln 1.44} \approx 6$$
+
+### Signature C
+```c
+double brent_refine_adaptive(
+    double a, double b,
+    double fa, double fb,
+    int prec_fast,    // = 64 bits (phase 1, 1 limb SIMD AVX2)
+    int prec_full,    // = 80 bits (phase 2, validation finale)
+    double tol,       // = 1e-11
+    int max_iter      // = 50
+);
+```
+
+### Résultats v9 mesurés
+- T=100 000 : 138 069 / 138 069 zéros (0 manquant)
+- Sans turbo : 28.0 min · 82.15 z/s · ×1.80 vs v8
+- Avec turbo : 26.6 min · 86.5 z/s · gain turbo ×1.05 (bottleneck MPFR/mémoire)
+- Turing-Backlund : COMPLET ✅ · LMFDB : 19/20 ✅
+- Brent C utilisé : 99.9% · fallback mpmath : 0.1% (t < 300)
+- Gain cumulé v1→v9 turbo : ×4 500
+
+---
+
+## §28 — Illinois hybride 2-phases (v12, 2026-06-13)
+
+### Principe général
+
+v12 introduit un algorithme d'affinage à 2 phases combinant la vitesse de `Z_rs_double` (double natif) avec la précision de `Z_arb` (Arb/FLINT) :
+
+| Phase | Fonction | Ordre | Coût | Cible |
+|---|---|---|---|---|
+| Phase 1 | Illinois `Z_rs_double` (C0+C1) | ~1.44 | ~0.015 ms | $\|b-a\| < 10^{-6}$ |
+| Phase 2 | Newton `Z_arb` × 2 | 2.0 (quadratique) | ~3.5 ms | $< 10^{-12}$ |
+
+### Convergence Phase 1 — Illinois modifié
+
+$$c_{n+1} = b_n - f(b_n) \cdot \frac{b_n - a_n}{f(b_n) - f(a_n)}$$
+
+**Modificateur Illinois** (accélère la convergence superlinéaire) :
+$$\text{si } f(a_n) \cdot f(c_{n+1}) < 0 : \quad f(a_n) \leftarrow \frac{f(a_n)}{2}$$
+
+Nombre d'itérations Phase 1 estimé (bracket $\delta_0 = 0.010$ → cible $10^{-6}$) :
+$$n_1 \approx \frac{\ln(\delta_0 / \varepsilon_1)}{\ln \phi_{\text{Illinois}}} = \frac{\ln(10^4)}{\ln 1.44} \approx 24$$
+
+Coût Phase 1 total : $24 \times 0.015 \approx 0.36\,\text{ms}$ — **négligeable**.
+
+### Phase 2 — 2 Newton steps sur Z_arb
+
+Depuis le bracket Phase 1 : $|b'-a'| < 10^{-6}$. Départ : $x_0 = (a'+b')/2$.
+
+$$x_{n+1} = x_n - \frac{Z(x_n)}{Z'(x_n)}, \quad Z'(x) \approx \frac{Z(x+h) - Z(x-h)}{2h}, \quad h = 10^{-8}$$
+
+Convergence quadratique depuis $|x_0 - \rho| < 5 \times 10^{-7}$ :
+
+$$|x_2 - \rho| \lesssim (5 \times 10^{-7})^{2^2} = (5 \times 10^{-7})^4 \approx 6 \times 10^{-26} \ll 10^{-12}$$
+
+2 Newton steps suffisent largement pour la tolérance $10^{-12}$.
+
+### Condition de bascule Phase 1 → Phase 2
+
+$$|b - a| < 10^{-6} \implies \text{bascule vers Phase 2 Newton}$$
+
+### Conditions de fallback
+
+```
+t < 200.0            → mpmath_petit_t (Z_arb trop imprécis à très petit t)
+signe_incohérent     → Illinois Z_arb classique (convergence garantie)
+```
+
+Le fallback concerne **~0.06 %** des zéros sur T=100 000 ($t < 200$ → environ 87 zéros).
+
+### Formule du coût total par zéro
+
+$$C_{\text{zéro}} = \underbrace{n_1 \times C_1}_{\approx 0.36\,\text{ms}} + \underbrace{2 \times 2 \times C_2}_{\approx 14\,\text{ms}} + C_{\text{overhead}}$$
+
+avec $C_1 = 0.015\,\text{ms}$ (Z_rs_double) et $C_2 = 3.5\,\text{ms}$ (Z_arb).
+
+**Coût moyen observé T=100k :** $\approx 4.7\,\text{ms/zéro}$
+
+### Comparaison backends d'affinage
+
+| Version | Backend | Coût/zéro | Précision | Turing T=100k |
+|---|---|---|---|---|
+| v7/v8 | Illinois MPFR prec=64/116 bits | ~10–130 ms | 1e-11 | ✅ |
+| v9 | Brent MPFR prec=64/80 bits | ~64 ms | 1e-11 | ✅ |
+| v10 | Brent MPFR prec=64/80 bits + W=8 | ~64 ms | 1e-11 | ✅ |
+| **v12** | **Illinois hybride Z_rs_double + Newton Z_arb** | **~4.7 ms** | **1e-12** | **✅** |
+
+Gain v10 → v12 : $64 / 4.7 \approx \times 13.6$ par zéro · $\times 16.9$ sur benchmark T=10k.
+
+### Résultats v12 mesurés (T=100 000, 2026-06-13)
+
+- ~138 080 zéros · **0 manquant** · **8.8 min** · **Turing COMPLET ✅** · **LMFDB 20/20 ✅**
+- Gain vs v10 : ×2.69 direct (T=100k) · ×16.9 (benchmark T=10k vs Z_arb pur)
+- Phase 1 utilisée : 99.94 % · Fallback mpmath : 0.06 % (t < 200)
+
+---
+
+## §29 — Découpage par fenêtres T — distribution multi-machines (15 juin 2026)
+
+> Méthode validée mathématiquement (Claude.ai web, 14 juin 2026).
+> Applicable à v13+ pour distribuer le scan sur plusieurs machines sans re-scanner
+> depuis $T = 0$.
+
+### Principe : $N(T)$ comme index de zéros
+
+La formule de Riemann-von Mangoldt :
+
+$$N(T) = \frac{\theta(T)}{\pi} + 1 + S(T)$$
+
+avec l'approximation de Stirling (valide pour $T \geq 20$) :
+
+$$\theta(T) \approx \frac{T}{2}\ln\!\left(\frac{T}{2\pi e}\right) - \frac{\pi}{8}$$
+
+permet à un worker de **démarrer son scan à l'indice $N(T_{\text{start}})$** pour une
+borne $T_{\text{start}}$ arbitraire — sans repartir de $t = 14{,}134...$
+
+**Conséquence pratique** : pour scanner $[100\,000, 200\,000]$, le worker commence à
+l'indice $N(100\,000) = 138\,069$ et ne calcule que sa tranche.
+
+### Condition STEP — certification locale
+
+La condition de pas adaptatif :
+
+$$\text{STEP}(t) < \frac{\pi}{\ln(t / 2\pi)}$$
+
+est **locale** (dépend uniquement de $t$, pas de l'historique). Un worker peut donc
+**s'auto-certifier** "0 manquant" sur sa fenêtre $[T_{\text{start}}, T_{\text{end}}]$
+via Turing/Backlund local, sans connaître les zéros des autres fenêtres.
+
+### Recouvrement de fenêtres
+
+Pour éviter de manquer un zéro tombant sur une frontière, chaque worker scanne avec un
+recouvrement de $\pm 5 \times \text{STEP}(t) \approx \pm 0{,}05$ :
+
+$$\tilde{T}_{\text{start}} = T_{\text{start}} - 0{,}05, \quad
+  \tilde{T}_{\text{end}}   = T_{\text{end}}   + 0{,}05$$
+
+Fusion des résultats : dédupliquer les doublons de la zone de recouvrement par :
+$$|t_i - t_j| < 10^{-8}$$
+
+### Validation globale = somme des validations locales
+
+Si chaque worker valide « $N_k$ zéros trouvés dans $[T_k, T_{k+1}]$, 0 manquant »,
+la validation globale est $\sum_k N_k$ — sans re-scanner depuis 0.
+
+**Vérification d'intégrité** : comparer $\sum_k N_k$ avec $N(T_{\max})$ Riemann-von
+Mangoldt (tolérance $|\Delta N| \leq 1$).
+
+### Valeurs de référence $N(T)$
+
+| $T$ | $N(T)$ exact | $N(T)$ Stirling sans $S(T)$ |
+|---|---|---|
+| 10 000 | 10 142 | ≈ 10 140 |
+| 100 000 | 138 069 | ≈ 138 069 |
+| 200 000 | 303 372 | ≈ 303 300 |
+| 1 000 000 | 1 747 146 | ≈ 1 746 900 |
+
+L'approximation Stirling peut être à $\pm 5$ zéros près pour les grandes hauteurs —
+suffisant pour indexer un démarrage de worker, insuffisant pour une validation exacte
+(utiliser la valeur LMFDB ou un calcul $N(T)$ rigoureux pour la validation finale).
+
+---
+## §30 — Biais Z_rs et seuil SEUIL_1NEWTON (v15, 2026-07-04)
+
+### Biais de Z_rs_double (formule RS tronquée C0+C1)
+
+La formule Riemann-Siegel tronquée $Z_{\text{rs}}(t)$ diffère de la valeur exacte $Z(t)$
+d'un biais structurel :
+
+$$\text{biais}(t) \;=\; |Z(t) - Z_{\text{rs}}(t)| \;\approx\; C \cdot t^{-5/4}$$
+
+Constante $C \approx 0{,}305$ calibrée sur les 20 premiers zéros LMFDB le 4 juillet 2026.
+
+| $t$ | $\text{biais}(t)$ approx. |
+|---|---|
+| 65 | $\approx 5{,}2 \times 10^{-3}$ |
+| 200 | $\approx 3{,}2 \times 10^{-4}$ |
+| 1 000 | $\approx 1{,}7 \times 10^{-5}$ |
+| 10 000 | $\approx 1{,}7 \times 10^{-6}$ |
+| 20 000 | $\approx 6{,}4 \times 10^{-7}$ |
+| 50 000 | $\approx 1{,}9 \times 10^{-7}$ |
+
+### Pseudo-zéro de Z_rs
+
+La Phase 1 Illinois converge vers le **pseudo-zéro** $\tilde{t}$ tel que $Z_{\text{rs}}(\tilde{t}) = 0$,
+décalé du vrai zéro $t_0$ d'environ :
+
+$$|\tilde{t} - t_0| \;\approx\; \frac{\text{biais}(t)}{|Z'(t_0)|}$$
+
+Pour $|Z'| \approx 1$ (ordre de grandeur typique), $|\tilde{t} - t_0| \approx \text{biais}(t)$.
+
+### Erreur après 1 Newton Z_arb depuis le pseudo-zéro
+
+Après la Phase 1, on dispose du pseudo-zéro $\tilde{t}$ à distance $d = \text{biais}(t)$ du vrai zéro.
+Un pas Newton avec $Z_{\text{arb}}$ exact en valeur et $Z_{\text{rs}}$ pour la dérivée donne :
+
+$$|\text{erreur après 1 Newton}| \;\approx\; d^2 \cdot \frac{|Z''(t_0)|}{2\,|Z'(t_0)|^2}
+  \;\approx\; \text{biais}(t)^2 \;\approx\; C^2 \cdot t^{-5/2}$$
+
+### Seuil SEUIL_1NEWTON (v15)
+
+La condition $\text{erreur} < \text{tol} = 10^{-12}$ donne :
+
+$$C^2 \cdot t^{-5/2} < 10^{-12} \quad \Longleftrightarrow \quad t > \left(\frac{C^2}{10^{-12}}\right)^{2/5}
+  \;\approx\; (0{,}093 \times 10^{12})^{0{,}4} \;\approx\; 16\,000$$
+
+Par marge de sécurité (×1.25 sur le seuil théorique), v15 utilise :
+
+$$\boxed{\text{SEUIL\_1NEWTON} = 20\,000}$$
+
+À $t = 20\,000$ : erreur estimée $\approx 4 \times 10^{-13} < 10^{-12}$ ✅ (marge ×2,4 sur tol).
+
+### Règle d'usage (dans illinois_arb.c)
+
+```c
+int n_newton = (t_curr < SEUIL_1NEWTON) ? 2 : 1;
+```
+
+- $t < 20\,000$ (12,8\% des zéros à $T=100\,000$) : 2 Newton Z_arb
+- $t \geq 20\,000$ (87,2\%) : 1 Newton Z_arb
+
+**Piège confirmé le 04/07/2026 :** forcer 1 Newton pour tout $t$ donne
+une erreur $\sim 1{,}75 \times 10^{-6}$ à $t \approx 65$ → score LMFDB 14/20.
+
+---
+
+## §31 — Z_arb à précision fixe (v16, 2026-08-08)
+
+Le seuil `SEUIL_1NEWTON` et la logique du §30 restent **inchangés** en v16 —
+seule l'évaluation de $Z_{\text{arb}}(t)$ dans la boucle Newton change : au lieu de
+`arb_fpwrap_cdouble_hardy_z` (qui escalade en interne 64→8192 bits jusqu'à certifier
+~1e-16), Phase 2 appelle désormais `acb_dirichlet_hardy_z` à précision **fixe 64 bits**,
+un seul calcul. Le biais $\delta \approx 0{,}305 \cdot t^{-5/4}$ (Phase 1, Z_rs) et
+l'erreur après Newton restent gouvernés par la même analyse — seule la précision
+*interne* de l'appel à $Z_{\text{arb}}$ change, pas la précision *cible* du résultat
+final (tol=1e-12 inchangée, validée LMFDB 20/20 à T=100k).
+
+---
+*Auteur : hprzeta — Riemann_Lab — Mise à jour : 3 juin 2026 (§19–21) · 6 juin 2026 (§22) · 9 juin 2026 (§25) · 10 juin 2026 (§23 STEP adaptatif) · 11 juin 2026 (§24 benchmark v8 plancher i7) · 12 juin 2026 (§27 Brent C/mpfr v9) · 13 juin 2026 (§28 Illinois hybride 2-phases v12) · 15 juin 2026 (§29 découpage fenêtres T) · 4 juillet 2026 (§30 biais Z_rs + SEUIL_1NEWTON v15) · **8 août 2026 (§31 Z_arb précision fixe v16)** · ~1 650 lignes*

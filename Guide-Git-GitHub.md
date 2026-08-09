@@ -1,5 +1,8 @@
 # 🧭 Guide Git & GitHub — projet_zeta
 
+> **Fichier :** Guide-Git-GitHub.md · **Dossier :** wiki racine (`~/projet_zeta/Riemann_Lab.wiki/`)
+> **Branche :** master · **Auteur :** hprzeta · **MAJ :** 2026-06-21
+
 > Principe fondamental : **tout se fait en LOCAL, puis on pousse vers GitHub.**
 > Ne jamais modifier directement sur GitHub (sauf urgence).
 
@@ -450,76 +453,180 @@ git log --oneline -2 -- Handoff.md      # le commit attendu touche-t-il bien ce 
 ```
 
 ---
-*Guide personnel — hprzeta / projet_zeta — mis à jour le 1ᵉʳ juin 2026*
 
----
+## 📋 Leçons sessions 09–10 juin 2026
 
-## 🌿 Branche orpheline `session` — versionner Handoff sans polluer le code (3 juin 2026)
+### Handoff.md — local uniquement
 
-### Pourquoi
-`Handoff.md` est un doc de session (état courant, remplacé à chaque fin de session).
-Il ne doit **jamais** être sur les branches de code (IA/C/main/Test) — risque d'être
-committé par accident avec `git add -A`. Mais on veut quand même un historique Git.
-Solution : **branche orpheline** (aucun ancêtre commun → jamais mergeable par erreur).
+`Handoff.md` est **local uniquement** (`~/projet_zeta/handoff/`), jamais dans le wiki,
+jamais dans `docs/`. Vérifier l'absence de doublon :
 
-### Créer la branche `session` (une seule fois — déjà fait)
 ```bash
-cd ~/projet_zeta/
-git checkout --orphan session
-git rm -rf . >/dev/null 2>&1          # vide l'index, garde le working dir
-cp ~/Téléchargements/Handoff.md Handoff.md
-git add Handoff.md
-git commit -m "session: handoff <date>"
-git push origin session
-git checkout Riemann_Lab_C
+ls ~/projet_zeta/docs/handoff/Handoff.md 2>/dev/null  # ne doit PAS exister
+ls ~/projet_zeta/Riemann_Lab.wiki/Handoff.md 2>/dev/null  # ne doit PAS exister
 ```
 
-### Mettre à jour le Handoff en fin de session
+### Lister fichiers modifiés par date
+
 ```bash
-git checkout session
-cp ~/Téléchargements/Handoff.md Handoff.md    # ou git show session:Handoff.md > ... puis éditer
-git add Handoff.md && git commit -m "session: handoff $(date +%Y-%m-%d)"
-git push origin session
-git checkout Riemann_Lab_C
+find . -name "*.md" -printf "%TY-%Tm-%Td %TH:%TM  %p\n" | sort -r | head -20
 ```
 
-### Ignorer Handoff.md sur toutes les branches de code
-```bash
-# Vérifier le chemin exact (avant tout git rm --cached) :
-git ls-files | grep -i handoff    # retourne le chemin EXACT avec casse
+### Vérifier .gitignore sur CHAQUE branche
 
-# Puis pour chaque branche :
-for br in Riemann_Lab_C Riemann_Lab_IA main Riemann_Lab_Test; do
-  git checkout "$br"
-  git rm --cached "chemin/exact/vu/ci-dessus"
-  grep -qxF "**/Handoff.md" .gitignore || echo "**/Handoff.md" >> .gitignore
-  git add .gitignore
-  git commit -m "chore: Handoff.md hors suivi (canonique = branche 'session')"
-  git push origin "$br"
-done
-git checkout Riemann_Lab_C
+```bash
+git check-ignore -v logs/*.log   # vérifier avant tout git add -A
 ```
 
-### ⚠️ Pièges rencontrés
-- **`git rm --cached Handoff.md` (nom seul) ne trouve rien** si le fichier est dans
-  un sous-dossier. Utiliser `git ls-files | grep -i handoff` pour voir le chemin exact.
-- **`2>/dev/null` masque les erreurs** → ne pas l'utiliser dans les boucles de diagnostic.
-- **`**/Handoff.md`** ignore le fichier à tous les niveaux (racine + sous-dossiers).
-  Préférer ce motif à `Handoff.md` (racine seulement).
+Un fichier ignoré sur `main` peut ne pas l'être sur `Riemann_Lab_C`. Toujours vérifier
+sur la branche active.
 
-### Vérification
-```bash
-git checkout Riemann_Lab_C >/dev/null 2>&1; echo -n "C      : "; git ls-files | grep -ci handoff
-git checkout session       >/dev/null 2>&1; echo -n "session: "; git ls-files | grep -ci handoff
-git checkout Riemann_Lab_C >/dev/null 2>&1
-# Attendu : C : 0 / session : 1
-```
+### Après un run : archiver immédiatement
 
-### Lire le Handoff sans changer de branche
 ```bash
-git show session:Handoff.md                    # affiche dans le terminal
-git show session:Handoff.md > Handoff.md       # récupère dans le working dir
+# Créer dossier de résultat
+mkdir -p calculs/vX_TYYY_YYYYMMDD_HHMMSS/
+cp logs/run_T*.log calculs/vX_TYYY_YYYYMMDD_HHMMSS/
+cp calculs/vX_TYYY_YYYYMMDD_HHMMSS/*.csv .  # copie de sécurité
 ```
 
 ---
-*Guide personnel — hprzeta / projet_zeta — mis à jour le 3 juin 2026 — ~520 lignes*
+
+### Surveiller un run long
+
+Pour un run > 30 min, surveiller le processus et estimer la durée avant de lancer :
+
+```bash
+# Vérifier que le run est actif (toutes les 5–10 min)
+ps aux | grep compute_zeros | grep -v grep
+
+# Suivre les logs en direct
+tail -f calculs/run_T100k_step_delta3_*.log | grep -E "Worker|Turing|zéros"
+
+# Estimation durée restante par worker j (formule approximée)
+# v_j ≈ 40 / √(T_j / 10000)  z/s
+# durée ≈ (N(T_j) - N(T_{j-1})) / v_j   secondes
+```
+
+**Règle vitesse :** vérifier à 5 min après lancement. Si vitesse < 10 z/s → régression
+STEP probable → tuer le run et diagnostiquer.
+
+**Monitor Claude Code :** lancer Monitor sur le fichier log avec pattern `"Turing-Backlund"`.
+Timeout max : 3 600 000 ms (1h). Si Monitor se déclenche → stopper toute tâche courante
+et traiter le résultat du run en priorité.
+
+```bash
+# Exemple : run actif PID 328675, log run_T100k_step_delta3_20260610_1717.log
+# Monitor déclenché → tail du log + validation Turing-Backlund :
+tail -50 calculs/run_T100k_step_delta3_20260610_1717.log
+```
+
+---
+
+## 22. 🔐 Authentification GitHub CLI (`gh`) et création de pull requests (session 21 juin 2026)
+
+### Pourquoi authentifier `gh`
+
+`gh` (GitHub CLI) permet de piloter GitHub depuis le terminal — créer des pull requests, gérer des issues, etc. — sans manipuler de token manuellement. C'est ce qui permet à Claude Code d'agir directement sur GitHub (ex. `gh pr create`) plutôt que de te renvoyer vers le site web.
+
+### Authentification via device login
+
+```bash
+gh auth login
+```
+
+Répondre aux questions interactives :
+1. `What account do you want to log into?` → **GitHub.com**
+2. `What is your preferred protocol for Git operations?` → **HTTPS**
+3. `Authenticate Git with your GitHub credentials?` → **Yes**
+4. `How would you like to authenticate GitHub CLI?` → **Login with a web browser**
+
+Le terminal affiche alors un **code à 8 caractères** (ex. `1272-E323`) et une URL :
+```
+https://github.com/login/device
+```
+
+Étapes côté navigateur :
+1. Ouvrir cette URL
+2. Se connecter au compte `hprzeta`
+3. Entrer le code affiché dans le terminal
+4. Sur la page **« Authorize GitHub CLI »**, vérifier les permissions demandées :
+   - **Gists**
+   - **Organizations** (lecture seule)
+   - **Repositories** (publics + privés) ← **permission essentielle pour créer des PR**
+5. Cliquer **Authorize github**
+
+Le terminal se débloque automatiquement dès l'autorisation validée. Vérifier le résultat :
+```bash
+gh auth status
+# ✓ Logged in to github.com account hprzeta (keyring)
+# - Token scopes: 'gist', 'read:org', 'repo'
+```
+
+> ⚠️ **Le code expire après 1 minute.** S'il expire avant la validation côté navigateur, relancer simplement `gh auth login`.
+
+### Créer une pull request avec `gh pr create`
+
+Une fois authentifié, créer une PR directement depuis le terminal (sans passer par le formulaire web) :
+
+```bash
+gh pr create --base <branche_cible> --head <branche_source> \
+  --title "docs(ops): titre court" \
+  --body "Description de la PR"
+```
+
+**Prérequis :** la branche source (`--head`) doit déjà être poussée sur GitHub (`git push -u origin <branche>`).
+
+`gh` signale au passage les fichiers non commités/untracked présents dans le répertoire de travail (`Warning: N uncommitted changes`) — c'est informatif, ça **n'empêche pas** la création de la PR.
+
+Résultat : l'URL de la PR créée s'affiche directement, par exemple :
+```
+https://github.com/hprzeta/Riemann_Lab/pull/6
+```
+
+### Alternative manuelle (sans authentification `gh`)
+
+Si `gh` n'est pas authentifié, `git push` d'une nouvelle branche affiche déjà un lien direct vers le formulaire de création de PR :
+
+```
+remote: Create a pull request for 'ma-branche' on GitHub by visiting:
+remote:      https://github.com/hprzeta/Riemann_Lab/pull/new/ma-branche
+```
+
+Ouvrir ce lien dans un navigateur et remplir le formulaire GitHub manuellement (titre, description, branche cible).
+
+---
+
+## 23. 🔄 Maintenance périodique — tokens expirés (23 juin 2026)
+
+### Symptôme
+
+`gh` refuse une opération (push, `gh pr create`, etc.) en signalant que le token est expiré
+ou invalide. Le token GitHub CLI a une durée de vie limitée et doit être renouvelé
+périodiquement — ce n'est pas une anomalie, c'est attendu.
+
+### Procédure de reconnexion
+
+```bash
+gh auth login
+```
+
+Répondre aux questions interactives (identique à la procédure §22) :
+1. `What account do you want to log into?` → **GitHub.com**
+2. `What is your preferred protocol for Git operations?` → **HTTPS**
+3. `How would you like to authenticate GitHub CLI?` → **Login with a web browser**
+
+Ouvrir l'URL affichée (`https://github.com/login/device`), entrer le code à 8 caractères,
+se connecter au compte `hprzeta`, puis **Authorize github**.
+
+Vérifier le résultat :
+```bash
+gh auth status
+```
+
+> 💡 **Réflexe avant toute session Git/GitHub :** si une commande `gh` échoue de façon
+> inattendue, vérifier d'abord `gh auth status` avant de chercher un autre bug — un token
+> expiré est la cause la plus fréquente et la plus rapide à corriger.
+
+---
+*Guide-Git-GitHub.md · wiki racine · branche master · hprzeta · MAJ 2026-06-23 · 632 lignes*
