@@ -1,6 +1,6 @@
 # Bibliothèques Python — Référence Zeta-Lab
 > Version enrichie — Projet Riemann_Lab · hprzeta
-> Mise à jour : 2 juin 2026 — patterns compute_zeros_v3.py + §12 Arb/FLINT (levier d'affinage, voir Formules_zeta §17)
+> Mise à jour : 2 juin 2026 · Auteur : hprzeta
 
 ---
 
@@ -357,16 +357,40 @@ ctx.prec = 200    # ~60 chiffres décimaux
 # via un petit wrapper ctypes vers libarb (acb_dirichlet_hardy_z).
 ```
 
-> ⚠️ Le facteur ×10–20 est une **estimation à mesurer** : benchmark `affinage_arb.py`
-> contre `siegelz` sur $[300, 700]$ AVANT toute réécriture. Bonus à grand volume :
-> l'algorithme **Odlyzko–Schönhage** (multi-évaluation par FFT) casse le coût asymptotique —
-> pertinent seulement pour $T \gg 10\,000$.
+> Le facteur ×27 est **mesuré** (benchmark 2026-06-09 sur 200 points $t \in [100, 10000]$).
+> Bonus à grand volume : l'algorithme **Odlyzko–Schönhage** (multi-évaluation par FFT)
+> casse le coût asymptotique — pertinent seulement pour $T \gg 10\,000$.
+
+**Statut : VALIDÉ ×27 (2026-06-09)**
+
+| Paramètre | Valeur |
+|---|---|
+| Speedup vs mpmath | ×27 mesuré |
+| temps/appel | 0.77 ms vs 21.13 ms |
+| Précision | double ~15 dps, erreur $< 2.2\times10^{-16}$ |
+| Accès | ctypes + libflint bundlée python-flint 0.8.0 |
+| Module | `src/calculs/optimisation/arb_wrapper.py` |
+| Pattern | `arb_hardy_z(t)` remplace `float(mp.siegelz(t))` |
 
 | Outil | Rôle | Statut projet |
 |---|---|---|
-| `mpmath.siegelz` | affinage actuel (Voie B) | production, lent à grand $t$ |
-| Arb `acb_dirichlet_hardy_z` | affinage cible (levier §17) | à benchmarker |
+| `mpmath.siegelz` | affinage fallback (Voie B) | production — remplacé par Arb |
+| Arb `arb_fpwrap_cdouble_hardy_z` | affinage rapide (double natif, 0 malloc) | **VALIDÉ ×27** |
 | FLINT | dépendance d'Arb (entiers, polynômes) | requis pour Arb |
+
+### Résultats runs avec Arb (2026-06-10)
+
+| Run | STEP | Zéros | Manquants | Temps | Turing |
+|---|---|---|---|---|---|
+| T=10 000 v1 | 0.1 fixe | 10 137 / 10 142 | 6 | ~2.58 min | ❌ INCOMPLET |
+| T=10 000 v2 | 0.05 pour t≥5k | **10 141 / 10 142** | **0** | **2.60 min** | **✅ COMPLET** |
+| T=100 000 v1 | 0.1 fixe | 137 904 / 138 069 | 356 | 1h58 | ❌ INCOMPLET |
+| T=100 000 v2 | 0.1/0.05/0.02 adaptatif | 138 039 / 138 069 | 68 | 105.1 min | ❌ INCOMPLET |
+| **T=100 000 v3** | **0.05/0.010** | **EN COURS** | **—** | **~3–4h** | **attendu ✅** |
+
+> v1 → STEP=0.1 fixe (trop grand à grand t).
+> v2 → STEP adaptatif 0.1/0.05/0.02 + overlap=2.0 (commit `50837f7`) — STEP=0.02 insuffisant à t≥50k.
+> v3 → STEP adaptatif 0.05/0.010 (commit `181fdd1`) — lancé 2026-06-10 16h42.
 
 ---
 
@@ -388,3 +412,502 @@ ctx.prec = 200    # ~60 chiffres décimaux
 
 ---
 *Auteur : hprzeta · Dernière mise à jour : 2 juin 2026 — 390 lignes*
+---
+
+## §13 — workprec vs fp : précision locale en mpmath (3 juin 2026)
+
+### Contexte
+Découvert lors du diagnostic pipeline v4.1 (3 juin 2026) : `workprec` ne contrôle
+pas la précision des fonctions mpmath internes.
+
+### workprec — précision de la boucle, pas de la fonction
+
+```python
+import mpmath as mp
+mp.mp.dps = 35   # global : 35 dps
+
+with mp.workprec(50):           # 50 bits ≈ 15 dps — contexte local
+    x = mp.siegelz(100.0)       # ⚠️ siegelz re-lit mp.dps = 35 → précision 35 dps
+    y = mp.findroot(
+        mp.siegelz, (14.1, 14.2),
+        solver="illinois"
+    )
+    # La boucle Illinois tourne à 50 bits, MAIS chaque éval siegelz = 35 dps
+```
+
+**Usage correct de workprec :** opérations arithmétiques pures (additions, multiplications,
+racines) — PAS pour les fonctions de haut niveau comme `siegelz`, `zeta`, `gamma`.
+
+### fp — float64 natif (×40 plus rapide que dps=35)
+
+```python
+# float64 natif — ~1e-15 de précision, pas de surcharge multi-précision
+z = mp.fp.siegelz(t)        # float64
+theta = mp.fp.siegeltheta(t)
+
+# findroot en float64 (bracket obligatoire pour stabilité) :
+zero = mp.fp.findroot(
+    mp.fp.siegelz, (a, b),
+    solver="illinois", tol=1e-12, maxsteps=80,
+)
+```
+
+**Quand utiliser fp :** t < 300 (N < 7 termes RS), tol = 1e-12, bracket fourni.
+float64 ($\varepsilon \approx 10^{-16}$) est sous la tolérance → précision suffisante.
+
+**Quand NE PAS utiliser fp :** grand t, précision < 1e-12 exigée, ou validation LMFDB
+(qui nécessite ≥ 30 dps pour comparer γ à 14 décimales significatives).
+
+### Résumé comparatif
+
+| API | Précision | Coût relatif | Usage recommandé |
+|---|---|---|---|
+| `mp.siegelz(t)` dps=35 | ~1e-35 | référence (1×) | affinage final, LMFDB |
+| `mp.siegelz(t)` dps=15 | ~1e-15 | ~×4 plus rapide | — (workprec ne marche pas) |
+| `mp.fp.siegelz(t)` | ~1e-15 | **~×40 plus rapide** | t<300, bracket fourni |
+| C/libmpfr PREC=170 bits | ~1e-50 | ~×10 vs mpmath | t≥300, Illinois_C |
+
+---
+*Auteur : hprzeta — Riemann_Lab — Mise à jour : 3 juin 2026*
+
+---
+
+## §14 — ctypes — interface Python ↔ illinois_mpfr.so (Option B, 3 juin 2026)
+
+> Contexte : Phase C, branche `Riemann_Lab_C`. Le module C `illinois_mpfr.so`
+> expose `illinois_refine` depuis le commit `581e34d`. Règle post-fork obligatoire
+> (voir skill `phase-c-illinois`).
+
+### Règle post-fork — chargement dans chaque worker
+
+```python
+import ctypes, os, multiprocessing
+
+SO_PATH = os.path.join(
+    os.path.dirname(__file__),
+    "c_modules", "illinois_mpfr.so"
+)
+
+_lib = None   # handle par-process, initialisé APRÈS le fork
+
+def _init_worker():
+    """Chargé dans chaque worker du Pool — post-fork obligatoire."""
+    global _lib
+    _lib = ctypes.CDLL(SO_PATH)
+    # ── illinois_refine : fa/fb passés depuis Python (Option B) ──────────
+    _lib.illinois_refine.restype  = ctypes.c_double
+    _lib.illinois_refine.argtypes = [
+        ctypes.c_double,   # a      — borne gauche de l'intervalle
+        ctypes.c_double,   # b      — borne droite
+        ctypes.c_double,   # fa     = Z_vect_correct(a) déjà calculé
+        ctypes.c_double,   # fb     = Z_vect_correct(b)
+        ctypes.c_int,      # prec_bits (170 bits = ~51 décimales)
+        ctypes.c_double,   # tol    (1e-12)
+        ctypes.c_int,      # max_iter (200)
+    ]
+
+# ⚠️ Le .so ne doit PAS être chargé dans le processus parent (avant Pool)
+# → chargement pré-fork = handle sérialisé → ×1.8 au lieu de ×4
+with multiprocessing.Pool(4, initializer=_init_worker) as pool:
+    resultats = pool.map(worker_func, args_list)
+```
+
+### Appel dans le worker
+
+```python
+def affiner_illinois_c(a: float, b: float,
+                       fa: float, fb: float,
+                       tol: float = 1e-12) -> float:
+    """Affinage illinois via C/libmpfr (Option B).
+    fa/fb : valeurs Z déjà calculées par Z_vect_correct — zéro recalcul."""
+    return _lib.illinois_refine(a, b, fa, fb, 170, tol, 200)
+```
+
+**Pourquoi passer fa/fb ?** Si Illinois recalculait $Z(a), Z(b)$ en C avec $Z_{\text{mpfr}}$
+(RS tronquée $C_0+C_1$), une incohérence de signe avec Python produisait un biais ~0.3.
+En passant fa/fb depuis Python, l'encadrement initial est ancré sur les vrais zéros de
+$\zeta(\tfrac{1}{2}+it)$ — seules les itérations intermédiaires utilisent $Z_{\text{mpfr}}$.
+
+### Résumé comparatif — méthodes d'affinage
+
+| Méthode | ms/appel ($t\!\sim\!500$) | ms/appel ($t\!\sim\!9000$) | Précision position | Statut |
+|---|---|---|---|---|
+| `mpmath.findroot(siegelz)` dps=35 | ~296 ms | ~296 ms | $<10^{-13}$ ✅ | lent mais fiable |
+| `illinois_refine` C/libmpfr 170 bits | ~58.9 ms | ~159 ms | $<10^{-13}$ ✅ | **production** |
+| `mp.fp.siegelz` (float64) | ~7 ms | ~7 ms | $\sim10^{-15}$ ✅ | t<300 seulement |
+
+> ⚠️ Arrêt immédiat si `.so` absent — **pas de fallback silencieux** :
+> ```python
+> if not os.path.exists(SO_PATH):
+>     raise FileNotFoundError(f"illinois_mpfr.so introuvable : {SO_PATH} — `make`")
+> ```
+
+---
+*Auteur : hprzeta — Riemann_Lab — Mise à jour : 3 juin 2026 (§14 ajouté) · 6 juin 2026 (§15 ajouté)*
+
+---
+
+## §15 — chrono_phases.py — Profileur 3+1 phases pipeline v4.1 (6 juin 2026)
+
+> Présent sur `Riemann_Lab_C` depuis commit `d26ed12`.
+> Confirmé le 6 juin 2026 (ancêtre de `191d60a`).
+
+### Rôle
+
+Mesurer le temps cumulé, le nombre d'appels et le coût ms/appel pour chacune des
+4 phases du pipeline `compute_zeros_v4_1.py` :
+
+| Phase (clé) | Description | Implémentation |
+|---|---|---|
+| `detection` | Balayage $Z(t)$ vectorisé, changements de signe | `Z_vect_correct` (numpy) |
+| `illinois_C` | Affinage haute précision (t ≥ 300) | `illinois_refine` (C/libmpfr, 170 bits) |
+| `mpmath_petit_t` | Fallback t < 300 ($N_{\text{RS}} < 7$) | `mp.fp.siegelz` ou `mp.siegelz` dps=35 |
+| `turing` | Validation Turing-Backlund en fin de run | `turing_validation.py` |
+
+### Usage
+
+```python
+from chrono_phases import ChronoPhases
+
+chrono = ChronoPhases()
+
+# ── Dans la boucle worker ────────────────────────────────────────────────
+with chrono.phase("detection"):
+    Z_vals = Z_vect_correct(ts)
+
+with chrono.phase("illinois_C"):
+    gamma = affiner_illinois_c(a, b, fa, fb)
+
+with chrono.phase("mpmath_petit_t"):
+    gamma = mp.fp.findroot(mp.fp.siegelz, (a, b),
+                           solver="illinois", tol=1e-12)
+
+with chrono.phase("turing"):
+    turing_ok = valider_turing(zeros, T_MAX)
+
+# ── Rapport de fin de run ───────────────────────────────────────────────
+chrono.rapport()
+# → affiche : Phase | temps cumulé | appels | ms/appel | % mur×W
+```
+
+### Résultats typiques
+
+**Run T=1 000 (4 workers, cumulé) — goulot = mpmath_petit_t :**
+
+| Phase | Temps cumulé | Appels | ms/appel | % mur×W |
+|---|---|---|---|---|
+| `mpmath_petit_t` | 11.27 s | 138 | 81.65 | **35.6 %** |
+| `illinois_C` | 5.22 s | 511 | 10.21 | 16.5 % |
+| `turing` | 2.33 s | 1 | 2 330.99 | 7.4 % |
+| `detection` | 0.09 s | 4 | 21.53 | 0.3 % |
+
+**Run T=10 000 (4 workers, cumulé) — goulot = illinois_C :**
+
+| Phase | Temps cumulé | Appels | ms/appel |
+|---|---|---|---|
+| `illinois_C` | 1 592.5 s | 10 004 | **159 ms** |
+| `mpmath_petit_t` | 79.5 s | 138 | 576 ms |
+| `turing` | 35.0 s | 1 | — |
+| `detection` | 2.8 s | 20 | 138 ms |
+
+> **Lecture clé :** à T=1 000, le goulot est `mpmath_petit_t` (138 zéros $t < 300$
+> via `mp.siegelz` dps=35). À T=10 000, il bascule sur `illinois_C` dont le coût
+> croît en $O(\sqrt{t})$ (§20 de `Formules_zeta.md`). La `detection` est
+> toujours négligeable (< 0.3 %).
+
+---
+*Auteur : hprzeta — Riemann_Lab — Mise à jour : 6 juin 2026 (§15 ajouté) · 9 juin 2026 (§12 mis à jour, VALIDÉ ×27) · 10 juin 2026 (résultats runs Arb §12 : v2 terminé 68 manquants, v3 0.05/0.010 EN COURS)*
+
+---
+
+## §16 — brent_mpfr.c + zeta_turbo sudoers (v9, 2026-06-12)
+
+### brent_mpfr.c
+
+| Attribut | Valeur |
+|---|---|
+| Fichier | `src/calculs/optimisation/c_modules/brent_mpfr.c` |
+| Dépendances | `libmpfr-dev`, `libgmp-dev` |
+| Compilation | `gcc -O3 -march=native -shared -fPIC -o brent_mpfr.so brent_mpfr.c -lmpfr -lgmp` |
+| Chargement | POST-FORK uniquement (segfault sinon) |
+| Phase 1 | prec_fast=64 bits → 1 limb mpfr → SIMD AVX2 → ×16 local |
+| Phase 2 | prec_full=80 bits → validation finale < 1e-11 |
+
+### zeta_turbo — sudoers (installé 2026-06-12)
+
+Fichier : `/etc/sudoers.d/zeta_turbo`
+
+Commandes NOPASSWD :
+- `/usr/bin/cpupower frequency-set -g performance`
+- `/usr/bin/cpupower frequency-set -g powersave`
+- `/usr/sbin/sysctl -w vm.swappiness=10`  ← `/usr/sbin/` sur Ubuntu 24.04
+- `/usr/sbin/sysctl -w vm.swappiness=60`
+- `/usr/bin/systemctl stop NetworkManager`
+- `/usr/bin/systemctl start NetworkManager`
+
+⚠️ Sur Ubuntu 24.04 : `sysctl` est à `/usr/sbin/sysctl`, pas `/sbin/sysctl`.
+
+Gain turbo mesuré : 26.6 min T=100k (vs 28.0 min sans turbo — gain ×1.05 seulement)
+
+---
+
+## §17 — illinois_arb.c — Illinois hybride 2-phases (v12, 2026-06-13)
+
+### Principe
+
+`illinois_arb.c` remplace `brent_mpfr.c` comme backend d'affinage. Algorithme à 2 phases :
+
+| Phase | Fonction | Coût | Précision | Condition |
+|---|---|---|---|---|
+| Phase 1 | `Z_rs_double` (Illinois C, double natif) | **~0.015 ms/appel** | ~2e-16 | itérer jusqu'à $\|b-a\| < 10^{-6}$ |
+| Phase 2 | 2 Newton steps `Z_arb` (Arb/FLINT) | **~3.5 ms × 2** | $< 10^{-12}$ | 2 pas fixes |
+| Fallback | Illinois `Z_arb` classique | ~3.5 ms/iter | $< 10^{-12}$ | $t < 200$ ou signe incohérent |
+
+### Attributs
+
+| Attribut | Valeur |
+|---|---|
+| Fichier | `src/calculs/optimisation/c_modules/illinois_arb.c` |
+| Dépendances | `libflint-dev`, `libgmp-dev` (Arb/FLINT intégré depuis FLINT 3.x) |
+| Compilation | `gcc -O3 -march=native -shared -fPIC -o illinois_arb.so illinois_arb.c -lflint -lgmp` |
+| Chargement | POST-FORK uniquement |
+| Phase 1 backend | `arb_fpwrap_cdouble_hardy_z` — double natif IEEE 754 |
+| Phase 2 backend | `arb_cdouble_hardy_z` — Arb adaptative ~3.5 ms |
+
+### Formule du coût par zéro
+
+$$C_{\text{zéro}} = n_1 \times C_{\text{Phase1}} + 2 \times C_{\text{Phase2}}$$
+
+avec :
+- $C_{\text{Phase1}} \approx 0.015\,\text{ms}$ (Z_rs_double double natif)
+- $C_{\text{Phase2}} \approx 3.5\,\text{ms}$ (Z_arb Arb/FLINT)
+- $n_1 \approx 24$ itérations Phase 1 (bracket 0.010 → 1e-6)
+
+**Coût moyen observé T=100k :** $\approx 4.7\,\text{ms/zéro}$ (vs 64 ms Brent/MPFR v10 → **×13.6**)
+
+### Résultats v12 (T=100 000)
+
+| Indicateur | Valeur |
+|---|---|
+| Zéros | ~138 080 / 138 069 attendus |
+| Manquants | **0 ✅** |
+| Durée | **8.8 min** (vs 23.7 min v10) |
+| Gain vs v10 | **×2.69** direct · **×16.9** benchmark |
+| Turing-Backlund | **COMPLET ✅** |
+| LMFDB | **20/20 ✅** |
+| Phase 1 utilisée | ~99.94 % des zéros |
+| Fallback mpmath | ~0.06 % (t < 200) |
+
+Voir [[analyse_problemes_v10_v12]] pour l'analyse complète.
+
+---
+
+## §17 — v13→v15 : cache RS statique + Phase 2 adaptative (2026-07-04)
+
+### Cache log_n / isqrt_n (v14)
+
+**Fichiers :** `illinois_arb.c` et `scan_arb.c`
+
+```c
+#define N_MAX_CACHE 2100  /* couvre T ≲ 27M (N_RS=2100 termes) */
+
+static double log_n_cache[N_MAX_CACHE + 1];   /* log(n) pour n=1..2100 */
+static double isqrt_n_cache[N_MAX_CACHE + 1]; /* 1/sqrt(n) */
+static int    g_cache_ready = 0;
+
+static void init_rs_cache(void) {
+    if (g_cache_ready) return;
+    for (int n = 1; n <= N_MAX_CACHE; n++) {
+        log_n_cache[n]   = log((double)n);
+        isqrt_n_cache[n] = 1.0 / sqrt((double)n);
+    }
+    g_cache_ready = 1;
+}
+```
+
+**Taille mémoire :** 2 × 2101 × 8 octets = **33 KB** — tient en cache L2.
+**Initialisation :** appelée une fois par worker après `fork()`. Idempotente.
+**Couverture :** $T \lesssim 27\,\text{M}$ (pour $T > 27\text{M}$ : fallback sans cache).
+
+**Impact dans la boucle RS :**
+```c
+/* avant v14 */
+sum += cos(th - t * log((double)n)) / sqrt((double)n);   /* log + sqrt à chaque terme */
+/* v14+ */
+sum += cos(th - t * log_n_cache[n]) * isqrt_n_cache[n]; /* lecture tableau : ~4 cycles */
+```
+
+**Gain mesuré :** ×1.10 sur T=100k (log/sqrt ≈ 50 cycles chacun vs accès L2 ≈ 4 cycles).
+
+### Coût arb_fpwrap_cdouble_hardy_z (calibré 04/07/2026)
+
+| Indicateur | Valeur |
+|---|---|
+| Coût moyen à T=100k ($N_\text{RS} \approx 126$ termes) | **≈ 1,8 ms/appel** |
+| Coût à T=5M ($N_\text{RS} \approx 892$ termes) | **≈ 0,9 ms/appel** |
+| Flags standard | `flags=0` (précision automatique avec garantie d'erreur) |
+| Part Illinois dans T=100k | **≈ 98 %** du temps total |
+
+> Le coût Z_arb diminue relativement avec T car Arb ajuste sa précision interne.
+> À T=5M, chaque appel traite plus de termes mais avec une précision suffisante
+> plus facilement détectable — coût sub-linéaire en $N_\text{RS}$.
+
+### Phase 2 adaptative — SEUIL_1NEWTON (v15)
+
+**Principe (dérivation complète : [[Formules_zeta]] §30) :** le biais de Z_rs fait
+diverger le pseudo-zéro de Phase 1 du vrai zéro d'une quantité qui, après 1 pas Newton,
+donne une erreur $< 10^{-12}$ à partir de $t \gtrsim 16\,000$ — d'où, avec marge ×1.25 :
+**SEUIL_1NEWTON = 20 000**.
+
+```c
+int n_newton = (t_curr < SEUIL_1NEWTON) ? 2 : 1;
+```
+
+**Résultats v12 → v15 (T=100 000) :**
+
+| Version | Temps | Vitesse | Algorithme Phase 2 |
+|---|---|---|---|
+| v12 | 8.8 min | 261 z/s | 2 Newton Z_arb (early-exit naturel t>50k) |
+| v13 | 8.50 min | 271 z/s | idem + T_SEUIL_PETIT_T=65 |
+| v14 | 7.7 min | 299 z/s | v13 + cache log_n/isqrt_n |
+| **v15** | **4.4 min** | **517 z/s** | v14 + SEUIL_1NEWTON=20k |
+
+**Condition Objectif 2 atteinte le 4 juillet 2026 : T=100k < 5 min ✅**
+
+**Piège confirmé :** 1 Newton fixe pour tout $t$ → erreur $\sim 1{,}75 \times 10^{-6}$
+à $t \approx 65$ (LMFDB 14/20). Voir [[Formules_zeta]] §30.
+
+---
+
+## §18 — v16 : Z_arb à précision fixe — `acb_dirichlet_hardy_z` remplace `arb_fpwrap` (2026-08-08)
+
+### Le problème avec `arb_fpwrap_cdouble_hardy_z`
+
+`arb_fpwrap_cdouble_hardy_z(flags=0)` (utilisé v12→v15, voir §17 ci-dessus) n'est
+pas un appel à précision fixe : en interne (confirmé en lisant le code source FLINT
+3.3.1, `src/arb_fpwrap/fpwrap.c`), il exécute une **boucle d'escalade** :
+
+```c
+for (wp = 64; ; wp *= 2) {          /* 64 -> 128 -> 256 -> ... -> 8192 bits (flags=0) */
+    func(arb_res, arb_x, wp);       /* recalcul COMPLET à chaque niveau */
+    if (arb_accurate_enough_d(arb_res, flags)) return FPWRAP_SUCCESS;
+    if (wp >= double_wp_max(flags)) return FPWRAP_UNABLE;
+}
+```
+
+Le critère d'arrêt `arb_accurate_enough_d` vise une précision certifiée **~1e-16**
+(un `double` complet) — largement plus que le besoin réel du pipeline
+(`TOL_ARB = 1e-12`, soit ~40 bits utiles). `perf record` sur `illinois_refine_arb`
+(300 appels réels, 4000 Hz) a confirmé le coût : **91 % du temps dans GMP+FLINT**,
+uniquement via cette fonction — dont `__gmpn_mul_basecase_coreisbr` (multiplication
+bignum brute) à lui seul **16,67 %**.
+
+**Piste écartée en cours de route :** `flags` n'a pas de valeur permettant de
+réduire ce budget — `flags=0` (déjà utilisé) est déjà la variante la moins chère de
+l'API `fpwrap` (`FPWRAP_ACCURATE_PARTS`/`FPWRAP_CORRECT_ROUNDING` ne font
+qu'augmenter le coût). Jouer sur `flags` seul est une impasse.
+
+### La solution — fonction bas niveau à précision fixe
+
+FLINT expose `acb_dirichlet_hardy_z` à un niveau plus bas, avec précision **fixe
+explicite**, sans boucle d'escalade :
+
+```c
+void acb_dirichlet_hardy_z(acb_ptr res, const acb_t t,
+    const dirichlet_group_t G, const dirichlet_char_t chi,
+    slong len, slong prec);   /* UN SEUL calcul, à prec bits, pas de re-essai */
+```
+
+Contrairement à `arb_fpwrap`, cette fonction nécessite `dirichlet_group_t`/
+`dirichlet_char_t` — même pour la fonction zêta pure, il faut initialiser le
+« caractère principal » du groupe trivial modulo 1 (q=1) :
+
+```c
+static dirichlet_group_t g_G;
+static dirichlet_char_t  g_chi;
+static int g_dirichlet_ready = 0;
+
+static void init_dirichlet_trivial(void) {
+    if (g_dirichlet_ready) return;
+    dirichlet_group_init(g_G, 1);
+    dirichlet_char_init(g_chi, g_G);
+    dirichlet_char_index(g_chi, g_G, 0);   /* caractère principal mod 1 = zêta pure */
+    g_dirichlet_ready = 1;
+}
+
+#define PREC_BITS_ARB 64   /* coïncide avec WP_INITIAL de arb_fpwrap */
+
+static double Z_arb(double t) {
+    init_dirichlet_trivial();
+    acb_t s, res;
+    acb_init(s); acb_init(res);
+    acb_set_d(s, t);
+    acb_dirichlet_hardy_z(res, s, g_G, g_chi, 1, (slong)PREC_BITS_ARB);
+    double result = arf_get_d(arb_midref(acb_realref(res)), ARF_RND_NEAR);
+    acb_clear(s); acb_clear(res);
+    return result;
+}
+```
+
+Pattern d'initialisation confirmé sur le test officiel FLINT
+`acb_dirichlet/test/t-hardy_z.c` (self-consistency test).
+
+### Nouvelle dépendance de build — headers FLINT vendorisés en source
+
+`acb_dirichlet_hardy_z` nécessite les types internes FLINT (`arb_t`, `acb_t`,
+`dirichlet_group_t`...), donc de vrais headers C — pas seulement une déclaration
+`extern` comme pour `arb_fpwrap` (interface volontairement simplifiée en
+`double`/`struct` opaque).
+
+**`apt install libflint-dev` ne convient pas** : la version système est **3.0.1**,
+alors que la `.so` réellement chargée en runtime (bundlée par le paquet Python
+`python-flint`) est **3.3.1** — vérifié via le symbole `flint_version` (`nm -D` +
+lecture mémoire, voir `Guide-Linux-Commandes.md` §21). `dirichlet_group_t` et
+`dirichlet_char_t` sont des types **activement modifiés entre versions FLINT** :
+compiler avec des headers 3.0.1 contre une `.so` 3.3.1 risquerait une **corruption
+mémoire silencieuse** (mauvais offsets de champs de structure), pas juste un
+mauvais résultat numérique.
+
+**Solution :** headers récupérés depuis les sources officielles FLINT (tag `v3.3.1`),
+`./configure` local pour générer `flint.h`/`flint-config.h` corrects (nécessite `m4`,
+voir `Guide-Linux-Commandes.md` §22), puis extraction de la seule fermeture
+transitive réellement utilisée (`gcc -M`) — **23 headers, 276 Ko**, au lieu des
+800+ de FLINT complet. Vendorisés dans `c_modules/flint-headers-3.3.1/` (provenance
+et licence LGPL documentées dans son `README.md`), utilisés uniquement à la
+compilation — l'édition de liens se fait contre la `.so` déjà présente dans
+l'environnement Python, pas une nouvelle bibliothèque.
+
+### Choix de la précision — 64 bits
+
+| Précision | Gain vs `arb_fpwrap` (300 brackets) | Écart vs `arb_fpwrap` |
+|---|---|---|
+| 48 bits | ×8,82 | 0 — identique bit-à-bit |
+| **64 bits** | **×5,75** | **0 — identique bit-à-bit** |
+| 128 bits | ×1,21 | identique |
+
+64 bits retenu plutôt que 48 : coïncide avec `WP_INITIAL` de `arb_fpwrap` lui-même
+(point de comparaison naturel), marge ~7 décimales au-dessus du besoin théorique
+~40 bits (tol=1e-12) contre ~2,4 décimales à 48 bits — jugé plus sûr face à un cas
+limite non couvert par l'échantillon de brackets testés.
+
+### Validation et résultats (protocole standard Objectif 2, voir §17)
+
+**Piste MPFR pur testée et écartée avant celle-ci** — `illinois_refine` (PREC=170
+bits, sans Arb, réévalue `Z_mpfr` à chaque itération de la sécante) : **11,88× plus
+lent** ET **~4 ordres de grandeur moins précis** que la version Arb (biais
+structurel de la formule RS tronquée, même à haute précision). Ne pas reproposer
+cette piste.
+
+Validation en 2 étapes avant tout changement de production (prototype isolé sur
+run réel T=10000, puis intégration revalidée à T=100000) :
+
+| Version | Temps | Vitesse | Algorithme Phase 2 |
+|---|---|---|---|
+| v15 | 4.4 min | 517 z/s | SEUIL_1NEWTON=20k, `arb_fpwrap` |
+| **v16** | **1.6 min** | **1407 z/s** | v15 + `acb_dirichlet_hardy_z` 64 bits fixe |
+
+**Gain v15→v16 : ×2,75** (T=100 000, 138 069/138 069 zéros, Turing-Backlund COMPLET,
+LMFDB 20/20). **Objectif 2 (T=100k < 5 min) largement dépassé.**
+
+---
+*Auteur : hprzeta — Riemann_Lab — Mise à jour : 6 juin 2026 (§15 ajouté) · 9 juin 2026 (§12 mis à jour, VALIDÉ ×27) · 10 juin 2026 (résultats runs Arb §12) · 12 juin 2026 (§16 brent_mpfr.c + sudoers) · 4 juillet 2026 (§17 cache RS + Phase 2 adaptative v14/v15, condition Obj2 ✅) · 6 juillet 2026 (§17 dédupliqué — dérivation SEUIL_1NEWTON renvoyée vers Formules_zeta §30, source canonique) · **8 août 2026 (§18 v16 — Z_arb précision fixe acb_dirichlet_hardy_z, headers FLINT vendorisés, Obj2 amélioré à 1.6 min)** · ~890 lignes*

@@ -1,7 +1,12 @@
 # Analyse des problèmes v5 → v4.1
 
+> **Fichier :** analyse_problemes_v5_v4_1_20260602.md
+> **Dossier :** wiki racine
+> **Branche :** master (wiki)
+> **Auteur :** hprzeta · **MAJ :** 2026-06-10
+
 **Auteur :** hprzeta  
-**Date :** 2 juin 2026  
+**Date :** 2 juin 2026 (complété 10 juin 2026)  
 **Branche :** `Riemann_Lab_C`  
 **Fichiers :** `compute_zeros_v5.py` (référence) → `compute_zeros_v4_1.py` (cible)
 
@@ -208,6 +213,50 @@ n'est possible tant qu'on évalue $Z$ côté Python via `mpmath.siegelz`.
 
 ---
 
+## Problème 6 — Goulot résiduel résolu : Arb/FLINT (9 juin 2026)
+
+### Cause
+
+Le Problème 5 concluait que `mpmath.siegelz` était le goulot structurel (~21 ms/appel à
+$t \approx 10\,000$), rendant impossible toute accélération algorithmique de l'affinage.
+
+### Solution : `arb_fpwrap_cdouble_hardy_z` (Arb/FLINT)
+
+Arb (via `python-flint`) expose `arb_fpwrap_cdouble_hardy_z` : calcul de $Z(t)$ en
+double IEEE 754 pur, sans allocation heap (0 malloc/free). `mpmath` utilise MPFR
+(~1 000 `malloc/free` par zéro pour gérer l'arithmétique multi-précision).
+
+```python
+from flint import arb
+def arb_hardy_z(t: float) -> float:
+    """Z(t) via Arb — double natif, 0 allocation heap."""
+    from flint._flint import libflint
+    # arb_fpwrap_cdouble_hardy_z : retourne directement un double
+    ...
+```
+
+Module intégré dans `arb_wrapper.py` (commit `b563db2`, branche `Riemann_Lab_C`).
+
+### Gain mesuré (benchmark 2026-06-09)
+
+| Méthode | Temps/appel | Speedup | Allocation |
+|---|---|---|---|
+| `mpmath.siegelz` dps=35 | 21.13 ms | 1× | ~1 000 malloc/free |
+| `arb_fpwrap_cdouble_hardy_z` | **0.77 ms** | **×27** | 0 |
+
+Speedup par tranche :
+
+| Tranche $t$ | Speedup Arb vs mpmath |
+|---|---|
+| $[100,\, 1\,000]$ | ×29 |
+| $[1\,000,\, 5\,000]$ | ×28 |
+| $[5\,000,\, 10\,000]$ | ×26 |
+
+Erreur : $|Z_{\text{arb}} - Z_{\text{mpmath}}| < 2.2 \times 10^{-16}$ (sub-ULP) — précision double
+largement suffisante pour la tolérance Illinois $10^{-12}$.
+
+---
+
 ## Tableau récapitulatif global
 
 | # | Problème | Correction v4.1 | Gain mesuré |
@@ -216,7 +265,8 @@ n'est possible tant qu'on évalue $Z$ côté Python via `mpmath.siegelz`.
 | 2 | Détection séquentielle `mpmath.siegelz` | Vectorisation numpy BLAS | ×4 771–×9 873 selon $t$ |
 | 3 | `.so` avant fork → sérialisation GMP | Chargement `.so` après `fork()` | Parallèle ×1.84 → ×3.9 |
 | 4 | Biais Illinois_C pur ($10^{-4}$–$10^{-2}$) | Newton analytique dps=25, 3 pas | Précision $< 10^{-14}$ ✅ |
-| 5 | Goulot `_newton_polish` (siegelz) | — (goulot structurel) | 1.07 z/s · pas d'optimisation algo possible |
+| 5 | Goulot `_newton_polish` (siegelz) | — (goulot structurel identifié 2 juin) | 1.07 z/s · pas d'optimisation algo possible |
+| 6 | Goulot affinage `mpmath.siegelz` 21 ms/appel | `arb_fpwrap_cdouble_hardy_z` (Arb) | ×27 · 0.77 ms/appel · T=10 000 : 2.60 min ✅ |
 
 ---
 
@@ -253,24 +303,83 @@ n'est possible tant qu'on évalue $Z$ côté Python via `mpmath.siegelz`.
 `mpmath_petit_t` (seuil `T_SEUIL_ILLINOIS_C = 300`). Ce pourcentage est structurel.
 À T=10 000 : 138/10 142 ≈ 1.4 % → **98.6 % illinois_C_polish** ✅ (seuil cible 90 %).
 
+### Test T=10 000 avec Arb (10 juin 2026)
+
+Après intégration d'Arb (commit `b563db2`) et fix STEP adaptatif (commit `50837f7`) :
+
+| Métrique | v4.1 (2 juin, T=1000) | **v4.1+Arb (10 juin, T=10 000)** |
+|---|---|---|
+| Vitesse | 1.07 z/s | **64.97 z/s** ✅ |
+| Durée | — | **2.60 min** |
+| Turing | COMPLET | **COMPLET** ✅ |
+| Zéros | 649/649 | **10 141/10 142** |
+| Manquants | 0 | **0** ✅ |
+| LMFDB 20 premiers | 19/20 | 19/20 (zéro #20 : 8.06e-10) |
+| Gain vs v1 (21 h) | — | **×484** |
+
+### Runs T=100 000 — STEP adaptatif (10 juin 2026)
+
+La scale-up de T=10 000 à T=100 000 a révélé un problème de sous-échantillonnage :
+
+| Run | STEP | Zéros trouvés | Manquants | Turing | Note |
+|---|---|---|---|---|---|
+| v1 (073115) | 0.1 fixe | 137 904 / 138 069 | 356 | ❌ | STEP trop grand à $t > 29\,126$ |
+| v2 (141005) | 0.1 fixe | 138 050 / 138 069 | 17 | ❌ | même cause |
+| v3 (adaptatif 0.1/0.05/0.02) | variable | 138 039 / 138 069 | 68 | ❌ | STEP=0.02 < gap min 0.019 à $t=66\,678$ |
+| v4 (0.05/0.010) | fixe par tranche | *tué* | — | — | régression ×11 vitesse (~0.5 z/s) |
+| **v5 (δ/3 continu)** | $\delta(t)/3$ | **EN COURS** | — | **attendu** ✅ | commit `d2f62c1`, PID 328675 |
+
+**Cause des manquants v3 :** le gap minimal mesuré entre deux zéros consécutifs est
+$0.01940$ à $t = 66\,678$. STEP=0.02 > 0.019 → le bracket englobait deux zéros en un seul pas.
+Les paires se produisent car la distribution des espacements suit la loi GUE (Gaussian
+Unitary Ensemble) qui admet une queue pour les très petits espacements.
+
+**Fix STEP $\delta(t)/3$ (commit `d2f62c1`) :**
+
+$$\text{STEP}(t) = \max\!\left(0.05,\; \min\!\left(0.5,\; \frac{\delta(t)}{3}\right)\right), \qquad \delta(t) = \frac{2\pi}{\ln(t/2\pi)}$$
+
+Valeurs résultantes : STEP $\approx 0.41$ à $t = 1\,000$ · $0.33$ à $t = 10\,000$ · $0.22$ à $t = 100\,000$.
+Nombre de points de scan : $\approx 460\,000$ (vs $5\,000\,000$ avec STEP=0.010 — ÷11).
+
+**Vitesse mesurée après 9 min (run v5) :**
+
+| Worker | Segment | Zéros à 540s | Vitesse |
+|---|---|---|---|
+| 0 | $[14,\; 6\,700]$ | 6 000 | **27 z/s** (terminé) |
+| 1 | $[6\,700,\; 25\,600]$ | 8 000 | **14.9 z/s** |
+| 2 | $[25\,600,\; 56\,700]$ | 4 000 | **7.7 z/s** |
+| 3 | $[56\,700,\; 100\,000]$ | 3 000 | **6.2 z/s** |
+| **Total** | — | **~21 000** | **~39 z/s** |
+
+La dégradation Worker 3 vs Worker 0 reflète le coût croissant d'Illinois ($O(\sqrt{t})$) —
+non le nombre de points de scan (voir Problème 5 / résolu partiellement par Arb).
+
 ---
 
 ## Questions ouvertes
 
-1. **Vitesse à grand $t$ :** le goulot est `mpmath.siegelz` lui-même (~15–20 ms/appel
-   à $t \approx 1000$ avec dps=25). Pour T=10 000, le polish prend ~2.5 h.
-   Une implémentation native de $Z'(t)$ en C/libmpfr pourrait court-circuiter `siegelz`.
+1. **STEP = δ/3 suffisant pour les paires très proches ?**
+   Le gap min mesuré est $0.019$ à $t = 66\,678$, soit $\delta/3 \approx 0.22$ à cet endroit —
+   ratio $\delta/3\,/\,\text{gap}_{\min} \approx 11.6$. La garantie théorique STEP < δ/2 porte
+   sur l'espacement *moyen* ; les queues GUE peuvent produire des gaps $\ll \delta$.
+   **→ La validation Turing-Backlund du run v5 EN COURS tranchera définitivement.**
 
-2. **Déséquilibre de charge :** Worker 0 (plage $[14, 261[$) concentre les 138 zéros
-   mpmath lents. Pour T >> 300, ce déséquilibre disparaît naturellement (~1.4 % à T=10 000).
+2. **Déséquilibre workers à grand $t$ (segmentation 1/√t).**
+   La segmentation équitable sur l'axe $\sqrt{t}$ équilibre le *nombre de zéros*
+   mais pas le *temps d'affinage* (Illinois croît en $O(\sqrt{t})$ par zéro).
+   Worker 3 ($[56\,700,\; 100\,000]$) est ~4× plus lent que Worker 0 ($[14,\; 6\,700]$).
+   **→ v6 : segmenter par temps d'affinage estimé $N(T) \cdot \sqrt{t}$ plutôt que par $\sqrt{t}$.**
 
-3. **Décision livrable T=10 000 :**
-   - Turing seulement → Illinois_C pur sans `_newton_polish` (~41 z/s, ~5 min)
-   - Catalogue positions < $10^{-10}$ → CSV v2/v3 existant (10 142 zéros, 50 dps) ou run de nuit
+3. **Plancher de vitesse v4.1+Arb : ~39 z/s cumulé (T=100k).**
+   Le bottleneck restant est le coût Illinois C à grand $t$ (~85 ms/appel à $t \approx 10\,000$).
+   Pistes v6 :
+   - `scan_arb.c` : détection Z(t) en C pur (éliminer le context-switch Python/C par bloc)
+   - W=8 workers (si machine dispose de 8 cœurs ou machine plus puissante)
+   - Cible : ~27 min pour T=100 000 (vs ~105 min estimé v4.1+Arb)
 
-4. **Versionner les skills :** les 4 skills `~/.claude/skills/` restent à déplacer
+4. **Versionner les skills :** les skills `~/.claude/skills/` restent à déplacer
    vers `.claude/skills/` sur `Riemann_Lab_IA` (Phase 2 de `docs/plan_versionner_skills_20260601.md`).
 
 ---
 
-*Mis à jour : 2 juin 2026 · Branche `Riemann_Lab_C` · 276 lignes*
+*analyse_problemes_v5_v4_1_20260602.md · wiki racine · master · hprzeta · MAJ 2026-06-10 · 385 lignes*
