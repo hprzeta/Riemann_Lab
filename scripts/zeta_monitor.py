@@ -5,8 +5,8 @@ from datetime import datetime
 MACHINES = [
     {"name":"zeta-lab","label":"PC1 · zeta-lab","role":"Orchestrateur / Calcul principal","host":"localhost","user":None,"key":None,"color":"cyan"},
     {"name":"zeta-calc-second","label":"PC2 · zeta-calc-second","role":"Second nœud calcul (E8400 2C)","host":"192.168.1.52","user":"hprzeta","key":"~/.ssh/id_acer","color":"yellow"},
-    {"name":"zeta-backup","label":"PC3 · zeta-backup","role":"Backup / monitoring (E2140 2C)","host":"192.168.1.22","user":"hprzeta","key":"~/.ssh/id_acer","color":"green"},
-    {"name":"zeta-secure","label":"PC4 · zeta-secure","role":"Bastion VPN / WireGuard (OpenBSD)","host":"192.168.1.54","user":"hprzeta","key":"~/.ssh/id_acer","color":"magenta","openbsd":True},
+    {"name":"zeta-backup","label":"PC3 · zeta-backup","role":"Backup / monitoring (E2140 2C)","host":"192.168.1.22","user":"hprzeta","key":"~/.ssh/id_acer","color":"blue"},
+    {"name":"zeta-secure","label":"PC4 · zeta-secure","role":"Bastion VPN / WireGuard (OpenBSD)","host":"192.168.1.54","user":"hprzeta","key":"~/.ssh/id_acer","color":"green","openbsd":True},
 ]
 
 REFRESH = 10
@@ -70,7 +70,8 @@ def poll_machine(machine):
         time.sleep(REFRESH)
 
 COLORS = {"cyan":curses.COLOR_CYAN,"yellow":curses.COLOR_YELLOW,"green":curses.COLOR_GREEN,
-          "magenta":curses.COLOR_MAGENTA,"red":curses.COLOR_RED,"white":curses.COLOR_WHITE}
+          "magenta":curses.COLOR_MAGENTA,"red":curses.COLOR_RED,"white":curses.COLOR_WHITE,
+          "blue":curses.COLOR_BLUE}
 PAIR = {}
 
 def init_colors():
