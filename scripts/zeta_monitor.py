@@ -3,9 +3,9 @@ import curses, os, subprocess, threading, time
 from datetime import datetime
 
 MACHINES = [
-    {"name":"zeta-lab","label":"PC1 · zeta-lab","role":"Orchestrateur / Calcul principal","host":"localhost","user":None,"key":None,"color":"cyan"},
+    {"name":"zeta-lab","label":"PC1 · zeta-lab","role":"Orchestrateur / Calcul principal","host":"localhost","user":None,"key":None,"color":"magenta"},
     {"name":"zeta-calc-second","label":"PC2 · zeta-calc-second","role":"Second nœud calcul (E8400 2C)","host":"192.168.1.52","user":"hprzeta","key":"~/.ssh/id_acer","color":"yellow"},
-    {"name":"zeta-backup","label":"PC3 · zeta-backup","role":"Backup / monitoring (E2140 2C)","host":"192.168.1.22","user":"hprzeta","key":"~/.ssh/id_acer","color":"blue"},
+    {"name":"zeta-backup","label":"PC3 · zeta-backup","role":"Backup / monitoring (E2140 2C)","host":"192.168.1.22","user":"hprzeta","key":"~/.ssh/id_acer","color":"cyan"},
     {"name":"zeta-secure","label":"PC4 · zeta-secure","role":"Bastion VPN / WireGuard (OpenBSD)","host":"192.168.1.54","user":"hprzeta","key":"~/.ssh/id_acer","color":"green","openbsd":True},
 ]
 
