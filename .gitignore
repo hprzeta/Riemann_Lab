@@ -41,6 +41,10 @@ scripts/audit_extract_text*/
 .env
 .env.local
 
+# Captures d'écran WireGuard/VPN centralisées — local uniquement (IPv6 publiques,
+# cle publique WireGuard, sorties wg show/tcpdump — pas versionne sans accord explicite)
+docs/archive/wireguard_screenshots/
+
 # Etat de session volatil — local uniquement
 Handoff.md
 **/Handoff.md
