@@ -15,7 +15,10 @@ Sources utilisées :
     ~/backup/) :
       - mtime des fichiers sous ~/backup/{logs,wiki,pdf} → preuve indirecte
         d'atterrissage rsync
-      - ~/backup/rclone_cron.log → statut réel du rclone (succès/échec/crash)
+      - ~/rclone_cron.log → statut réel du rclone (succès/échec/crash)
+        (déplacé hors de ~/backup/ le 16/08/2026 — le log grossissait pendant sa
+        propre copie, cause de l'échec systématique depuis le 15/06 ; voir
+        JOURNAL.md wiki entrée 16/08/2026)
 
 Usage :
     python scripts/zeta_backup_status.py                  # 7 derniers jours
@@ -33,6 +36,7 @@ PC3_HOST = "192.168.1.22"
 PC3_USER = "pjexosql"
 PC3_KEY = "~/.ssh/id_acer"
 PC3_BACKUP_DIR = "/home/pjexosql/backup"
+PC3_RCLONE_LOG = "/home/pjexosql/rclone_cron.log"
 SSH_TIMEOUT = 12
 
 PC1_SYSLOG_PATHS = ["/var/log/syslog", "/var/log/syslog.1"]
@@ -126,9 +130,9 @@ def fetch_rclone_log_events(dates):
     oldest_rclone = min(dates).strftime("%Y/%m/%d")
     cmd = (
         "grep -nE '^[0-9]{{4}}/[0-9]{{2}}/[0-9]{{2}} |^fatal error:' "
-        "{d}/rclone_cron.log 2>/dev/null | awk -F: -v d='{oldest}' "
+        "{log} 2>/dev/null | awk -F: -v d='{oldest}' "
         "'{{line=$0; sub(/^[0-9]+:/,\"\",line); print line}}'"
-    ).format(d=PC3_BACKUP_DIR, oldest=oldest_rclone)
+    ).format(log=PC3_RCLONE_LOG, oldest=oldest_rclone)
     out, ok = ssh_pc3(cmd, timeout=20)
     if not ok or out is None:
         return None
