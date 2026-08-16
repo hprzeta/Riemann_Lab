@@ -25,7 +25,10 @@ CMD_LINUX = ("PYTHONNOUSERSITE=1 python3 -c \""
     "la=open('/proc/loadavg').read().split()[:3];"
     "print('{0}|{1}|{2}|{3}|{4}|{5}|{6}'.format(cpu,mt//1024,round((mt-ma)/1024),mu,la[0],la[1],la[2]));"
     "\"")
-CMD_OPENBSD = ("top -b -n 1 2>/dev/null | awk '/CPU states/{idle=$(NF-1); gsub(/%/,\"\",idle); printf \"%s|0|0|0|0.00|0.00|0.00\\n\", 100-idle}'")
+CMD_OPENBSD = ("top -b -n 1 2>/dev/null | awk '"
+    "/^CPU[0-9]* states:/{"
+    "for(i=1;i<=NF;i++) if ($i==\"idle\"){v=$(i-1); gsub(/%/,\"\",v); sum+=v; n++}"
+    "} END{if(n>0) printf \"%s|0|0|0|0.00|0.00|0.00\\n\", 100-(sum/n)}'")
 
 def ssh_cmd(machine, cmd):
     if machine["host"] == "localhost":
