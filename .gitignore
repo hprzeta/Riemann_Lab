@@ -45,6 +45,10 @@ scripts/audit_extract_text*/
 # cle publique WireGuard, sorties wg show/tcpdump — pas versionne sans accord explicite)
 docs/archive/wireguard_screenshots/
 
+# Backups contenant des secrets (cle privee WireGuard PC4, etc.) — jamais versionnes
+docs/archive/zeta-secure-backup.tgz
+docs/archive/*-backup.tgz
+
 # Etat de session volatil — local uniquement
 Handoff.md
 **/Handoff.md
