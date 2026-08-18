@@ -40,7 +40,15 @@ SERVICES=(
     "cups"
     "avahi-daemon"
     "bluetooth"
+    "ModemManager"
     "NetworkManager-wait-online"
+    "snapd"
+    "packagekit"
+    "apt-daily"
+    "apt-daily-upgrade"
+    "fwupd"
+    "whoopsie"
+    "kerneloops"
 )
 
 echo "  Redémarrage des services essentiels..."
