@@ -34,8 +34,10 @@ export PYTHONPATH="${PYTHONPATH}:${PROJET_DIR}/src"
 sudo "${SCRIPT_DIR}/zeta_turbo_on.sh"
 
 echo ""
-echo "  Lancement du calcul en arrière-plan..."
-nohup bash -c "printf '${T_MAX}\nO\n' | python ${SRC_DIR}/compute_zeros_v13.py" \
+echo "  Lancement du calcul en arrière-plan (extinction/veille inhibées)..."
+systemd-inhibit --what=shutdown:sleep:idle --who="zeta_run.sh" \
+    --why="Run T=${T_MAX} en cours" --mode=block \
+    nohup bash -c "printf '${T_MAX}\nO\n' | python ${SRC_DIR}/compute_zeros_v16.py" \
     > "${LOG_FILE}" 2>&1 &
 PID=$!
 echo "$PID" > "$PID_FILE"
