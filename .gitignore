@@ -49,6 +49,9 @@ docs/archive/wireguard_screenshots/
 docs/archive/zeta-secure-backup.tgz
 docs/archive/*-backup.tgz
 
+# Archive box SFR — mot de passe fibre en clair, MAC, IPv6 publiques — jamais versionne
+docs/archive/BOX-SFR-*.pdf
+
 # Etat de session volatil — local uniquement
 Handoff.md
 **/Handoff.md
