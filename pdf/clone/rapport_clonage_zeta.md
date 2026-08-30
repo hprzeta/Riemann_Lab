@@ -932,3 +932,84 @@ Cette annexe regroupe l'intégralité des 45 captures d'écran disponibles pour 
 
 *Document généré par Claude — Riemann Lab / Projet Zêta — 21 juin 2026.*
 *Sous-dossier `img/` requis à côté de ce fichier pour l'affichage des 45 captures.*
+---
+
+## Session 2026-08-30 — Resynchronisation PC1 et script de clone v2.0
+
+### Contexte (constaté, non supposé)
+- Booté sur **PC1 local** confirmé : racine `/` = `sda1`, label `Seagate-PC1-root`.
+- **Désynchronisation détectée** : `~/.bashrc` de PC1 datait du **5 août**, alors que
+  le travail de la session du **25 août** (script `zeta_backup_toshiba.sh` + alias
+  `zeta-clone` / `zeta-temp`) était **absent**. Cause non tranchée avec certitude :
+  soit le script n'a jamais été copié (`cp`) sur ce PC1, soit ce PC1 a été restauré
+  à un état antérieur au 25/08. **Fait établi** : ces éléments ont dû être recréés.
+
+### Corrections appliquées
+- **Labels du clone Toshiba renommés** : `Toshiba-PC1-root/home/data`
+  (auparavant `root-clone` / `home-clone` / `data-clone`).
+  Points de montage réels : `/media/riemann/Toshiba-PC1-{root,home,data}`.
+- **Script régénéré en v2.0** (version allégée PC1 → Toshiba) :
+  chemins corrigés, **montage automatique** des 3 partitions (sdb2/sdb3 n'étaient
+  pas montées), identification **par label** (jamais par `sdX`), correction du
+  `fstab` du clone par `cp` (retour d'expérience : `tee` échoue en silence).
+- **Alias recréés** dans `~/.bashrc` : `zeta-clone`, `zeta-temp`.
+
+### Point de vigilance (à respecter avant tout clone réel)
+- L'option 1 du script fait `rsync --delete`. Vu l'écart de dates, le clone Toshiba
+  pourrait contenir des fichiers **plus récents** que PC1. **Ne jamais lancer le
+  clone sans simulation préalable** :
+  `sudo rsync -aAXHxn --delete / /media/riemann/Toshiba-PC1-root/ | grep '^deleting'`.
+  Si des fichiers importants apparaissent en `deleting`, NE PAS synchroniser dans ce sens.
+
+### Reste à faire
+- [ ] Simulation `rsync -n` avant premier clone réel (validation humaine).
+- [ ] Valider bootabilité du clone (F2 BIOS, désactiver `sda`) — reporté depuis juillet.
+- [ ] Labellisation OpenBSD PC4 (`disklabel`) — reporté.
+- [ ] Valider `nofail` fstab Micron 1100 (`/mnt/vault_rag`) au reboot.
+
+### Annexe — état système au 2026-08-30 12:55
+
+#### État système collecté — 2026-08-30 12:55
+
+**Disques et montages :**
+```
+NAME     SIZE LABEL            MOUNTPOINT                          FSTYPE
+sda    931,5G                                                      
+├─sda1  74,5G Seagate-PC1-root /                                   ext4
+├─sda2     1G SG-PC1-EFI       /boot/efi                           vfat
+├─sda3 186,3G Seagate-PC1-home /home                               ext4
+├─sda4 662,2G Seagate-PC1-data /mnt/data                           ext4
+└─sda5   7,5G                                                      swap
+sdb      1,8T                                                      
+├─sdb1     1G TSB-PC1-EFI                                          vfat
+├─sdb2    99G Toshiba-PC1-root /media/riemann/Toshiba-PC1-root     ext4
+├─sdb3   250G Toshiba-PC1-home /media/riemann/Toshiba-PC1-home     ext4
+├─sdb4   1,5T Toshiba-PC1-data /media/riemann/Toshiba-PC1-data     ext4
+└─sdb5   7,8G swap-clone                                           swap
+```
+
+**Racine active :**
+```
+SOURCE    TARGET LABEL            UUID
+/dev/sda1 /      Seagate-PC1-root 2deda3f8-8a82-4b98-af3d-4d32a20e58c3
+```
+
+**Alias Zêta présents :**
+```
+158:alias zeta-clone='sudo bash ~/projet_zeta/scripts/zeta_backup_toshiba.sh'
+159:alias zeta-temp='source ~/projet_zeta/zeta_env/bin/activate && python3 ~/projet_zeta/scripts/zeta_temp_monitor.py'
+```
+
+**Script de clonage :**
+```
+-rwxrwxr-x 1 riemann riemann 10431 août  30 12:46 /home/riemann/projet_zeta/scripts/zeta_backup_toshiba.sh
+```
+
+**Occupation du clone Toshiba (si monté) :**
+```
+Toshiba-PC1-root     42G util / 97G (45%)
+Toshiba-PC1-home     125G util / 246G (54%)
+Toshiba-PC1-data     49G util / 1,5T (4%)
+```
+
+*Mis à jour le 2026-08-30 — 1014 lignes.*
