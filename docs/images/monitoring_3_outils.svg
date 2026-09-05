@@ -1,0 +1,42 @@
+<svg width="100%" viewBox="0 0 680 340" role="img" xmlns="http://www.w3.org/2000/svg">
+<title>Les trois outils de monitoring RAG et la question à laquelle chacun répond</title>
+<desc>nvidia-smi surveille l'état brut du GPU, nvtop la répartition GPU/CPU du modèle, htop la survie du système (RAM et CPU).</desc>
+<style>
+  .th { font-family: sans-serif; font-size: 14px; font-weight: 500; }
+  .ts { font-family: sans-serif; font-size: 12px; }
+  .mono { font-family: monospace; font-size: 14px; font-weight: 500; }
+  .box-blue   { fill: #E6F1FB; stroke: #185FA5; }
+  .box-purple { fill: #EEEDFE; stroke: #534AB7; }
+  .box-teal   { fill: #E1F5EE; stroke: #0F6E56; }
+  .box-gray   { fill: #F1EFE8; stroke: #5F5E5A; }
+  .lbl-blue   { fill: #0C447C; } .lbl-blue-s   { fill: #185FA5; }
+  .lbl-purple { fill: #3C3489; } .lbl-purple-s { fill: #534AB7; }
+  .lbl-teal   { fill: #085041; } .lbl-teal-s   { fill: #0F6E56; }
+  .lbl-gray   { fill: #2C2C2A; } .lbl-gray-s   { fill: #5F5E5A; }
+</style>
+
+<text class="th lbl-gray" x="40" y="40">Un run RAG sollicite 3 ressources — 3 outils pour les voir</text>
+
+<rect class="box-blue" x="40" y="70" width="190" height="120" rx="12" stroke-width="0.5"/>
+<text class="mono lbl-blue" x="135" y="100" text-anchor="middle">nvidia-smi</text>
+<text class="ts lbl-blue" x="135" y="126" text-anchor="middle">état brut du GPU</text>
+<text class="ts lbl-blue-s" x="135" y="150" text-anchor="middle">« le driver</text>
+<text class="ts lbl-blue-s" x="135" y="168" text-anchor="middle">répond-il ? »</text>
+
+<rect class="box-purple" x="245" y="70" width="190" height="120" rx="12" stroke-width="0.5"/>
+<text class="mono lbl-purple" x="340" y="100" text-anchor="middle">nvtop</text>
+<text class="ts lbl-purple" x="340" y="126" text-anchor="middle">GPU en dynamique</text>
+<text class="ts lbl-purple-s" x="340" y="150" text-anchor="middle">« où va le</text>
+<text class="ts lbl-purple-s" x="340" y="168" text-anchor="middle">modèle (GPU↔CPU) ? »</text>
+
+<rect class="box-teal" x="450" y="70" width="190" height="120" rx="12" stroke-width="0.5"/>
+<text class="mono lbl-teal" x="545" y="100" text-anchor="middle">htop</text>
+<text class="ts lbl-teal" x="545" y="126" text-anchor="middle">RAM + CPU système</text>
+<text class="ts lbl-teal-s" x="545" y="150" text-anchor="middle">« le système</text>
+<text class="ts lbl-teal-s" x="545" y="168" text-anchor="middle">survit-il ? »</text>
+
+<rect class="box-gray" x="40" y="220" width="600" height="90" rx="12" stroke-width="0.5"/>
+<text class="th lbl-gray" x="60" y="248">Verdict du test du 25/07 (après upgrade 8 → 16 Go)</text>
+<text class="ts lbl-gray-s" x="60" y="274">1. OOM résolu : RAM 4,9 / 15,5 Go, swap 0 → ~10 Go de marge (à 8 Go : OOM ici).</text>
+<text class="ts lbl-gray-s" x="60" y="294">2. Nouveau goulot = CPU (load 6,16 sur 4 threads), pas la RAM. Piste : modèle ≤ VRAM.</text>
+</svg>
