@@ -52,6 +52,9 @@ docs/archive/*-backup.tgz
 # Archive box SFR — mot de passe fibre en clair, MAC, IPv6 publiques — jamais versionne
 docs/archive/BOX-SFR-*.pdf
 
+# Contient la cle privee WireGuard du peer telephone (10.10.0.3, confirme 05/09/2026) — jamais versionne
+docs/archive/Pass-20260819T194523Z-1-001.zip
+
 # Etat de session volatil — local uniquement
 Handoff.md
 **/Handoff.md
