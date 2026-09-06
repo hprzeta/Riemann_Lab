@@ -685,7 +685,7 @@
              64 bits, remplace l'escalade automatique arb_fpwrap ~1e-16 surdimensionnée vs le
              besoin réel 1e-12). <strong>138&nbsp;069 zéros</strong> calculés jusqu'à T=100&nbsp;000 en
              <strong>1.6 min</strong> · 1407 z/s (avec turbo) · <strong>0 manquant</strong>.
-             Turing-Backlund COMPLET ✅ · LMFDB 20/20 ✅ · ×2.75 vs v15 · ×78 650+ vs v1.</p>
+             Turing-Backlund COMPLET ✅ · LMFDB 20/20 ✅ · ×2.75 vs v15 · ×787.5 vs v1.</p>
           <div class="pill done">Opérationnel — v16 ⭐ · Objectif 2 largement dépassé ✅</div>
         </div>
         <div class="step-stat status-done">
@@ -915,12 +915,12 @@
             <th style="text-align:left;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Version</th>
             <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Vitesse</th>
             <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">T = 10 000</th>
-            <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Gain vs v2</th>
+            <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Gain vs v1</th>
           </tr>
         </thead>
         <tbody>
           <tr style="border-bottom:1px solid rgba(201,168,76,0.06);">
-            <td style="padding:0.6rem 1rem;color:var(--text2);">v2</td>
+            <td style="padding:0.6rem 1rem;color:var(--text2);">v1</td>
             <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">0.13 z/s</td>
             <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">21h</td>
             <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">—</td>
@@ -937,11 +937,17 @@
             <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">~2h 45min</td>
             <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">×7.6</td>
           </tr>
+          <tr style="border-bottom:1px solid rgba(201,168,76,0.06);">
+            <td style="padding:0.6rem 1rem;color:var(--text2);">v4.1 Option B ✦</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">18.65 z/s</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">9.1 min</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--text2);">×138</td>
+          </tr>
           <tr style="background:rgba(201,168,76,0.04);border:1px solid rgba(201,168,76,0.25);">
-            <td style="padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">v4.1 Option B ✦</td>
-            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">18.65 z/s</td>
-            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">9.1 min</td>
-            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">×138</td>
+            <td style="padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">v4.1+Arb ✦</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">64.1 z/s</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">2.60 min</td>
+            <td style="text-align:right;padding:0.6rem 1rem;color:var(--gold2);font-weight:500;">×484</td>
           </tr>
         </tbody>
       </table>
@@ -960,7 +966,7 @@
             <th style="text-align:left;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Version</th>
             <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Vitesse</th>
             <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">T = 100 000</th>
-            <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Gain vs v7</th>
+            <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Gain vs préc.</th>
             <th style="text-align:right;padding:0.6rem 1rem;color:var(--gold);font-weight:400;">Conditions</th>
           </tr>
         </thead>
@@ -1336,7 +1342,7 @@
     </div>
     <div style="background:#1a2a3a; border:1px solid rgba(201,168,76,0.3); border-radius:8px; padding:0.75rem;">
       <div style="font-size:11px; color:#666; margin-bottom:2px;">Gain global v1 → v16</div>
-      <div style="font-size:18px; font-weight:500; color:#c9a84c;">×78 650+</div>
+      <div style="font-size:18px; font-weight:500; color:#c9a84c;">×787.5</div>
     </div>
   </div>
 </section>
@@ -1365,14 +1371,14 @@
         <p><strong>CPU :</strong> Intel Core2Duo E8400 — 2 cœurs</p>
         <p><strong>RAM :</strong> 7.6 GB</p>
         <p><strong>OS :</strong> Debian Linux</p>
-        <p><strong>Vitesse :</strong> 52 z/s (v13 + python-flint)</p>
+        <p><strong>Vitesse :</strong> 512 z/s (v15, avec python-flint)</p>
         <span class="cluster-badge green">✅ Actif — Calcul</span>
       </div>
 
       <div class="machine">
         <h3>PC3 · zeta-backup</h3>
         <p><strong>Rôle :</strong> Backup / Monitoring / DNS</p>
-        <p><strong>CPU :</strong> Intel Pentium E2140 — 2 cœurs</p>
+        <p><strong>CPU :</strong> AMD Athlon II X2 215 — 2 cœurs</p>
         <p><strong>RAM :</strong> 5.7 GB</p>
         <p><strong>OS :</strong> Linux Lite</p>
         <p><strong>Services :</strong> chrony, rsyslog, dnsmasq</p>

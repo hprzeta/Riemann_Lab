@@ -1653,4 +1653,64 @@ l'erreur après Newton restent gouvernés par la même analyse — seule la pré
 final (tol=1e-12 inchangée, validée LMFDB 20/20 à T=100k).
 
 ---
-*Auteur : hprzeta — Riemann_Lab — Mise à jour : 3 juin 2026 (§19–21) · 6 juin 2026 (§22) · 9 juin 2026 (§25) · 10 juin 2026 (§23 STEP adaptatif) · 11 juin 2026 (§24 benchmark v8 plancher i7) · 12 juin 2026 (§27 Brent C/mpfr v9) · 13 juin 2026 (§28 Illinois hybride 2-phases v12) · 15 juin 2026 (§29 découpage fenêtres T) · 4 juillet 2026 (§30 biais Z_rs + SEUIL_1NEWTON v15) · **8 août 2026 (§31 Z_arb précision fixe v16)** · ~1 650 lignes*
+
+## §32 — Résolution de grille et comptage (2026-08-18)
+
+### Espacement moyen local
+
+En dérivant $N(T) = \theta(T)/\pi + 1$ (voir §1), on obtient la densité locale puis
+l'espacement moyen entre zéros consécutifs à hauteur $t$ :
+
+$$\frac{dN}{dt} = \frac{1}{2\pi}\ln\frac{t}{2\pi}
+\qquad\Longrightarrow\qquad
+\boxed{\ \delta(t) = \frac{2\pi}{L(t)}\ },\qquad L(t) := \ln\frac{t}{2\pi}$$
+
+### Loi GUE des petits écarts (Montgomery, 1973 — conjecture)
+
+Après normalisation $s = (\gamma_{n+1}-\gamma_n)/\delta(\gamma_n)$, la répulsion des
+zéros donne, au voisinage de zéro :
+
+$$p(s) \simeq \frac{\pi^{2}}{3}\,s^{2} \qquad (s \to 0)
+\qquad\Longrightarrow\qquad
+\boxed{\ \mathbb{P}(s < s_0) \simeq \frac{\pi^{2}}{9}\,s_0^{3}\ }$$
+
+C'est la décroissance **cubique** (pas linéaire, comme sous Poisson) qui rend un
+balayage par grille de pas constant viable en pratique.
+
+### Formule maîtresse — nombre de paires enjambées par une grille
+
+À hauteur $t$, un écart brut inférieur à $\text{STEP}$ correspond à un écart normalisé
+$s_0(t) = \text{STEP}\cdot L(t)/(2\pi)$. En intégrant contre la densité $dN/dt$ :
+
+$$\boxed{\ \mathcal{M} \;=\; \frac{\pi^{2}\,\text{STEP}^{3}}{9\,(2\pi)^{4}}
+\int_{T_{\min}}^{T_{\max}} L(t)^{4}\,dt\ }$$
+
+Validée par lecture de code (`_step_adaptatif`, `Riemann_Lab_C`) : $\mathcal{M}$ prédit
+$0{,}35$ zéro pour le run v13 (T=5M, $\text{STEP}=1{,}571\times10^{-3}$) et $0{,}003$
+pour v16 ($\text{STEP}=3{,}142\times10^{-4}$) — à comparer aux déficits **observés**
+de 96 et 176-177 : écart de 2 à 5 ordres de grandeur. **Cette formule sert à réfuter
+une hypothèse de perte par résolution, pas à l'expliquer** — voir [[Bibliotheques]]
+§19 (deux formules de comptage) et [[JOURNAL]] du 18/08.
+
+### N(T) — développement complet
+
+$$N(T) = \frac{\theta(T)}{\pi} + 1 + S(T),\qquad
+S(T) = \frac{1}{\pi}\arg\zeta\!\left(\tfrac12+iT\right)$$
+
+$$\theta(T) = \frac{T}{2}\ln\frac{T}{2\pi} - \frac{T}{2} - \frac{\pi}{8}
++ \frac{1}{48T} + \frac{7}{5760\,T^{3}} + \cdots$$
+
+L'approximation grossière $N_{\text{Weyl}}(T) = \left\lfloor \dfrac{T}{2\pi}\ln\dfrac{T}{2\pi e}\right\rfloor$
+omet les termes $-\pi/8$, $+1/(48T)$ **et** $S(T)$ — voir [[Bibliotheques]] pour les
+deux implémentations réelles du pipeline et leur incompatibilité.
+
+### Variance de $S(T)$ (Selberg — théorème)
+
+$$\text{Var}\big(S(T)\big) \sim \frac{1}{2\pi^{2}}\ln\ln T
+\qquad\Longrightarrow\qquad \sigma_S(T{=}5{\times}10^6) \approx 0{,}372$$
+
+$S(T)$ vaut typiquement $\pm 0{,}4$, rarement plus de $\pm 2$ — insuffisant pour
+expliquer un déficit de plusieurs dizaines d'unités à lui seul.
+
+---
+*Auteur : hprzeta — Riemann_Lab — Mise à jour : 3 juin 2026 (§19–21) · 6 juin 2026 (§22) · 9 juin 2026 (§25) · 10 juin 2026 (§23 STEP adaptatif) · 11 juin 2026 (§24 benchmark v8 plancher i7) · 12 juin 2026 (§27 Brent C/mpfr v9) · 13 juin 2026 (§28 Illinois hybride 2-phases v12) · 15 juin 2026 (§29 découpage fenêtres T) · 4 juillet 2026 (§30 biais Z_rs + SEUIL_1NEWTON v15) · 8 août 2026 (§31 Z_arb précision fixe v16) · **18 août 2026 (§32 résolution de grille et comptage — loi GUE, formule maîtresse M, variance de Selberg)** · 1 717 lignes*
