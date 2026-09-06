@@ -41,6 +41,13 @@ scripts/audit_extract_text*/
 .env
 .env.local
 
+# Securite supplementaire : dossier local de secrets (~/riemann_handoff/secrets_local/,
+# hors repo par defaut) — regle de garde au cas ou il serait un jour copie/imbrique
+# par erreur dans l'arbre du projet. Contient cle WireGuard, mots de passe fibre, IPv6
+# publiques, zips personnels non tries — jamais destine a etre versionne.
+secrets_local/
+**/secrets_local/
+
 # Captures d'écran WireGuard/VPN centralisées — local uniquement (IPv6 publiques,
 # cle publique WireGuard, sorties wg show/tcpdump — pas versionne sans accord explicite)
 docs/archive/wireguard_screenshots/
