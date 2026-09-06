@@ -4,9 +4,9 @@ from datetime import datetime
 
 MACHINES = [
     {"name":"zeta-lab","label":"PC1 · zeta-lab","role":"Orchestrateur / Calcul principal","host":"localhost","user":None,"key":None,"color":"magenta"},
-    {"name":"zeta-calc-second","label":"PC2 · zeta-calc-second","role":"Second nœud calcul (E8400 2C)","host":"192.168.1.52","user":"hprzeta","key":"~/.ssh/id_acer","color":"yellow"},
-    {"name":"zeta-backup","label":"PC3 · zeta-backup","role":"Backup / monitoring (E2140 2C)","host":"192.168.1.22","user":"hprzeta","key":"~/.ssh/id_acer","color":"cyan"},
-    {"name":"zeta-secure","label":"PC4 · zeta-secure","role":"Bastion VPN / WireGuard (OpenBSD)","host":"192.168.1.54","user":"hprzeta","key":"~/.ssh/id_acer","color":"green","openbsd":True},
+    {"name":"zeta-calc-second","label":"PC2 · zeta-calc-second","role":"Second nœud calcul (E8400 2C)","host":"192.168.1.52","user":"hprzeta","key":"~/.ssh/id_acer","color":"yellow","jump":True},
+    {"name":"zeta-backup","label":"PC3 · zeta-backup","role":"Backup / monitoring (E2140 2C)","host":"192.168.1.22","user":"hprzeta","key":"~/.ssh/id_acer","color":"cyan","jump":True},
+    {"name":"zeta-secure","label":"PC4 · zeta-secure","role":"Bastion VPN / WireGuard (OpenBSD)","host":"10.10.0.1","host_home":"192.168.1.54","user":"hprzeta","key":"~/.ssh/id_acer","color":"green","openbsd":True},
 ]
 
 REFRESH = 10
@@ -35,9 +35,16 @@ def ssh_cmd(machine, cmd):
         proc = subprocess.run(["bash","-c",cmd], capture_output=True, text=True, timeout=8)
     else:
         key = os.path.expanduser(machine["key"])
+        tunnel = subprocess.run(["ping","-c1","-W1","10.10.0.1"],
+                                capture_output=True).returncode == 0
+        host = machine["host"]
+        if not tunnel and machine.get("host_home"):
+            host = machine["host_home"]   # maison : PC4 en direct LAN
         args = ["ssh","-o","ConnectTimeout=6","-o","StrictHostKeyChecking=no",
-                "-o","BatchMode=yes","-o","IdentitiesOnly=yes","-i",key,
-                f"{machine['user']}@{machine['host']}",cmd]
+                "-o","BatchMode=yes","-o","IdentitiesOnly=yes","-i",key]
+        if tunnel and machine.get("jump"):
+            args += ["-J", f"{machine['user']}@10.10.0.1"]
+        args += [f"{machine['user']}@{host}", cmd]
         proc = subprocess.run(args, capture_output=True, text=True, timeout=10)
     return proc.stdout.strip(), proc.returncode
 
