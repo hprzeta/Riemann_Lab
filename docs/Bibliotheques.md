@@ -702,7 +702,7 @@ Voir [[analyse_problemes_v10_v12]] pour l'analyse complète.
 
 ---
 
-## §17 — v13→v15 : cache RS statique + Phase 2 adaptative (2026-07-04)
+## §17bis — v13→v15 : cache RS statique + Phase 2 adaptative (2026-07-04)
 
 ### Cache log_n / isqrt_n (v14)
 
@@ -910,4 +910,46 @@ run réel T=10000, puis intégration revalidée à T=100000) :
 LMFDB 20/20). **Objectif 2 (T=100k < 5 min) largement dépassé.**
 
 ---
-*Auteur : hprzeta — Riemann_Lab — Mise à jour : 6 juin 2026 (§15 ajouté) · 9 juin 2026 (§12 mis à jour, VALIDÉ ×27) · 10 juin 2026 (résultats runs Arb §12) · 12 juin 2026 (§16 brent_mpfr.c + sudoers) · 4 juillet 2026 (§17 cache RS + Phase 2 adaptative v14/v15, condition Obj2 ✅) · 6 juillet 2026 (§17 dédupliqué — dérivation SEUIL_1NEWTON renvoyée vers Formules_zeta §30, source canonique) · **8 août 2026 (§18 v16 — Z_arb précision fixe acb_dirichlet_hardy_z, headers FLINT vendorisés, Obj2 amélioré à 1.6 min)** · ~890 lignes*
+
+## §19 — Comptage et validation : deux estimateurs à ne pas confondre (2026-08-18)
+
+Le pipeline contient **deux fonctions distinctes** pour estimer le nombre de zéros
+attendus, avec des usages différents et des résultats non interchangeables.
+
+### `turing_validation.N_exact(T)` — fait foi
+
+```python
+N_exact(T) = floor(theta_fast(T)/pi) + 1 + round(S_T(T))
+```
+
+Développement complet de $\theta(T)$ (Stirling, tous les termes) + correction $S(T)$
+par intégration numérique de l'argument de $\zeta$ (`n_sigma=50`, `dps=35` par
+défaut — robuste testé jusqu'à `n_sigma=400`/`dps=50` sans variation, y compris à
+$T=5\times10^6$, 5× au-delà de sa plage de fiabilité documentée à l'origine).
+
+**Appelée par :** `valider_turing()` — seule méthode de validation qui fait foi dans
+ce projet (voir [[Formules_zeta]] §32, critère de Turing-Backlund).
+
+### `_n_zeros_expected(T)` (dans `compute_zeros_v13.py`/`v16.py`) — estimateur grossier
+
+```python
+_n_zeros_expected(T) = int(T/(2*pi) * log(T/(2*pi*e)))
+```
+
+Terme asymptotique de Weyl **brut** : pas de $-\pi/8$, pas de $+1/(48T)$, **pas** de
+$S(T)$. **Appelée par :** `_partitionner_adaptatif()` (répartition des workers) et
+`rescan_segments_deficit()` (décision de rescan par segment) — jamais par la
+validation finale.
+
+### ⚠️ Incompatibilité — piège documenté le 18/08/2026
+
+Un "déficit" rapporté par le rescan (`_n_zeros_expected`) et un "manquants" rapporté
+par `valider_turing()` (`N_exact`) **ne mesurent pas la même chose**. Comparer les
+deux comme s'il s'agissait du même instrument a produit une fausse piste
+d'investigation documentée dans [[JOURNAL]] (entrées du 18/08) : un déficit de 177
+jamais validé par `N_exact` a été comparé à un déficit de 96 qui, lui, l'était.
+**Toujours vérifier quelle fonction a produit un chiffre de déficit avant de le
+comparer à un autre.**
+
+---
+*Auteur : hprzeta — Riemann_Lab — Mise à jour : 6 juin 2026 (§15 ajouté) · 9 juin 2026 (§12 mis à jour, VALIDÉ ×27) · 10 juin 2026 (résultats runs Arb §12) · 12 juin 2026 (§16 brent_mpfr.c + sudoers) · 4 juillet 2026 (§17 cache RS + Phase 2 adaptative v14/v15, condition Obj2 ✅) · 6 juillet 2026 (§17 dédupliqué — dérivation SEUIL_1NEWTON renvoyée vers Formules_zeta §30, source canonique) · 8 août 2026 (§18 v16 — Z_arb précision fixe acb_dirichlet_hardy_z, headers FLINT vendorisés, Obj2 amélioré à 1.6 min) · **18 août 2026 (§19 — deux estimateurs N(T), piège de comparaison documenté)** · 955 lignes*
