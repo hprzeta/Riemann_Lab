@@ -952,4 +952,21 @@ jamais validé par `N_exact` a été comparé à un déficit de 96 qui, lui, l'�
 comparer à un autre.**
 
 ---
-*Auteur : hprzeta — Riemann_Lab — Mise à jour : 6 juin 2026 (§15 ajouté) · 9 juin 2026 (§12 mis à jour, VALIDÉ ×27) · 10 juin 2026 (résultats runs Arb §12) · 12 juin 2026 (§16 brent_mpfr.c + sudoers) · 4 juillet 2026 (§17 cache RS + Phase 2 adaptative v14/v15, condition Obj2 ✅) · 6 juillet 2026 (§17 dédupliqué — dérivation SEUIL_1NEWTON renvoyée vers Formules_zeta §30, source canonique) · 8 août 2026 (§18 v16 — Z_arb précision fixe acb_dirichlet_hardy_z, headers FLINT vendorisés, Obj2 amélioré à 1.6 min) · **18 août 2026 (§19 — deux estimateurs N(T), piège de comparaison documenté)** · 955 lignes*
+
+## §20 — Références théoriques : densité des zéros et corrélations (2026-09-06)
+
+Utilisées dans le diagnostic du déficit de détection à bas $t$ (voir
+[[Formules_zeta]] §33 et [[JOURNAL]], entrée du 06/09/2026 — test A/B et
+synthèse mathématique).
+
+| Référence | Statut | Usage dans le projet |
+|---|---|---|
+| Riemann–von Mangoldt (densité $\rho(t)=\frac{1}{2\pi}\ln\frac{t}{2\pi}$) | **théorème** | Espacement moyen $\bar\delta(t)$, calibration STEP adaptatif ([[Formules_zeta]] §23, §32) |
+| Montgomery, 1973 (corrélation de paires, statistique GUE) | **conjecture** | Loi des petits écarts $p(s)\sim\frac{\pi^2}{3}s^2$, taux d'enjambement $M_1(h)$ |
+| Gaudin (noyau sinusoïdal, ensemble $\beta=2$) | modèle | Fondement théorique de la statistique GUE ci-dessus |
+| Gonek–Hughes (moments de $Z'(\rho)$) | résultat établi | $|Z'(\gamma)|_{\text{typ}}\sim\frac{1}{2\pi}\ln\frac{t}{2\pi}$ — seuil de détection sur grille |
+| Farmer–Gonek–Hughes (maxima de $\lvert Z(t)\rvert\sim t^{1/4}$) | **conjecture** | Distingue maxima locaux ($t^{1/4}$) de la valeur typique ($\sqrt{\ln t}$) — nuance nécessaire au diagnostic bas-$t$ |
+| Turing (1953) / Backlund (1914) — $N(T)=\theta(T)/\pi+1+S(T)$ | méthode exacte | Comptage exact validant/réfutant la complétude d'un run (`valider_turing()`, §19 ci-dessus) |
+
+---
+*Auteur : hprzeta — Riemann_Lab — Mise à jour : 6 juin 2026 (§15 ajouté) · 9 juin 2026 (§12 mis à jour, VALIDÉ ×27) · 10 juin 2026 (résultats runs Arb §12) · 12 juin 2026 (§16 brent_mpfr.c + sudoers) · 4 juillet 2026 (§17 cache RS + Phase 2 adaptative v14/v15, condition Obj2 ✅) · 6 juillet 2026 (§17 dédupliqué — dérivation SEUIL_1NEWTON renvoyée vers Formules_zeta §30, source canonique) · 8 août 2026 (§18 v16 — Z_arb précision fixe acb_dirichlet_hardy_z, headers FLINT vendorisés, Obj2 amélioré à 1.6 min) · 18 août 2026 (§19 — deux estimateurs N(T), piège de comparaison documenté) · **6 septembre 2026 (§20 — références théoriques du diagnostic déficit bas-t)** · 972 lignes*

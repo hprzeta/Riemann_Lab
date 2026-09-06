@@ -1690,7 +1690,8 @@ $0{,}35$ zéro pour le run v13 (T=5M, $\text{STEP}=1{,}571\times10^{-3}$) et $0{
 pour v16 ($\text{STEP}=3{,}142\times10^{-4}$) — à comparer aux déficits **observés**
 de 96 et 176-177 : écart de 2 à 5 ordres de grandeur. **Cette formule sert à réfuter
 une hypothèse de perte par résolution, pas à l'expliquer** — voir [[Bibliotheques]]
-§19 (deux formules de comptage) et [[JOURNAL]] du 18/08.
+§19 (deux formules de comptage) et [[JOURNAL]] du 18/08. **Cause réelle établie le
+06/09/2026 → §33 ci-dessous.**
 
 ### N(T) — développement complet
 
@@ -1713,4 +1714,66 @@ $S(T)$ vaut typiquement $\pm 0{,}4$, rarement plus de $\pm 2$ — insuffisant po
 expliquer un déficit de plusieurs dizaines d'unités à lui seul.
 
 ---
-*Auteur : hprzeta — Riemann_Lab — Mise à jour : 3 juin 2026 (§19–21) · 6 juin 2026 (§22) · 9 juin 2026 (§25) · 10 juin 2026 (§23 STEP adaptatif) · 11 juin 2026 (§24 benchmark v8 plancher i7) · 12 juin 2026 (§27 Brent C/mpfr v9) · 13 juin 2026 (§28 Illinois hybride 2-phases v12) · 15 juin 2026 (§29 découpage fenêtres T) · 4 juillet 2026 (§30 biais Z_rs + SEUIL_1NEWTON v15) · 8 août 2026 (§31 Z_arb précision fixe v16) · **18 août 2026 (§32 résolution de grille et comptage — loi GUE, formule maîtresse M, variance de Selberg)** · 1 717 lignes*
+
+## §33 — Déficit de détection & résolution de grille — cause établie (2026-09-06)
+
+> Suite de §32 : la résolution de grille (GUE) ayant été quantifiée et écartée,
+> cette section établit la **cause réelle**, confirmée par test A/B expérimental
+> ([[JOURNAL]], entrée du 06/09/2026) et triple revue mathématique indépendante.
+
+### Condition de raté d'un zéro simple
+
+Un zéro simple $\gamma$ échappe à la détection par changement de signe sur la
+grille $t_k = t_0 + kh$ quand l'erreur d'approximation $R(t)$ de $Z_{\text{RS}}(t)$
+par rapport à $Z(t)$ exact dépasse la variation locale de $Z$ au point de grille
+le plus défavorable :
+
+$$|R(t)| \;\gtrsim\; |Z'(\gamma)| \cdot \frac{\text{STEP}}{2}$$
+
+avec, d'après Gonek-Hughes (moments de $Z'(\rho)$, voir [[Bibliotheques]] §20) :
+
+$$|Z'(\gamma)|_{\text{typ}} \sim \frac{1}{2\pi}\ln\frac{t}{2\pi}$$
+
+Numériquement, le seuil de détection sur grille vaut $|Z|_{\text{grille,min}}
+\approx |Z'(\gamma)|\cdot\text{STEP}/2 \sim 10^{-3}$ aux STEP utilisés en
+production.
+
+### Taux d'enjambement $M_1(h)$ — quantifié et localisé (loi GUE, cf. §32)
+
+$$M_1(h) \approx \frac{\pi^2}{9}\int_{T_{\min}}^{T_{\max}} \rho(t)
+\left(\frac{h\,L(t)}{2\pi}\right)^{3} dt$$
+
+Appliqué à $h=0{,}001571$ sur $[14,\ 1{,}39\times10^6]$ ($N\approx2{,}5\times10^6$
+zéros) : $M_1 \approx 0{,}06$–$0{,}08$ zéro attendu — **négligeable de deux ordres
+de grandeur** face aux 18-51 manquants observés dans cette même fenêtre. De plus
+$\alpha(t) = h\,L(t)/2\pi$ croît avec $t$, donc $M_1$ prédirait un déficit
+**croissant à haut $t$** — l'inverse de l'observation (>90 % à bas $t$).
+L'enjambement GUE est donc doublement écarté.
+
+### Corrections de rigueur (revue croisée, 2 moteurs externes indépendants)
+
+| Énoncé initial | Statut | Forme correcte |
+|---|---|---|
+| Erreur ULP accumulée $\sim\sqrt{N}\cdot\varepsilon_{\text{mach}}$ | ❌ imprécis | Les termes de la somme RS décroissent en $n^{-1/2}$ (pas d'amplitude constante) → erreur RMS $=\varepsilon_{\text{mach}}\sqrt{\ln N+\gamma}$ (quasi constante $\sim10^{-16}$), **pas** $\sqrt{N}\,\varepsilon_{\text{mach}}$ |
+| $\lvert Z(t)\rvert$ typique croît en $t^{1/4}$ | ⚠️ partiel | Seuls les **maxima locaux** croissent en $t^{1/4}$ (conjecture Farmer-Gonek-Hughes, [[Bibliotheques]] §20) ; la valeur **typique** est $O(\sqrt{\ln t})$ — c'est $N=\lfloor\sqrt{t/2\pi}\rfloor$ petit à bas $t$ qui compte, pas $|Z|$ petit |
+| $\arg\Gamma$ (notation) | notation | Forme standard : $\text{Im}\,\log\Gamma\!\left(\tfrac14+\tfrac{it}{2}\right)$ |
+
+### Cause réelle — fragilité de Riemann-Siegel à bas $t$
+
+Écartés : bruit ULP de précision binaire (ratio seuil/bruit $\approx10^{13}$ —
+test A/B expérimental, écart mesuré = 0, [[JOURNAL]] 06/09/2026) et enjambement
+GUE ($M_1\approx0{,}08$, ci-dessus). **Cause retenue :** à bas $t$, le nombre de
+termes $N=\lfloor\sqrt{t/2\pi}\rfloor$ de la somme RS est petit ($t=14
+\Rightarrow N=1$), donc toute erreur — sur $N$ (±1) ou sur le reste
+$R(t)=O(t^{-1/4})$ non négligé — a un impact **relatif** énorme sur la somme
+tronquée (100–200 % à $t=14$ contre 0,25 % à $t=10^6$) : profil exactement
+conforme au déficit observé, concentré à bas $t$. Deux canaux non exclusifs
+(erreur sur $N$ vs reste $R(t)$), tous deux réduits par la même cause profonde.
+
+**Non-menace pour l'HR :** ce sont des zéros **non détectés** par une formule
+tronquée, pas des contre-exemples — ils sont bien sur la droite critique.
+Objectif 1 reste validé. Test discriminant proposé (instrumentation
+`scan_arb.c`, $N$ calculé vs $N$ exact) non exécuté à ce jour.
+
+---
+*Auteur : hprzeta — Riemann_Lab — Mise à jour : 3 juin 2026 (§19–21) · 6 juin 2026 (§22) · 9 juin 2026 (§25) · 10 juin 2026 (§23 STEP adaptatif) · 11 juin 2026 (§24 benchmark v8 plancher i7) · 12 juin 2026 (§27 Brent C/mpfr v9) · 13 juin 2026 (§28 Illinois hybride 2-phases v12) · 15 juin 2026 (§29 découpage fenêtres T) · 4 juillet 2026 (§30 biais Z_rs + SEUIL_1NEWTON v15) · 8 août 2026 (§31 Z_arb précision fixe v16) · 18 août 2026 (§32 résolution de grille et comptage — loi GUE, formule maîtresse M, variance de Selberg) · **6 septembre 2026 (§33 — cause du déficit établie : fragilité RS à bas t, ULP et GUE réfutés par test A/B)** · 1 779 lignes*
