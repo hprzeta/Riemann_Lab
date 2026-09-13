@@ -1,0 +1,47 @@
+<svg viewBox="0 0 560 400" xmlns="http://www.w3.org/2000/svg" font-family="DejaVu Sans">
+  <rect x="0" y="0" width="560" height="400" fill="#ffffff"/>
+  <text x="280" y="24" text-anchor="middle" font-size="15" font-weight="bold">Comparaison série ↔ intégrale, f(x) = 1/x²</text>
+
+  <!-- rectangles (somme majorante par valeurs a gauche, n=1..7) -->
+  <rect x="60" y="40" width="65.714" height="300" fill="#e0b070" opacity="0.55" stroke="#a97a3a"/>
+  <rect x="125.714" y="265" width="65.714" height="75" fill="#e0b070" opacity="0.55" stroke="#a97a3a"/>
+  <rect x="191.429" y="306.67" width="65.714" height="33.33" fill="#e0b070" opacity="0.55" stroke="#a97a3a"/>
+  <rect x="257.143" y="321.25" width="65.714" height="18.75" fill="#e0b070" opacity="0.55" stroke="#a97a3a"/>
+  <rect x="322.857" y="328" width="65.714" height="12" fill="#e0b070" opacity="0.55" stroke="#a97a3a"/>
+  <rect x="388.571" y="331.67" width="65.714" height="8.33" fill="#e0b070" opacity="0.55" stroke="#a97a3a"/>
+  <rect x="454.286" y="333.88" width="65.714" height="6.12" fill="#e0b070" opacity="0.55" stroke="#a97a3a"/>
+
+  <!-- courbe f(x) = 1/x^2 -->
+  <polyline points="60,40 92.857,206.67 125.714,265 158.571,292 191.429,306.67 224.286,315.51 257.143,321.25 290.0,325.19 322.857,328 355.714,330.08 388.571,331.67 421.429,332.90 454.286,333.88 487.143,334.67 520,335.31"
+            fill="none" stroke="#1a4f8a" stroke-width="2.5"/>
+
+  <!-- axes -->
+  <line x1="60" y1="340" x2="540" y2="340" stroke="#333" stroke-width="1.5"/>
+  <line x1="60" y1="340" x2="60" y2="30" stroke="#333" stroke-width="1.5"/>
+  <polygon points="540,340 528,335 528,345" fill="#333"/>
+  <polygon points="60,30 55,42 65,42" fill="#333"/>
+
+  <!-- graduations x -->
+  <text x="60" y="356" text-anchor="middle" font-size="11">1</text>
+  <text x="125.714" y="356" text-anchor="middle" font-size="11">2</text>
+  <text x="191.429" y="356" text-anchor="middle" font-size="11">3</text>
+  <text x="257.143" y="356" text-anchor="middle" font-size="11">4</text>
+  <text x="322.857" y="356" text-anchor="middle" font-size="11">5</text>
+  <text x="388.571" y="356" text-anchor="middle" font-size="11">6</text>
+  <text x="454.286" y="356" text-anchor="middle" font-size="11">7</text>
+  <text x="520" y="356" text-anchor="middle" font-size="11">8</text>
+  <text x="500" y="332" font-size="13" font-weight="bold">n / x</text>
+
+  <!-- graduations y -->
+  <text x="46" y="44" text-anchor="end" font-size="11">1,0</text>
+  <text x="46" y="270" text-anchor="end" font-size="11">0,25</text>
+  <text x="30" y="20" font-size="13" font-weight="bold">f(x)</text>
+
+  <!-- legende -->
+  <rect x="330" y="55" width="14" height="14" fill="#e0b070" opacity="0.55" stroke="#a97a3a"/>
+  <text x="350" y="66" font-size="12">rectangles = Σ 1/n² (n=1..7)</text>
+  <line x1="330" y1="85" x2="344" y2="85" stroke="#1a4f8a" stroke-width="2.5"/>
+  <text x="350" y="89" font-size="12">courbe f(x) = 1/x² , aire = ∫ dx/x²</text>
+
+  <text x="280" y="392" text-anchor="middle" font-size="11" fill="#555">Les rectangles (série) encadrent l'aire sous la courbe (intégrale) : même nature de convergence.</text>
+</svg>

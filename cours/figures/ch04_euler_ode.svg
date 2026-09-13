@@ -1,0 +1,35 @@
+<svg viewBox="0 0 460 400" xmlns="http://www.w3.org/2000/svg" font-family="DejaVu Sans">
+  <rect x="0" y="0" width="460" height="400" fill="#ffffff"/>
+  <text x="230" y="24" text-anchor="middle" font-size="15" font-weight="bold">Formule d'Euler via l'équation différentielle y'=iy</text>
+
+  <!-- cercle unite -->
+  <circle cx="150" cy="220" r="120" fill="none" stroke="#8fa6c9" stroke-width="1.5"/>
+
+  <!-- axes -->
+  <line x1="10" y1="220" x2="310" y2="220" stroke="#999" stroke-width="1"/>
+  <line x1="150" y1="80" x2="150" y2="360" stroke="#999" stroke-width="1"/>
+
+  <!-- angle arc -->
+  <path d="M 200 220 A 50 50 0 0 0 187.0 179.5" fill="none" stroke="#c0392b" stroke-width="1.6"/>
+  <text x="205" y="195" font-size="13" fill="#c0392b">θ</text>
+
+  <!-- vecteur position y = e^{i theta} -->
+  <line x1="150" y1="220" x2="224.6" y2="126.0" stroke="#1a4f8a" stroke-width="2.6"/>
+  <polygon points="224.6,126.0 213.5,133.0 217.5,142.0" fill="#1a4f8a"/>
+  <circle cx="224.6" cy="126.0" r="4" fill="#1a4f8a"/>
+  <text x="230" y="118" font-size="13" fill="#1a4f8a" font-weight="bold">y = e^{iθ}</text>
+
+  <!-- vecteur vitesse y' = iy, perpendiculaire -->
+  <line x1="224.6" y1="126.0" x2="169.8" y2="82.5" stroke="#d17a22" stroke-width="2.4"/>
+  <polygon points="169.8,82.5 180.3,84.5 178.0,93.5" fill="#d17a22"/>
+  <text x="90" y="75" font-size="13" fill="#d17a22" font-weight="bold">y' = iy (⟂ à y)</text>
+
+  <!-- encadre explicatif -->
+  <rect x="10" y="300" width="440" height="90" fill="#fff6e0" stroke="#d1a23a" stroke-width="1"/>
+  <text x="20" y="320" font-size="12" font-weight="bold" fill="#7a5a1a">Multiplier par i = rotation de 90° (sens trigo)</text>
+  <text x="20" y="340" font-size="12" fill="#333">y(θ)=e^{iθ} et z(θ)=cosθ+isinθ vérifient tous deux</text>
+  <text x="20" y="357" font-size="12" fill="#333">l'équation w'=iw, w(0)=1 → par unicité (Cauchy-</text>
+  <text x="20" y="374" font-size="12" fill="#333">Lipschitz), y=z : e^{iθ} = cosθ + i sinθ.</text>
+
+  <text x="230" y="392" text-anchor="middle" font-size="11" fill="#555"></text>
+</svg>

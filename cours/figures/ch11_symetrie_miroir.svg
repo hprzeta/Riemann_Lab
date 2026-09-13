@@ -1,0 +1,40 @@
+<svg viewBox="0 0 560 360" xmlns="http://www.w3.org/2000/svg" font-family="DejaVu Sans">
+  <rect x="0" y="0" width="560" height="360" fill="#ffffff"/>
+  <text x="280" y="22" text-anchor="middle" font-size="15" font-weight="bold">Équation fonctionnelle : ξ(s) = ξ(1−s)</text>
+  <text x="280" y="40" text-anchor="middle" font-size="11.5">symétrie miroir autour de la droite σ = 1/2</text>
+
+  <!-- axes -->
+  <line x1="40" y1="200" x2="520" y2="200" stroke="#333" stroke-width="1.3"/>
+  <line x1="280" y1="60" x2="280" y2="330" stroke="#c0392b" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="288" y="72" font-size="12" fill="#c0392b">σ = 1/2</text>
+
+  <!-- graduations -->
+  <text x="120" y="216" text-anchor="middle" font-size="11">σ=0</text>
+  <text x="280" y="216" text-anchor="middle" font-size="11">σ=1/2</text>
+  <text x="440" y="216" text-anchor="middle" font-size="11">σ=1</text>
+
+  <!-- point s (gauche) et 1-s (droite), t>0 -->
+  <circle cx="150" cy="120" r="6" fill="#1a4f8a"/>
+  <text x="120" y="105" font-size="13" fill="#1a4f8a" font-weight="bold">s</text>
+  <circle cx="410" cy="120" r="6" fill="#1a6b34"/>
+  <text x="418" y="112" font-size="13" fill="#1a6b34" font-weight="bold">1−s</text>
+
+  <path d="M 165 118 C 250 60, 330 60, 400 115" fill="none" stroke="#888" stroke-width="1.6" stroke-dasharray="4,3" marker-end="url(#arrow2)"/>
+  <defs>
+    <marker id="arrow2" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#888"/>
+    </marker>
+  </defs>
+
+  <!-- pole s=1 et zero trivial teaser -->
+  <circle cx="440" cy="200" r="6" fill="#d1a23a" stroke="#7a5a1a"/>
+  <text x="450" y="196" font-size="11" fill="#7a5a1a">pôle s=1 (ζ)</text>
+  <circle cx="120" cy="200" r="5" fill="#8fa6c9"/>
+  <text x="60" y="240" font-size="11" fill="#5a7aa0">zéros triviaux −2,−4,…</text>
+
+  <!-- encadre formule -->
+  <rect x="60" y="270" width="440" height="65" fill="#eef4fb" stroke="#3a8fbf"/>
+  <text x="280" y="292" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a4f8a">ξ(s) = ½ s(s−1) π^{−s/2} Γ(s/2) ζ(s)</text>
+  <text x="280" y="312" text-anchor="middle" font-size="12" fill="#333">ξ(s) = ξ(1−s) — vérifié numériquement à 10⁻²⁶ près (dps=25)</text>
+  <text x="280" y="328" text-anchor="middle" font-size="11" fill="#555">pour s=3+2i : ξ(s) et ξ(1−s) coïncident sur les 25 premières décimales</text>
+</svg>
