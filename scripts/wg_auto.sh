@@ -19,6 +19,13 @@ notifier() {  # $1 = titre, $2 = message, $3 = icône
 IFACE=$(ip route | awk '/default/ {print $5; exit}' | grep -v wg0)
 [ -z "$IFACE" ] && IFACE=$(ip -o link | awk -F': ' '!/lo|wg/ {print $2; exit}')
 
+# IPv6 globale disponible ? (exclut fe80:: lien-local)
+# Sans elle, l'endpoint DuckDNS (IPv6 seul) est injoignable par construction —
+# ce n'est pas une panne du tunnel, inutile de tenter/réparer/notifier.
+a_ipv6_globale() {
+    ip -6 addr show scope global 2>/dev/null | grep -q inet6
+}
+
 if ping -c 1 -W 1 -I "$IFACE" "$PC4_LAN" > /dev/null 2>&1; then
     # ═══ MAISON ═══
     if sudo wg show wg0 > /dev/null 2>&1; then
@@ -29,6 +36,13 @@ if ping -c 1 -W 1 -I "$IFACE" "$PC4_LAN" > /dev/null 2>&1; then
     fi
 else
     # ═══ DÉPLACEMENT ═══
+    if ! a_ipv6_globale; then
+        # Pas d'IPv6 globale (VPN tiers actif, opérateur, etc.) : on attend le
+        # prochain event réseau en silence — pas de wg-quick, pas de notify-send.
+        echo "$(date '+%F %T') | (silencieux) pas d'IPv6 globale — cycle ignoré" >> "$LOG"
+        exit 0
+    fi
+
     if ! sudo wg show wg0 > /dev/null 2>&1; then
         sudo wg-quick up wg0
         sleep 2
@@ -38,7 +52,20 @@ else
             notifier "⚠️ DÉPLACEMENT — WireGuard activé mais tunnel NE RÉPOND PAS" "Vérifier connexion internet / endpoint DuckDNS" "dialog-warning"
         fi
     else
-        [ "$1" != "--quiet" ] && notifier "🧳 DÉPLACEMENT — WireGuard déjà activé" "Tunnel en place" "network-vpn"
+        # wg0 existe — mais est-il VIVANT ? On teste le handshake, pas juste la présence.
+        if ping -c 1 -W 3 10.10.0.1 > /dev/null 2>&1; then
+            [ "$1" != "--quiet" ] && notifier "🧳 DÉPLACEMENT — WireGuard OK" "Tunnel vivant (10.10.0.1 répond)" "network-vpn"
+        else
+            notifier "🧳 DÉPLACEMENT — tunnel MORT, réparation" "wg0 présent sans handshake — relance" "dialog-warning"
+            sudo wg-quick down wg0 2>/dev/null
+            sudo wg-quick up wg0
+            sleep 2
+            if ping -c 1 -W 3 10.10.0.1 > /dev/null 2>&1; then
+                notifier "🧳 DÉPLACEMENT — WireGuard RÉPARÉ" "Tunnel rétabli, cluster via 10.10.0.1" "network-vpn"
+            else
+                notifier "⚠️ DÉPLACEMENT — échec réparation" "Vérifier internet / endpoint DuckDNS" "dialog-warning"
+            fi
+        fi
     fi
 fi
 
