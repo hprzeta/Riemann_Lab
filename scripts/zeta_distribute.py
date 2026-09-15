@@ -157,6 +157,16 @@ def calculer_pivot(T_MAX: float, v1: float, v2: float) -> float:
 #  SECTION 2 — LANCEMENT DES RUNS
 # ═══════════════════════════════════════════════════════════════════════════════
 
+def _pc2_jump_opts() -> list:
+    """ProxyJump via le bastion (10.10.0.1) si PC1 est en déplacement, rien à la maison.
+    Même détection que zeta_tmux.sh / zeta_monitor.py — zeta-calc-second (alias
+    ~/.ssh/config) résout en 192.168.1.52 en dur, injoignable hors LAN maison.
+    """
+    tunnel = subprocess.run(["ping", "-c1", "-W1", "10.10.0.1"],
+                             capture_output=True).returncode == 0
+    return ["-J", "hprzeta@10.10.0.1"] if tunnel else []
+
+
 def _cmd_venv(commande: str) -> str:
     """Enveloppe une commande pour PC2 — Python3 système (pas de venv sur Debian 12).
     PYTHONPATH = src/calculs/optimisation/ : tous les modules (arb_wrapper, turing…)
@@ -213,6 +223,7 @@ def lancer_pc2(T_PIVOT: float, T_MAX: float, horodatage: str, log_dir: Path) -> 
         "ssh", "-i", str(PC2_SSH_KEY),
         "-o", "StrictHostKeyChecking=no",
         "-o", "ConnectTimeout=10",
+        *_pc2_jump_opts(),
         PC2_HOST,
         _cmd_venv(cmd_py),
     ]
@@ -299,6 +310,7 @@ def recuperer_csv_pc2(T_PIVOT: float, T_MAX: float,
     cmd = [
         "scp", "-i", str(PC2_SSH_KEY),
         "-o", "StrictHostKeyChecking=no",
+        *_pc2_jump_opts(),
         f"{PC2_HOST}:{chemin_remote}",
         str(csv_local),
     ]
