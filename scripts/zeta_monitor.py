@@ -7,6 +7,7 @@ MACHINES = [
     {"name":"zeta-calc-second","label":"PC2 · zeta-calc-second","role":"Second nœud calcul (E8400 2C)","host":"[IP_LAN]","user":"hprzeta","key":"~/.ssh/id_acer","color":"yellow","jump":True},
     {"name":"zeta-backup","label":"PC3 · zeta-backup","role":"Backup / monitoring (E2140 2C)","host":"[IP_LAN]","user":"hprzeta","key":"~/.ssh/id_acer","color":"cyan","jump":True},
     {"name":"zeta-secure","label":"PC4 · zeta-secure","role":"Bastion VPN / WireGuard (OpenBSD)","host":"[IP_WG]","host_home":"[IP_LAN]","user":"hprzeta","key":"~/.ssh/id_acer","color":"green","openbsd":True},
+    {"name":"zeta-monitor","label":"PC5 · zeta-monitor","role":"Monitoring","host":"[IP_LAN]","user":"hprzeta","key":"~/.ssh/zeta_cluster","color":"blue","jump":True},
 ]
 
 REFRESH = 10
