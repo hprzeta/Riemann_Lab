@@ -3,11 +3,11 @@ import curses, os, subprocess, threading, time
 from datetime import datetime
 
 MACHINES = [
-    {"name":"zeta-lab","label":"PC1 · zeta-lab","role":"Orchestrateur / Calcul principal","host":"localhost","user":None,"key":None,"color":"magenta"},
-    {"name":"zeta-calc-second","label":"PC2 · zeta-calc-second","role":"Second nœud calcul (E8400 2C)","host":"192.168.1.52","user":"hprzeta","key":"~/.ssh/zeta_cluster","color":"yellow","jump":True},
-    {"name":"zeta-backup","label":"PC3 · zeta-backup","role":"Backup / monitoring (E2140 2C)","host":"192.168.1.22","user":"hprzeta","key":"~/.ssh/zeta_cluster","color":"cyan","jump":True},
-    {"name":"zeta-secure","label":"PC4 · zeta-secure","role":"Bastion VPN / WireGuard (OpenBSD)","host":"10.10.0.1","host_home":"192.168.1.54","user":"hprzeta","key":"~/.ssh/zeta_cluster","color":"green","openbsd":True},
-    {"name":"zeta-monitor","label":"PC5 · zeta-monitor","role":"Monitoring","host":"192.168.1.56","user":"hprzeta","key":"~/.ssh/zeta_cluster","color":"blue","jump":True},
+    {"name":"zeta-lab","label":"PC1 · zeta-lab","role":"Orchestrateur / Calcul principal","host":"localhost","user":None,"key":None,"color":"pc1_amber"},
+    {"name":"zeta-calc-second","label":"PC2 · zeta-calc-second","role":"Second nœud calcul (E8400 2C)","host":"192.168.1.52","user":"hprzeta","key":"~/.ssh/zeta_cluster","color":"pc2_green","jump":True},
+    {"name":"zeta-backup","label":"PC3 · zeta-backup","role":"Backup / monitoring (E2140 2C)","host":"192.168.1.22","user":"hprzeta","key":"~/.ssh/zeta_cluster","color":"pc3_blue","jump":True},
+    {"name":"zeta-secure","label":"PC4 · zeta-secure","role":"Bastion VPN / WireGuard (OpenBSD)","host":"10.10.0.1","host_home":"192.168.1.54","user":"hprzeta","key":"~/.ssh/zeta_cluster","color":"pc4_magenta","openbsd":True},
+    {"name":"zeta-monitor","label":"PC5 · zeta-monitor","role":"Monitoring","host":"192.168.1.56","user":"hprzeta","key":"~/.ssh/zeta_cluster","color":"pc5_orange","jump":True},
 ]
 
 REFRESH = 10
@@ -87,6 +87,15 @@ PAIR = {}
 
 def init_colors():
     curses.start_color(); curses.use_default_colors()
+    # Teintes vives par nœud (accord avec zeta_tmux.sh) — 256 couleurs si dispo,
+    # sinon repli sur les couleurs de base curses (terminal 8/16 couleurs).
+    if curses.COLORS >= 256:
+        COLORS.update({"pc1_amber":179,"pc2_green":71,"pc3_blue":68,
+                        "pc4_magenta":134,"pc5_orange":173})
+    else:
+        COLORS.update({"pc1_amber":curses.COLOR_YELLOW,"pc2_green":curses.COLOR_GREEN,
+                        "pc3_blue":curses.COLOR_BLUE,"pc4_magenta":curses.COLOR_MAGENTA,
+                        "pc5_orange":curses.COLOR_RED})
     idx = 1
     for n,fg in COLORS.items(): curses.init_pair(idx,fg,-1); PAIR[n]=idx; idx+=1
     curses.init_pair(idx,curses.COLOR_BLACK,curses.COLOR_GREEN);  PAIR["ok"]=idx;   idx+=1
