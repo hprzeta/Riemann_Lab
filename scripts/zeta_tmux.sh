@@ -26,26 +26,26 @@ tmux select-pane -t $SESSION:0.0
 tmux split-window -v -t $SESSION:0.0
 tmux split-window -v -t $SESSION:0.0
 tmux split-window -v -t $SESSION:0.2
-tmux select-pane -t $SESSION:0.0 -P 'bg=yellow,fg=black'
+tmux select-pane -t $SESSION:0.0 -P 'bg=#16261b,fg=#5cb86a'
 tmux send-keys -t $SESSION:0.0 "ssh -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes -J hprzeta@[IP_WG] hprzeta@[IP_LAN]" Enter
 sleep 1
-tmux select-pane -t $SESSION:0.1 -P 'bg=cyan,fg=black'
+tmux select-pane -t $SESSION:0.1 -P 'bg=#142130,fg=#4f95dc'
 tmux send-keys -t $SESSION:0.1 "ssh -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes -J hprzeta@[IP_WG] hprzeta@[IP_LAN]" Enter
 sleep 1
-tmux select-pane -t $SESSION:0.2 -P 'bg=black,fg=green'
+tmux select-pane -t $SESSION:0.2 -P 'bg=#251628,fg=#b06fce'
 tmux send-keys -t $SESSION:0.2 "ssh -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes hprzeta@[IP_WG]" Enter
 sleep 1
-tmux select-pane -t $SESSION:0.3 -P 'bg=magenta,fg=white'
+tmux select-pane -t $SESSION:0.3 -P 'bg=#2a2410,fg=#e0a83c'
 tmux send-keys -t $SESSION:0.3 "cd ~/projet_zeta && source zeta_env/bin/activate" Enter
 tmux send-keys -t $SESSION:0.4 "cd ~/projet_zeta && source zeta_env/bin/activate && python3 scripts/zeta_monitor.py" Enter
 
 # ─── Window dédiée PC5 (htop en haut / shell libre en bas) ───
 tmux new-window -d -t $SESSION -n "PC5"
 tmux split-window -v -t $SESSION:PC5
-tmux select-pane -t $SESSION:PC5.0 -P 'bg=cyan,fg=black'
+tmux select-pane -t $SESSION:PC5.0 -P 'bg=#2b1a11,fg=#e2743c'
 tmux send-keys -t $SESSION:PC5.0 "$SSH_PC5 htop" Enter
 sleep 1
-tmux select-pane -t $SESSION:PC5.1 -P 'bg=cyan,fg=black'
+tmux select-pane -t $SESSION:PC5.1 -P 'bg=#2b1a11,fg=#e2743c'
 tmux send-keys -t $SESSION:PC5.1 "$SSH_PC5" Enter
 sleep 1
 
