@@ -137,10 +137,16 @@ de performance ou nouvelle version vN+1 :
    (mesuré ~128,56 z/s sur un run réel de 21h38). Ne jamais utiliser un chiffre de benchmark
    pour une estimation de capacité (`research/roadmap.md`) sans cette conversion — risque
    d'erreur ×11 sinon.
-6. **Point non vérifié — à confirmer avec hprzeta avant de le documenter comme acquis** : une
-   éventuelle mise en cache de valeurs de θ(t)/Riemann-Siegel réutilisées d'un point à l'autre
-   du balayage a été évoquée comme piste d'optimisation. Statut d'implémentation réel non
-   confirmé au moment de la rédaction de cette section — ne pas présumer qu'elle existe.
+6. **Cache Riemann-Siegel `log(n)`/`1/√n`** — confirmé actif dans le pipeline courant (v13,
+   appelé par `zeta_run.sh`) : tableaux statiques `log_n_cache[n]` et `isqrt_n_cache[n]`,
+   initialisés une fois par worker via `init_rs_cache()` (idempotent, appelé **après** le fork —
+   cf. §3.4 sur l'ordre `Pool(...)` puis chargement), dans `illinois_arb.c:48-59` et
+   `scan_arb.c:27-38`. Utilisés dans la boucle Riemann-Siegel (`Z_rs_double`) pour éviter de
+   recalculer `log(n)` et `1/√n` à chaque appel (`illinois_arb.c:119`). Couvre jusqu'à T≈27M
+   (2100 termes, 33 Ko, tient en cache L2), avec repli sans cache au-delà. **θ(t) lui-même
+   n'est pas mis en cache** — logique : calculé par la formule asymptotique de Stirling à
+   chaque `t`, qui varie en continu (pas de valeurs répétées à mettre en cache). Ne pas
+   confondre les deux : « cache RS » désigne le cache `log_n`/`isqrt_n`, pas un cache de θ(t).
 
 ---
 
