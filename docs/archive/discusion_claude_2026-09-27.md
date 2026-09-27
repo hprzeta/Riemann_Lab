@@ -1,9 +1,11 @@
 # Archive de session — 27 septembre 2026
 
-Journée en deux temps : documentation des Vagues V1-V3 du plan de mutualisation
-skills/MCP (suivi de session), puis reprise et clôture du chantier MCP OmniRoute
-(validation end-to-end, service systemd). Les deux sessions sont regroupées ici
-sous la même date, sections numérotées en continu.
+Journée en trois temps : documentation des Vagues V1-V3 du plan de mutualisation
+skills/MCP (suivi de session), reprise et clôture du chantier MCP OmniRoute
+(validation end-to-end, service systemd), puis capitalisation en mémoire d'un
+piège méthodologique découvert pendant la génération de cette archive elle-même.
+Les trois sessions sont regroupées ici sous la même date, sections numérotées en
+continu.
 
 ---
 
@@ -253,12 +255,49 @@ confirmation qu'aucun processus git n'était réellement actif.
 
 ---
 
-## 13. État de synchronisation en fin de journée
+## Partie C — Piège Write découvert et capitalisé en mémoire
 
-- `Riemann_Lab_IA` : à jour avec `origin` (`3e352a3` poussé, dernier en date).
-- Wiki `master` : à jour avec `origin` (`6161097` poussé, dernier en date).
+À la clôture de la Partie B, l'archive de session a été générée une première
+fois avec l'outil Write, sans relire l'état existant du fichier au préalable.
+
+### 13. Détection de l'écrasement silencieux
+
+Le fichier `docs/archive/discusion_claude_2026-09-27.md` existait déjà,
+committé plus tôt dans la journée (`88dc984`, Partie A ci-dessus) — le
+`Write` initial a remplacé tout son contenu par le seul récit de la Partie B,
+perdant la Partie A du répertoire de travail (récupérable via git, mais
+disparue du fichier tel que vu). Repéré avant tout commit, via `git diff
+--cached --stat` montrant des suppressions inattendues pour ce qui aurait dû
+être un simple ajout. Correction : contenu de la Partie A restauré depuis le
+commit `88dc984`, fusionné avec la Partie B en un seul document (sections
+numérotées en continu), recommité (`22c7898`, poussé sur
+`origin/Riemann_Lab_IA`).
+
+### 14. Capitalisation en mémoire
+
+Consigne, citée verbatim :
+
+> ajoute une note sur ce piège Write dans la mémoire feedback_bye_bye_archive.md
+
+Une section a été ajoutée à la mémoire `feedback_bye_bye_archive.md` :
+vérifier systématiquement, avant tout `Write` d'archive de session, si un
+fichier du même jour existe déjà (`git log --oneline -- <chemin>`), et le cas
+échéant fusionner (sections continues, jamais un remplacement intégral) plutôt
+que d'écraser. Réflexe de détection ajouté : un `git diff --cached --stat`
+montrant des suppressions proches de la taille du fichier d'origine signale un
+écrasement, pas un ajout.
+
+---
+
+## 15. État de synchronisation en fin de journée
+
+- `Riemann_Lab_IA` : à jour avec `origin` (`22c7898` poussé, dernier en date —
+  inclut la fusion Partie A + Partie B de cette archive).
+- Wiki `master` : à jour avec `origin` (`6161097` poussé).
 - Backend OmniRoute : service systemd `--user` actif et persistant
   (`enable --now`), survivra à un redémarrage de session.
+- Mémoire de session : `feedback_bye_bye_archive.md` enrichie du piège Write
+  (§13-14 ci-dessus), `MEMORY.md` mis à jour en conséquence.
 - Points restés hors périmètre, non traités : token de gestion OmniRoute
   invalide (`AUTH_001`), absence de credentials `aimlapi`/DeepSeek, 6 points
   d'arbitrage en attente sur les Vagues V4/V5 du plan skills/MCP (Partie A,
