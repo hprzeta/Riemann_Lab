@@ -37,6 +37,34 @@ ou aux skills → Claude Code. Si elle consiste à écrire/tester un algorithme 
 proposer une passation vers Codex. Si c'est une exploration ouverte à faible enjeu (brainstorm de
 conjecture, reformulation) → passer d'abord par Ollama local avant de solliciter un agent distant.
 
+## 1bis. Accès à des modèles distants via OmniRoute (MCP)
+
+Le serveur MCP `omniroute` (`.mcp.json`) donne accès à des modèles tiers (DeepSeek, NVIDIA
+Nemotron, etc.) via l'outil `omniroute_route_request` — un canal supplémentaire pour un second avis
+ou une exploration à faible enjeu, au même titre qu'Ollama local (§3), mais avec des modèles plus
+gros et hébergés à distance.
+
+**Prérequis obligatoires (sinon tout appel échoue silencieusement en `fetch failed`) :**
+- `.mcp.json` doit pointer sur le binaire Node 22 explicite (nvm), jamais `node` du PATH système
+  (v18 système incompatible, `engines.node: >=22.22.2` requis) — voir `.mcp.json.example`.
+- Le **backend HTTP OmniRoute (port 20128) doit tourner en service** : `systemctl --user status
+  omniroute`. C'est un processus séparé du serveur MCP stdio — celui-ci n'est qu'une façade qui
+  délègue tout appel réel (y compris `route_request`) à ce backend local. S'il n'est pas actif :
+  `systemctl --user start omniroute` (unit dans `~/.config/systemd/user/omniroute.service`, à créer
+  manuellement si absente — **l'outil Write de Claude Code est bloqué sur ce chemin par le
+  classificateur de permission** ; demander à hprzeta de créer/lancer via `!`).
+- Toujours préfixer le modèle par son provider (`nvidia/nemotron-3-super-120b-a12b`, pas
+  `nemotron-3-super` seul) — sinon `400 Ambiguous model`.
+
+**Limitation connue (non bloquante)** : `omniroute_get_health` / `omniroute_check_quota` /
+`omniroute_list_models_catalog` peuvent renvoyer `403 AUTH_001 Invalid management token` (token de
+gestion à régénérer côté dashboard OmniRoute) — n'empêche pas `route_request` de fonctionner pour
+les providers déjà connectés (ex. NVIDIA). aimlapi/DeepSeek non configuré (`401 No active
+credentials`) — utiliser un provider déjà connecté tant que ce n'est pas arbitré.
+
+Toute réponse d'un modèle OmniRoute suit la même règle que pour Ollama (§3) : **source de
+contexte, pas source de vérité** — à recouper avant citation.
+
 ## 2. Protocole de passation (`handoff/`)
 
 Deux fichiers, réécrits à chaque passation (pas d'historique empilé — l'historique vit dans
