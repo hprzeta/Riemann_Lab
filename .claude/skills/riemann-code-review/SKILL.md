@@ -1,16 +1,16 @@
 ---
 name: riemann-code-review
 description: |
-  Audit et revue de code pour le projet `Riemann_Lab` de hprzeta — code Python (mpmath, numpy, multiprocessing, matplotlib) et C/libmpfr (ctypes, illinois_mpfr).
+  Audit et revue de code pour le projet `Riemann_Lab` de hprzeta — code Python (mpmath, numpy, multiprocessing, matplotlib) et C/libmpfr/Arb (ctypes, illinois_mpfr, acb_dirichlet_hardy_z).
 
   Utiliser ce skill dès que l'utilisateur demande de :
   - Relire, auditer, ou critiquer un script de calcul de zéros (compute_zeros_*, riemann_siegel*, parallel_scanner, turing_validation)
   - Vérifier une implémentation Riemann-Siegel, Hardy-Z, θ(t), ou l'affinage Illinois
-  - Réviser un module C/libmpfr (illinois_mpfr.c, z_function.c) ou son binding ctypes
+  - Réviser un module C/libmpfr/Arb (illinois_mpfr.c, z_function.c) ou son binding ctypes
   - Détecter des régressions connues avant un run long (détection de signe, précision, parallélisme)
-  - Préparer une nouvelle version (vN → vN+1) côté code
+  - Préparer une nouvelle version (vN → vN+1) côté code, ou comparer un débit annoncé (benchmark) à un débit de production réel
 
-  Déclencher aussi pour : choix de précision mpmath, vectorisation numpy/cupy, sécurité multiprocessing, performance.
+  Déclencher aussi pour : choix de précision mpmath, vectorisation numpy/cupy, sécurité multiprocessing, performance, migration Arb/Flint.
 ---
 
 # Riemann Code Review Skill
@@ -19,7 +19,7 @@ Skill de revue de code spécialisé pour `Riemann_Lab`. Il encode les **bugs ré
 rencontrés** dans le projet pour ne jamais les reproduire. Toute revue de code de calcul
 doit passer cette checklist **avant** d'autoriser un run long.
 
-> Auteur : hprzeta · Mise à jour : 1ᵉʳ juin 2026
+> Auteur : hprzeta · Mise à jour : 27 septembre 2026 (intégration des leçons v12→v16, voir §8)
 
 ---
 
@@ -31,6 +31,7 @@ doit passer cette checklist **avant** d'autoriser un run long.
 | Affinage | `parallel_scanner.py`, `compute_zeros_v*.py` | Illinois, tol ↔ dps, parallélisme |
 | Validation | `turing_validation.py` | N(T) avec le `e`, S(T), branche d'argument |
 | Module C | `illinois_mpfr.c/.h`, `z_function.c/.h` | PREC, libmpfr, binding ctypes, fork |
+| Module C (Arb, v16+) | `arb_C/`, headers Flint vendorisés | ABI figée, précision fixe 64 bits |
 
 ---
 
@@ -77,6 +78,7 @@ doit passer cette checklist **avant** d'autoriser un run long.
 | Détection `Z_fast` | 25 dps | suffisant pour le signe |
 | Affinage Illinois | 35 dps | atteint tol=1e-12 |
 | Validation/publication | 50 dps | 1000 premiers zéros |
+| Affinage Arb (v16+, `acb_dirichlet_hardy_z`) | précision fixe 64 bits (1 limb) | ne pas confondre avec l'escalade dynamique 170 bits de l'ancien pipeline |
 
 - **Toujours restaurer `mp.dps`** après un bloc local (`dps_save = mp.dps … mp.dps = dps_save`).
 - **Ne JAMAIS mélanger joblib + mpmath** : GMP/MPFR a un état global non thread-safe →
@@ -95,7 +97,8 @@ doit passer cette checklist **avant** d'autoriser un run long.
 
 ## 6. Checklist module C / ctypes
 
-- `PREC` libmpfr cohérent avec la précision Python visée (cf. `c_modules/CLAUDE.md`, PREC=170).
+- `PREC` libmpfr cohérent avec la précision Python visée (cf. `c_modules/CLAUDE.md`, PREC=170,
+  pipeline pré-v16 ; voir §8 pour le pipeline Arb à précision fixe 64 bits).
 - `mpc_zeta` **absent** de libmpc 1.3.1 → passer par un wrapper `mpmath.siegelz` côté Python.
 - `make clean && make` doit produire le `.so` **sans warning**.
 - Le code Python doit **arrêter immédiatement** si `illinois_mpfr.so` est absent (pas de
@@ -111,7 +114,37 @@ doit passer cette checklist **avant** d'autoriser un run long.
 
 ---
 
-## 8. Format de sortie d'une revue
+## 8. Checklist optimisations Arb/Flint (v12 → v16)
+
+Leçons capitalisées lors de l'accélération de l'affinage en C (Phase C — voir aussi le skill
+`phase-c-illinois` pour la traçabilité complète par commit). À vérifier avant toute régression
+de performance ou nouvelle version vN+1 :
+
+1. **Précision fixe 64 bits (1 limb MPFR)** au lieu de l'escalade dynamique vers 170 bits par
+   défaut → gain ×16 mesuré en v7. Ne jamais revenir à une précision par défaut plus large
+   « par prudence » sans mesurer l'impact réel.
+2. **`SEUIL_1NEWTON` (v15, phase 2 adaptative) = 20 000** : seuil de bascule de stratégie de
+   raffinement. Le modifier sans benchmark comparatif (avant/après, ≥ 2 plages de test) est
+   une régression potentielle silencieuse.
+3. **v16 : appel direct bas niveau `acb_dirichlet_hardy_z` (Arb)** à précision fixe, au lieu
+   de l'escalade `arb_fpwrap` → gain ×2,75 supplémentaire vs v15 (T=100 000 : 1,6 min).
+4. **Headers Flint vendorisés (flint-3.3.1)** pour figer l'ABI — incompatibles avec
+   `libflint-dev` 3.0.1 du système. Toute recompilation doit utiliser les headers vendorisés,
+   jamais ceux du paquet système, sous peine d'ABI mismatch silencieux.
+5. **Ne jamais confondre benchmark et production** (voir `synthese_skills_zeta.md` §3ter,
+   vérification du 27/09/2026) : le débit annoncé pour une version (ex. 1407 z/s en v16) est
+   mesuré sur un **micro-benchmark T=100 000**, pas le débit réel de production sur un run long
+   (mesuré ~128,56 z/s sur un run réel de 21h38). Ne jamais utiliser un chiffre de benchmark
+   pour une estimation de capacité (`research/roadmap.md`) sans cette conversion — risque
+   d'erreur ×11 sinon.
+6. **Point non vérifié — à confirmer avec hprzeta avant de le documenter comme acquis** : une
+   éventuelle mise en cache de valeurs de θ(t)/Riemann-Siegel réutilisées d'un point à l'autre
+   du balayage a été évoquée comme piste d'optimisation. Statut d'implémentation réel non
+   confirmé au moment de la rédaction de cette section — ne pas présumer qu'elle existe.
+
+---
+
+## 9. Format de sortie d'une revue
 
 1. **Verdict** : 🟢 prêt pour run / 🟡 corrections mineures / 🔴 STOP avant run.
 2. **Bugs bloquants** (référence à la section concernée ci-dessus).
@@ -120,4 +153,4 @@ doit passer cette checklist **avant** d'autoriser un run long.
    puis *Partie 2 (les maths : pourquoi c'est correct / pourquoi ça va vite)*.
 
 ---
-*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 1ᵉʳ juin 2026*
+*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 27/09/2026 (Vague V3 — intégration leçons v12→v16, voir `synthese_skills_zeta.md` §4.1).*
