@@ -4,8 +4,15 @@
 # Auteur : hprzeta — Projet Riemann_Lab
 # Usage : wg_auto.sh [--quiet]
 
-PC4_LAN="[IP_LAN]"
 LOG="$HOME/projet_zeta/logs/wg_auto.log"
+# Adresses du cluster : fichier LOCAL hors git (jamais d'IP en dur dans le dépôt)
+HOTES="$HOME/.config/zeta/cluster_hosts.env"
+if [ ! -r "$HOTES" ]; then                   # absent : on ne touche PAS au tunnel
+    echo "$(date '+%F %T') | wg_auto | fichier d'adresses absent : $HOTES" >> "$LOG"
+    exit 1
+fi
+. "$HOTES"                                   # définit ZETA_PC4 et ZETA_BASTION
+PC4_LAN="$ZETA_PC4"
 
 notifier() {  # $1 = titre, $2 = message, $3 = icône
     echo "$1 — $2"
@@ -32,8 +39,8 @@ else
     if ! sudo wg show wg0 > /dev/null 2>&1; then
         sudo wg-quick up wg0
         sleep 2
-        if ping -c 1 -W 3 [IP_WG] > /dev/null 2>&1; then
-            notifier "🧳 DÉPLACEMENT — WireGuard ACTIVÉ" "Tunnel OK, cluster accessible via [IP_WG]" "network-vpn"
+        if ping -c 1 -W 3 "$ZETA_BASTION" > /dev/null 2>&1; then
+            notifier "🧳 DÉPLACEMENT — WireGuard ACTIVÉ" "Tunnel OK, cluster accessible via le bastion" "network-vpn"
         else
             notifier "⚠️ DÉPLACEMENT — WireGuard activé mais tunnel NE RÉPOND PAS" "Vérifier connexion internet / endpoint DuckDNS" "dialog-warning"
         fi

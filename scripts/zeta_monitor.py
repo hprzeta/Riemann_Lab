@@ -2,11 +2,22 @@
 import curses, os, subprocess, threading, time
 from datetime import datetime
 
+# Adresses du cluster : fichier LOCAL hors git (jamais d'IP en dur dans le dépôt)
+def _charge_hotes():
+    chemin = os.path.expanduser("~/.config/zeta/cluster_hosts.env")
+    try:
+        with open(chemin, encoding="utf-8") as f:
+            return dict(l.strip().split("=", 1) for l in f
+                        if "=" in l and not l.lstrip().startswith("#"))
+    except OSError:
+        raise SystemExit(f"Fichier d'adresses absent : {chemin} (voir cluster_hosts.env)")
+H = _charge_hotes()
+
 MACHINES = [
     {"name":"zeta-lab","label":"PC1 · zeta-lab","role":"Orchestrateur / Calcul principal","host":"localhost","user":None,"key":None,"color":"magenta"},
-    {"name":"zeta-calc-second","label":"PC2 · zeta-calc-second","role":"Second nœud calcul (E8400 2C)","host":"[IP_LAN]","user":"hprzeta","key":"~/.ssh/id_acer","color":"yellow"},
-    {"name":"zeta-backup","label":"PC3 · zeta-backup","role":"Backup / monitoring (E2140 2C)","host":"[IP_LAN]","user":"hprzeta","key":"~/.ssh/id_acer","color":"cyan"},
-    {"name":"zeta-secure","label":"PC4 · zeta-secure","role":"Bastion VPN / WireGuard (OpenBSD)","host":"[IP_LAN]","user":"hprzeta","key":"~/.ssh/id_acer","color":"green","openbsd":True},
+    {"name":"zeta-calc-second","label":"PC2 · zeta-calc-second","role":"Second nœud calcul (E8400 2C)","host":H["ZETA_PC2"],"user":"hprzeta","key":"~/.ssh/id_acer","color":"yellow"},
+    {"name":"zeta-backup","label":"PC3 · zeta-backup","role":"Backup / monitoring (E2140 2C)","host":H["ZETA_PC3"],"user":"hprzeta","key":"~/.ssh/id_acer","color":"cyan"},
+    {"name":"zeta-secure","label":"PC4 · zeta-secure","role":"Bastion VPN / WireGuard (OpenBSD)","host":H["ZETA_PC4"],"user":"hprzeta","key":"~/.ssh/id_acer","color":"green","openbsd":True},
 ]
 
 REFRESH = 10
