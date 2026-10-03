@@ -13,7 +13,7 @@
 
 ### Prompt de hprzeta
 
-> Diagnostic PC3 (zeta-backup, [IP_LAN]) — depuis PC1, sans SSH direct
+> Diagnostic PC3 (zeta-backup, <IP_PC3>) — depuis PC1, sans SSH direct
 > (il répond "No route to host"). La tour est allumée mais chauffe fort au
 > toucher — je soupçonne une surchauffe ou un ventilo. Priorité : savoir si
 > c'est réseau ou matériel, sans rien forcer.
@@ -220,7 +220,7 @@ côté IPv4.
 ### Correction de hprzeta — le vrai verdict, prouvé par capture d'écran
 
 > CORRECTION du diagnostic — j'ai la page DuckDNS sous les yeux. [...]
-> [DDNS_PC4] a DEUX enregistrements, mais "changés il y a 2 mois"
+> <DDNS_PC4> a DEUX enregistrements, mais "changés il y a 2 mois"
 > (14 juin) [...] Et à l'install BSD, on avait décidé de "se contenter d'IPv4
 > pour le moment" -- à revalider.
 

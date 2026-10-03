@@ -29,7 +29,7 @@ jamais ouvert.
 ### 2.1 Commit des scripts jump-host
 
 `scripts/zeta_monitor.py` et `scripts/zeta_tmux.sh` (modifiés pour router via
-le bastion `[IP_WG]` en déplacement) relus intégralement — aucun secret
+le bastion `<WG_PC4>` en déplacement) relus intégralement — aucun secret
 trouvé (IP LAN et chemins de clés uniquement). Un bug mineur repéré et corrigé
 avant commit : une condition `ping` dupliquée sur elle-même dans
 `zeta_tmux.sh` (reliquat de copier-coller, inoffensif). **Committé et poussé**
@@ -47,7 +47,7 @@ place.
 **Instruction explicite de hprzeta :** « mettre dans dossier local secret ne
 jamais comiter ce zip pass » — jamais ouvert par Claude Code, déplacé tel
 quel. Un commentaire `.gitignore` préexistant (daté du 05/09) confirmait déjà
-qu'il contient la clé privée WireGuard du pair téléphone (`[IP_WG]`).
+qu'il contient la clé privée WireGuard du pair téléphone (`<WG_TEL>`).
 
 ### 2.4 Vérification de sécurité des 5 autres `.zip` et 7 `.bak*`
 
