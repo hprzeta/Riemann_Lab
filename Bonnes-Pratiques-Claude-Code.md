@@ -774,7 +774,7 @@ globale SLAAC ne s'obtient malgré `inet6 autoconf` dans `/etc/hostname.re0`.
 
 **Ne pas tester depuis l'intérieur du réseau** avec `curl ifconfig.me` ou `curl ip6.me` :
 le résultat peut être trafiqué par le routeur. Pour savoir si l'IP est derrière CGNAT :
-→ Comparer avec l'**IP WAN affichée par la box** (interface admin `[IP_LAN]`).
+→ Comparer avec l'**IP WAN affichée par la box** (interface admin `<IP_BOX>`).
 Si l'IP WAN de la box est en `10.x.x.x`, `100.64-127.x.x.x` ou autre RFC1918 : CGNAT.
 
 ### WireGuard mobile — config via QR code
