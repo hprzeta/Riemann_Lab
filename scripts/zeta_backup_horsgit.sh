@@ -1,0 +1,138 @@
+#!/bin/bash
+#===============================================================================
+# zeta_backup_horsgit.sh - Sauvegarde sur Proton Drive de ce qui est HORS git
+#
+# A LANCER SUR PC1 (zeta-lab). Utilise le remote rclone "protondrive:".
+# Menu interactif. rclone COPY uniquement : jamais de suppression distante.
+#
+# Jeux sauvegardes (destination : protondrive:hprzeta/Riemann_Lab/hors_git/) :
+#   1) md/            -> md/
+#   2) memoire Claude -> memoire_claude/
+#   3) suivi          -> suivi/        (riemann_handoff SANS secrets_local)
+#   4) non suivis git -> non_suivis/   (hors archives de config sensibles)
+#
+# Exclus VOLONTAIREMENT : secrets_local, .mcp.json, .env, ~/.ssh, rclone.conf,
+#   calculs/ (4 Go > quota Proton 2 Gio), zeta_env/.
+#
+#   5) calculs legers -> calculs_legers/ (fichiers < 200 Ko : logs, PNG, petits CSV)
+#   6) secrets        -> secrets_chiffres/ (archive gpg SYMETRIQUE, phrase de passe
+#                        saisie au clavier ; jamais en clair ; MANUEL uniquement)
+#
+# Usage : zeta-backup-horsgit            (menu)
+#         zeta_backup_horsgit.sh --dry   (force la simulation)
+#         zeta_backup_horsgit.sh --auto  (sans menu : jeux 1 a 5, SANS secrets ; cron)
+#
+# Auteur : hprzeta · MAJ : 2026-10-03
+#===============================================================================
+set -u
+
+REMOTE="protondrive:hprzeta/Riemann_Lab/hors_git"   # racine cote Proton
+PROJ="$HOME/projet_zeta"                            # racine du projet
+MEM="$HOME/.claude/projects/-home-riemann-projet-zeta/memory"
+HANDOFF="$HOME/riemann_handoff"
+TMP="$(mktemp -d)"                                  # dossier temporaire
+trap 'rm -rf "$TMP"' EXIT                           # nettoyage a la sortie
+DRY=""                                              # vide = envoi reel
+AUTO=0                                              # 1 = mode cron, sans menu
+for a in "$@"; do                                   # lecture de TOUS les arguments
+  case "$a" in
+    --dry)  DRY="--dry-run" ;;                      # simulation
+    --auto) AUTO=1 ;;                               # mode cron
+  esac
+done
+
+# Copie via rclone ; affiche le resume, pas le detail
+copie(){ # $1=libelle  $2=source  $3=destination  $4..=options rclone
+  local lib="$1" src="$2" dst="$3"; shift 3
+  echo "--- $lib ---"
+  if [ ! -e "$src" ]; then echo "   [!] source absente : $src"; return 1; fi
+  timeout 600 rclone copy $DRY --stats-one-line -v "$src" "$dst" "$@" 2>&1 \
+    | grep -E 'ERROR|Copied|Transferred|NOTICE: .*(Skipped copy|[0-9] / [0-9])' | tail -4
+  return "${PIPESTATUS[0]}"
+}
+
+# 1) md/
+j_md(){ copie "md/" "$PROJ/md" "$REMOTE/md"; }
+
+# 2) memoire Claude : dossier memory + CLAUDE.md global
+j_mem(){
+  copie "memoire Claude (memory)" "$MEM" "$REMOTE/memoire_claude/memory"
+  copie "CLAUDE.md global" "$HOME/.claude/CLAUDE.md" "$REMOTE/memoire_claude"
+}
+
+# 3) suivi : riemann_handoff sans secrets_local
+j_suivi(){ copie "suivi (riemann_handoff)" "$HANDOFF" "$REMOTE/suivi" --exclude 'secrets_local/**'; }
+
+# 4) fichiers non suivis par git (liste calculee a chaud)
+j_ns(){
+  ( cd "$PROJ" && git ls-files --others --exclude-standard -z ) | tr '\0' '\n' \
+    | grep -Ev '(backup.*\.tgz|\.env|secret|token|\.key|\.pem)' > "$TMP/ns.txt"
+  echo "   ($(wc -l < "$TMP/ns.txt") fichiers non suivis retenus)"
+  copie "non suivis git" "$PROJ" "$REMOTE/non_suivis" --files-from "$TMP/ns.txt"
+}
+
+# 5) calculs legers : fichiers < 200 Ko des deux dossiers calculs/
+j_calc(){
+  ( cd "$PROJ" && find calculs src/calculs/optimisation/calculs -type f -size -200k ) > "$TMP/calc.txt"
+  echo "   ($(wc -l < "$TMP/calc.txt") fichiers legers retenus)"
+  copie "calculs legers" "$PROJ" "$REMOTE/calculs_legers" --files-from "$TMP/calc.txt"
+}
+
+# 6) secrets : archive tar.gz chiffree gpg symetrique (phrase saisie, jamais stockee)
+j_sec(){
+  local src="$HANDOFF/secrets_local" arc="$TMP/secrets_$(date +%Y%m%d).tar.gz.gpg"
+  [ -d "$src" ] || { echo "   [!] absent : $src"; return 1; }
+  [ -n "$DRY" ] && { echo "   [simulation] archive non creee"; return 0; }
+  echo "   Phrase de passe a saisir (2 fois) :"
+  tar -C "$HANDOFF" -czf - secrets_local | gpg --symmetric --cipher-algo AES256 -o "$arc" \
+    || { echo "   [X] chiffrement echoue, rien envoye"; return 1; }
+  copie "secrets chiffres" "$arc" "$REMOTE/secrets_chiffres"
+  rm -f "$arc"                                       # aucune copie locale residuelle
+}
+
+# Controle prealable : remote Proton joignable
+verif(){
+  rclone lsd "protondrive:hprzeta" >/dev/null 2>&1 \
+    || { echo "[X] Proton injoignable (token expire ? voir zeta_proton_status.sh)"; exit 2; }
+}
+
+# Menu
+menu(){
+  echo "=============================================="
+  echo " zeta-backup-horsgit  $( [ -n "$DRY" ] && echo '[SIMULATION]' || echo '[ENVOI REEL]')"
+  echo "=============================================="
+  echo " 1) md/"
+  echo " 2) memoire Claude"
+  echo " 3) suivi (riemann_handoff, sans secrets)"
+  echo " 4) fichiers non suivis par git"
+  echo " 5) calculs legers (< 200 Ko)"
+  echo " 6) secrets (chiffres gpg, phrase demandee)"
+  echo " a) TOUT sauf secrets (1 a 5)"
+  echo " d) basculer simulation / envoi reel"
+  echo " q) quitter"
+  printf " Choix : "
+}
+
+verif
+if [ "$AUTO" -eq 1 ]; then                           # mode cron : pas de menu
+  echo "=== $(date -Iseconds) START horsgit ==="
+  j_md; j_mem; j_suivi; j_ns; j_calc
+  echo "=== $(date -Iseconds) END horsgit ==="
+  exit 0
+fi
+while true; do
+  menu; read -r c || break
+  case "$c" in
+    1) j_md ;;
+    2) j_mem ;;
+    3) j_suivi ;;
+    4) j_ns ;;
+    5) j_calc ;;
+    6) j_sec ;;
+    a|A) j_md; j_mem; j_suivi; j_ns; j_calc ;;
+    d) [ -n "$DRY" ] && DRY="" || DRY="--dry-run" ;;
+    q|Q) break ;;
+    *) echo "choix invalide" ;;
+  esac
+done
+echo "Termine. Verification : rclone lsd $REMOTE"
