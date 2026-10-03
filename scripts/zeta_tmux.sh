@@ -3,19 +3,24 @@
 # Bascule WireGuard automatique maison/déplacement (avec message d'état)
 bash "$(dirname "$0")/wg_auto.sh"
 
+# Adresses du cluster : fichier LOCAL hors git (jamais d'IP en dur dans le dépôt)
+HOTES="$HOME/.config/zeta/cluster_hosts.env"
+[ -r "$HOTES" ] || { echo "Fichier d'adresses absent : $HOTES"; exit 1; }
+. "$HOTES"                                  # définit ZETA_PC2..PC5 et ZETA_BASTION
+
 # ─── Détection maison / déplacement (tunnel déjà positionné par wg_auto.sh) ───
-if ping -c1 -W2 10.10.0.1 >/dev/null 2>&1; then
-    echo "🧳 DÉPLACEMENT — accès cluster via bastion 10.10.0.1"
-    SSH_PC2="ssh -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes -J hprzeta@10.10.0.1 hprzeta@192.168.1.52"
-    SSH_PC3="ssh -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes -J hprzeta@10.10.0.1 hprzeta@192.168.1.22"
-    SSH_PC4="ssh -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes hprzeta@10.10.0.1"
-    SSH_PC5="ssh -t -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes -J hprzeta@10.10.0.1 hprzeta@192.168.1.56"
+if ping -c1 -W2 ${ZETA_BASTION} >/dev/null 2>&1; then
+    echo "🧳 DÉPLACEMENT — accès cluster via bastion ${ZETA_BASTION}"
+    SSH_PC2="ssh -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes -J hprzeta@${ZETA_BASTION} hprzeta@${ZETA_PC2}"
+    SSH_PC3="ssh -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes -J hprzeta@${ZETA_BASTION} hprzeta@${ZETA_PC3}"
+    SSH_PC4="ssh -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes hprzeta@${ZETA_BASTION}"
+    SSH_PC5="ssh -t -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes -J hprzeta@${ZETA_BASTION} hprzeta@${ZETA_PC5}"
 else
-    echo "🏠 MAISON — accès cluster direct en 192.168.1.x"
-    SSH_PC2="ssh -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes hprzeta@192.168.1.52"
-    SSH_PC3="ssh -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes hprzeta@192.168.1.22"
-    SSH_PC4="ssh -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes hprzeta@192.168.1.54"
-    SSH_PC5="ssh -t -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes hprzeta@192.168.1.56"
+    echo "🏠 MAISON — accès cluster direct en LAN"
+    SSH_PC2="ssh -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes hprzeta@${ZETA_PC2}"
+    SSH_PC3="ssh -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes hprzeta@${ZETA_PC3}"
+    SSH_PC4="ssh -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes hprzeta@${ZETA_PC4}"
+    SSH_PC5="ssh -t -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes hprzeta@${ZETA_PC5}"
 fi
 
 SESSION="zeta-cluster"
