@@ -2,12 +2,23 @@
 import curses, os, subprocess, threading, time
 from datetime import datetime
 
+# Adresses du cluster : fichier LOCAL hors git (jamais d'IP en dur dans le dépôt)
+def _charge_hotes():
+    chemin = os.path.expanduser("~/.config/zeta/cluster_hosts.env")
+    try:
+        with open(chemin, encoding="utf-8") as f:
+            return dict(l.strip().split("=", 1) for l in f
+                        if "=" in l and not l.lstrip().startswith("#"))
+    except OSError:
+        raise SystemExit(f"Fichier d'adresses absent : {chemin} (voir cluster_hosts.env)")
+H = _charge_hotes()
+
 MACHINES = [
     {"name":"zeta-lab","label":"PC1 · zeta-lab","role":"Orchestrateur / Calcul principal","host":"localhost","user":None,"key":None,"color":"pc1_amber"},
-    {"name":"zeta-calc-second","label":"PC2 · zeta-calc-second","role":"Second nœud calcul (E8400 2C)","host":"192.168.1.52","user":"hprzeta","key":"~/.ssh/id_acer","color":"pc2_green","jump":True},
-    {"name":"zeta-backup","label":"PC3 · zeta-backup","role":"Backup / monitoring (E2140 2C)","host":"192.168.1.22","user":"hprzeta","key":"~/.ssh/id_acer","color":"pc3_blue","jump":True},
-    {"name":"zeta-secure","label":"PC4 · zeta-secure","role":"Bastion VPN / WireGuard (OpenBSD)","host":"10.10.0.1","host_home":"192.168.1.54","user":"hprzeta","key":"~/.ssh/id_acer","color":"pc4_magenta","openbsd":True},
-    {"name":"zeta-monitor","label":"PC5 · zeta-monitor","role":"Monitoring","host":"192.168.1.56","user":"hprzeta","key":"~/.ssh/zeta_cluster","color":"pc5_orange","jump":True},
+    {"name":"zeta-calc-second","label":"PC2 · zeta-calc-second","role":"Second nœud calcul (E8400 2C)","host":H["ZETA_PC2"],"user":"hprzeta","key":"~/.ssh/id_acer","color":"pc2_green","jump":True},
+    {"name":"zeta-backup","label":"PC3 · zeta-backup","role":"Backup / monitoring (E2140 2C)","host":H["ZETA_PC3"],"user":"hprzeta","key":"~/.ssh/id_acer","color":"pc3_blue","jump":True},
+    {"name":"zeta-secure","label":"PC4 · zeta-secure","role":"Bastion VPN / WireGuard (OpenBSD)","host":H["ZETA_BASTION"],"host_home":H["ZETA_PC4"],"user":"hprzeta","key":"~/.ssh/id_acer","color":"pc4_magenta","openbsd":True},
+    {"name":"zeta-monitor","label":"PC5 · zeta-monitor","role":"Monitoring","host":H["ZETA_PC5"],"user":"hprzeta","key":"~/.ssh/zeta_cluster","color":"pc5_orange","jump":True},
 ]
 
 REFRESH = 10
@@ -36,7 +47,7 @@ def ssh_cmd(machine, cmd):
         proc = subprocess.run(["bash","-c",cmd], capture_output=True, text=True, timeout=8)
     else:
         key = os.path.expanduser(machine["key"])
-        tunnel = subprocess.run(["ping","-c1","-W1","10.10.0.1"],
+        tunnel = subprocess.run(["ping","-c1","-W1",H["ZETA_BASTION"]],
                                 capture_output=True).returncode == 0
         host = machine["host"]
         if not tunnel and machine.get("host_home"):
@@ -44,7 +55,7 @@ def ssh_cmd(machine, cmd):
         args = ["ssh","-o","ConnectTimeout=6","-o","StrictHostKeyChecking=no",
                 "-o","BatchMode=yes","-o","IdentitiesOnly=yes","-i",key]
         if tunnel and machine.get("jump"):
-            args += ["-J", f"{machine['user']}@10.10.0.1"]
+            args += ["-J", f"{machine['user']}@{H['ZETA_BASTION']}"]
         args += [f"{machine['user']}@{host}", cmd]
         proc = subprocess.run(args, capture_output=True, text=True, timeout=10)
     return proc.stdout.strip(), proc.returncode
