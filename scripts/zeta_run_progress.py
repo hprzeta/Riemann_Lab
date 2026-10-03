@@ -29,7 +29,19 @@ from datetime import datetime
 PROJET_DIR = Path(__file__).resolve().parent.parent
 LOG_DIR = PROJET_DIR / "logs"
 
-PC2_HOST = "192.168.1.52"
+# Adresses du cluster : fichier LOCAL hors git (jamais d'IP en dur dans le dépôt)
+def _hotes_rp():
+    import os
+    chemin = os.path.expanduser("~/.config/zeta/cluster_hosts.env")
+    try:
+        with open(chemin, encoding="utf-8") as f:
+            return dict(l.strip().split("=", 1) for l in f
+                        if "=" in l and not l.lstrip().startswith("#"))
+    except OSError:
+        raise SystemExit(f"Fichier d'adresses absent : {chemin}")
+H = _hotes_rp()
+
+PC2_HOST = H["ZETA_PC2"]
 PC2_USER = "hprzeta"
 PC2_KEY = "~/.ssh/id_acer"
 REFRESH = 4  # secondes entre deux sondes CPU/RAM/disque

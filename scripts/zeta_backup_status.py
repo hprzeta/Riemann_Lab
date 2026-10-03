@@ -4,13 +4,13 @@
 zeta_backup_status.py — Vérification de l'activité du pipeline de sauvegarde
 ═══════════════════════════════════════════════════════════════════════════
 Pipeline surveillé (cf. STACK.md § Infrastructure backup) :
-  1. PC1 (zeta-lab, cron 01h50) : rsync logs/ + wiki/ + pdf/ → PC3 (pjexosql@192.168.1.22)
+  1. PC1 (zeta-lab, cron 01h50) : rsync logs/ + wiki/ + pdf/ → PC3 (pjexosql@PC3)
   2. PC3 (zeta-backup, cron 02h00) : rclone copy ~/backup/ → protondrive:hprzeta/Riemann_Lab/backup/
 
 Sources utilisées :
   - PC1 : /var/log/syslog (déclenchement du cron rsync — le job est silencieux,
     -aq, donc syslog ne donne QUE la preuve de déclenchement, pas le succès)
-  - PC3 (SSH pjexosql@192.168.1.22, clé ~/.ssh/id_acer — PAS l'alias zeta-backup,
+  - PC3 (SSH pjexosql@PC3, clé ~/.ssh/id_acer — PAS l'alias zeta-backup,
     qui pointe sur l'utilisateur hprzeta, différent du compte propriétaire de
     ~/backup/) :
       - mtime des fichiers sous ~/backup/{logs,wiki,pdf} → preuve indirecte
@@ -32,7 +32,19 @@ import subprocess
 import sys
 from datetime import datetime, timedelta
 
-PC3_HOST = "192.168.1.22"
+# Adresses du cluster : fichier LOCAL hors git (jamais d'IP en dur dans le dépôt)
+def _hotes_bs():
+    import os
+    chemin = os.path.expanduser("~/.config/zeta/cluster_hosts.env")
+    try:
+        with open(chemin, encoding="utf-8") as f:
+            return dict(l.strip().split("=", 1) for l in f
+                        if "=" in l and not l.lstrip().startswith("#"))
+    except OSError:
+        raise SystemExit(f"Fichier d'adresses absent : {chemin}")
+H = _hotes_bs()
+
+PC3_HOST = H["ZETA_PC3"]
 PC3_USER = "pjexosql"
 PC3_KEY = "~/.ssh/id_acer"
 PC3_BACKUP_DIR = "/home/pjexosql/backup"

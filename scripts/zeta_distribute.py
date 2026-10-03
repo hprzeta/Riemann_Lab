@@ -157,14 +157,26 @@ def calculer_pivot(T_MAX: float, v1: float, v2: float) -> float:
 #  SECTION 2 — LANCEMENT DES RUNS
 # ═══════════════════════════════════════════════════════════════════════════════
 
+# Adresses du cluster : fichier LOCAL hors git (jamais d'IP en dur dans le dépôt)
+def _hotes_di():
+    import os
+    chemin = os.path.expanduser("~/.config/zeta/cluster_hosts.env")
+    try:
+        with open(chemin, encoding="utf-8") as f:
+            return dict(l.strip().split("=", 1) for l in f
+                        if "=" in l and not l.lstrip().startswith("#"))
+    except OSError:
+        raise SystemExit(f"Fichier d'adresses absent : {chemin}")
+H = _hotes_di()
+
 def _pc2_jump_opts() -> list:
-    """ProxyJump via le bastion (10.10.0.1) si PC1 est en déplacement, rien à la maison.
+    """ProxyJump via le bastion si PC1 est en déplacement, rien à la maison.
     Même détection que zeta_tmux.sh / zeta_monitor.py — zeta-calc-second (alias
-    ~/.ssh/config) résout en 192.168.1.52 en dur, injoignable hors LAN maison.
+    ~/.ssh/config) résout en IP LAN en dur, injoignable hors LAN maison.
     """
-    tunnel = subprocess.run(["ping", "-c1", "-W1", "10.10.0.1"],
+    tunnel = subprocess.run(["ping", "-c1", "-W1", H["ZETA_BASTION"]],
                              capture_output=True).returncode == 0
-    return ["-J", "hprzeta@10.10.0.1"] if tunnel else []
+    return ["-J", f"hprzeta@{H['ZETA_BASTION']}"] if tunnel else []
 
 
 def _cmd_venv(commande: str) -> str:
