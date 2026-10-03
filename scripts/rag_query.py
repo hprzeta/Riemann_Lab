@@ -56,7 +56,7 @@ chacun précédé de son fichier source entre crochets, ex. [fichier.md]).
 
 Règle stricte de citation : pour CHAQUE fait, chiffre ou valeur exacte que tu \
 donnes, recopie-le TEL QUEL depuis l'extrait source et fais suivre immédiatement \
-d'une citation entre crochets avec le nom du fichier exact, ex. « [IP_LAN] \
+d'une citation entre crochets avec le nom du fichier exact, ex. « 4 cœurs \
 [Architecture-Cluster-Zeta.md] ». N'arrondis pas, ne reformule pas, ne déduis pas \
 une valeur par analogie avec une autre. Si une information demandée n'apparaît \
 mot pour mot dans AUCUN extrait ci-dessous, écris « non trouvé dans le contexte » \
