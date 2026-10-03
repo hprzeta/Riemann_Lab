@@ -15,12 +15,13 @@
 #   calculs/ (4 Go > quota Proton 2 Gio), zeta_env/.
 #
 #   5) calculs legers -> calculs_legers/ (fichiers < 200 Ko : logs, PNG, petits CSV)
+#   7) config locale  -> config_locale/ (~/.config/zeta : adresses du cluster, hors git)
 #   6) secrets        -> secrets_chiffres/ (archive gpg SYMETRIQUE, phrase de passe
 #                        saisie au clavier ; jamais en clair ; MANUEL uniquement)
 #
 # Usage : zeta-backup-horsgit            (menu)
 #         zeta_backup_horsgit.sh --dry   (force la simulation)
-#         zeta_backup_horsgit.sh --auto  (sans menu : jeux 1 a 5, SANS secrets ; cron)
+#         zeta_backup_horsgit.sh --auto  (sans menu : jeux 1 a 5 et 7, SANS secrets ; cron)
 #
 # Auteur : hprzeta · MAJ : 2026-10-03
 #===============================================================================
@@ -78,6 +79,9 @@ j_calc(){
   copie "calculs legers" "$PROJ" "$REMOTE/calculs_legers" --files-from "$TMP/calc.txt"
 }
 
+# 7) config locale : ~/.config/zeta (cluster_hosts.env, hors git, droits 600 conserves)
+j_cfg(){ copie "config locale (~/.config/zeta)" "$HOME/.config/zeta" "$REMOTE/config_locale"; }
+
 # 6) secrets : archive tar.gz chiffree gpg symetrique (phrase saisie, jamais stockee)
 j_sec(){
   local src="$HANDOFF/secrets_local" arc="$TMP/secrets_$(date +%Y%m%d).tar.gz.gpg"
@@ -107,7 +111,8 @@ menu(){
   echo " 4) fichiers non suivis par git"
   echo " 5) calculs legers (< 200 Ko)"
   echo " 6) secrets (chiffres gpg, phrase demandee)"
-  echo " a) TOUT sauf secrets (1 a 5)"
+  echo " 7) config locale (~/.config/zeta)"
+  echo " a) TOUT sauf secrets (1 a 5 et 7)"
   echo " d) basculer simulation / envoi reel"
   echo " q) quitter"
   printf " Choix : "
@@ -116,7 +121,7 @@ menu(){
 verif
 if [ "$AUTO" -eq 1 ]; then                           # mode cron : pas de menu
   echo "=== $(date -Iseconds) START horsgit ==="
-  j_md; j_mem; j_suivi; j_ns; j_calc
+  j_md; j_mem; j_suivi; j_ns; j_calc; j_cfg
   echo "=== $(date -Iseconds) END horsgit ==="
   exit 0
 fi
@@ -129,7 +134,8 @@ while true; do
     4) j_ns ;;
     5) j_calc ;;
     6) j_sec ;;
-    a|A) j_md; j_mem; j_suivi; j_ns; j_calc ;;
+    7) j_cfg ;;
+    a|A) j_md; j_mem; j_suivi; j_ns; j_calc; j_cfg ;;
     d) [ -n "$DRY" ] && DRY="" || DRY="--dry-run" ;;
     q|Q) break ;;
     *) echo "choix invalide" ;;
