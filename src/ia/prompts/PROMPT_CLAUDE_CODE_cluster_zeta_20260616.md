@@ -31,8 +31,8 @@ Tu travailles sur le projet `Riemann_Lab` de hprzeta.
 
 Le cluster Zeta a été finalisé à 4 machines. PC4 (`zeta-secure`, Dell Dimension 4500, Pentium 4 i386)
 a été installé sous OpenBSD 7.9, configuré comme bastion WireGuard. La box SFR est en CGNAT IPv4
-(IP WAN = <IP_WAN_BOX>, privée), donc l'accès externe passe par IPv6. DuckDNS
-`<DDNS_PC4>` maintient A + AAAA. Le tunnel WireGuard téléphone (4G) ↔ PC4 est
+(IP WAN = [IP_WAN_BOX], privée), donc l'accès externe passe par IPv6. DuckDNS
+`[DDNS_PC4]` maintient A + AAAA. Le tunnel WireGuard téléphone (4G) ↔ PC4 est
 fonctionnel via IPv6 depuis la nuit du 15/06.
 
 ---
@@ -43,10 +43,10 @@ fonctionnel via IPv6 depuis la nuit du 15/06.
 
 | # | Hostname OFFICIEL | Alias réseau | IP LAN | OS | CPU | Rôle | Statut |
 |---|---|---|---|---|---|---|---|
-| PC1 | `zeta-lab` | zeta-lab | <IP_PC1> | Ubuntu Linux | Intel i7-7500U | Orchestrateur / calcul principal (WiFi wlp2s0) | ✅ |
-| PC2 | `zeta-calc-second` | — | <IP_PC2> | Debian 6.1 amd64 | Core2Duo E8400 @3.0GHz | Calcul secondaire | ✅ |
-| PC3 | `zeta-backup` | — | <IP_PC3> | Ubuntu 18.04 LTS | Pentium E2140 @1.6GHz | Backup + log-dns-moni (pending) | ✅ |
-| PC4 | `zeta-secure` | zeta-del | <IP_PC4> | OpenBSD 7.9 i386 | Pentium 4 @2.4GHz | Bastion VPN/pare-feu | ✅ COMPLET |
+| PC1 | `zeta-lab` | zeta-lab | [IP_PC1] | Ubuntu Linux | Intel i7-7500U | Orchestrateur / calcul principal (WiFi wlp2s0) | ✅ |
+| PC2 | `zeta-calc-second` | — | [IP_PC2] | Debian 6.1 amd64 | Core2Duo E8400 @3.0GHz | Calcul secondaire | ✅ |
+| PC3 | `zeta-backup` | — | [IP_PC3] | Ubuntu 18.04 LTS | Pentium E2140 @1.6GHz | Backup + log-dns-moni (pending) | ✅ |
+| PC4 | `zeta-secure` | zeta-del | [IP_PC4] | OpenBSD 7.9 i386 | Pentium 4 @2.4GHz | Bastion VPN/pare-feu | ✅ COMPLET |
 
 **Users SSH :**
 - PC1 : `riemann@zeta-lab` (alias ssh : `zeta-hp` dans tmux)
@@ -65,11 +65,11 @@ depuis PC1 via tmux (visible dans le screenshot : fenêtre tmux verte = PC1 orch
 - Barre tmux : fond **vert foncé**
 
 **WireGuard :**
-- Réseau VPN : `<RESEAU_WG>`
-- PC4 serveur : `<WG_PC4>/24`, clé pub `<CLE_PUB_PC4>`
-- PC1 client : `<WG_PC1>/32`, clé pub `<CLE_PUB_PC1>`
-- Téléphone client : `<WG_TEL>/24`, clé pub `<CLE_PUB_TEL>`
-- DuckDNS : `<DDNS_PC4>` → A=<IP_PUBLIQUE_IPV4> (CGNAT, inutilisable) / AAAA=<IPV6_PC4>
+- Réseau VPN : `[RESEAU_WG]`
+- PC4 serveur : `[WG_PC4]/24`, clé pub `[CLE_PUB_PC4]`
+- PC1 client : `[WG_PC1]/32`, clé pub `[CLE_PUB_PC1]`
+- Téléphone client : `[WG_TEL]/24`, clé pub `[CLE_PUB_TEL]`
+- DuckDNS : `[DDNS_PC4]` → A=[IP_PUBLIQUE_IPV4] (CGNAT, inutilisable) / AAAA=[IPV6_PC4]
 - Cron PC4 : `*/5 * * * *` → `/etc/duckdns/duck.sh` (A + AAAA auto)
 
 **Scripts cluster (PC1, `~/projet_zeta/`) :**
@@ -97,24 +97,24 @@ depuis PC1 via tmux (visible dans le screenshot : fenêtre tmux verte = PC1 orch
 ```
 Internet (4G / WiFi externe)
       │
-      ▼ UDP 51820 IPv6 — <DDNS_PC4>
+      ▼ UDP 51820 IPv6 — [DDNS_PC4]
 ┌─────────────────────────────────────┐
-│  PC4 — zeta-secure (<IP_PC4>)  │
+│  PC4 — zeta-secure ([IP_PC4])  │
 │  OpenBSD 7.9 i386 — Bastion VPN    │
-│  WireGuard wg0 : <WG_PC4>/24      │
+│  WireGuard wg0 : [WG_PC4]/24      │
 └──────────────┬──────────────────────┘
-               │ LAN <LAN>
-               │ + VPN <RESEAU_WG>
+               │ LAN [LAN]
+               │ + VPN [RESEAU_WG]
    ┌───────────┼───────────────┬──────────────────┐
    │           │               │                  │
 PC1 .24      PC2 .94        PC3 .22           [box SFR]
 zeta-lab   zeta-calc-     zeta-backup         GR140IG
 Ubuntu i7  second Debian  Ubuntu 18.04        CGNAT IPv4
 Orchestr.  Core2Duo       backup+log          WAN=10.153.x
-WG:<WG_PC1>              (log pending)
+WG:[WG_PC1]              (log pending)
 
-Téléphone (<WG_TEL>) ──WireGuard IPv6──▶ PC4 ──▶ tout le LAN
-PC1 distant (<WG_PC1>) ──WireGuard──▶ PC4 ──▶ tout le LAN
+Téléphone ([WG_TEL]) ──WireGuard IPv6──▶ PC4 ──▶ tout le LAN
+PC1 distant ([WG_PC1]) ──WireGuard──▶ PC4 ──▶ tout le LAN
 ```
 
 5. Ajouter ou mettre à jour la section **WireGuard** (peers, CGNAT, IPv6, DuckDNS AAAA).
@@ -131,19 +131,19 @@ PC1 distant (<WG_PC1>) ──WireGuard──▶ PC4 ──▶ tout le LAN
 ### Connexions directes (LAN)
 ```bash
 ssh zeta-hp          # → riemann@zeta-lab (PC1 lui-même, local)
-ssh zeta-calc-second # → hprzeta@<IP_PC2> (PC2)
-ssh zeta-backup      # → hprzeta@<IP_PC3> (PC3)
-ssh zeta-secure      # → hprzeta@<IP_PC4> (PC4 OpenBSD)
+ssh zeta-calc-second # → hprzeta@[IP_PC2] (PC2)
+ssh zeta-backup      # → hprzeta@[IP_PC3] (PC3)
+ssh zeta-secure      # → hprzeta@[IP_PC4] (PC4 OpenBSD)
 ```
 
 ### Connexion depuis l'extérieur (VPN WireGuard actif)
 ```bash
 # 1. Activer WireGuard sur le device mobile/distant
-#    Endpoint : <DDNS_PC4>:51820
+#    Endpoint : [DDNS_PC4]:51820
 # 2. Depuis le device, accès direct au LAN :
-ssh riemann@<IP_PC1>   # PC1 zeta-lab
-ssh hprzeta@<IP_PC2>   # PC2 zeta-calc-second
-ssh hprzeta@<IP_PC3>   # PC3 zeta-backup
+ssh riemann@[IP_PC1]   # PC1 zeta-lab
+ssh hprzeta@[IP_PC2]   # PC2 zeta-calc-second
+ssh hprzeta@[IP_PC3]   # PC3 zeta-backup
 ```
 
 ### Couleurs tmux par machine
@@ -157,7 +157,7 @@ Script type dans `~/.ssh/config` ou wrapper ssh :
 ```bash
 # Changer couleur barre tmux à la connexion
 tmux set-option -g status-bg colour<N>
-ssh hprzeta@<IP_PC2>
+ssh hprzeta@[IP_PC2]
 tmux set-option -g status-bg colour<DEFAULT>   # restaurer au retour
 ```
 
@@ -201,12 +201,12 @@ find ~/projet_zeta/Riemann_Lab/docs/ -name "*.svg" | head -20
 
 | Machine | Hostname SVG | IP | OS | CPU | Couleur fond |
 |---|---|---|---|---|---|
-| PC1 | `zeta-lab` | <IP_PC1> | Ubuntu Linux | Intel i7-7500U | #00CED1 (cyan) |
-| PC2 | `zeta-calc-second` | <IP_PC2> | Debian 6.1 | Core2Duo E8400 | #FFD700 (jaune) |
-| PC3 | `zeta-backup` | <IP_PC3> | Ubuntu 18.04 LTS | Pentium E2140 | #87CEEB (cyan clair) |
-| PC4 | `zeta-secure` | <IP_PC4> | OpenBSD 7.9 i386 | Pentium 4 @2.4GHz | #1a1a1a (noir) |
+| PC1 | `zeta-lab` | [IP_PC1] | Ubuntu Linux | Intel i7-7500U | #00CED1 (cyan) |
+| PC2 | `zeta-calc-second` | [IP_PC2] | Debian 6.1 | Core2Duo E8400 | #FFD700 (jaune) |
+| PC3 | `zeta-backup` | [IP_PC3] | Ubuntu 18.04 LTS | Pentium E2140 | #87CEEB (cyan clair) |
+| PC4 | `zeta-secure` | [IP_PC4] | OpenBSD 7.9 i386 | Pentium 4 @2.4GHz | #1a1a1a (noir) |
 
-3. Pour `top_machine.svg` : ajouter **"Bastion VPN"** et **"WireGuard <WG_PC4>"** sur la case PC4.
+3. Pour `top_machine.svg` : ajouter **"Bastion VPN"** et **"WireGuard [WG_PC4]"** sur la case PC4.
 4. Pour `backup_cluster.svg` : vérifier les flèches (PC1 → rsync SSH → PC3 01:50, PC3 → rclone → Proton Drive 02:00).
 5. **Commit `Riemann_Lab_C` :**
 ```bash
@@ -257,22 +257,22 @@ déployer PC4 comme bastion WireGuard sous OpenBSD, rendre le cluster accessible
 > Résultat : OpenBSD opérationnel, syspatch appliqué (002_smtpd), doas configuré ✅
 
 **[14/06] WireGuard tunnel local PC1 ↔ PC4**
-> "Configure WireGuard sur PC4 (serveur <WG_PC4>) et PC1 (client <WG_PC1>). Teste avec ping."
+> "Configure WireGuard sur PC4 (serveur [WG_PC4]) et PC1 (client [WG_PC1]). Teste avec ping."
 > Résultat : handshake OK, 0% perte, tunnel chiffré LAN ✅
 > Incident : NBSP (\xc2\xa0) dans la PrivateKey → fix : `sed -i 's/\xc2\xa0/ /g' wg0.conf`
 
-**[14/06] DuckDNS — <DDNS_PC4>**
+**[14/06] DuckDNS — [DDNS_PC4]**
 > "Configure DuckDNS. Script /etc/duckdns/duck.sh, cron */5 sur PC4."
-> Résultat : A enregistré (<IP_PUBLIQUE_IPV4>) ✅
+> Résultat : A enregistré ([IP_PUBLIQUE_IPV4]) ✅
 
 **[14/06] Peer téléphone WireGuard — premier essai**
-> "Génère config WireGuard téléphone Android. Endpoint = <DDNS_PC4>:51820.
+> "Génère config WireGuard téléphone Android. Endpoint = [DDNS_PC4]:51820.
 > Génère QR code pour import."
 > Résultat : ❌ rx=0, tx croît (keepalive OK) mais rien ne revient — bloqué pour la nuit.
 
 **[15/06] Diagnostic CGNAT — cause racine n°1**
 > "Le téléphone envoie mais reçoit rien. Qu'est-ce qui bloque ?"
-> IP WAN box = <IP_WAN_BOX> (RFC1918) → CGNAT confirmé. Port forwarding IPv4 impossible.
+> IP WAN box = [IP_WAN_BOX] (RFC1918) → CGNAT confirmé. Port forwarding IPv4 impossible.
 > Décision : basculer sur IPv6 ✅
 
 **[15/06] SLAAC OpenBSD — pf bloque les Router Advertisements**
@@ -281,22 +281,22 @@ déployer PC4 comme bastion WireGuard sous OpenBSD, rendre le cluster accessible
 > Fix pf.conf :
 > `pass in on $ext_if inet6 proto icmp6 icmp6-type {routeradv, neighbradv, neighbrsol, redir}`
 > Piège : `neighbrsolicit` invalide → nom correct = `neighbrsol`
-> Résultat : adresse globale <IPV6_PC4> obtenue ✅
+> Résultat : adresse globale [IPV6_PC4] obtenue ✅
 
 **[15/06] DuckDNS AAAA — enregistrement IPv6 séparé**
 > "Enregistre l'IPv6 de PC4 dans le champ AAAA séparé du dashboard DuckDNS."
-> Résultat : `host -t AAAA <DDNS_PC4>` → correct ✅
+> Résultat : `host -t AAAA [DDNS_PC4]` → correct ✅
 
 **[15/06] Pare-feu IPv6 box SFR — cause racine n°2**
 > "pf OK, IPv6 OK, AAAA OK, mobile a IPv6, mais toujours rx=0. Qu'est-ce qui reste ?"
 > Section « Réseau v6 » de la box SFR = pare-feu IPv6 indépendant du NAT IPv4, liste blanche vide.
-> Fix : règle WireGuard-IPv6 → dest <IPV6_PC4> / UDP 51820 / Activer=On
+> Fix : règle WireGuard-IPv6 → dest [IPV6_PC4] / UDP 51820 / Activer=On
 > Résultat : handshake 4G bidirectionnel ✅ SUCCÈS FINAL
 
 **[15/06] Élargissement accès LAN téléphone**
-> "Donne au peer téléphone accès <RESEAU_WG> + <LAN>."
-> `doas wg set wg0 peer <CLE_PUB_TEL> allowed-ips <RESEAU_WG>,<LAN>`
-> Sur téléphone : éditer tunnel → Adresses IP autorisées : `<RESEAU_WG>, <LAN>` ✅
+> "Donne au peer téléphone accès [RESEAU_WG] + [LAN]."
+> `doas wg set wg0 peer [CLE_PUB_TEL] allowed-ips [RESEAU_WG],[LAN]`
+> Sur téléphone : éditer tunnel → Adresses IP autorisées : `[RESEAU_WG], [LAN]` ✅
 
 **[15/06] DuckDNS script v2 — A + AAAA auto (rotation SLAAC)**
 > "Script duck.sh qui extrait l'IPv6 stable de re0 et met à jour AAAA dynamiquement."
@@ -342,13 +342,13 @@ find ~/projet_zeta/ -name "doc_zeta_secure*" 2>/dev/null
 
 | Fichier screen | Contenu clé | Section PDF |
 |---|---|---|
-| screen_box_wan.jpg | Box GR140IG — IPv4 WAN = **<IP_WAN_BOX>** (CGNAT proof) | §3 CGNAT |
-| screen_wg_ipv4.jpg | Règle WireGuard IPv4 → <IP_PC4>:51820, On | §4 WireGuard |
-| screen_wg_ipv6.jpg | Règle WireGuard-IPv6 → <IPV6_PC4>:51820, On | §7.8 cause racine n°2 |
+| screen_box_wan.jpg | Box GR140IG — IPv4 WAN = **[IP_WAN_BOX]** (CGNAT proof) | §3 CGNAT |
+| screen_wg_ipv4.jpg | Règle WireGuard IPv4 → [IP_PC4]:51820, On | §4 WireGuard |
+| screen_wg_ipv6.jpg | Règle WireGuard-IPv6 → [IPV6_PC4]:51820, On | §7.8 cause racine n°2 |
 | screen_duckdns.jpg | Dashboard DuckDNS — compte hprzeta@github, jeton, 14 juin | §5 DDNS |
 | screen_lan_devices.jpg | Équipements LAN : zeta-livermore8 + 2 MAC off | §2.2 architecture |
-| screen_zeta_backup.jpg | zeta-backup — IP <IP_PC3>, MAC <MAC>, LAN 2 | §2.2 |
-| screen_phonea.jpg | PhoneA — WiFi 5GHz, IP <IP_TEL>, IPv6 <IPV6_TEL> | §6 peer téléphone |
+| screen_zeta_backup.jpg | zeta-backup — IP [IP_PC3], MAC [MAC], LAN 2 | §2.2 |
+| screen_phonea.jpg | PhoneA — WiFi 5GHz, IP [IP_TEL], IPv6 [IPV6_TEL] | §6 peer téléphone |
 | screen_terminal.jpg | tmux zeta-lab : 3 panneaux (zeta-calc-second jaune, zeta-backup cyan, zeta-secure noir) | §2 cluster |
 
 > Si les screens ne sont pas encore dans ce dossier, crée le dossier et indique à l'utilisateur
@@ -403,16 +403,16 @@ find ~/projet_zeta/ -name "doc_zeta_secure*" 2>/dev/null
 ## 3. Le problème CGNAT et la stratégie IPv6
 
 ### 3.1 Qu'est-ce que le CGNAT ?
-[Explication pédagogique + screenshot box GR140IG montrant IP WAN <IP_WAN_BOX>]
+[Explication pédagogique + screenshot box GR140IG montrant IP WAN [IP_WAN_BOX]]
 - Les FAI mutualisent une IP publique entre plusieurs abonnés
 - La box voit une IP RFC1918 côté WAN → port forwarding IPv4 = impossible
-- Erreur classique : `curl -4 ifconfig.me` depuis l'intérieur retourne <IP_PUBLIQUE_IPV4>
+- Erreur classique : `curl -4 ifconfig.me` depuis l'intérieur retourne [IP_PUBLIQUE_IPV4]
   (l'IP vue par les services externes), mais ce n'est PAS l'IP WAN de la box
 
 ### 3.2 La solution : IPv6 natif
-- SFR alloue un préfixe /56 au LAN : <PREFIXE_IPV6>/56
+- SFR alloue un préfixe /56 au LAN : [PREFIXE_IPV6]/56
 - Chaque machine reçoit une adresse IPv6 globale directement routable
-- PC4 obtient <IPV6_PC4> (via SLAAC)
+- PC4 obtient [IPV6_PC4] (via SLAAC)
 - Problème SLAAC sous OpenBSD : pf bloquait les Router Advertisements → résolu
 
 ---
@@ -439,7 +439,7 @@ find ~/projet_zeta/ -name "doc_zeta_secure*" 2>/dev/null
 ### 5.1 Problème : SLAAC renouvelle l'IPv6 toutes les ~12 min
 ### 5.2 Solution : cron + API DuckDNS
 [SCREENSHOT dashboard DuckDNS]
-- Domaine : <DDNS_PC4>
+- Domaine : [DDNS_PC4]
 - Script duck.sh : extrait l'IPv6 stable de re0, met à jour A + AAAA
 - Cron */5 sur PC4
 
@@ -450,7 +450,7 @@ find ~/projet_zeta/ -name "doc_zeta_secure*" 2>/dev/null
 ### 6.1 Depuis le téléphone en 4G
 1. Ouvrir app WireGuard → activer tunnel `zeta-vpn`
 2. Vérifier : `rx` doit augmenter → handshake établi
-3. Dans Termux (ou app SSH) : `ssh riemann@<IP_PC1>`
+3. Dans Termux (ou app SSH) : `ssh riemann@[IP_PC1]`
 4. On est sur PC1 zeta-lab → accès complet au cluster
 
 ### 6.2 Supervision d'un run calcul
@@ -518,10 +518,10 @@ Réécrire complètement avec :
 
 | PC | Hostname | IP LAN | OS | Rôle | État |
 |---|---|---|---|---|---|
-| PC1 | zeta-lab | <IP_PC1> | Ubuntu Linux i7 | Orchestrateur + calcul | ✅ |
-| PC2 | zeta-calc-second | <IP_PC2> | Debian 6.1 amd64 | Calcul secondaire | ✅ |
-| PC3 | zeta-backup | <IP_PC3> | Ubuntu 18.04 LTS | Backup + log (pending) | ✅ |
-| PC4 | zeta-secure | <IP_PC4> | OpenBSD 7.9 i386 | Bastion VPN WireGuard | ✅ COMPLET |
+| PC1 | zeta-lab | [IP_PC1] | Ubuntu Linux i7 | Orchestrateur + calcul | ✅ |
+| PC2 | zeta-calc-second | [IP_PC2] | Debian 6.1 amd64 | Calcul secondaire | ✅ |
+| PC3 | zeta-backup | [IP_PC3] | Ubuntu 18.04 LTS | Backup + log (pending) | ✅ |
+| PC4 | zeta-secure | [IP_PC4] | OpenBSD 7.9 i386 | Bastion VPN WireGuard | ✅ COMPLET |
 
 ## État calcul zéros
 - 10 142 zéros calculés (T=9 998,85)
@@ -530,9 +530,9 @@ Réécrire complètement avec :
 - CSV de référence : `zeros_zeta_T10000_20260424_205325.csv` — NE PAS ÉCRASER
 
 ## WireGuard (PC4 zeta-secure)
-- UDP 51820, réseau VPN <RESEAU_WG>
-- Accès externe : IPv6 UNIQUEMENT (CGNAT confirmé, WAN box = <IP_WAN_BOX>)
-- DuckDNS AAAA : <DDNS_PC4>, cron */5 sur PC4
+- UDP 51820, réseau VPN [RESEAU_WG]
+- Accès externe : IPv6 UNIQUEMENT (CGNAT confirmé, WAN box = [IP_WAN_BOX])
+- DuckDNS AAAA : [DDNS_PC4], cron */5 sur PC4
 
 ## Tâches faites cette session (16/06)
 - [x] Architecture-Cluster-Zeta.md mis à jour wiki (hostnames + procédure cluster + couleurs tmux)
@@ -541,7 +541,7 @@ Réécrire complètement avec :
 - [x] PDF doc_zeta_secure_cluster_enrichi.pdf généré + Proton Drive
 
 ## Prochaines actions
-1. Tester ping/SSH depuis téléphone (Termux) → <IP_PC1> via WireGuard actif en 4G
+1. Tester ping/SSH depuis téléphone (Termux) → [IP_PC1] via WireGuard actif en 4G
 2. Vérifier rotation SLAAC PC4 : après ~12 min, AAAA DuckDNS se met à jour ?
 3. PC3 zeta-backup → setup rôle log-dns-moni (dnsmasq, rsyslog, chrony, glances)
 4. Reprendre calculs v9 T=100k → T=200k quand cluster stabilisé

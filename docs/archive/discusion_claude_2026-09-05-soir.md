@@ -27,7 +27,7 @@ avec diff montré avant chaque action, backup horodaté avant toute modification
 |---|---|
 | `ip -6 addr` / `ip -6 route` | Aucune IPv6 globale (uniquement `fe80::` lien-local sur `wlp2s0`), aucune route par défaut IPv6 |
 | `ping6 2001:4860:4860::8888` | "Réseau non accessible" |
-| `dig AAAA <DDNS_PC4>` | Résolution correcte, préfixe cohérent avec l'historique connu |
+| `dig AAAA [DDNS_PC4]` | Résolution correcte, préfixe cohérent avec l'historique connu |
 | `sudo wg show` | Interface `wg0` présente avec une IP mais sans handshake |
 | Journal `NetworkManager-dispatcher` | Cycles répétés de réparation automatique toutes les ~10 secondes |
 
@@ -66,7 +66,7 @@ Restauration complète effectuée et vérifiée :
 | `wg-quick@wg0.service` | `enabled` (confirmé par `systemctl is-enabled`) |
 | Dispatcher `99-wg-auto` | `rwxr-xr-x` (exécutable, confirmé) |
 
-**Test du tunnel depuis le portable, sur demande de hprzeta :** `ping <WG_PC4>`
+**Test du tunnel depuis le portable, sur demande de hprzeta :** `ping [WG_PC4]`
 → 100 % de perte. Un redémarrage complet du partage de connexion (déconnexion/
 reconnexion Wi-Fi confirmée dans les logs noyau, nouveau bail IPv4 obtenu) n'a
 rien changé — toujours aucune IPv6 globale ensuite. Effet de bord observé :
@@ -103,8 +103,8 @@ le passé — pas un réseau différent.
 
 **Message de hprzeta :** correction du diagnostic précédent — le blocage IPv6
 venait de **Proton VPN**, pas de l'opérateur mobile. Preuve donnée : coupure de
-Proton VPN → IPv6 globale revenue immédiatement (`<IPV6>`), `wg0` a
-handshaké, `ping <WG_PC4>` répond (58 ms, 0 % perte). L'accès distant
+Proton VPN → IPv6 globale revenue immédiatement (`[IPV6]`), `wg0` a
+handshaké, `ping [WG_PC4]` répond (58 ms, 0 % perte). L'accès distant
 fonctionne, Proton coupé.
 
 **Deux consignes données pour la suite :**
@@ -224,7 +224,7 @@ immédiatement après inspection) :
   déjà connue de PC1.
 - Sur demande explicite de hprzeta de vérifier si cette clé est encore active :
   la clé publique dérivée localement correspond exactement au peer téléphone
-  (`<WG_TEL>`) documenté dans le wiki. Vérification en direct sur PC4 (`doas
+  (`[WG_TEL]`) documenté dans le wiki. Vérification en direct sur PC4 (`doas
   wg show wg0`, lancé par hprzeta lui-même car nécessitant un mot de passe
   interactif) : **le peer est toujours configuré**, mais sans aucun handshake
   récent enregistré.
@@ -256,7 +256,7 @@ poussée sur `Riemann_Lab_C`.
 hors dépôt), cette archive.
 
 **Volontairement non touché** : `wg0.conf` (Endpoint DuckDNS + `AllowedIPs=
-<RESEAU_WG>`, état du 30/08), toutes les clés WireGuard, le token DuckDNS, le
+[RESEAU_WG]`, état du 30/08), toutes les clés WireGuard, le token DuckDNS, le
 peer téléphone sur PC4, les archives `.zip`/`.bak*` restantes,
 `scripts/zeta_monitor.py`/`zeta_tmux.sh` (modifications jump-host antérieures,
 non retouchées).
