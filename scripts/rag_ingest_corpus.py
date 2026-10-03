@@ -8,8 +8,22 @@ Sources ingérées (règle d'ingestion, cf. etat_rag_brainvault_20260704.md §3.
 
 Sortie : collection ChromaDB "riemann_lab_corpus" sur $VAULT_RAG/chromadb,
 cache d'index LlamaIndex sur $VAULT_RAG/llamaindex_cache, log sur $VAULT_RAG/agent_logs.
+
+Usage :
+  python scripts/rag_ingest_corpus.py            # 1re ingestion (collection vide)
+  python scripts/rag_ingest_corpus.py --reset    # supprime la collection puis ré-ingère
+
+Version 2 — 03/10/2026 :
+  - garde « SSD monté » (mountpoint), identique à rag_monitor.py / rag_query.py :
+    sans elle, un SSD non monté laissait écrire en silence sur le disque système ;
+  - refus d'ingérer dans une collection NON vide sans --reset : relancer le script
+    AJOUTAIT les chunks une 2e fois (838 → ~1676) ;
+  - option --reset (à utiliser après une copie de sécurité : zeta-rag, option 6).
 """
+import argparse
 import os
+import subprocess
+import sys
 from pathlib import Path
 from datetime import datetime
 
@@ -25,8 +39,14 @@ WIKI_DIR = PROJET / "Riemann_Lab.wiki"
 CODE_DIR = PROJET / "src" / "calculs" / "optimisation"
 PROMPTS_DIR = PROJET / "src" / "ia" / "prompts"
 
+COLLECTION_NOM = "riemann_lab_corpus"
 EXCLUDE_WIKI = {"Handoff.md"}
 CODE_EXTS = {".py", ".c", ".h"}
+
+
+def ssd_monte() -> bool:
+    """True si VAULT_RAG est un vrai point de montage (pas un dossier vide du disque système)."""
+    return subprocess.run(["mountpoint", "-q", str(VAULT_RAG)]).returncode == 0
 
 
 def load_wiki_docs():
@@ -73,6 +93,31 @@ def load_prompt_archives():
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Ingestion du corpus Riemann_Lab dans ChromaDB")
+    parser.add_argument("--reset", action="store_true",
+                        help="supprime la collection existante avant d'ingérer (évite les doublons)")
+    args = parser.parse_args()
+
+    # Garde OBLIGATOIRE : ne rien écrire si le SSD n'est pas monté (leçon du 05/07/2026).
+    if not ssd_monte():
+        print(f"❌ vault_rag NON MONTÉ ({VAULT_RAG}) — rien n'a été écrit. "
+              "Monter d'abord : zeta-rag (option 2) ou sudo mount /mnt/vault_rag.")
+        sys.exit(1)
+
+    chroma_client = chromadb.PersistentClient(path=str(VAULT_RAG / "chromadb"))
+    if args.reset:
+        try:
+            chroma_client.delete_collection(COLLECTION_NOM)
+            print(f"Collection '{COLLECTION_NOM}' supprimée (--reset).")
+        except Exception:
+            print(f"Collection '{COLLECTION_NOM}' absente : rien à supprimer.")
+    collection = chroma_client.get_or_create_collection(COLLECTION_NOM)
+    if collection.count() > 0:
+        print(f"❌ La collection '{COLLECTION_NOM}' contient déjà {collection.count()} chunks : "
+              "relancer sans --reset ajouterait des doublons. Relancer avec --reset "
+              "(après une copie de sécurité).")
+        sys.exit(1)
+
     wiki_docs = load_wiki_docs()
     code_docs = load_code_docs()
     archive_docs = load_prompt_archives()
@@ -86,8 +131,6 @@ def main():
     Settings.embed_model = HuggingFaceEmbedding(model_name="sentence-transformers/all-MiniLM-L6-v2")
     Settings.node_parser = SentenceSplitter(chunk_size=800, chunk_overlap=100)
 
-    chroma_client = chromadb.PersistentClient(path=str(VAULT_RAG / "chromadb"))
-    collection = chroma_client.get_or_create_collection("riemann_lab_corpus")
     vector_store = ChromaVectorStore(chroma_collection=collection)
     storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
@@ -110,7 +153,8 @@ def main():
         fh.write(f"Prompt archives (ARCHIVE): {len(archive_docs)}\n")
         fh.write(f"Total docs               : {len(all_docs)}\n")
         fh.write(f"Nombre de nodes (chunks) : {n_chunks}\n")
-        fh.write(f"Collection ChromaDB      : riemann_lab_corpus @ {VAULT_RAG / 'chromadb'}\n")
+        fh.write(f"Collection ChromaDB      : {COLLECTION_NOM} @ {VAULT_RAG / 'chromadb'}\n")
+        fh.write(f"Remise à zéro (--reset)  : {'oui' if args.reset else 'non'}\n")
         fh.write(f"Cache LlamaIndex         : {VAULT_RAG / 'llamaindex_cache'}\n")
 
     print(f"Nodes (chunks) indexés : {n_chunks}")
