@@ -19,7 +19,7 @@ Usage :
   python scripts/rag_query.py "..." --modele mathstral --log
 
 ⚠️  Leçon du crash du 06/07/2026 (voir Handoff.md) : mathstral (4,1 Go) charge
-    plusieurs couches en RAM système sur cette machine (8 Go). Fermer VS Code
+    plusieurs couches en RAM système sur cette machine (16 Go depuis le 25/07/2026). Fermer VS Code
     et Firefox avant un test, ou vérifier `free -h` — ce script avertit mais
     ne bloque pas.
 

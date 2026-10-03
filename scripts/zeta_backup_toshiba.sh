@@ -2,10 +2,16 @@
 # =============================================================================
 # zeta_backup_toshiba.sh — Clone incrémental PC1 -> Toshiba (version allégée)
 # Projet Zêta / Riemann Lab — riemann@zeta-lab
-# Version : 2.0 — 30/08/2026
-#   - Chemins corrigés : Toshiba-PC1-root/home/data (plus root-clone/…)
-#   - Montage automatique des 3 partitions (sdb2/sdb3/sdb4)
-#   - rsync incrémental (--delete) + correction fstab UUID sur le clone
+# Version : 2.2 — 26/09/2026
+#   - v2.0 : Chemins corrigés Toshiba-PC1-root/home/data, montage auto,
+#            rsync incrémental (--delete) + correction fstab UUID sur le clone
+#   - v2.1 : Exclusion permanente du travail SAP (Documents/SAP + SAP_import)
+#            du clone — validé par dry-run le 26/09/2026 (0 fichier SAP touché)
+#   - v2.2 : Dry-run automatique (root/home/data) avec résumé des suppressions
+#            AVANT toute confirmation — applique la leçon apprise du projet
+#            ("rsync --delete nécessite un dry-run avant, le clone peut
+#            contenir des fichiers plus récents que PC1") à chaque lancement,
+#            sans dépendre d'une vérification manuelle préalable.
 # Usage : sudo bash zeta_backup_toshiba.sh
 # =============================================================================
 
@@ -31,8 +37,15 @@ SRC_ROOT="/"
 SRC_HOME="/home"
 SRC_DATA="/mnt/data"
 
+# ─── Exclusions permanentes ────────────────────────────────────────────────────
+# Travail SAP (mission NTT DATA/North Atlantic) : jamais cloné sur le Toshiba.
+# Motif large 'SAP*' pour couvrir Documents/SAP/ ET l'ancien Documents/SAP_import/
+# (chemin relatif à la racine du transfert /home/ -> préfixe riemann/ obligatoire)
+EXCLUDE_SAP="riemann/Documents/SAP*/"
+
 DATE=$(date +%Y%m%d_%H%M%S)
 LOG="/home/riemann/zeta_clone_${DATE}.log"
+DRYRUN_DIR="/tmp/zeta_dryrun_${DATE}"
 
 # ─── Helpers ──────────────────────────────────────────────────────────────────
 banner(){ echo -e "\n${BLU}════════════════════════════════════════════════════════${NC}"; \
@@ -66,6 +79,31 @@ ensure_mounted(){
     fi
 }
 
+# ─── Dry-run + résumé automatique avant toute action réelle ──────────────────
+# $1=nom court (root/home/data) $2=src $3=dst $4...=options d'exclusion rsync
+dryrun_report(){
+    local name="$1" src="$2" dst="$3"; shift 3
+    local logf="$DRYRUN_DIR/dryrun_${name}.log"
+    mkdir -p "$DRYRUN_DIR"
+
+    info "Dry-run $name : $src → $dst ..."
+    rsync -aAXHx --delete --dry-run --itemize-changes "$@" "$src" "$dst" > "$logf" 2>&1
+
+    local total del
+    total=$(wc -l < "$logf")
+    del=$(grep -c '^\*deleting' "$logf")
+
+    echo "  ${name} : ${total} changement(s) prévu(s), dont ${del} suppression(s) côté clone"
+    if [[ "$del" -gt 0 ]]; then
+        echo "    Répartition des suppressions (top niveau) :"
+        grep '^\*deleting' "$logf" | awk '{print $2}' | cut -d/ -f1-2 | sort | uniq -c | sort -rn | head -8 \
+            | sed 's/^/      /'
+    fi
+    # Variables globales pour le total consolidé
+    DRYRUN_TOTAL=$(( DRYRUN_TOTAL + total ))
+    DRYRUN_DEL=$(( DRYRUN_DEL + del ))
+}
+
 # ─── Option 1 : Clone incrémental PC1 -> Toshiba ─────────────────────────────
 do_clone(){
     banner "CLONE INCRÉMENTAL PC1 → Toshiba"
@@ -76,17 +114,27 @@ do_clone(){
     done
     ok "Toshiba détecté (3 partitions présentes)"
 
-    echo
-    warn "Cette opération synchronise (avec SUPPRESSION des fichiers en trop côté clone) :"
-    echo "     $SRC_ROOT  → $MNT_ROOT"
-    echo "     $SRC_HOME  → $MNT_HOME"
-    echo "     $SRC_DATA  → $MNT_DATA"
-    confirm "Les fichiers du clone absents de PC1 seront EFFACÉS. Confirmer ?" || return 1
-
-    # Montage des 3 partitions
+    # Montage des 3 partitions (nécessaire aussi pour le dry-run)
     ensure_mounted "$LBL_ROOT" "$MNT_ROOT" || return 1
     ensure_mounted "$LBL_HOME" "$MNT_HOME" || return 1
     ensure_mounted "$LBL_DATA" "$MNT_DATA" || return 1
+
+    banner "Dry-run automatique (aucune modification à ce stade)"
+    DRYRUN_TOTAL=0; DRYRUN_DEL=0
+    dryrun_report "root" "$SRC_ROOT" "$MNT_ROOT/" --exclude='/lost+found' --exclude='/swapfile'
+    dryrun_report "home" "$SRC_HOME/" "$MNT_HOME/" --exclude='lost+found' --exclude="$EXCLUDE_SAP"
+    dryrun_report "data" "$SRC_DATA/" "$MNT_DATA/" --exclude='lost+found'
+
+    echo
+    echo "  TOTAL : ${DRYRUN_TOTAL} changement(s), dont ${DRYRUN_DEL} suppression(s) côté clone"
+    info "Détail complet dans : $DRYRUN_DIR/dryrun_{root,home,data}.log"
+
+    echo
+    warn "Cette opération synchronise (avec SUPPRESSION des fichiers en trop côté clone) :"
+    echo "     $SRC_ROOT  → $MNT_ROOT"
+    echo "     $SRC_HOME  → $MNT_HOME  (exclusion permanente : $EXCLUDE_SAP)"
+    echo "     $SRC_DATA  → $MNT_DATA"
+    confirm "Résumé ci-dessus vérifié. Lancer le VRAI clonage (suppressions incluses) ?" || return 1
 
     local RSO="-aAXHx --delete --info=progress2"
 
@@ -99,8 +147,8 @@ do_clone(){
     ok "Racine synchronisée"
 
     banner "2/3 — Home  /home  →  $LBL_HOME"
-    rsync $RSO --exclude='lost+found' "$SRC_HOME/" "$MNT_HOME/" 2>&1 | tee -a "$LOG"
-    ok "Home synchronisé"
+    rsync $RSO --exclude='lost+found' --exclude="$EXCLUDE_SAP" "$SRC_HOME/" "$MNT_HOME/" 2>&1 | tee -a "$LOG"
+    ok "Home synchronisé (SAP exclu)"
 
     banner "3/3 — Data  /mnt/data  →  $LBL_DATA"
     rsync $RSO --exclude='lost+found' "$SRC_DATA/" "$MNT_DATA/" 2>&1 | tee -a "$LOG"
@@ -123,12 +171,12 @@ fix_fstab(){
     # UUID source (Seagate PC1) et cible (Toshiba) lus dynamiquement
     local U_SRC_ROOT U_SRC_HOME U_SRC_DATA U_SRC_EFI
     local U_DST_ROOT U_DST_HOME U_DST_DATA U_DST_EFI
-    U_SRC_ROOT=$(blkid -L "Seagate-PC1-root"); U_DST_ROOT=$(blkid -o value -s UUID "$(dev_from_label "$LBL_ROOT")")
+    U_SRC_ROOT=$(blkid -o value -s UUID "$(dev_from_label 'Seagate-PC1-root')")
+    U_DST_ROOT=$(blkid -o value -s UUID "$(dev_from_label "$LBL_ROOT")")
     U_SRC_HOME=$(blkid -o value -s UUID "$(dev_from_label 'Seagate-PC1-home')")
     U_DST_HOME=$(blkid -o value -s UUID "$(dev_from_label "$LBL_HOME")")
     U_SRC_DATA=$(blkid -o value -s UUID "$(dev_from_label 'Seagate-PC1-data')")
     U_DST_DATA=$(blkid -o value -s UUID "$(dev_from_label "$LBL_DATA")")
-    U_SRC_ROOT=$(blkid -o value -s UUID "$(dev_from_label 'Seagate-PC1-root')")
     U_SRC_EFI=$(blkid -o value -s UUID "$(dev_from_label 'SG-PC1-EFI')")
     U_DST_EFI=$(blkid -o value -s UUID "$(dev_from_label "$LBL_EFI")")
 
@@ -139,7 +187,12 @@ fix_fstab(){
     [[ -n "$U_SRC_ROOT" && -n "$U_DST_ROOT" ]] && sed -i "s/$U_SRC_ROOT/$U_DST_ROOT/g" "$tmp"
     [[ -n "$U_SRC_HOME" && -n "$U_DST_HOME" ]] && sed -i "s/$U_SRC_HOME/$U_DST_HOME/g" "$tmp"
     [[ -n "$U_SRC_DATA" && -n "$U_DST_DATA" ]] && sed -i "s/$U_SRC_DATA/$U_DST_DATA/g" "$tmp"
-    [[ -n "$U_SRC_EFI"  && -n "$U_DST_EFI"  ]] && sed -i "s/$U_SRC_EFI/$U_DST_EFI/g"  "$tmp"
+    if [[ -n "$U_SRC_EFI" && -n "$U_DST_EFI" ]]; then
+        sed -i "s/$U_SRC_EFI/$U_DST_EFI/g" "$tmp"
+    else
+        warn "UUID EFI source/cible introuvable (label 'SG-PC1-EFI' absent ?) — /boot/efi du fstab clone NON corrigé"
+        warn "Vérifie manuellement /boot/efi dans $fstab avant de tester le boot."
+    fi
 
     cp "$tmp" "$fstab"
     ok "fstab corrigé (sauvegarde : $fstab.bak-$DATE)"
@@ -187,8 +240,8 @@ do_umount(){
 
 # ─── Menu ─────────────────────────────────────────────────────────────────────
 main_menu(){
-    banner "ZÊTA — Clone PC1 → Toshiba (allégé)  v2.0"
-    echo "  1) Clone incrémental PC1 → Toshiba  (/ , /home , /mnt/data)"
+    banner "ZÊTA — Clone PC1 → Toshiba (allégé)  v2.2"
+    echo "  1) Clone incrémental PC1 → Toshiba  (dry-run auto + / , /home [SAP exclu] , /mnt/data)"
     echo "  2) Contrôle SMART Toshiba"
     echo "  3) Vérifier le montage"
     echo "  4) État des sauvegardes (espace)"
