@@ -22,7 +22,7 @@
 > 3. Ajoute la 2e cause (net.inet.ip.forwarding=0 sur PC4), absente de la
 >    version de juillet.
 > 4. Supprime ou corrige toute mention d'un accès par IPv4
->    (192.168.1.54:51820, redirection de port IPv4) : le WAN de la box est
+>    (<IP_PC4>:51820, redirection de port IPv4) : le WAN de la box est
 >    IPv6 seul, ce chemin est inopérant par conception.
 > 5. Ajoute la section « faux positifs connus » (§3.2 du rapport) : nc -u,
 >    ping6, nm-dispatcher.

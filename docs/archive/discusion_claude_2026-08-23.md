@@ -88,8 +88,8 @@ production (`zeta-secure`/PC4, DDNS DuckDNS) :
 ### Travail réalisé
 
 - Trio de clés WireGuard généré pour le téléphone (privée, publique,
-  pré-partagée), IP tunnel attribuée : `10.10.0.4` (après vérification des
-  IP déjà prises : PC4=`10.10.0.1`, PC1=`10.10.0.2`, peer existant=`10.10.0.3`).
+  pré-partagée), IP tunnel attribuée : `<WG_PEER4>` (après vérification des
+  IP déjà prises : PC4=`<WG_PC4>`, PC1=`<WG_PC1>`, peer existant=`<WG_TEL>`).
 - Peer ajouté côté PC4 par hprzeta (deux commandes `doas` fournies
   séparément, exécutées avec succès — confirmé par un 3ᵉ peer visible dans
   `wg show wg0`).
@@ -102,7 +102,7 @@ production (`zeta-secure`/PC4, DDNS DuckDNS) :
 `scripts/wg_auto.sh` coupait `wg0` sur PC1 dès la détection du réseau
 domestique (optimisation d'origine, latence LAN). Incompatible avec le
 nouveau besoin : si PC1 est chez hprzeta et le téléphone ailleurs, l'IP
-tunnel `10.10.0.2` disparaissait, rendant le suivi impossible dans le
+tunnel `<WG_PC1>` disparaissait, rendant le suivi impossible dans le
 scénario même qu'il doit couvrir.
 
 **Décision de hprzeta : garder `wg0` actif en permanence**, maison comprise
@@ -138,7 +138,7 @@ Le trafic du téléphone n'atteint jamais PC1. Cause la plus probable
 identifiée : le relais peer-à-peer entre deux clients WireGuard via le
 bastion PC4 (téléphone -> PC4 -> PC1) est un chemin **jamais exercé
 auparavant** dans cette architecture — jusqu'ici PC4 ne relayait que vers le
-réseau local physique (`192.168.1.0/24`), jamais entre deux peers VPN.
+réseau local physique (`<LAN>`), jamais entre deux peers VPN.
 Hypothèse non vérifiée au moment de l'arrêt de session : filtrage ou
 non-relais côté `pf`/routage sur PC4 pour ce chemin spécifique.
 
@@ -157,7 +157,7 @@ non-relais côté `pf`/routage sur PC4 pour ce chemin spécifique.
 - `scripts/wg_auto.sh` modifié localement (wg0 toujours actif) mais **non
   commité** — décision de hprzeta d'attendre la validation complète avant
   tout commit.
-- Peer WireGuard téléphone (`10.10.0.4`) actif côté PC4, à conserver ou à
+- Peer WireGuard téléphone (`<WG_PEER4>`) actif côté PC4, à conserver ou à
   retirer selon la décision de désinstallation.
 - Conteneur Traccar (`~/traccar/`) et paquets Docker installés sur PC1 —
   désinstallation demandée « demain », non réalisée pendant cette session.
