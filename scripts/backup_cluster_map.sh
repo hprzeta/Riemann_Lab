@@ -25,7 +25,7 @@ cat << 'SVGEOF'
 <rect x="30" y="68" width="250" height="240" rx="12" fill="#e1f5ee" stroke="#0f6e56" stroke-width="1.5"/>
 <text x="155" y="90" text-anchor="middle" font-size="15" font-weight="700" fill="#085041">zeta-icor7</text>
 <text x="155" y="108" text-anchor="middle" font-size="11" fill="#0f6e56">riemann@zeta-icor7</text>
-<text x="155" y="124" text-anchor="middle" font-size="13" font-weight="700" fill="#085041">192.168.1.24</text>
+<text x="155" y="124" text-anchor="middle" font-size="13" font-weight="700" fill="#085041">PC1</text>
 <text x="155" y="140" text-anchor="middle" font-size="10" fill="#1d9e75">wifi · wlp2s0</text>
 
 <rect x="44" y="150" width="222" height="16" rx="3" fill="#c5eedd" stroke="#1d9e75" stroke-width="0.7"/>
@@ -42,14 +42,14 @@ cat << 'SVGEOF'
 <rect x="44" y="248" width="222" height="50" rx="6" fill="#fff3d4" stroke="#ba7517" stroke-width="0.8"/>
 <text x="54" y="261" font-size="10" font-weight="700" fill="#633806">CRON  01h50 * * *</text>
 <text x="54" y="274" font-size="9" fill="#412402">rsync -aq -e 'ssh -i ~/.ssh/id_acer'</text>
-<text x="54" y="286" font-size="9" fill="#412402">  logs/ wiki/ pdf/ → 192.168.1.22:~/backup/</text>
+<text x="54" y="286" font-size="9" fill="#412402">  logs/ wiki/ pdf/ → PC3:~/backup/</text>
 <text x="54" y="298" font-size="9" fill="#412402">  >> ~/backup/rsync.log 2>&amp;1</text>
 
 <!-- ── ACER ── -->
 <rect x="490" y="68" width="250" height="240" rx="12" fill="#eeedfe" stroke="#534ab7" stroke-width="1.5"/>
 <text x="615" y="90" text-anchor="middle" font-size="15" font-weight="700" fill="#3c3489">zeta-livermore8</text>
 <text x="615" y="108" text-anchor="middle" font-size="11" fill="#534ab7">pjexosql@zeta-livermore8</text>
-<text x="615" y="124" text-anchor="middle" font-size="13" font-weight="700" fill="#3c3489">192.168.1.22</text>
+<text x="615" y="124" text-anchor="middle" font-size="13" font-weight="700" fill="#3c3489">PC3</text>
 <text x="615" y="140" text-anchor="middle" font-size="10" fill="#7f77dd">ethernet · 100 Mbit/s</text>
 
 <rect x="504" y="150" width="222" height="16" rx="3" fill="#d9d7fc" stroke="#7f77dd" stroke-width="0.7"/>
@@ -73,7 +73,7 @@ cat << 'SVGEOF'
 <rect x="30" y="330" width="250" height="130" rx="12" fill="#f1efe8" stroke="#5f5e5a" stroke-width="1.2"/>
 <text x="155" y="352" text-anchor="middle" font-size="15" font-weight="700" fill="#2c2c2a">zeta-hp3647h</text>
 <text x="155" y="368" text-anchor="middle" font-size="11" fill="#5f5e5a">emmabuntus@zeta-hp3647h</text>
-<text x="155" y="384" text-anchor="middle" font-size="13" font-weight="700" fill="#2c2c2a">192.168.1.52</text>
+<text x="155" y="384" text-anchor="middle" font-size="13" font-weight="700" fill="#2c2c2a">PC2</text>
 <text x="155" y="400" text-anchor="middle" font-size="10" fill="#888780">ethernet 1 Gbit/s · carte mere HP 3647h</text>
 <rect x="44" y="408" width="222" height="16" rx="3" fill="#e5e3db" stroke="#b4b2a9" stroke-width="0.7"/>
 <text x="54" y="420" font-size="9" fill="#2c2c2a">Noeud secondaire · scripts · config · stockage</text>
@@ -159,9 +159,9 @@ cat << 'SVGEOF'
 <text x="160" y="106" text-anchor="middle" font-size="10" fill="#0f6e56">riemann@zeta-icor7</text>
 <text x="448" y="106" text-anchor="middle" font-size="10" fill="#5f5e5a">emmabuntus@zeta-hp3647h</text>
 <text x="738" y="106" text-anchor="middle" font-size="10" fill="#534ab7">pjexosql@zeta-livermore8</text>
-<text x="160" y="120" text-anchor="middle" font-size="11" font-weight="700" fill="#1a1a1a">192.168.1.24</text>
-<text x="448" y="120" text-anchor="middle" font-size="11" font-weight="700" fill="#1a1a1a">192.168.1.52</text>
-<text x="738" y="120" text-anchor="middle" font-size="11" font-weight="700" fill="#1a1a1a">192.168.1.22</text>
+<text x="160" y="120" text-anchor="middle" font-size="11" font-weight="700" fill="#1a1a1a">PC1</text>
+<text x="448" y="120" text-anchor="middle" font-size="11" font-weight="700" fill="#1a1a1a">PC2</text>
+<text x="738" y="120" text-anchor="middle" font-size="11" font-weight="700" fill="#1a1a1a">PC3</text>
 
 <line x1="10" y1="130" x2="890" y2="130" stroke="#e0e0e0" stroke-width="1"/>
 
