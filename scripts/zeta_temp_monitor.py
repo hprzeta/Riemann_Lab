@@ -1,7 +1,7 @@
 """
 zeta_temp_monitor.py
 =====================
-Dashboard temps réel de la température CPU du cluster Zeta (PC1-PC4).
+Dashboard temps réel de la température CPU du cluster Zeta (PC1-PC5).
 
 Modernisation de docs/archive/python_obsoletes/cpu_temp_monitor.py (mono-PC1,
 archivé le 29/05/2026 dans un nettoyage groupé, jamais cassé ni remplacé) :
@@ -50,6 +50,7 @@ MACHINES = [
     ("PC2 zeta-calc-second", "zeta-calc-second", "linux"),
     ("PC3 zeta-backup",      "zeta-backup",      "linux"),
     ("PC4 zeta-secure",      "zeta-secure",      "openbsd"),
+    ("PC5 zeta-monitor",     "zeta-monitor",     "linux"),
 ]
 
 COLORS = {
@@ -57,11 +58,14 @@ COLORS = {
     "PC2 zeta-calc-second": "#39ff14",
     "PC3 zeta-backup":      "#ff6b35",
     "PC4 zeta-secure":      "#c77dff",
+    "PC5 zeta-monitor":     "#ffd60a",
 }
 
 BG, PANEL, TEXT, GRID, DANGER = "#0a0e1a", "#111827", "#e2e8f0", "#1e293b", "#ff2d55"
 
-RE_TEMP_LINUX   = re.compile(r"[+-]?(\d+\.\d+)\s*°C")
+# Premiere valeur de chaque ligne = la mesure ; les seuils entre parentheses
+# (high, crit, hyst) sont ignores. Corrige la moyenne faussee du 2026-10-03.
+RE_TEMP_LINUX   = re.compile(r"^[ \t]*[^\n:]+:[ \t]+\+?(-?\d+(?:\.\d+)?)[ \t]*°C", re.MULTILINE)
 RE_TEMP_OPENBSD = re.compile(r"cpu\d*\.temp\d*=(\d+\.\d+)\s*degC", re.IGNORECASE)
 
 
@@ -173,7 +177,7 @@ for ax in (ax_temp, ax_status):
     for spine in ax.spines.values():
         spine.set_edgecolor(GRID)
 
-fig.text(0.5, 0.95, "⚛  Cluster Zeta — Températures CPU (PC1-PC4)",
+fig.text(0.5, 0.95, "⚛  Cluster Zeta — Températures CPU (PC1-PC5)",
           ha="center", fontsize=13, fontweight="bold", color="#00d4ff",
           fontfamily="monospace")
 
