@@ -94,7 +94,7 @@ Une sauvegarde complète de l'ancien historique a été créée avant toute ré�
 
 **Dépôt local :** resynchronisé sans toucher à l'arbre de travail (les suppressions et fichiers non suivis de hprzeta sont intacts).
 
-## 4. Ce qui reste à faire (demain)
+## 4. Ce qui restait à faire à la fin de la partie A
 
 | Point | Détail |
 |---|---|
@@ -107,7 +107,62 @@ Une sauvegarde complète de l'ancien historique a été créée avant toute ré�
 | Sauvegarde de l'ancien historique | à supprimer quand tout est validé |
 | Limite du caviardage | seul le texte des PDF est caviardé ; une capture d'écran avec une adresse dans une image ne serait pas détectée |
 
-> on fait le reste demain byby
 
 ---
-*Archive de session — hprzeta — 2026-10-04*
+
+# Partie B — suite de la session (04/10 après-midi → 05/10)
+
+> La session s'est prolongée jusqu'au 05/10 vers 01h30. Cette partie complète la partie A (même journée de travail : un seul fichier d'archive).
+
+## 5. Purge du wiki public
+
+Le wiki (dépôt séparé) a subi le même traitement que le dépôt de code : 465 commits réécrits, branche principale poussée de force après vérification de l'état distant. Deux sauvegardes de l'ancien historique ont été conservées en local (elles contiennent encore les anciennes valeurs). Les adresses ont été remplacées par des marqueurs spécifiques entre crochets. Trois captures d'écran (ollama) n'ont pas pu être analysées automatiquement et restent à vérifier à la main.
+
+## 6. RAG : réingestion, correctif CUDA et test anti-hallucination
+
+- **Réingestion :** le corpus compte désormais 1258 passages. Un premier essai avait échoué (carte graphique trop ancienne pour la version de torch) et laissé la collection vide ; les plongements sont maintenant **forcés sur le processeur** dans le script d'ingestion et dans le moniteur.
+- **Fenêtre de contexte :** ollama travaille avec 4096 jetons par défaut. Avec 8 passages, le prompt (environ 7400 jetons) était tronqué et le début des instructions perdu. Le script de requête prend maintenant **4 passages par défaut**, estime la taille du prompt et avertit en cas de dépassement.
+- **Citation recopiée :** le modèle recopiait mot pour mot l'exemple du prompt. L'exemple est devenu un modèle de forme explicitement non recopiable. Les refus de type « pas trouvé dans le contexte » sont reconnus et ne déclenchent plus de fausse alerte.
+- **Test sur 3 essais :** résultat amélioré, mais un essai sur trois recopie encore un passage hors sujet ; la garde actuelle ne détecte pas cette incohérence. Limite connue, notée dans la compétence du pont d'agent.
+
+## 7. Documentation et sauvegardes
+
+- **Guide des scripts :** mis à jour (819 lignes) et mis en PDF par un nouveau générateur ReportLab ; l'ancien PDF est resté intact.
+- **Cartes du cluster :** trois cartes SVG intégrées dans un PDF privé de 11 pages, rangé hors git.
+- **Sauvegarde des secrets :** rotation ajoutée (2 archives gardées sur Proton) et document de méthode en Markdown et PDF. Rappel : le jeu 6 démarre déjà en envoi réel, la touche d bascule vers la simulation (une erreur d'instruction a été corrigée dans tous les documents).
+- **Bonnes pratiques Claude Code :** nouvelle section ajoutée au wiki.
+- **Carte CLAUDE.md et compétences :** PDF rangé dans le dossier des audits de compétences, version Markdown en local.
+
+## 8. Audits en lecture seule
+
+Plusieurs audits de l'historique (références, secrets, adresses électroniques, motifs d'adresses) ont confirmé qu'il ne reste aucun identifiant dans le code (725 commits) ni dans le wiki (465 commits), à l'exception d'un résidu connu (un nom de domaine interne dans la branche inbox-ia, décision : pas de nouvelle purge). Un bundle post-purge vérifié a été copié sur le disque Toshiba.
+
+## 9. Mise à jour des fichiers de règles
+
+- **CLAUDE.md racine :** matériel corrigé (i7-7500U, 2 cœurs / 4 threads, 16 Go), nouvelle section de règles propres au projet (audit, sauvegardes, mesures).
+- **CLAUDE.md global :** règles de collaboration valables partout (jamais de push forcé, valeurs secrètes masquées, copie .bak avant modification).
+- **Compétences :** riemann-agent-bridge (k=4, garde de citation, limites) et riemann-security-review (section sur ce que GitHub conserve après un filter-repo, exception pour le push forcé avec garde de version).
+- **STACK et Handoff public :** STACK complété (disque de clone, RAG) ; Handoff public avec un résumé sans détail d'infrastructure.
+
+## 10. Livraison git
+
+Tout a été poussé : dépôt de code (branche Riemann_Lab_IA, plus portage sur Riemann_Lab_C pour les correctifs concernés) et wiki. Dernier commit de code : fcbafd1. Aucun commit ni push n'a été fait sans « go » explicite.
+
+## 11. Ce qui reste à faire
+
+| Point | Détail |
+|---|---|
+| Support GitHub | demande à envoyer par hprzeta : PR 6 et anciens sommets du wiki encore référencés |
+| Branche Riemann_Lab_C | rattraper les commits manquants et les vagues V1 à V3 des compétences, puis y porter agent-bridge et security-review |
+| Branche main | en retard sur presque tout ce qui est récent |
+| Fichiers non suivis | auditer les 22 fichiers non suivis et 3 suppressions avant tout commit |
+| Tests réels | commande de bascule WireGuard ; jeu 6 (phrase saisie par hprzeta, sans la touche d) puis test de restauration |
+| Sauvegarde PC3 | lire le journal rclone de la nuit du 03 au 04 ; supprimer le fichier témoin de pipeline sur PC1, PC3 et Proton |
+| Angle mort | zeta-backup-status et zeta-proton ne voient pas tout ; à corriger |
+| Jeton DDNS | rotation reportée (à rouvrir si le jeton a été vu en clair) |
+| Nettoyage | 4 bundles (dont la copie Toshiba), copies du vault dans exports, fichiers .bak et dossier de sauvegarde du 05/10 |
+| Divergence matériel | PC2 et PC3 : STACK et inventaire du 03/10 ne concordent pas |
+| Thermique | pic de 94 °C rapporté (non revérifié) ; relevé vérifié à 59 °C |
+
+---
+*Archive de session — hprzeta — 2026-10-04 / 05*
