@@ -59,8 +59,9 @@ chacun précédé de son fichier source entre crochets, ex. [fichier.md]).
 
 Règle stricte de citation : pour CHAQUE fait, chiffre ou valeur exacte que tu \
 donnes, recopie-le TEL QUEL depuis l'extrait source et fais suivre immédiatement \
-d'une citation entre crochets avec le nom du fichier exact, ex. « 4 cœurs \
-[Architecture-Cluster-Zeta.md] ». N'arrondis pas, ne reformule pas, ne déduis pas \
+d'une citation entre crochets avec le nom du fichier exact, au format \
+« <valeur recopiée> [<nom-du-fichier>.md] » (ceci est un modèle de FORME : ne le recopie \
+jamais tel quel). N'arrondis pas, ne reformule pas, ne déduis pas \
 une valeur par analogie avec une autre. Si une information demandée n'apparaît \
 mot pour mot dans AUCUN extrait ci-dessous, écris « non trouvé dans le contexte » \
 pour cette information précise plutôt que de l'inventer ou de l'estimer.
@@ -145,7 +146,7 @@ def k_conseille(question: str, chunks: list) -> int:
     return max(1, int((NUM_CTX_OLLAMA - fixe) / max(par_chunk, 1)))
 
 
-REFUS_RE = re.compile(r"non\s+trouv[ée]e?s?\s+dans\s+le\s+contexte", re.IGNORECASE)
+REFUS_RE = re.compile(r"(?:non|pas)\s+trouv[ée]e?s?\s+dans\s+le\s+contexte", re.IGNORECASE)   # « non trouvé » ou « pas trouvé » (variantes vues le 04/10)
 
 
 def est_un_refus(texte_reponse: str) -> bool:
