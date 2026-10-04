@@ -16,12 +16,15 @@
 #
 #   5) calculs legers -> calculs_legers/ (fichiers < 200 Ko : logs, PNG, petits CSV)
 #   7) config locale  -> config_locale/ (~/.config/zeta : adresses du cluster, hors git)
-#   6) secrets        -> secrets_chiffres/ (archive gpg SYMETRIQUE, phrase de passe
-#                        saisie au clavier ; jamais en clair ; MANUEL uniquement)
+#   8) ignores git    -> ignores_git/ (fichiers ignores par .gitignore / info/exclude, NON secrets :
+#                        pdf/script, docs/diagnostics, *.bak-*, claude-traitement-journalier...)
+#   6) secrets        -> secrets_chiffres/ (archive gpg SYMETRIQUE : secrets_local + secrets du
+#                        projet ignores par git (.mcp.json, captures WireGuard, archive box...) ;
+#                        phrase de passe saisie au clavier ; jamais en clair ; MANUEL uniquement)
 #
 # Usage : zeta-backup-horsgit            (menu)
 #         zeta_backup_horsgit.sh --dry   (force la simulation)
-#         zeta_backup_horsgit.sh --auto  (sans menu : jeux 1 a 5 et 7, SANS secrets ; cron)
+#         zeta_backup_horsgit.sh --auto  (sans menu : jeux 1 a 5, 7 et 8, SANS secrets ; cron)
 #
 # Auteur : hprzeta · MAJ : 2026-10-03
 #===============================================================================
@@ -72,6 +75,23 @@ j_ns(){
   copie "non suivis git" "$PROJ" "$REMOTE/non_suivis" --files-from "$TMP/ns.txt"
 }
 
+# Liste des fichiers ignores par git (gitignore + info/exclude), hors elements deja couverts
+# ailleurs ou reconstructibles : zeta_env, calculs/ (jeu 5), wiki (depot a part), logs/ (cron 01h50
+# vers PC3 puis Proton), md/ (jeu 1), caches Python.
+liste_ignores(){
+  ( cd "$PROJ" && git ls-files --others --ignored --exclude-standard ) \
+    | grep -vE '^(zeta_env|calculs|Riemann_Lab\.wiki|logs|md)/|^src/calculs/optimisation/calculs/|__pycache__|\.pyc$|^\.claude/scheduled_tasks'
+}
+# Motif des fichiers SECRETS parmi les ignores (ceux-la partent seulement chiffres, jeu 6)
+SECRET_RX='(^|/)(\.mcp\.json|\.env[^/]*)$|wireguard_screenshots/|BOX-SFR|-backup\.tgz$|materielunixlitepc2|pcemmaus|secret|token|\.(key|pem)$'
+
+# 8) fichiers ignores par git, NON secrets
+j_ign(){
+  liste_ignores | grep -vE "$SECRET_RX" > "$TMP/ign.txt"
+  echo "   ($(wc -l < "$TMP/ign.txt") fichiers ignores non secrets retenus)"
+  copie "ignores par git (non secrets)" "$PROJ" "$REMOTE/ignores_git" --files-from "$TMP/ign.txt"
+}
+
 # 5) calculs legers : fichiers < 200 Ko des deux dossiers calculs/
 j_calc(){
   ( cd "$PROJ" && find calculs src/calculs/optimisation/calculs -type f -size -200k ) > "$TMP/calc.txt"
@@ -86,9 +106,11 @@ j_cfg(){ copie "config locale (~/.config/zeta)" "$HOME/.config/zeta" "$REMOTE/co
 j_sec(){
   local src="$HANDOFF/secrets_local" arc="$TMP/secrets_$(date +%Y%m%d).tar.gz.gpg"
   [ -d "$src" ] || { echo "   [!] absent : $src"; return 1; }
+  liste_ignores | grep -E "$SECRET_RX" > "$TMP/sec.txt"             # secrets du projet ignores par git
+  echo "   (secrets_local + $(wc -l < "$TMP/sec.txt") fichiers secrets du projet)"
   [ -n "$DRY" ] && { echo "   [simulation] archive non creee"; return 0; }
   echo "   Phrase de passe a saisir (2 fois) :"
-  tar -C "$HANDOFF" -czf - secrets_local | gpg --symmetric --cipher-algo AES256 -o "$arc" \
+  tar -czf - -C "$HANDOFF" secrets_local -C "$PROJ" -T "$TMP/sec.txt" | gpg --symmetric --cipher-algo AES256 -o "$arc" \
     || { echo "   [X] chiffrement echoue, rien envoye"; return 1; }
   copie "secrets chiffres" "$arc" "$REMOTE/secrets_chiffres"
   rm -f "$arc"                                       # aucune copie locale residuelle
@@ -112,7 +134,8 @@ menu(){
   echo " 5) calculs legers (< 200 Ko)"
   echo " 6) secrets (chiffres gpg, phrase demandee)"
   echo " 7) config locale (~/.config/zeta)"
-  echo " a) TOUT sauf secrets (1 a 5 et 7)"
+  echo " 8) fichiers ignores par git (non secrets)"
+  echo " a) TOUT sauf secrets (1 a 5, 7 et 8)"
   echo " d) basculer simulation / envoi reel"
   echo " q) quitter"
   printf " Choix : "
@@ -121,7 +144,7 @@ menu(){
 verif
 if [ "$AUTO" -eq 1 ]; then                           # mode cron : pas de menu
   echo "=== $(date -Iseconds) START horsgit ==="
-  j_md; j_mem; j_suivi; j_ns; j_calc; j_cfg
+  j_md; j_mem; j_suivi; j_ns; j_calc; j_cfg; j_ign
   echo "=== $(date -Iseconds) END horsgit ==="
   exit 0
 fi
@@ -135,7 +158,8 @@ while true; do
     5) j_calc ;;
     6) j_sec ;;
     7) j_cfg ;;
-    a|A) j_md; j_mem; j_suivi; j_ns; j_calc; j_cfg ;;
+    8) j_ign ;;
+    a|A) j_md; j_mem; j_suivi; j_ns; j_calc; j_cfg; j_ign ;;
     d) [ -n "$DRY" ] && DRY="" || DRY="--dry-run" ;;
     q|Q) break ;;
     *) echo "choix invalide" ;;
