@@ -20,7 +20,8 @@
 #                        pdf/script, docs/diagnostics, *.bak-*, claude-traitement-journalier...)
 #   6) secrets        -> secrets_chiffres/ (archive gpg SYMETRIQUE : secrets_local + secrets du
 #                        projet ignores par git (.mcp.json, captures WireGuard, archive box...) ;
-#                        phrase de passe saisie au clavier ; jamais en clair ; MANUEL uniquement)
+#                        phrase de passe saisie au clavier ; jamais en clair ; MANUEL uniquement ;
+#                        rotation : seules les 2 archives les plus recentes sont gardees sur Proton)
 #
 # Usage : zeta-backup-horsgit            (menu)
 #         zeta_backup_horsgit.sh --dry   (force la simulation)
@@ -102,6 +103,27 @@ j_calc(){
 # 7) config locale : ~/.config/zeta (cluster_hosts.env, hors git, droits 600 conserves)
 j_cfg(){ copie "config locale (~/.config/zeta)" "$HOME/.config/zeta" "$REMOTE/config_locale"; }
 
+# Rotation des archives de secrets sur Proton : garde les KEEP_SECRETS plus recentes.
+# Garde-fous : ne touche QUE secrets_AAAAMMJJ.tar.gz.gpg dans secrets_chiffres/ ; ne s'execute
+# que si le nouvel envoi est confirme present sur Proton ; supprime les plus anciennes seulement.
+KEEP_SECRETS=2
+rotation_secrets(){ # $1 = nom de l'archive qui vient d'etre envoyee
+  local dir="$REMOTE/secrets_chiffres" nouveau="$1" liste n f
+  liste="$(rclone lsf "$dir" --files-only 2>/dev/null | grep -E '^secrets_[0-9]{8}\.tar\.gz\.gpg$' | sort)"
+  if ! printf '%s\n' "$liste" | grep -qx "$nouveau"; then   # le nouvel envoi doit etre visible
+    echo "   [!] rotation sautee : $nouveau introuvable sur Proton"; return 1
+  fi
+  n=$(printf '%s\n' "$liste" | grep -c .)                    # nombre d'archives presentes
+  if [ "$n" -le "$KEEP_SECRETS" ]; then
+    echo "   rotation : $n archive(s) sur Proton, rien a supprimer (on garde les $KEEP_SECRETS plus recentes)"; return 0
+  fi
+  for f in $(printf '%s\n' "$liste" | head -n $((n - KEEP_SECRETS))); do   # les plus anciennes d'abord
+    if [ -n "$DRY" ]; then echo "   [simulation] supprimerait : $f"
+    elif rclone deletefile "$dir/$f"; then echo "   rotation : ancienne archive supprimee : $f"
+    else echo "   [!] suppression impossible : $f"; fi
+  done
+}
+
 # 6) secrets : archive tar.gz chiffree gpg symetrique (phrase saisie, jamais stockee)
 j_sec(){
   local src="$HANDOFF/secrets_local" arc="$TMP/secrets_$(date +%Y%m%d).tar.gz.gpg"
@@ -112,8 +134,10 @@ j_sec(){
   echo "   Phrase de passe a saisir (2 fois) :"
   tar -czf - -C "$HANDOFF" secrets_local -C "$PROJ" -T "$TMP/sec.txt" | gpg --symmetric --cipher-algo AES256 -o "$arc" \
     || { echo "   [X] chiffrement echoue, rien envoye"; return 1; }
-  copie "secrets chiffres" "$arc" "$REMOTE/secrets_chiffres"
+  local nom_arc rc; nom_arc="$(basename "$arc")"
+  copie "secrets chiffres" "$arc" "$REMOTE/secrets_chiffres"; rc=$?
   rm -f "$arc"                                       # aucune copie locale residuelle
+  if [ "$rc" -eq 0 ]; then rotation_secrets "$nom_arc"; else echo "   [!] envoi en erreur : rotation sautee, anciennes archives conservees"; fi
 }
 
 # Controle prealable : remote Proton joignable
