@@ -21,7 +21,7 @@ Skill de revue de sécurité spécialisé pour `Riemann_Lab`. Il encode les **in
 du projet (token dans `.mcp.json`, `.gitignore` désynchronisé entre branches) pour qu'ils ne
 se reproduisent pas. À passer **avant tout push** touchant la config ou des fichiers sensibles.
 
-> Auteur : hprzeta · Mise à jour : 27 septembre 2026 (ajout de la section MCP, voir §8)
+> Auteur : hprzeta · Mise à jour : 5 octobre 2026 (ajout de la section MCP, voir §8, et du §10)
 
 ---
 
@@ -156,7 +156,7 @@ vigilance spécifiques, à recouper avec la Règle d'or (§1) :
 
 ## 10. Après un `git filter-repo` : ce qui reste chez GitHub
 
-`git filter-repo` suivi de `git push --force` réécrit les branches, mais **`refs/pull/N/head` ne se réécrit pas** côté utilisateur et les anciens SHA restent atteignables (caches, forks) : **seul le support GitHub** peut les effacer (portail du support, avec le nom du dépôt, le nombre de PR concernées et les premiers commits modifiés). Avant toute purge : bundle de sauvegarde (`git bundle create <fichier> --all`, puis `git bundle verify`) copié sur **un autre disque**. **Seule exception à la règle « jamais `--force` » : une purge d'historique décidée explicitement, après bundle de sauvegarde et contrôle de l'état distant, avec `--force-with-lease`.** Pour l'audit avant push, voir §2.
+`git filter-repo` suivi de `git push --force` réécrit les branches, mais **`refs/pull/N/head` ne se réécrit pas** côté utilisateur et les anciens SHA restent atteignables (caches, forks) : **seul le support GitHub** peut les effacer (portail du support, avec le nom du dépôt, le nombre de PR concernées et les premiers commits modifiés). Avant toute purge : bundle de sauvegarde (`git bundle create <fichier> --all`, puis `git bundle verify`) copié sur **un autre disque**. **Seule exception à la règle « jamais `--force` » : une purge d'historique décidée explicitement, après bundle de sauvegarde et contrôle de l'état distant, avec `--force-with-lease`.** Garder les anciens objets (pas de `git gc`) jusqu'au push, ou vérifier l'état distant avec `git ls-remote` juste avant le `--force`. Pour l'audit avant push, voir §2.
 
 ---
 *Skill du projet Riemann_Lab · Auteur : hprzeta · Mis à jour le 2026-10-05 — 162 lignes (Vague V3 du 27/09/2026 : ajout de la section MCP, voir `synthese_skills_zeta.md` §4.1).*
