@@ -153,4 +153,10 @@ vigilance spécifiques, à recouper avec la Règle d'or (§1) :
 4. **Commandes git de vérification + push** prêtes à coller (avec vrais chemins, pas de placeholder).
 
 ---
-*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 27/09/2026 (Vague V3 — ajout section MCP, voir `synthese_skills_zeta.md` §4.1).*
+
+## 10. Après un `git filter-repo` : ce qui reste chez GitHub
+
+`git filter-repo` suivi de `git push --force` réécrit les branches, mais **`refs/pull/N/head` ne se réécrit pas** côté utilisateur et les anciens SHA restent atteignables (caches, forks) : **seul le support GitHub** peut les effacer (portail du support, avec le nom du dépôt, le nombre de PR concernées et les premiers commits modifiés). Avant toute purge : bundle de sauvegarde (`git bundle create <fichier> --all`, puis `git bundle verify`) copié sur **un autre disque**. **Seule exception à la règle « jamais `--force` » : une purge d'historique décidée explicitement, après bundle de sauvegarde et contrôle de l'état distant, avec `--force-with-lease`.** Pour l'audit avant push, voir §2.
+
+---
+*Skill du projet Riemann_Lab · Auteur : hprzeta · Mis à jour le 2026-10-05 — 162 lignes (Vague V3 du 27/09/2026 : ajout de la section MCP, voir `synthese_skills_zeta.md` §4.1).*
