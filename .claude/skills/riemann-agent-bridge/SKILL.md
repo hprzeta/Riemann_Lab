@@ -88,8 +88,26 @@ cité, via le garde-fou déjà en place `valeurs_non_ancrees()` (`scripts/rag_qu
 
 Réflexes obligatoires :
 - `mountpoint /mnt/vault_rag` avant toute requête RAG (SSD hot-plug, pas de montage auto).
-- `python scripts/rag_query.py --k 8 "<question>"` — ne jamais baisser `k` sous 8 sans raison
-  documentée (bug de discrimination des chunks corrigé le 25/07/2026 en passant `k` de 3 à 8).
+- `python scripts/rag_query.py "<question>"` — **`--k 4` par défaut depuis le 04/10/2026**. Avec
+  1258 chunks, `--k 8` fait ~7354 tokens : Ollama tronque à **4096** et la consigne de citation
+  (placée au début du prompt) disparaît (erreurs 500, charabia). Le script avertit si le prompt
+  estimé dépasse 4096 ; n'utiliser un `k` plus grand que s'il tient.
+  - *Historique (leçon du 25/07/2026)* : `k=8` corrigeait la discrimination des chunks en juillet
+    (passage de `k` de 3 à 8) ; avec 1258 chunks il dépasse les 4096 tokens d'Ollama ; **`k=4` est
+    le compromis actuel** ; pistes : fenêtre de contexte plus grande, recherche hybride,
+    température 0.
+- **Garde de citation** : `valeurs_non_ancrees()` + citation `[fichier]` exigée ; `est_un_refus()`
+  reconnaît « non trouvé » et « pas trouvé » dans le contexte. L'exemple de citation du prompt est un
+  **gabarit de forme** (`<valeur recopiée> [<nom-du-fichier>.md]`) : un exemple concret était recopié
+  tel quel par le modèle.
+- **Limites connues** : le modèle recopie parfois un passage hors sujet (1 cas sur 3 aux tests du
+  04/10/2026). Un **seuil de distance ne marche pas** (le bon chunk `SEUIL_1NEWTON` est à la distance
+  1,39, plus loin que des passages hors sujet à 1,10-1,20). Pistes non réalisées : recherche hybride
+  (mots-clés + embeddings), température 0 via les options d'Ollama.
+- **Ingestion** : `--reset`, garde sur le montage de `/mnt/vault_rag`, snapshot préalable dans
+  `/mnt/data/exports/vault_backup_<horodatage>` ; l'option 6 de `zeta-rag` demande de taper
+  `INGERER`. Embedding **forcé sur CPU** (la GTX 960M n'est plus gérée par torch 2.11). Les adresses du
+  corpus sont des **marqueurs** (`[IP_PC2]`) : le modèle ne peut pas les donner, c'est voulu.
 - Toute conjecture générée par Ollama/Mathstral est étiquetée **heuristique non vérifiée** tant
   qu'elle n'a pas été confirmée par un calcul ou une référence (voir `riemann-literature-scout`
   pour la littérature, `riemann-lmfdb-cross-validation` pour les zéros).
@@ -115,3 +133,5 @@ Réflexes obligatoires :
 
 ---
 *Skill créé le 27/09/2026 — Vague V2 du plan de mutualisation skills/MCP (voir `synthese_skills_zeta.md` §4.2, item 1).*
+
+*Mis à jour le 2026-10-05 — 137 lignes*
