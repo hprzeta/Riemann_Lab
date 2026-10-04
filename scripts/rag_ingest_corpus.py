@@ -19,6 +19,9 @@ Version 2 — 03/10/2026 :
   - refus d'ingérer dans une collection NON vide sans --reset : relancer le script
     AJOUTAIT les chunks une 2e fois (838 → ~1676) ;
   - option --reset (à utiliser après une copie de sécurité : zeta-rag, option 6).
+
+Version 2.1 — 04/10/2026 :
+  - embedding forcé sur CPU (device="cpu") : la GTX 960M (sm_50) n'est plus gérée par torch 2.11.
 """
 import argparse
 import os
@@ -128,7 +131,10 @@ def main():
     print(f"Prompts archivés (ARCHIVE)  : {len(archive_docs)} docs")
     print(f"Total                       : {len(all_docs)} docs")
 
-    Settings.embed_model = HuggingFaceEmbedding(model_name="sentence-transformers/all-MiniLM-L6-v2")
+    # device="cpu" forcé : torch 2.11.0+cu130 a abandonné le support Maxwell (CC 5.0, GTX 960M)
+    # — plante en CUDA à la vectorisation (incident 25/07/2026, répété le 04/10/2026 : l'échec
+    # arrivait APRÈS le --reset et laissait la collection vide). Sans effet sur ollama.
+    Settings.embed_model = HuggingFaceEmbedding(model_name="sentence-transformers/all-MiniLM-L6-v2", device="cpu")
     Settings.node_parser = SentenceSplitter(chunk_size=800, chunk_overlap=100)
 
     vector_store = ChromaVectorStore(chroma_collection=collection)
