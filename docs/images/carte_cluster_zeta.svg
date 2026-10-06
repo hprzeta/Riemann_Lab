@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="900" height="585" viewBox="0 0 900 585" xmlns="http://www.w3.org/2000/svg" font-family="monospace,sans-serif">
+<title>Carte du cluster Riemann_Lab</title>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<rect width="900" height="585" fill="#ffffff"/>
+<rect x="0" y="0" width="900" height="52" fill="#f8f8f8"/><line x1="0" y1="52" x2="900" y2="52" stroke="#e0e0e0"/>
+<text x="450" y="22" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a1a">Carte du cluster — Riemann_Lab</text>
+<text x="450" y="42" text-anchor="middle" font-size="12" fill="#666">Réseau filaire à adresses fixes · 5 machines · hprzeta 2026-10-03</text>
+<rect x="680" y="80" width="190" height="90" rx="45" fill="#f4f4f4" stroke="#888" stroke-width="1.5"/>
+<text x="775" y="120" text-anchor="middle" font-size="13" font-weight="700" fill="#444">Internet</text>
+<text x="775" y="138" text-anchor="middle" font-size="10" fill="#666">fibre SFR</text>
+<rect x="320" y="80" width="260" height="90" rx="10" fill="#e6f1fb" stroke="#185fa5" stroke-width="1.5"/>
+<text x="450" y="102" text-anchor="middle" font-size="13" font-weight="700" fill="#0c447c">Box SFR (GR140IG)</text>
+<text x="450" y="118" text-anchor="middle" font-size="10" fill="#0c447c">passerelle · DHCP · DNS local</text>
+<rect x="354" y="148" width="22" height="22" rx="3" fill="#ffffff" stroke="#185fa5" stroke-width="1.2"/>
+<text x="365" y="163" text-anchor="middle" font-size="11" font-weight="700" fill="#0c447c">1</text>
+<rect x="414" y="148" width="22" height="22" rx="3" fill="#ffffff" stroke="#185fa5" stroke-width="1.2"/>
+<text x="425" y="163" text-anchor="middle" font-size="11" font-weight="700" fill="#0c447c">2</text>
+<rect x="474" y="148" width="22" height="22" rx="3" fill="#ffffff" stroke="#185fa5" stroke-width="1.2"/>
+<text x="485" y="163" text-anchor="middle" font-size="11" font-weight="700" fill="#0c447c">3</text>
+<rect x="534" y="148" width="22" height="22" rx="3" fill="#ffffff" stroke="#185fa5" stroke-width="1.2"/>
+<text x="545" y="163" text-anchor="middle" font-size="11" font-weight="700" fill="#0c447c">4</text>
+<text x="333" y="163" text-anchor="end" font-size="9" fill="#185fa5">LAN</text>
+<line x1="580" y1="125" x2="680" y2="125" stroke="#444" stroke-width="2.5"/>
+<rect x="30" y="80" width="230" height="105" rx="10" fill="#e1f5ee" stroke="#0f6e56" stroke-width="1.5"/>
+<text x="145.0" y="102" text-anchor="middle" font-size="13" font-weight="700" fill="#085041">PC1 · zeta-lab</text>
+<text x="145.0" y="120" text-anchor="middle" font-size="10" fill="#085041">Ubuntu 24.04 · machine principale</text>
+<text x="145.0" y="135" text-anchor="middle" font-size="10" fill="#085041">ASUS UX510UWK · i7 · GTX 960M</text>
+<text x="145.0" y="150" text-anchor="middle" font-size="10" fill="#085041">Wi-Fi</text>
+<line x1="260" y1="125" x2="320" y2="125" stroke="#0f6e56" stroke-width="2.5" stroke-dasharray="2 4" stroke-linecap="round"/>
+<text x="290" y="116" text-anchor="middle" font-size="9" fill="#0f6e56">Wi-Fi</text>
+<rect x="20" y="255" width="200" height="105" rx="10" fill="#faeeda" stroke="#ba7517" stroke-width="1.5"/>
+<text x="120.0" y="277" text-anchor="middle" font-size="13" font-weight="700" fill="#633806">PC5 · zeta-monitor</text>
+<text x="120.0" y="295" text-anchor="middle" font-size="10" fill="#633806">Debian 12 · monitoring</text>
+<text x="120.0" y="310" text-anchor="middle" font-size="10" fill="#633806">Compaq Presario CQ57</text>
+<text x="120.0" y="325" text-anchor="middle" font-size="10" fill="#633806">câble LAN 1</text>
+<rect x="240" y="255" width="200" height="105" rx="10" fill="#f1efe8" stroke="#5f5e5a" stroke-width="1.5"/>
+<text x="340.0" y="277" text-anchor="middle" font-size="13" font-weight="700" fill="#2c2c2a">PC2 · zeta-calc-second</text>
+<text x="340.0" y="295" text-anchor="middle" font-size="10" fill="#2c2c2a">Debian 12 · calcul secondaire</text>
+<text x="340.0" y="310" text-anchor="middle" font-size="10" fill="#2c2c2a">HP Compaq 8000 Elite</text>
+<text x="340.0" y="325" text-anchor="middle" font-size="10" fill="#2c2c2a">câble LAN 2</text>
+<rect x="460" y="255" width="200" height="105" rx="10" fill="#eeedfe" stroke="#534ab7" stroke-width="1.5"/>
+<text x="560.0" y="277" text-anchor="middle" font-size="13" font-weight="700" fill="#3c3489">PC3 · zeta-backup</text>
+<text x="560.0" y="295" text-anchor="middle" font-size="10" fill="#3c3489">Ubuntu · sauvegarde nocturne</text>
+<text x="560.0" y="310" text-anchor="middle" font-size="10" fill="#3c3489">Acer Aspire M3203</text>
+<text x="560.0" y="325" text-anchor="middle" font-size="10" fill="#3c3489">câble LAN 3</text>
+<rect x="680" y="255" width="200" height="105" rx="10" fill="#fdeaea" stroke="#a32d2d" stroke-width="1.5"/>
+<text x="780.0" y="277" text-anchor="middle" font-size="13" font-weight="700" fill="#7a1f1f">PC4 · zeta-secure</text>
+<text x="780.0" y="295" text-anchor="middle" font-size="10" fill="#7a1f1f">OpenBSD 7.9 · bastion VPN</text>
+<text x="780.0" y="310" text-anchor="middle" font-size="10" fill="#7a1f1f">HP Compaq CQ58</text>
+<text x="780.0" y="325" text-anchor="middle" font-size="10" fill="#7a1f1f">câble LAN 4</text>
+<polyline points="365,170 365,190 120,190 120,255" fill="none" stroke="#185fa5" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="425,170 425,205 340,205 340,255" fill="none" stroke="#185fa5" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="485,170 485,205 560,205 560,255" fill="none" stroke="#185fa5" stroke-width="2" stroke-linejoin="round"/>
+<polyline points="545,170 545,190 780,190 780,255" fill="none" stroke="#185fa5" stroke-width="2" stroke-linejoin="round"/>
+<path d="M30 132 L10 132 L10 400 L780 400 L780 360" fill="none" stroke="#a32d2d" stroke-width="2" stroke-dasharray="7 4" marker-end="url(#ah)"/>
+<text x="395" y="394" text-anchor="middle" font-size="10" font-weight="700" fill="#a32d2d">Tunnel WireGuard PC1 ⇄ PC4 (hors domicile)</text>
+<line x1="0" y1="422" x2="900" y2="422" stroke="#e0e0e0"/>
+<text x="20" y="442" font-size="12" font-weight="700" fill="#333">Principes de l'architecture</text>
+<text x="30" y="464" font-size="11" fill="#1a1a1a">• Quatre machines en câble Ethernet sur la box, une en Wi-Fi (poste de travail portable).</text>
+<text x="30" y="484" font-size="11" fill="#1a1a1a">• Adresses fixes réservées hors de la plage distribuée automatiquement (DHCP).</text>
+<text x="30" y="504" font-size="11" fill="#1a1a1a">• Les noms des machines sont visibles dans tout le réseau local (DNS local de la box).</text>
+<text x="30" y="524" font-size="11" fill="#1a1a1a">• Accès distant : un seul point d'entrée, le bastion PC4, par tunnel chiffré WireGuard.</text>
+<text x="30" y="544" font-size="11" fill="#1a1a1a">• Le bastion filtre (pare-feu pf) ; les autres machines ne sont pas exposées à Internet.</text>
+<rect x="0" y="559" width="900" height="26" fill="#f8f8f8"/><line x1="0" y1="559" x2="900" y2="559" stroke="#e0e0e0"/>
+<text x="450" y="576" text-anchor="middle" font-size="10" fill="#888">carte_cluster_zeta.svg · hprzeta · MAJ 2026-10-03</text>
+</svg>
