@@ -148,9 +148,12 @@ def worker_v16(args: tuple) -> Tuple[list, dict, dict]:
     Détection : scan_arb C (Z_double RS + C0+C1, step=0.010) pour t ≥ 20
     Affinage  : illinois_refine_arb (Arb/FLINT double) pour tout t ≥ 14
 
-    Paramètres : (t_start, t_end, step, so_path, tol, worker_id)
+    Paramètres : (t_start, t_end, step, so_path, tol, worker_id, checkpoint_dir)
+    checkpoint_dir : si non None, un CSV partiel est écrit dès la fin du worker
+                     (survit à une coupure — un arrêt à mi-parcours laisse les
+                     segments déjà finis exploitables au lieu de tout perdre).
     """
-    t_start, t_end, step, so_path, tol, worker_id = args
+    t_start, t_end, step, so_path, tol, worker_id, checkpoint_dir = args
     debut = time.time()
 
     # Chargement illinois_arb.so après fork — espace mémoire isolé
@@ -293,6 +296,12 @@ def worker_v16(args: tuple) -> Tuple[list, dict, dict]:
     print(f"  [Worker {worker_id}] {len(zeros_segment)} zéros en {duree:.1f}s  "
           f"| arb_C:{stats['arb_C']} fallback:{stats['mpmath_fallback']}")
 
+    if checkpoint_dir:
+        pd.DataFrame({
+            "n":                 range(1, len(zeros_segment) + 1),
+            "partie_imaginaire": zeros_segment,
+        }).to_csv(Path(checkpoint_dir) / f"worker_{worker_id:03d}.csv", index=False)
+
     if _dbg_dir:
         if SCAN_ARB_DISPONIBLE:
             from scan_arb_wrapper import scan_disable_debug_log
@@ -312,15 +321,25 @@ def calculer_zeros_v16(
     N_WORKERS : int,
     STEP      : float,
     TOL       : float = 1e-9,
+    dossier   : Path  = None,
 ) -> Tuple[List[float], dict, dict, list]:
     """Lance N_WORKERS processus sur [T_MIN, T_MAX], fusionne et déduplique.
 
     Retourne (zeros, stats, profil_workers, segments) — segments exposé pour
     permettre le rescan ciblé par déficit en aval.
+
+    Si dossier est fourni, chaque worker écrit son CSV partiel dans
+    dossier/checkpoints/ dès sa propre fin (cf. worker_v16).
     """
     segments  = _partitionner_adaptatif(T_MIN, T_MAX, N_WORKERS)
+
+    checkpoint_dir = None
+    if dossier is not None:
+        checkpoint_dir = dossier / "checkpoints"
+        checkpoint_dir.mkdir(parents=True, exist_ok=True)
+
     args_list = [
-        (t_min, t_max, STEP, SO_PATH, TOL, i)
+        (t_min, t_max, STEP, SO_PATH, TOL, i, checkpoint_dir)
         for i, (t_min, t_max) in enumerate(segments)
     ]
 
@@ -330,7 +349,7 @@ def calculer_zeros_v16(
     print()
 
     with multiprocessing.Pool(processes=N_WORKERS) as pool:
-        resultats = pool.map(worker_v16, args_list)
+        resultats = list(pool.imap_unordered(worker_v16, args_list))
 
     zeros_bruts = []
     stats_total = {"arb_C": 0, "mpmath_fallback": 0}
@@ -416,7 +435,7 @@ def rescan_segments_deficit(
     # Rescan parallèle : un worker par segment en déficit (Pool)
     # worker_id 100+i pour distinguer dans les logs des workers principaux
     args_rescan = [
-        (seg_a, seg_b, step_rescan, SO_PATH, TOL_ARB, 100 + i)
+        (seg_a, seg_b, step_rescan, SO_PATH, TOL_ARB, 100 + i, None)
         for i, seg_a, seg_b, t_lo, t_hi, d in segments_a_rescanner
     ]
     with multiprocessing.Pool(processes=len(args_rescan)) as pool:
@@ -551,8 +570,8 @@ def visualiser(zeros: List[float], T_MAX: float, horodatage: str, dossier: Path)
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def sauvegarder_csv(zeros, stats, T_MAX, STEP, N_WORKERS,
-                    horodatage, dossier) -> Path:
-    nom        = f"zeros_v16_T{T_MAX:.0f}_{horodatage}.csv"
+                    horodatage, dossier, suffixe="") -> Path:
+    nom        = f"zeros_v16_T{T_MAX:.0f}_{horodatage}{suffixe}.csv"
     chemin_csv = dossier / nom
     df = pd.DataFrame({
         "n":                 range(1, len(zeros) + 1),
@@ -571,7 +590,8 @@ def sauvegarder_csv(zeros, stats, T_MAX, STEP, N_WORKERS,
 
 def ecrire_log(chemin_log, horodatage, T_MIN, T_MAX, STEP, N_WORKERS,
                tol, duree_s, zeros, stats, resultats_lmfdb,
-               resultats_turing, chemin_csv, rapport_rescan=None):
+               resultats_turing, chemin_csv, rapport_rescan=None,
+               chemin_csv_principal=None):
     """Journal d'exécution v16."""
     lignes = []
     sep    = "=" * 65
@@ -659,6 +679,8 @@ def ecrire_log(chemin_log, horodatage, T_MIN, T_MAX, STEP, N_WORKERS,
     L()
 
     L("  [8] FICHIERS GÉNÉRÉS")
+    if chemin_csv_principal is not None:
+        L(f"      CSV (principal, avant rescan) → {chemin_csv_principal}")
     L(f"      CSV → {chemin_csv}")
     L(f"      LOG → {chemin_log}")
     L()
@@ -864,6 +886,7 @@ def main():
     _p.add_argument("--t-min",      type=float, default=None)
     _p.add_argument("--t-max",      type=float, default=None)
     _p.add_argument("--horodatage", type=str,   default=None)
+    _p.add_argument("--skip-rescan", action="store_true", default=False)
     _cli, _ = _p.parse_known_args()
 
     if _cli.t_min is not None and _cli.t_max is not None:
@@ -883,7 +906,7 @@ def main():
     print(f"\n  Lancement — {N_WORKERS} workers, STEP={STEP}, "
           f"T_SEUIL_PETIT_T=20, illinois_refine_arb pour tout t...\n")
     zeros, stats, profil_workers, segments = calculer_zeros_v16(
-        T_MIN, T_MAX, N_WORKERS, STEP, TOL_ARB
+        T_MIN, T_MAX, N_WORKERS, STEP, TOL_ARB, dossier
     )
     duree_run_principal = time.time() - debut_global
 
@@ -907,11 +930,21 @@ def main():
         print(f"  t_n = {zeros[-1]:.12f}")
     print("=" * 65)
 
+    # ── CSV principal — livrable autonome, écrit AVANT le rescan ─────────────
+    # Le run principal est exploitable même si le rescan (potentiellement très
+    # long, cf. incident 17-18/08/2026 : 21,6h de calcul perdues faute de CSV
+    # persisté avant coupure) est interrompu ou tué.
+    chemin_csv_principal = sauvegarder_csv(
+        zeros, stats, T_MAX, STEP, N_WORKERS, horodatage, dossier,
+        suffixe="_principal",
+    )
+
     # ── Rescan ciblé des segments en déficit (PC1 uniquement) ───────────────
     # Ne s'exécute que si le mode distribué n'est pas actif (T_MIN == 14.0),
-    # car les segments distribués (PC2) ne sont pas disponibles localement.
+    # car les segments distribués (PC2) ne sont pas disponibles localement,
+    # et si --skip-rescan n'a pas été demandé.
     rapport_rescan = None
-    if _cli.t_min is None:  # mode interactif (run complet local)
+    if _cli.t_min is None and not _cli.skip_rescan:  # mode interactif (run complet local)
         zeros_bruts_rescan, rapport_rescan = rescan_segments_deficit(
             zeros, segments, T_MAX, STEP
         )
@@ -945,6 +978,7 @@ def main():
         chemin_log, horodatage, T_MIN, T_MAX, STEP, N_WORKERS,
         TOL_ARB, duree, zeros, stats, resultats_lmfdb, resultats_turing,
         chemin_csv, rapport_rescan=rapport_rescan,
+        chemin_csv_principal=chemin_csv_principal,
     )
 
     print()

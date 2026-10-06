@@ -14,10 +14,11 @@ def _charge_hotes():
 H = _charge_hotes()
 
 MACHINES = [
-    {"name":"zeta-lab","label":"PC1 · zeta-lab","role":"Orchestrateur / Calcul principal","host":"localhost","user":None,"key":None,"color":"magenta"},
-    {"name":"zeta-calc-second","label":"PC2 · zeta-calc-second","role":"Second nœud calcul (E8400 2C)","host":H["ZETA_PC2"],"user":"hprzeta","key":"~/.ssh/id_acer","color":"yellow"},
-    {"name":"zeta-backup","label":"PC3 · zeta-backup","role":"Backup / monitoring (E2140 2C)","host":H["ZETA_PC3"],"user":"hprzeta","key":"~/.ssh/id_acer","color":"cyan"},
-    {"name":"zeta-secure","label":"PC4 · zeta-secure","role":"Bastion VPN / WireGuard (OpenBSD)","host":H["ZETA_PC4"],"user":"hprzeta","key":"~/.ssh/id_acer","color":"green","openbsd":True},
+    {"name":"zeta-lab","label":"PC1 · zeta-lab","role":"Orchestrateur / Calcul principal","host":"localhost","user":None,"key":None,"color":"pc1_amber"},
+    {"name":"zeta-calc-second","label":"PC2 · zeta-calc-second","role":"Second nœud calcul (E8400 2C)","host":H["ZETA_PC2"],"user":"hprzeta","key":"~/.ssh/zeta_cluster","color":"pc2_green","jump":True},
+    {"name":"zeta-backup","label":"PC3 · zeta-backup","role":"Backup / monitoring (E2140 2C)","host":H["ZETA_PC3"],"user":"hprzeta","key":"~/.ssh/zeta_cluster","color":"pc3_blue","jump":True},
+    {"name":"zeta-secure","label":"PC4 · zeta-secure","role":"Bastion VPN / WireGuard (OpenBSD)","host":H["ZETA_BASTION"],"host_home":H["ZETA_PC4"],"user":"hprzeta","key":"~/.ssh/zeta_cluster","color":"pc4_magenta","openbsd":True},
+    {"name":"zeta-monitor","label":"PC5 · zeta-monitor","role":"Monitoring","host":H["ZETA_PC5"],"user":"hprzeta","key":"~/.ssh/zeta_cluster","color":"pc5_orange","jump":True},
 ]
 
 REFRESH = 10
@@ -46,9 +47,16 @@ def ssh_cmd(machine, cmd):
         proc = subprocess.run(["bash","-c",cmd], capture_output=True, text=True, timeout=8)
     else:
         key = os.path.expanduser(machine["key"])
+        tunnel = subprocess.run(["ping","-c1","-W1",H["ZETA_BASTION"]],
+                                capture_output=True).returncode == 0
+        host = machine["host"]
+        if not tunnel and machine.get("host_home"):
+            host = machine["host_home"]   # maison : PC4 en direct LAN
         args = ["ssh","-o","ConnectTimeout=6","-o","StrictHostKeyChecking=no",
-                "-o","BatchMode=yes","-o","IdentitiesOnly=yes","-i",key,
-                f"{machine['user']}@{machine['host']}",cmd]
+                "-o","BatchMode=yes","-o","IdentitiesOnly=yes","-i",key]
+        if tunnel and machine.get("jump"):
+            args += ["-J", f"{machine['user']}@{H['ZETA_BASTION']}"]
+        args += [f"{machine['user']}@{host}", cmd]
         proc = subprocess.run(args, capture_output=True, text=True, timeout=10)
     return proc.stdout.strip(), proc.returncode
 
@@ -90,6 +98,15 @@ PAIR = {}
 
 def init_colors():
     curses.start_color(); curses.use_default_colors()
+    # Teintes vives par nœud (accord avec zeta_tmux.sh) — 256 couleurs si dispo,
+    # sinon repli sur les couleurs de base curses (terminal 8/16 couleurs).
+    if curses.COLORS >= 256:
+        COLORS.update({"pc1_amber":179,"pc2_green":71,"pc3_blue":68,
+                        "pc4_magenta":134,"pc5_orange":173})
+    else:
+        COLORS.update({"pc1_amber":curses.COLOR_YELLOW,"pc2_green":curses.COLOR_GREEN,
+                        "pc3_blue":curses.COLOR_BLUE,"pc4_magenta":curses.COLOR_MAGENTA,
+                        "pc5_orange":curses.COLOR_RED})
     idx = 1
     for n,fg in COLORS.items(): curses.init_pair(idx,fg,-1); PAIR[n]=idx; idx+=1
     curses.init_pair(idx,curses.COLOR_BLACK,curses.COLOR_GREEN);  PAIR["ok"]=idx;   idx+=1

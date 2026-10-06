@@ -192,7 +192,7 @@ Tu es l’assistant du projet hprzeta. Nous reprenons une conversation précéde
 
 ## Contexte déjà établi
 - Projet : exploration numérique/symbolique de ζ(s), hypothèse de Riemann, IA locale, visualisation, Lean 4.
-- Machine cible principale : PC ASUS Linux Ubuntu 24.04 LTS, Intel i7, 8 Go RAM, 16 Go swap, disque 1 To, NVIDIA GTX 960/960M 4 Go VRAM.
+- Machine cible principale : PC ASUS Linux Ubuntu 24.04 LTS, Intel i7, 16 Go RAM, 16 Go swap, disque 1 To, NVIDIA GTX 960/960M 4 Go VRAM.
 - Dépôt principal : https://github.com/hprzeta/Riemann_Lab
 - Wiki : https://github.com/hprzeta/Riemann_Lab.wiki.git
 - Objectif : migrer/reconfigurer le projet vers une architecture plus robuste : `hprzeta-lab`, recovery, brain vault, RAG, sauvegardes et reprise catastrophe.

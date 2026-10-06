@@ -1,0 +1,36 @@
+<svg viewBox="0 0 560 400" xmlns="http://www.w3.org/2000/svg" font-family="DejaVu Sans">
+  <rect x="0" y="0" width="560" height="400" fill="#ffffff"/>
+  <text x="280" y="22" text-anchor="middle" font-size="15" font-weight="bold">Symétrie des zéros non triviaux de ζ</text>
+  <text x="280" y="40" text-anchor="middle" font-size="11.5">ρ et 1−ρ (équation fonctionnelle) ET ρ et ρ̄ (coefficients réels) — HR : les deux coïncident</text>
+
+  <!-- bande critique -->
+  <rect x="100" y="55" width="360" height="300" fill="#f0d9a0" opacity="0.35"/>
+  <line x1="100" y1="55" x2="100" y2="355" stroke="#7a5a1a" stroke-width="1.3"/>
+  <line x1="460" y1="55" x2="460" y2="355" stroke="#7a5a1a" stroke-width="1.3"/>
+  <text x="100" y="370" text-anchor="middle" font-size="11">σ=0</text>
+  <text x="460" y="370" text-anchor="middle" font-size="11">σ=1</text>
+
+  <!-- axe reel t=0 -->
+  <line x1="60" y1="205" x2="500" y2="205" stroke="#999" stroke-width="1"/>
+  <!-- droite critique -->
+  <line x1="280" y1="55" x2="280" y2="355" stroke="#c0392b" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="288" y="68" font-size="12" fill="#c0392b">σ=1/2 (droite critique)</text>
+
+  <!-- zeros reels, sur la droite -->
+  <circle cx="280" cy="120.2" r="6" fill="#1a4f8a"/>
+  <text x="292" y="116" font-size="12" fill="#1a4f8a">ρ₁ = 1/2 + 14,13i</text>
+  <circle cx="280" cy="289.8" r="6" fill="#1a4f8a"/>
+  <text x="292" y="300" font-size="12" fill="#1a4f8a">ρ̄₁ = 1/2 − 14,13i</text>
+
+  <circle cx="280" cy="78.9" r="6" fill="#1a6b34"/>
+  <text x="292" y="75" font-size="12" fill="#1a6b34">ρ₂ = 1/2 + 21,02i</text>
+  <circle cx="280" cy="331.1" r="6" fill="#1a6b34"/>
+  <text x="292" y="341" font-size="12" fill="#1a6b34">ρ̄₂ = 1/2 − 21,02i</text>
+
+  <!-- point hypothetique hors HR -->
+  <circle cx="350" cy="150" r="5" fill="#aaa"/>
+  <text x="358" y="147" font-size="11" fill="#888">point hors σ=1/2</text>
+  <text x="358" y="161" font-size="11" fill="#888">(jamais observé — HR)</text>
+
+  <text x="280" y="392" text-anchor="middle" font-size="11" fill="#555">Ordonnées recalculées (mpmath.findroot sur Z(t)) : 14,134725 et 21,022040 — cohérent LMFDB.</text>
+</svg>

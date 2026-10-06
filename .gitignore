@@ -41,6 +41,13 @@ scripts/audit_extract_text*/
 .env
 .env.local
 
+# Securite supplementaire : dossier local de secrets (~/riemann_handoff/secrets_local/,
+# hors repo par defaut) — regle de garde au cas ou il serait un jour copie/imbrique
+# par erreur dans l'arbre du projet. Contient cle WireGuard, mots de passe fibre, IPv6
+# publiques, zips personnels non tries — jamais destine a etre versionne.
+secrets_local/
+**/secrets_local/
+
 # Captures d'écran WireGuard/VPN centralisées — local uniquement (IPv6 publiques,
 # cle publique WireGuard, sorties wg show/tcpdump — pas versionne sans accord explicite)
 docs/archive/wireguard_screenshots/
@@ -51,6 +58,9 @@ docs/archive/*-backup.tgz
 
 # Archive box SFR — mot de passe fibre en clair, MAC, IPv6 publiques — jamais versionne
 docs/archive/BOX-SFR-*.pdf
+
+# Contient la cle privee WireGuard du peer telephone ([IP_WG], confirme 05/09/2026) — jamais versionne
+docs/archive/Pass-20260819T194523Z-1-001.zip
 
 # Etat de session volatil — local uniquement
 Handoff.md
@@ -74,3 +84,5 @@ test-results/
 logs/*.pid
 pdf/optimisation/*.aux
 pdf/optimisation/*.out
+# Textes produits par des IA tierces (sources de travail, jamais versionnés)
+sources_ia/

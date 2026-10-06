@@ -1,6 +1,6 @@
 # ~/projet_zeta/CLAUDE.md — Contexte projet Riemann_Lab
 > **Fichier :** CLAUDE.md - **Dossier :** racine repo (`~/projet_zeta/`)
-> **Branche :** Riemann_Lab_C (source) -> sync main - IA - Test - **Auteur :** hprzeta - **MAJ :** 2026-07-25
+> **Branche :** Riemann_Lab_C (source) -> sync main - IA - Test - **Auteur :** hprzeta - **MAJ :** 2026-10-05
 
 ---
 
@@ -191,11 +191,21 @@ C0+C1 (précision max ~1e-3). Solution : wrapper `mpmath.siegelz`.
 
 | Composant | Valeur |
 |---|---|
-| CPU | Intel i7, 4 cœurs |
-| RAM | 8 GB + 16 GB swap |
+| CPU | Intel Core i7-7500U, 2 cœurs / 4 threads |
+| RAM | 16 Go (depuis le 25/07/2026) + 16 Go de swap |
 | GPU | NVIDIA GTX 960M — 4 GB VRAM, CUDA 12.2 |
 
 **Activation GPU :** `sudo prime-select nvidia && sudo reboot`
+
+---
+
+## 🤝 Règles propres au projet — audit, sauvegardes, mesures
+
+- **Audit avant push** : relire les lignes ajoutées et chercher `duckdns`, `PRIVATE KEY`, `ghp_`, `github_pat`, `api key`, `token=`, `passw=`, adresses MAC, IPv4/IPv6, e-mails. **Jamais `--force`.** Si un push est refusé : s'arrêter et montrer l'erreur complète.
+- **Copie `.bak-AAAAMMJJ`** avant toute modification de script.
+- **`sensors`** : seule la **première valeur en °C** d'une ligne est la mesure ; ignorer `high`, `crit`, `hyst` (une moyenne a déjà été faussée ainsi).
+- **rclone sur PC3** : toujours le chemin complet `~/bin/rclone` (compte de sauvegarde, v1.73.5) ; le `/usr/bin/rclone` (v1.74.3) plante en 32 bits.
+- **`zeta-backup-status`** : « aucun fichier » signifie « rien de nouveau à copier », pas forcément une panne.
 
 ---
 
@@ -240,7 +250,7 @@ sudo scripts/zeta_turbo_off.sh
 
 **Ce que fait `zeta_turbo_on.sh` :**
 - Arrêt de 12 services non essentiels (~143 MB RAM libérés)
-- CPU governor : `powersave` → `performance` (4 cœurs à fréquence max, +15–30 % calcul)
+- CPU governor : `powersave` → `performance` (4 threads à fréquence max, +15–30 % calcul)
 - Animations GNOME désactivées
 - swappiness = 10 (évite le swap des workers Python sous charge)
 - État sauvegardé dans `/tmp/zeta_turbo_state.txt` pour restauration propre
@@ -271,4 +281,4 @@ sudo scripts/zeta_turbo_off.sh
 > (elle change à chaque session ; ce fichier doit rester stable).
 
 ---
-*CLAUDE.md - racine - source Riemann_Lab_C (sync 4 branches) - hprzeta - MAJ 2026-07-25 - 274 lignes*
+*CLAUDE.md - racine - source Riemann_Lab_C (sync 4 branches) - hprzeta - Mis à jour le 2026-10-05 — 284 lignes*

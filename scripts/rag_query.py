@@ -19,7 +19,7 @@ Usage :
   python scripts/rag_query.py "..." --modele mathstral --log
 
 ⚠️  Leçon du crash du 06/07/2026 (voir Handoff.md) : mathstral (4,1 Go) charge
-    plusieurs couches en RAM système sur cette machine (8 Go). Fermer VS Code
+    plusieurs couches en RAM système sur cette machine (16 Go depuis le 25/07/2026). Fermer VS Code
     et Firefox avant un test, ou vérifier `free -h` — ce script avertit mais
     ne bloque pas.
 
@@ -27,7 +27,8 @@ Prérequis : zeta_env activé (chromadb, sentence-transformers, requests) ;
 `ollama serve` actif (systemd ou manuel) avec le modèle mathstral pull.
 
 Auteur : hprzeta — Projet Riemann_Lab — Objectif 2 (BrainVault)
-Date   : 2026-07-19
+Date   : 2026-07-19 (mis à jour 2026-10-04 : --k 4 par défaut, avertissement quand le
+         prompt dépasse la fenêtre d'ollama, refus « non trouvé » sans faux avertissement)
 """
 
 import argparse
@@ -49,6 +50,8 @@ MODELE_EMBEDDING = "all-MiniLM-L6-v2"   # même modèle que l'ingestion — ne p
 OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434")
 MODELE_LLM_DEFAUT = "mathstral"
 RAM_LIBRE_SEUIL_MO = 1500   # avertissement en dessous (leçon crash 06/07)
+NUM_CTX_OLLAMA = 4096       # fenêtre de contexte par défaut d'ollama sur cette machine (Guide-Ollama-Pratique.md)
+CARS_PAR_TOKEN = 2.5        # estimation (markdown + code), calibrée sur 1 mesure ollama du 04/10/2026 : 7354 tokens pour ~18 600 car. (2,53)
 
 PROMPT_TEMPLATE = """Tu es un assistant technique du projet Riemann_Lab. Réponds \
 UNIQUEMENT à partir du contexte ci-dessous (extraits du wiki/code du projet, \
@@ -56,8 +59,9 @@ chacun précédé de son fichier source entre crochets, ex. [fichier.md]).
 
 Règle stricte de citation : pour CHAQUE fait, chiffre ou valeur exacte que tu \
 donnes, recopie-le TEL QUEL depuis l'extrait source et fais suivre immédiatement \
-d'une citation entre crochets avec le nom du fichier exact, ex. « 4 cœurs \
-[Architecture-Cluster-Zeta.md] ». N'arrondis pas, ne reformule pas, ne déduis pas \
+d'une citation entre crochets avec le nom du fichier exact, au format \
+« <valeur recopiée> [<nom-du-fichier>.md] » (ceci est un modèle de FORME : ne le recopie \
+jamais tel quel). N'arrondis pas, ne reformule pas, ne déduis pas \
 une valeur par analogie avec une autre. Si une information demandée n'apparaît \
 mot pour mot dans AUCUN extrait ci-dessous, écris « non trouvé dans le contexte » \
 pour cette information précise plutôt que de l'inventer ou de l'estimer.
@@ -119,13 +123,45 @@ def retrieval(question: str, k: int) -> tuple:
     return chunks, latences
 
 
-def generation(question: str, chunks: list, modele_llm: str) -> tuple:
-    """Envoie le prompt (question + contexte) à mathstral via l'API ollama."""
+def construit_prompt(question: str, chunks: list) -> str:
+    """Prompt complet envoyé au modèle (consigne + contexte + question)."""
     contexte = "\n\n".join(
         "[{}] {}".format(meta.get("file", meta.get("source", "?")), doc)
         for doc, meta, _ in chunks
     )
-    prompt = PROMPT_TEMPLATE.format(contexte=contexte, question=question)
+    return PROMPT_TEMPLATE.format(contexte=contexte, question=question)
+
+
+def estime_tokens(question: str, chunks: list) -> int:
+    """Nombre approximatif de tokens du prompt (sans tokenizer : caractères / CARS_PAR_TOKEN)."""
+    return int(len(construit_prompt(question, chunks)) / CARS_PAR_TOKEN)
+
+
+def k_conseille(question: str, chunks: list) -> int:
+    """Plus grand k dont le prompt estimé tient dans NUM_CTX_OLLAMA (au moins 1)."""
+    if not chunks:
+        return 1
+    fixe = estime_tokens(question, [])                       # consigne + question, sans contexte
+    par_chunk = (estime_tokens(question, chunks) - fixe) / len(chunks)
+    return max(1, int((NUM_CTX_OLLAMA - fixe) / max(par_chunk, 1)))
+
+
+REFUS_RE = re.compile(r"(?:non|pas)\s+trouv[ée]e?s?\s+dans\s+le\s+contexte", re.IGNORECASE)   # « non trouvé » ou « pas trouvé » (variantes vues le 04/10)
+
+
+def est_un_refus(texte_reponse: str) -> bool:
+    """True si la réponse est un refus pur (« non trouvé dans le contexte ») sans aucun fait chiffré :
+    aucune citation n'est alors attendue. Un refus accompagné de valeurs garde l'avertissement."""
+    if not REFUS_RE.search(texte_reponse):
+        return False
+    reste = REFUS_RE.sub(" ", texte_reponse)
+    return not VALEUR_RE.search(reste)
+
+
+def generation(question: str, chunks: list, modele_llm: str) -> tuple:
+    """Envoie le prompt (question + contexte) à mathstral via l'API ollama.
+    Retourne (réponse, durée, tokens lus par ollama ou None)."""
+    prompt = construit_prompt(question, chunks)
 
     t0 = time.time()
     reponse = requests.post(
@@ -136,7 +172,9 @@ def generation(question: str, chunks: list, modele_llm: str) -> tuple:
     reponse.raise_for_status()
     t_generation = time.time() - t0
 
-    return reponse.json().get("response", "").strip(), t_generation
+    donnees = reponse.json()
+    # prompt_eval_count = tokens réellement lus par ollama (plafonné à la fenêtre si le prompt a été tronqué)
+    return donnees.get("response", "").strip(), t_generation, donnees.get("prompt_eval_count")
 
 
 CITATION_RE = re.compile(r"\b([\w\-]+\.(?:md|py|c|h))\b")   # nom de fichier, quels que soient les délimiteurs autour
@@ -225,7 +263,7 @@ def ecrire_log(question: str, chunks: list, texte_reponse: str, latences: dict) 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Boucle RAG BrainVault — retrieval + génération")
     parser.add_argument("question", help="question en langage naturel")
-    parser.add_argument("--k", type=int, default=8, help="nombre de chunks retrouvés (défaut 8 — voir Guide-Ollama-Pratique.md §5.1 : k=3/6 ratent le chunk clé au rang 7 sur SEUIL_1NEWTON, 25/07/2026)")
+    parser.add_argument("--k", type=int, default=4, help="nombre de chunks retrouvés (défaut 4 depuis le 04/10/2026 : avec le corpus actuel, k=8 donne ~7300 tokens et ollama tronque à 4096, consigne perdue. Le 25/07, k=3/6 ratait le chunk clé au rang 7 sur SEUIL_1NEWTON : le script avertit si le prompt dépasse la fenêtre, k plus grand seulement s'il tient)")
     parser.add_argument("--modele", default=MODELE_LLM_DEFAUT, help="modèle ollama (défaut mathstral)")
     parser.add_argument("--no-llm", action="store_true", help="retrieval seul, sans appel LLM")
     parser.add_argument("--log", action="store_true", help="écrire un log dans agent_logs")
@@ -255,6 +293,12 @@ def main() -> None:
         apercu = doc[:80].replace("\n", " ")
         print("    · {} (distance {:.3f}) — {}...".format(nom, dist, apercu))
 
+    tokens_estimes = estime_tokens(args.question, chunks)
+    print("  prompt estimé : ~{} tokens (fenêtre ollama : {})".format(tokens_estimes, NUM_CTX_OLLAMA))
+    if tokens_estimes > NUM_CTX_OLLAMA:
+        print("⚠️  prompt estimé > fenêtre d'ollama : il sera TRONQUÉ et la consigne de citation (au début) sera "
+              "perdue — réponses dégradées possibles. Relance avec --k {} au plus.".format(k_conseille(args.question, chunks)))
+
     texte_reponse = ""
     if args.no_llm:
         print("\n(--no-llm : génération sautée)")
@@ -267,9 +311,14 @@ def main() -> None:
 
         print("\n── Génération ({}) ──".format(args.modele))
         try:
-            texte_reponse, t_generation = generation(args.question, chunks, args.modele)
+            texte_reponse, t_generation, tokens_lus = generation(args.question, chunks, args.modele)
             latences["generation"] = t_generation
-            print("  génération : {:.1f} s".format(t_generation))
+            print("  génération : {:.1f} s".format(t_generation)
+                  + (" — prompt lu par ollama : {} tokens (estimé : {})".format(tokens_lus, tokens_estimes)
+                     if tokens_lus is not None else ""))
+            if tokens_lus is not None and tokens_lus >= NUM_CTX_OLLAMA - 8:
+                print("⚠️  ollama a lu {} tokens (= la fenêtre de {}) : le prompt a été TRONQUÉ, "
+                      "la consigne de citation a pu être perdue.".format(tokens_lus, NUM_CTX_OLLAMA))
             print("\n{}".format(texte_reponse))
 
             non_ancrees = valeurs_non_ancrees(texte_reponse, chunks)
@@ -282,6 +331,8 @@ def main() -> None:
             if douteuses:
                 print("⚠️  citation(s) fabriquée(s) (fichier cité absent des chunks retrouvés) : {}"
                       .format(", ".join(douteuses)))
+            elif est_un_refus(texte_reponse):
+                print("ℹ️  refus « non trouvé dans le contexte » : aucune citation attendue.")
             elif not CITATION_RE.search(texte_reponse):
                 print("⚠️  aucune citation [fichier] dans la réponse malgré la consigne — "
                       "faits non traçables, à vérifier manuellement.")

@@ -1,0 +1,56 @@
+<svg viewBox="0 0 560 400" xmlns="http://www.w3.org/2000/svg" font-family="DejaVu Sans">
+  <!-- fond -->
+  <rect x="0" y="0" width="560" height="400" fill="#ffffff"/>
+
+  <!-- zone de convergence absolue sigma > 1 -->
+  <rect x="240" y="20" width="200" height="360" fill="#8fd19e" opacity="0.35"/>
+  <text x="340" y="60" text-anchor="middle" font-size="13" fill="#1a6b34" font-weight="bold">σ &gt; 1</text>
+  <text x="340" y="78" text-anchor="middle" font-size="12" fill="#1a6b34">convergence absolue</text>
+  <text x="340" y="94" text-anchor="middle" font-size="12" fill="#1a6b34">(série définit ζ, Chapitre 1)</text>
+
+  <!-- zone gauche : divergence / prolongement requis -->
+  <text x="120" y="60" text-anchor="middle" font-size="13" fill="#7a2f2f" font-weight="bold">σ ≤ 1</text>
+  <text x="120" y="78" text-anchor="middle" font-size="11" fill="#7a2f2f">série divergente</text>
+  <text x="120" y="94" text-anchor="middle" font-size="11" fill="#7a2f2f">prolongement requis</text>
+  <text x="120" y="110" text-anchor="middle" font-size="11" fill="#7a2f2f">(Chap. 6 et 11)</text>
+
+  <!-- ligne pointillee sigma = 1 -->
+  <line x1="240" y1="20" x2="240" y2="380" stroke="#c0392b" stroke-width="2" stroke-dasharray="6,4"/>
+  <text x="248" y="34" font-size="12" fill="#c0392b">σ = 1</text>
+
+  <!-- axes -->
+  <line x1="20" y1="200" x2="540" y2="200" stroke="#333" stroke-width="1.5"/>
+  <line x1="140" y1="20" x2="140" y2="380" stroke="#333" stroke-width="1.5"/>
+
+  <!-- fleches axes -->
+  <polygon points="540,200 528,195 528,205" fill="#333"/>
+  <polygon points="140,20 135,32 145,32" fill="#333"/>
+
+  <!-- graduations sigma -->
+  <line x1="140" y1="196" x2="140" y2="204" stroke="#333"/>
+  <text x="140" y="218" text-anchor="middle" font-size="11">0</text>
+  <line x1="240" y1="196" x2="240" y2="204" stroke="#333"/>
+  <text x="240" y="218" text-anchor="middle" font-size="11">1</text>
+  <line x1="340" y1="196" x2="340" y2="204" stroke="#333"/>
+  <text x="340" y="218" text-anchor="middle" font-size="11">2</text>
+  <line x1="440" y1="196" x2="440" y2="204" stroke="#333"/>
+  <text x="440" y="218" text-anchor="middle" font-size="11">3</text>
+  <line x1="40" y1="196" x2="40" y2="204" stroke="#333"/>
+  <text x="40" y="218" text-anchor="middle" font-size="11">−1</text>
+
+  <!-- graduations t -->
+  <text x="150" y="55" font-size="11">3</text>
+  <text x="150" y="105" font-size="11">1</text>
+  <text x="150" y="300" font-size="11">−2</text>
+  <text x="150" y="350" font-size="11">−3</text>
+
+  <!-- point s = 2+3i (exemple numerique) -->
+  <circle cx="340" cy="50" r="5" fill="#1a4f8a"/>
+  <text x="350" y="46" font-size="12" fill="#1a4f8a">s = 2+3i (exemple)</text>
+
+  <!-- labels axes -->
+  <text x="475" y="192" font-size="13" font-weight="bold">σ = Re(s)</text>
+  <text x="148" y="30" font-size="13" font-weight="bold">t = Im(s)</text>
+
+  <text x="280" y="395" text-anchor="middle" font-size="11" fill="#555">Seule la région verte (σ&gt;1) est atteinte par la série Σ n⁻ˢ elle-même.</text>
+</svg>
