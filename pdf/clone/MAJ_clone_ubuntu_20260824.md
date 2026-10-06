@@ -23,21 +23,21 @@ Dernier clonage complet : **21 juin 2026**.
 
 | Partition | UUID | Point de montage |
 |-----------|------|-----------------|
-| `sda1` | `2deda3f8-8a82-4b98-af3d-4d32a20e58c3` | `/` |
-| `sda2` | `5930-9576` | `/boot/efi` |
-| `sda3` | `f0685a71-e8cf-45ea-a8bc-1395b575ec2f` | `/home` |
-| `sda4` | `e5a5e690-c038-4198-bdc7-6f7431d0635b` | `/mnt/data` |
-| `sda5` | `1e353ef5-4a66-45af-9ca2-b298072dfd38` | swap |
+| `sda1` | `[UUID_DISQUE]` | `/` |
+| `sda2` | `[UUID_DISQUE]` | `/boot/efi` |
+| `sda3` | `[UUID_DISQUE]` | `/home` |
+| `sda4` | `[UUID_DISQUE]` | `/mnt/data` |
+| `sda5` | `[UUID_DISQUE]` | swap |
 
 ### Partitions sdb (clone)
 
 | Partition | Label | UUID | Point de montage clone |
 |-----------|-------|------|----------------------|
-| `sdb1` | EFI | `C726-B729` | `/boot/efi` |
-| `sdb2` | root-clone | `1a8b6c76-1fa0-40c6-98dd-bdd0d44997b6` | `/` |
-| `sdb3` | home-clone | `b65f5d21-ca65-4cfb-bba3-06102064a82c` | `/home` |
-| `sdb4` | data-clone | `cd43720c-ec60-4466-bee3-5f77592597c0` | `/mnt/data` |
-| `sdb5` | swap-clone | `59b7df20-670c-4a6e-a2c1-397de10d2d5e` | swap |
+| `sdb1` | EFI | `[UUID_DISQUE]` | `/boot/efi` |
+| `sdb2` | root-clone | `[UUID_DISQUE]` | `/` |
+| `sdb3` | home-clone | `[UUID_DISQUE]` | `/home` |
+| `sdb4` | data-clone | `[UUID_DISQUE]` | `/mnt/data` |
+| `sdb5` | swap-clone | `[UUID_DISQUE]` | swap |
 
 ---
 
@@ -86,12 +86,12 @@ sudo rsync -avh --progress --delete --one-file-system \
 ```bash
 cat > /tmp/fstab_clone << 'EOF'
 # /etc/fstab — clone Ubuntu bootable (Toshiba sdb)
-UUID=1a8b6c76-1fa0-40c6-98dd-bdd0d44997b6 / ext4 defaults,noatime 0 1
-UUID=C726-B729 /boot/efi vfat defaults,noatime 0 0
-UUID=b65f5d21-ca65-4cfb-bba3-06102064a82c /home ext4 defaults,noatime 0 2
-UUID=cd43720c-ec60-4466-bee3-5f77592597c0 /mnt/data ext4 defaults,noatime 0 2
+UUID=[UUID_DISQUE] / ext4 defaults,noatime 0 1
+UUID=[UUID_DISQUE] /boot/efi vfat defaults,noatime 0 0
+UUID=[UUID_DISQUE] /home ext4 defaults,noatime 0 2
+UUID=[UUID_DISQUE] /mnt/data ext4 defaults,noatime 0 2
 /mnt/data/swapfile none swap sw 0 0
-UUID=9476fad5-8512-4e0d-8cd4-50c9acae01c2 /mnt/vault_rag ext4 defaults,noatime,nofail 0 2
+UUID=[UUID_DISQUE] /mnt/vault_rag ext4 defaults,noatime,nofail 0 2
 EOF
 
 cat /tmp/fstab_clone   # vérifier avant de copier
