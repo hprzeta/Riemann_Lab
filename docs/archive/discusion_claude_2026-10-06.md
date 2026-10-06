@@ -105,7 +105,7 @@ Le listage direct chez Proton n'a pas été fait : le compte SSH `hprzeta` n'a p
 
 **Décisions :** règle « bye bye » conservée et étendue (vérification de la capture à chaque fin de session, rappel de taper `exit` deux fois si elle est active, mention dans l'archive, pas de commit des captures sans audit) ; alias `zeta-capture-conv` créé dans le fichier de configuration du shell (sauvegarde datée) ; hprzeta a demandé de noter en **priorité 1 pour la prochaine étape** l'écriture d'un convertisseur de la transcription de Claude Code vers du Markdown lisible, car il lance Claude Code de façons variées.
 
-## 8. Ce qui reste à faire (par ordre)
+## 8. Ce qui restait à faire à la fin de la partie A
 
 1. **Priorité 1 :** écrire le convertisseur de la transcription de Claude Code (fichier .jsonl) en Markdown lisible, en lecture seule, sans longues sorties d'outils.
 2. Validation, groupe par groupe (A à I), des 26 fichiers non suivis, puis un seul commit depuis `Riemann_Lab_IA` après audit des lignes ajoutées ; décider de l'ancien PDF de la documentation du cluster et d'ignorer les sources d'IA tierces et les archives de configuration dans le fichier d'exclusion de git.
@@ -115,4 +115,98 @@ Le listage direct chez Proton n'a pas été fait : le compte SSH `hprzeta` n'a p
 6. Points hérités des sessions précédentes : jeu 6 de la sauvegarde « hors git » jamais exécuté en réel, nettoyage des sauvegardes temporaires, MCP, documentation du stockage, etc. (voir le Handoff).
 
 ---
-*Archive de session du 06/10/2026 — rédigée à la demande de hprzeta (« bye bye »).*
+
+# Partie B — session du soir (06/10, de 21h30 à minuit environ)
+
+> Nouvelle session Claude Code, ouverte après la partie A (un seul fichier d'archive pour la journée). Elle a réalisé la « priorité 1 » de la partie A, trié et commité les 26 fichiers non suivis, aligné les quatre branches du dépôt, puis mis à jour le Handoff et le wiki. **Capture brute de cette session : absente** (aucune capture de terminal n'a été lancée avant Claude Code) ; la transcription automatique de Claude Code est disponible et a été convertie par le nouvel outil de la section 10.
+
+## 9. Reprise : « point projet »
+
+**Consigne de hprzeta :** « point projet ». Le bloc de reprise du Handoff local a été affiché tel quel, avec un résumé en trois lignes : pipeline v16 (1,6 min pour T=100k, 20/20 LMFDB), dernier commit `43222bf`, prochaine action. Rien n'a été exécuté sans accord.
+
+## 10. Convertisseur de transcription (priorité 1 de la partie A)
+
+**Consigne de hprzeta :** « priorité 1 . puis on le teste avec l'alias `zeta-convert-jsontomd` ».
+
+| Élément | Choix |
+|----|----------------|
+| Script | `scripts/zeta_jsonl_to_md.py` (bibliothèque standard Python), commit `35ad4e7`, poussé |
+| Alias | `zeta-convert-jsontomd` dans `~/.bashrc` (sauvegarde datée) ; sans argument : session en cours ; option de liste pour choisir |
+| Sortie | dossier des transcriptions, fichier en mode 600, dossier ignoré par git |
+| Conservé | messages de hprzeta et textes de Claude ; appels d'outils réduits à une ligne |
+| Omis | sorties d'outils, raisonnement interne, balises de contexte |
+| Masqué | adresses IPv4/IPv6, MAC, e-mails, noms de domaine dynamique, jetons, clés privées, valeurs réelles du cluster (lues dans un fichier hors git) |
+| Garde-fou | une seconde passe de masquage ne doit rien changer, sinon le fichier n'est pas écrit |
+
+**Tests :** trois sessions, dont la plus lourde (11 Mo, 4 443 lignes) réduite à 320 Ko ; une recherche indépendante ne trouve aucune adresse ni MAC résiduelle ; il ne reste que des mots (nom du service, préfixes de jeton) dans des discussions d'audit. **Limites :** sorties d'outils absentes (elles restent dans le fichier d'origine), masquage volontairement large, les 4 443 lignes n'ont pas été relues en entier.
+
+## 11. Tri des fichiers non suivis, groupes A à I
+
+**Consignes de hprzeta :** « go groupe A », puis B, C, D, E, F, G, H, I, « archive du jour ». Pour chaque groupe : lecture du contenu, audit (adresses, secrets, e-mails, chemins personnels, texte extrait des PDF), commit séparé depuis `Riemann_Lab_IA`, sans pousser.
+
+| Groupe | Contenu | Commit | Point notable |
+|---|--------|----|-----------|
+| A | générateurs du cours (PDF, page wiki) | `e21a309` | non exécutés |
+| B | test A/B du balayage v13 contre v16 | `2084ac1` (branche C) | écrit pour le v16 de C ; sur IA il planterait (paramètres absents) ; **question posée, hprzeta a choisi la branche C** |
+| C | 3 schémas SVG + plan de continuité | `50af109` | PNG identique octet pour octet à l'ancien, simple déplacement ; schémas relus visuellement |
+| D | synthèse des audits de skills (MD+PDF) + copie d'un skill | `bfd7481` | |
+| E | 2 rapports du 12/09 | `202a819` | une phrase du rapport à reformuler (historique non purgé) |
+| F | 3 PDF dont recommandations SSD externe | `127f478` | |
+| G | guides RAG et vault | `fc782df` | ancien guide (avec adresses) supprimé, remplacé par la version masquée |
+| H | archive du 20/09 | `7115134` | adresses déjà masquées |
+| I | méthode de sauvegarde chiffrée, corrections wiki KaTeX | `85e992b` | aucune phrase de passe ni clé |
+| Archive du 06/10 (partie A) | | `06e2367` | |
+
+**Notés, non corrigés :** plan de continuité périmé (compte de zéros ancien, emojis en carrés, faute dans l'adresse de contact) ; deux schémas utilisent une fonctionnalité SVG que les navigateurs gèrent mais pas ImageMagick ; la RAM de PC2 et le modèle de PC3 diffèrent toujours entre les schémas (inventaire du 03/10) et `STACK.md`.
+
+## 12. Audit global et push
+
+**Consigne de hprzeta :** « audit global puis push ». Audit sur 27 fichiers (lignes ajoutées, texte des PDF, valeurs réelles du cluster, adresses, e-mails, UUID, jetons, noms de fichiers sensibles, taille) : aucun résultat. Push sans `--force` : `Riemann_Lab_IA` `35ad4e7` → `06e2367`, `Riemann_Lab_C` `942b5e3` → `2084ac1`. Limite : les PDF n'ont pas été relus page par page.
+
+## 13. Mise à jour du Handoff et du wiki
+
+**Consignes de hprzeta :** « mets à jour le Handoff », puis « go mets à jour le wiki ». Handoff local réécrit (règle « bye bye » étendue au convertisseur, bloc de reprise) ; wiki : `Handoff.md` et `JOURNAL.md` mis à jour (commit `38ab43f`), texte sans détail d'infrastructure, audit des lignes ajoutées à zéro.
+
+## 14. Trois décisions de rangement
+
+**Consigne de hprzeta :** « on enchaîne ». Trois questions posées, recommandations suivies :
+
+| Point | Décision | Résultat |
+|------|-----|----------|
+| Suppression du PDF de documentation du cluster | restaurer | restauré, aucun commit (son remplaçant est ignoré par git) |
+| Dossier des textes d'IA tierces | l'ignorer | règle ajoutée au `.gitignore` (`03df806`), fichiers intacts sur le disque |
+| Script de test A/B non suivi sur IA | le laisser | puis devenu suivi par l'alignement des branches |
+
+## 15. Alignement des quatre branches
+
+**Consignes de hprzeta :** « go point 1 », « go étape 1 », « go étape 2 », « go point 1 » pour `main`, puis pour `Riemann_Lab_Test`.
+
+**Constat (lecture seule).** Base commune du 16/08 ; les purges ont réécrit les historiques, donc la comparaison par commit n'était pas fiable et celle par arbres de fichiers l'était. IA était la plus avancée (infrastructure, skills, documentation), mais C avait du code que IA n'avait pas, dont la **persistance du CSV avant le rescan** (ajoutée après la perte de 31 h du run T=5M).
+
+| Étape | Action | Résultat |
+|--|---------|-----------|
+| 1 | reporter sur IA les gardes `.gitignore` sur les dossiers de secrets (présentes seulement sur C) | `59559c3` |
+| 2 | fusion d'essai de C avec IA dans un worktree isolé | 8 conflits de purge tranchés côté IA zone par zone ; artefacts de purge côté C écartés ; 91 fichiers Python et 31 scripts bash sans erreur de syntaxe |
+| 2bis | masquage de 14 identifiants de volume d'un rapport de clonage (choix de hprzeta : « les masquer ») | `09a40a4`, PDF régénéré |
+| 3 | push de IA et de C | `09a40a4` pour les deux (44 et 60 commits) |
+| 4 | `main` | aucun changement propre ; fusion avec arbre identique à IA (vérifié), `b86cf96` ; push demandé « tel quel » |
+| 5 | `Riemann_Lab_Test` | IA + 2 fichiers d'expérience d'avril 2026 conservés, `3ca0405` |
+
+**Constat important :** GitHub Pages est servi par `Riemann_Lab_IA` (dossier `docs`), pas par `main` ; la reconstruction a été vérifiée (build réussi, page identique au dépôt). **Non masqués, à décider :** quelques identifiants de disque déjà publics (rapport de clonage, un script) et un DNS public utilisé comme sonde de routage ; ils sont maintenant sur les quatre branches, dont la branche par défaut.
+
+## 16. Nettoyage et dernière mise à jour
+
+**Consigne de hprzeta :** « go nettoie puis mets à jour Handoff et wiki ». Trois worktrees et trois branches temporaires supprimés (têtes vérifiées identiques aux distants ; deux suppressions ont d'abord été refusées par git sans danger). Handoff local et wiki mis à jour (commit wiki `17bdc91`). **Consigne suivante :** « 3 » : compléter la présente archive.
+
+## 17. Ce qui reste à faire
+
+| Point | Détail |
+|-----|-------------|
+| Jeton DNS dynamique | rotation à arbitrer par hprzeta, en LAN, jamais via le tunnel ; copies d'un PDF au jeton probable déjà dans la sauvegarde nocturne vers Proton |
+| Identifiants de disque publics | décider de les masquer ou non (commit sur IA puis propagation aux trois autres branches) |
+| Documentation | plan de continuité à régénérer ; divergence de matériel schémas / `STACK.md` ; un dossier d'archives compressées non ajouté au `.gitignore` |
+| Réserves de la partie A | jeu 6 de la sauvegarde « hors git » jamais exécuté en réel, test de la bascule SSH sur un autre réseau, MCP, documentation du stockage (voir le Handoff) |
+| Capture de session | lancer le script de capture **avant** Claude Code pour avoir la capture brute ; sinon utiliser le convertisseur |
+
+---
+*Archive de session du 06/10/2026 (parties A et B) — rédigée à la demande de hprzeta.*
