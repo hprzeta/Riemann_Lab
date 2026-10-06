@@ -3,6 +3,8 @@
 # Police de corps = Latin Modern (= Computer Modern), maths CM, repli DejaVu pour ζ/θ/π en texte.
 # Moteur : lualatex (nécessite une base luaotfload fonctionnelle — OK sur un poste TeXLive normal).
 # Usage : ./build_pdf_riemann_CM.sh chemin/source.md [sortie.pdf]
+# Lecteur pandoc « markdown » (et non « gfm ») : gfm ne calcule pas de largeur de colonne, donc les
+# tableaux n'allaient pas à la ligne et la dernière colonne était coupée (corrigé le 2026-10-06).
 set -euo pipefail
 export LANG=C.UTF-8 LC_ALL=C.UTF-8
 SRC="$1"; OUT="${2:-$(basename "${SRC%.md}").pdf}"; BASE="$(basename "$SRC")"
@@ -40,7 +42,7 @@ open(f'{work}/footer.tex','w',encoding='utf-8').write(
   '{\\small Document créé le \\today{} --- source \\texttt{'+esc+'} --- Riemann\\_Lab --- hprzeta}\n')
 PY
 
-pandoc "$WORK/body.md" --from gfm+tex_math_dollars --listings --shift-heading-level-by=-1 \
+pandoc "$WORK/body.md" --from markdown-smart+pipe_tables+tex_math_dollars+lists_without_preceding_blankline+autolink_bare_uris+strikeout+task_lists-hard_line_breaks --listings --shift-heading-level-by=-1 \
   -s -t latex -V documentclass=article -V classoption=11pt -V classoption=a4paper \
   -V geometry=margin=2.5cm \
   -H "$WORK/header.tex" -A "$WORK/footer.tex" -o "$WORK/doc.tex"
