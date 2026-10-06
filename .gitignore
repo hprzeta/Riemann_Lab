@@ -74,3 +74,5 @@ test-results/
 logs/*.pid
 pdf/optimisation/*.aux
 pdf/optimisation/*.out
+# Textes produits par des IA tierces (sources de travail, jamais versionnés)
+sources_ia/
