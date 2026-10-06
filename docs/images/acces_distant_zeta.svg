@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="900" height="700" viewBox="0 0 900 700" xmlns="http://www.w3.org/2000/svg" font-family="monospace,sans-serif">
+<title>Accès distant au cluster Riemann_Lab</title>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<rect width="900" height="700" fill="#ffffff"/>
+<rect x="0" y="0" width="900" height="52" fill="#f8f8f8"/><line x1="0" y1="52" x2="900" y2="52" stroke="#e0e0e0"/>
+<text x="450" y="22" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a1a">Accès distant — Riemann_Lab</text>
+<text x="450" y="42" text-anchor="middle" font-size="12" fill="#666">Un seul point d'entrée : le bastion PC4, par tunnel WireGuard · hprzeta 2026-10-03</text>
+<rect x="20" y="70" width="210" height="100" rx="10" fill="#e1f5ee" stroke="#0f6e56" stroke-width="1.5"/>
+<text x="125.0" y="91" text-anchor="middle" font-size="13" font-weight="700" fill="#085041">PC1 · zeta-lab</text>
+<text x="125.0" y="109" text-anchor="middle" font-size="10" fill="#085041">hors domicile</text>
+<text x="125.0" y="124" text-anchor="middle" font-size="10" fill="#085041">hotspot mobile ou autre réseau</text>
+<rect x="275" y="80" width="140" height="80" rx="40" fill="#f4f4f4" stroke="#888" stroke-width="1.5"/>
+<text x="345" y="125" text-anchor="middle" font-size="13" font-weight="700" fill="#444">Internet</text>
+<rect x="460" y="80" width="130" height="80" rx="10" fill="#e6f1fb" stroke="#185fa5" stroke-width="1.5"/>
+<text x="525.0" y="101" text-anchor="middle" font-size="13" font-weight="700" fill="#0c447c">Box SFR</text>
+<text x="525.0" y="119" text-anchor="middle" font-size="10" fill="#0c447c">redirige le tunnel</text>
+<rect x="640" y="70" width="240" height="100" rx="10" fill="#fdeaea" stroke="#a32d2d" stroke-width="1.5"/>
+<text x="760.0" y="91" text-anchor="middle" font-size="13" font-weight="700" fill="#7a1f1f">PC4 · zeta-secure</text>
+<text x="760.0" y="109" text-anchor="middle" font-size="10" fill="#7a1f1f">bastion OpenBSD</text>
+<text x="760.0" y="124" text-anchor="middle" font-size="10" fill="#7a1f1f">WireGuard + pare-feu pf</text>
+<line x1="230" y1="120" x2="275" y2="120" stroke="#888" stroke-width="2"/>
+<line x1="415" y1="120" x2="460" y2="120" stroke="#888" stroke-width="2"/>
+<line x1="590" y1="120" x2="640" y2="120" stroke="#888" stroke-width="2"/>
+<path d="M125 170 L125 196 L740 196 L740 172" fill="none" stroke="#a32d2d" stroke-width="2.5" stroke-dasharray="7 4" marker-end="url(#ah)"/>
+<text x="432" y="190" text-anchor="middle" font-size="10" font-weight="700" fill="#a32d2d">Tunnel WireGuard chiffré (UDP) — traverse Internet et la box</text>
+<rect x="640" y="226" width="240" height="44" rx="10" fill="#f1efe8" stroke="#5f5e5a" stroke-width="1.5"/>
+<text x="760.0" y="247" text-anchor="middle" font-size="11" font-weight="700" fill="#2c2c2a">LAN : PC2 · PC3 · PC5</text>
+<text x="760" y="262" text-anchor="middle" font-size="9" fill="#5f5e5a">atteints par rebond SSH via PC4</text>
+<line x1="830" y1="170" x2="830" y2="226" stroke="#5f5e5a" stroke-width="2"/>
+<line x1="0" y1="290" x2="900" y2="290" stroke="#e0e0e0"/>
+<text x="20" y="312" font-size="12" font-weight="700" fill="#333">Bascule automatique maison / déplacement (sur PC1)</text>
+<rect x="290" y="324" width="320" height="44" rx="10" fill="#f1efe8" stroke="#5f5e5a" stroke-width="1.5"/>
+<text x="450.0" y="345" text-anchor="middle" font-size="12" font-weight="700" fill="#2c2c2a">Déclencheurs</text>
+<text x="450.0" y="363" text-anchor="middle" font-size="10" fill="#2c2c2a">zeta-tmux · changement de réseau</text>
+<rect x="290" y="394" width="320" height="44" rx="10" fill="#eeedfe" stroke="#534ab7" stroke-width="1.5"/>
+<text x="450.0" y="415" text-anchor="middle" font-size="11" font-weight="700" fill="#3c3489">Dispatcher NetworkManager 99-wg-auto</text>
+<text x="450.0" y="433" text-anchor="middle" font-size="10" fill="#3c3489">appelle wg_auto.sh automatiquement</text>
+<rect x="290" y="464" width="320" height="44" rx="10" fill="#e6f1fb" stroke="#185fa5" stroke-width="1.5"/>
+<text x="450.0" y="485" text-anchor="middle" font-size="12" font-weight="700" fill="#0c447c">Ping du bastion par le LAN</text>
+<text x="450.0" y="503" text-anchor="middle" font-size="10" fill="#0c447c">via l'interface physique</text>
+<line x1="450" y1="368" x2="450" y2="394" stroke="#333" stroke-width="1.5" marker-end="url(#ah)"/>
+<line x1="450" y1="438" x2="450" y2="464" stroke="#333" stroke-width="1.5" marker-end="url(#ah)"/>
+<path d="M450 508 L450 522 L240 522 L240 540" fill="none" stroke="#333" stroke-width="1.5" marker-end="url(#ah)"/>
+<path d="M450 522 L660 522 L660 540" fill="none" stroke="#333" stroke-width="1.5" marker-end="url(#ah)"/>
+<rect x="40" y="540" width="400" height="66" rx="10" fill="#e1f5ee" stroke="#0f6e56" stroke-width="1.5"/>
+<text x="240.0" y="561" text-anchor="middle" font-size="12" font-weight="700" fill="#04342c">Maison — le ping répond</text>
+<text x="240.0" y="579" text-anchor="middle" font-size="10" fill="#04342c">wg-quick down wg0</text>
+<text x="240.0" y="594" text-anchor="middle" font-size="10" fill="#04342c">le LAN direct suffit</text>
+<rect x="460" y="540" width="400" height="66" rx="10" fill="#faeeda" stroke="#ba7517" stroke-width="1.5"/>
+<text x="660.0" y="561" text-anchor="middle" font-size="12" font-weight="700" fill="#633806">Déplacement — pas de réponse</text>
+<text x="660.0" y="579" text-anchor="middle" font-size="10" fill="#633806">wg-quick up wg0</text>
+<text x="660.0" y="594" text-anchor="middle" font-size="10" fill="#633806">vers le nom DDNS du bastion</text>
+<rect x="40" y="626" width="820" height="48" rx="10" fill="#fceeee" stroke="#a32d2d" stroke-width="1.5"/>
+<text x="450.0" y="647" text-anchor="middle" font-size="12" font-weight="700" fill="#7a1f1f">Limite connue</text>
+<text x="450.0" y="665" text-anchor="middle" font-size="10" fill="#7a1f1f">Un handshake réussi ne garantit pas le transport des données (cas du hotspot).</text>
+<rect x="0" y="674" width="900" height="26" fill="#f8f8f8"/><line x1="0" y1="674" x2="900" y2="674" stroke="#e0e0e0"/>
+<text x="450" y="691" text-anchor="middle" font-size="10" fill="#888">acces_distant_zeta.svg · hprzeta · MAJ 2026-10-03</text>
+</svg>

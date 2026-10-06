@@ -114,7 +114,7 @@ def test_latence_requete() -> None:
         import chromadb
 
         t0 = time.time()
-        modele = SentenceTransformer(MODELE_EMBEDDING)
+        modele = SentenceTransformer(MODELE_EMBEDDING, device="cpu")   # CPU forcé : GTX 960M non gérée par torch 2.11
         t_chargement = time.time() - t0
 
         t0 = time.time()

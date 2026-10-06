@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="900" height="554" viewBox="0 0 900 554" xmlns="http://www.w3.org/2000/svg" font-family="monospace,sans-serif">
+<title>Fiches matériel du cluster Riemann_Lab</title>
+<rect width="900" height="554" fill="#ffffff"/>
+<rect x="0" y="0" width="900" height="52" fill="#f8f8f8"/><line x1="0" y1="52" x2="900" y2="52" stroke="#e0e0e0"/>
+<text x="450" y="22" text-anchor="middle" font-size="17" font-weight="700" fill="#1a1a1a">Matériel du cluster — Riemann_Lab</text>
+<text x="450" y="42" text-anchor="middle" font-size="12" fill="#666">5 machines · données relevées par inventaire le 2026-10-03</text>
+<rect x="15" y="66" width="280" height="214" rx="10" fill="#ffffff" stroke="#085041" stroke-width="1.5"/>
+<path d="M15 76 a10 10 0 0 1 10 -10 h260 a10 10 0 0 1 10 10 v20 h-280 z" fill="#085041"/>
+<text x="27" y="86" font-size="13" font-weight="700" fill="#ffffff">PC1 · zeta-lab</text>
+<rect x="17" y="104" width="276" height="17" fill="#f1faf6"/>
+<text x="25" y="116" font-size="9" font-weight="700" fill="#555">Modèle</text>
+<text x="77" y="116" font-size="9.5" fill="#1a1a1a">ASUS UX510UWK (portable)</text>
+<text x="25" y="133" font-size="9" font-weight="700" fill="#555">CPU</text>
+<text x="77" y="133" font-size="9.5" fill="#1a1a1a">Core i7-7500U · 2c/4t · 3,5 GHz</text>
+<rect x="17" y="138" width="276" height="17" fill="#f1faf6"/>
+<text x="25" y="150" font-size="9" font-weight="700" fill="#555">RAM</text>
+<text x="77" y="150" font-size="9.5" fill="#0f6e56">16 Go DDR4 (2×8) · 2 slots libres</text>
+<text x="25" y="167" font-size="9" font-weight="700" fill="#555">GPU</text>
+<text x="77" y="167" font-size="9.5" fill="#0f6e56">GTX 960M 4 Go + Intel HD 620</text>
+<rect x="17" y="172" width="276" height="17" fill="#f1faf6"/>
+<text x="25" y="184" font-size="9" font-weight="700" fill="#555">Disque</text>
+<text x="77" y="184" font-size="9.5" fill="#ba7517">HDD 1 To 5400 tr/min (Seagate)</text>
+<text x="25" y="201" font-size="9" font-weight="700" fill="#555">Réseau</text>
+<text x="77" y="201" font-size="9.5" fill="#ba7517">Wi-Fi Intel 8260 · pas d'Ethernet</text>
+<rect x="17" y="206" width="276" height="17" fill="#f1faf6"/>
+<text x="25" y="218" font-size="9" font-weight="700" fill="#555">Système</text>
+<text x="77" y="218" font-size="9.5" fill="#1a1a1a">Ubuntu 24.04</text>
+<text x="25" y="235" font-size="9" font-weight="700" fill="#555">Alim.</text>
+<text x="77" y="235" font-size="9.5" fill="#1a1a1a">batterie + secteur</text>
+<rect x="17" y="240" width="276" height="17" fill="#f1faf6"/>
+<text x="25" y="252" font-size="9" font-weight="700" fill="#555">Rôle</text>
+<text x="77" y="252" font-size="9.5" fill="#0f6e56">calcul principal · dev · git</text>
+<rect x="310" y="66" width="280" height="214" rx="10" fill="#ffffff" stroke="#2c2c2a" stroke-width="1.5"/>
+<path d="M310 76 a10 10 0 0 1 10 -10 h260 a10 10 0 0 1 10 10 v20 h-280 z" fill="#2c2c2a"/>
+<text x="322" y="86" font-size="13" font-weight="700" fill="#ffffff">PC2 · zeta-calc-second</text>
+<rect x="312" y="104" width="276" height="17" fill="#f6f5f1"/>
+<text x="320" y="116" font-size="9" font-weight="700" fill="#555">Modèle</text>
+<text x="372" y="116" font-size="9.5" fill="#1a1a1a">HP Compaq 8000 Elite CMT (tour)</text>
+<text x="320" y="133" font-size="9" font-weight="700" fill="#555">CPU</text>
+<text x="372" y="133" font-size="9.5" fill="#1a1a1a">Core 2 Duo E8400 · 2c/2t · 3,0 GHz</text>
+<rect x="312" y="138" width="276" height="17" fill="#f6f5f1"/>
+<text x="320" y="150" font-size="9" font-weight="700" fill="#555">RAM</text>
+<text x="372" y="150" font-size="9.5" fill="#0f6e56">8 Go DDR3 (4×2) · max 16 Go</text>
+<text x="320" y="167" font-size="9" font-weight="700" fill="#555">GPU</text>
+<text x="372" y="167" font-size="9.5" fill="#1a1a1a">Intel 4 Series (intégré)</text>
+<rect x="312" y="172" width="276" height="17" fill="#f6f5f1"/>
+<text x="320" y="184" font-size="9" font-weight="700" fill="#555">Disque</text>
+<text x="372" y="184" font-size="9.5" fill="#1a1a1a">HDD 75 Go (/) + 466 Go (/home)</text>
+<text x="320" y="201" font-size="9" font-weight="700" fill="#555">Réseau</text>
+<text x="372" y="201" font-size="9.5" fill="#0f6e56">Gigabit Intel 82567LM-3</text>
+<rect x="312" y="206" width="276" height="17" fill="#f6f5f1"/>
+<text x="320" y="218" font-size="9" font-weight="700" fill="#555">Système</text>
+<text x="372" y="218" font-size="9.5" fill="#1a1a1a">Debian 12</text>
+<text x="320" y="235" font-size="9" font-weight="700" fill="#555">BIOS</text>
+<text x="372" y="235" font-size="9.5" fill="#ba7517">HP 786G7 v01.02 (2009)</text>
+<rect x="312" y="240" width="276" height="17" fill="#f6f5f1"/>
+<text x="320" y="252" font-size="9" font-weight="700" fill="#555">Rôle</text>
+<text x="372" y="252" font-size="9.5" fill="#1a1a1a">calcul secondaire · stockage</text>
+<rect x="605" y="66" width="280" height="214" rx="10" fill="#ffffff" stroke="#3c3489" stroke-width="1.5"/>
+<path d="M605 76 a10 10 0 0 1 10 -10 h260 a10 10 0 0 1 10 10 v20 h-280 z" fill="#3c3489"/>
+<text x="617" y="86" font-size="13" font-weight="700" fill="#ffffff">PC3 · zeta-backup</text>
+<rect x="607" y="104" width="276" height="17" fill="#f5f4fe"/>
+<text x="615" y="116" font-size="9" font-weight="700" fill="#555">Modèle</text>
+<text x="667" y="116" font-size="9.5" fill="#1a1a1a">Acer Aspire M3203 (tour)</text>
+<text x="615" y="133" font-size="9" font-weight="700" fill="#555">CPU</text>
+<text x="667" y="133" font-size="9.5" fill="#1a1a1a">Athlon II X2 215 · 2c/2t · 2,7 GHz</text>
+<rect x="607" y="138" width="276" height="17" fill="#f5f4fe"/>
+<text x="615" y="150" font-size="9" font-weight="700" fill="#555">RAM</text>
+<text x="667" y="150" font-size="9.5" fill="#ba7517">6 Go DDR2 (4 slots pleins, max 8)</text>
+<text x="615" y="167" font-size="9" font-weight="700" fill="#555">GPU</text>
+<text x="667" y="167" font-size="9.5" fill="#1a1a1a">Radeon HD 3200 (intégré)</text>
+<rect x="607" y="172" width="276" height="17" fill="#f5f4fe"/>
+<text x="615" y="184" font-size="9" font-weight="700" fill="#555">Disque</text>
+<text x="667" y="184" font-size="9.5" fill="#1a1a1a">HDD 250 Go (Hitachi)</text>
+<text x="615" y="201" font-size="9" font-weight="700" fill="#555">Réseau</text>
+<text x="667" y="201" font-size="9.5" fill="#0f6e56">Gigabit Marvell 88E8071</text>
+<rect x="607" y="206" width="276" height="17" fill="#f5f4fe"/>
+<text x="615" y="218" font-size="9" font-weight="700" fill="#555">Système</text>
+<text x="667" y="218" font-size="9.5" fill="#1a1a1a">Ubuntu LTS (32 bits)</text>
+<text x="615" y="235" font-size="9" font-weight="700" fill="#555">BIOS</text>
+<text x="667" y="235" font-size="9.5" fill="#ba7517">AMI P01-A0 (2009)</text>
+<rect x="607" y="240" width="276" height="17" fill="#f5f4fe"/>
+<text x="615" y="252" font-size="9" font-weight="700" fill="#555">Rôle</text>
+<text x="667" y="252" font-size="9.5" fill="#1a1a1a">sauvegarde nocturne → Proton Drive</text>
+<rect x="15" y="294" width="280" height="214" rx="10" fill="#ffffff" stroke="#7a1f1f" stroke-width="1.5"/>
+<path d="M15 304 a10 10 0 0 1 10 -10 h260 a10 10 0 0 1 10 10 v20 h-280 z" fill="#7a1f1f"/>
+<text x="27" y="314" font-size="13" font-weight="700" fill="#ffffff">PC4 · zeta-secure</text>
+<rect x="17" y="332" width="276" height="17" fill="#fdf3f3"/>
+<text x="25" y="344" font-size="9" font-weight="700" fill="#555">Modèle</text>
+<text x="77" y="344" font-size="9.5" fill="#1a1a1a">HP Compaq CQ58 (portable)</text>
+<text x="25" y="361" font-size="9" font-weight="700" fill="#555">CPU</text>
+<text x="77" y="361" font-size="9.5" fill="#1a1a1a">Celeron B830 · 2c/2t · 1,8 GHz</text>
+<rect x="17" y="366" width="276" height="17" fill="#fdf3f3"/>
+<text x="25" y="378" font-size="9" font-weight="700" fill="#555">RAM</text>
+<text x="77" y="378" font-size="9.5" fill="#1a1a1a">4 Go DDR3 SO-DIMM</text>
+<text x="25" y="395" font-size="9" font-weight="700" fill="#555">GPU</text>
+<text x="77" y="395" font-size="9.5" fill="#1a1a1a">Intel HD 2000 (intégré)</text>
+<rect x="17" y="400" width="276" height="17" fill="#fdf3f3"/>
+<text x="25" y="412" font-size="9" font-weight="700" fill="#555">Disque</text>
+<text x="77" y="412" font-size="9.5" fill="#1a1a1a">HDD Hitachi · /home 295 Go</text>
+<text x="25" y="429" font-size="9" font-weight="700" fill="#555">Réseau</text>
+<text x="77" y="429" font-size="9.5" fill="#ba7517">Fast Ethernet 100 Mbit (RTL8105E)</text>
+<rect x="17" y="434" width="276" height="17" fill="#fdf3f3"/>
+<text x="25" y="446" font-size="9" font-weight="700" fill="#555">Système</text>
+<text x="77" y="446" font-size="9.5" fill="#1a1a1a">OpenBSD 7.9 (amd64)</text>
+<text x="25" y="463" font-size="9" font-weight="700" fill="#555">Alim.</text>
+<text x="77" y="463" font-size="9.5" fill="#0f6e56">batterie + secteur</text>
+<rect x="17" y="468" width="276" height="17" fill="#fdf3f3"/>
+<text x="25" y="480" font-size="9" font-weight="700" fill="#555">Rôle</text>
+<text x="77" y="480" font-size="9.5" fill="#1a1a1a">bastion WireGuard + pare-feu pf</text>
+<rect x="310" y="294" width="280" height="214" rx="10" fill="#ffffff" stroke="#8a5a1e" stroke-width="1.5"/>
+<path d="M310 304 a10 10 0 0 1 10 -10 h260 a10 10 0 0 1 10 10 v20 h-280 z" fill="#8a5a1e"/>
+<text x="322" y="314" font-size="13" font-weight="700" fill="#ffffff">PC5 · zeta-monitor</text>
+<rect x="312" y="332" width="276" height="17" fill="#fdf6ec"/>
+<text x="320" y="344" font-size="9" font-weight="700" fill="#555">Modèle</text>
+<text x="372" y="344" font-size="9.5" fill="#1a1a1a">HP Presario CQ57 (portable)</text>
+<text x="320" y="361" font-size="9" font-weight="700" fill="#555">CPU</text>
+<text x="372" y="361" font-size="9.5" fill="#1a1a1a">AMD E-300 · 2c/2t · 1,3 GHz</text>
+<rect x="312" y="366" width="276" height="17" fill="#fdf6ec"/>
+<text x="320" y="378" font-size="9" font-weight="700" fill="#555">RAM</text>
+<text x="372" y="378" font-size="9.5" fill="#ba7517">2 Go DDR3 · 1 slot libre</text>
+<text x="320" y="395" font-size="9" font-weight="700" fill="#555">GPU</text>
+<text x="372" y="395" font-size="9.5" fill="#1a1a1a">Radeon HD 6310 (intégré)</text>
+<rect x="312" y="400" width="276" height="17" fill="#fdf6ec"/>
+<text x="320" y="412" font-size="9" font-weight="700" fill="#555">Disque</text>
+<text x="372" y="412" font-size="9.5" fill="#1a1a1a">HDD 320 Go (Hitachi)</text>
+<text x="320" y="429" font-size="9" font-weight="700" fill="#555">Réseau</text>
+<text x="372" y="429" font-size="9.5" fill="#ba7517">Fast Ethernet 100 Mbit + Wi-Fi n</text>
+<rect x="312" y="434" width="276" height="17" fill="#fdf6ec"/>
+<text x="320" y="446" font-size="9" font-weight="700" fill="#555">Système</text>
+<text x="372" y="446" font-size="9.5" fill="#1a1a1a">Debian 12</text>
+<text x="320" y="463" font-size="9" font-weight="700" fill="#555">Écran</text>
+<text x="372" y="463" font-size="9.5" fill="#0f6e56">sortie VGA forcée vers la TV LG</text>
+<rect x="312" y="468" width="276" height="17" fill="#fdf6ec"/>
+<text x="320" y="480" font-size="9" font-weight="700" fill="#555">Rôle</text>
+<text x="372" y="480" font-size="9.5" fill="#1a1a1a">supervision · graphes · tmux</text>
+<rect x="605" y="294" width="280" height="214" rx="10" fill="#f8f8f8" stroke="#bbbbbb" stroke-width="1.5"/>
+<text x="617" y="316" font-size="13" font-weight="700" fill="#333">À retenir</text>
+<text x="617" y="340" font-size="9.5" fill="#1a1a1a">• Matériel de 2009 à 2016, réparti par rôle</text>
+<text x="617" y="360" font-size="9.5" fill="#1a1a1a">• PC1 : seule machine avec GPU (CUDA)</text>
+<text x="617" y="380" font-size="9.5" fill="#1a1a1a">• Gigabit : PC2, PC3 · 100 Mbit : PC4, PC5</text>
+<text x="617" y="400" font-size="9.5" fill="#1a1a1a">• RAM extensible : PC1 (2 slots), PC5 (1)</text>
+<text x="617" y="420" font-size="9.5" fill="#1a1a1a">• Stockage : disques durs classiques</text>
+<line x1="0" y1="510" x2="900" y2="510" stroke="#e0e0e0"/>
+<text x="15" y="531" font-size="10" fill="#555">vert = atout · orange = limite</text>
+<text x="885" y="531" text-anchor="end" font-size="10" fill="#888">fiches_materiel_zeta.svg · hprzeta · MAJ 2026-10-03</text>
+</svg>

@@ -157,6 +157,28 @@ def calculer_pivot(T_MAX: float, v1: float, v2: float) -> float:
 #  SECTION 2 — LANCEMENT DES RUNS
 # ═══════════════════════════════════════════════════════════════════════════════
 
+# Adresses du cluster : fichier LOCAL hors git (jamais d'IP en dur dans le dépôt)
+def _hotes_di():
+    import os
+    chemin = os.path.expanduser("~/.config/zeta/cluster_hosts.env")
+    try:
+        with open(chemin, encoding="utf-8") as f:
+            return dict(l.strip().split("=", 1) for l in f
+                        if "=" in l and not l.lstrip().startswith("#"))
+    except OSError:
+        raise SystemExit(f"Fichier d'adresses absent : {chemin}")
+H = _hotes_di()
+
+def _pc2_jump_opts() -> list:
+    """ProxyJump via le bastion si PC1 est en déplacement, rien à la maison.
+    Même détection que zeta_tmux.sh / zeta_monitor.py — zeta-calc-second (alias
+    ~/.ssh/config) résout en IP LAN en dur, injoignable hors LAN maison.
+    """
+    tunnel = subprocess.run(["ping", "-c1", "-W1", H["ZETA_BASTION"]],
+                             capture_output=True).returncode == 0
+    return ["-J", f"hprzeta@{H['ZETA_BASTION']}"] if tunnel else []
+
+
 def _cmd_venv(commande: str) -> str:
     """Enveloppe une commande pour PC2 — Python3 système (pas de venv sur Debian 12).
     PYTHONPATH = src/calculs/optimisation/ : tous les modules (arb_wrapper, turing…)
@@ -213,6 +235,7 @@ def lancer_pc2(T_PIVOT: float, T_MAX: float, horodatage: str, log_dir: Path) -> 
         "ssh", "-i", str(PC2_SSH_KEY),
         "-o", "StrictHostKeyChecking=no",
         "-o", "ConnectTimeout=10",
+        *_pc2_jump_opts(),
         PC2_HOST,
         _cmd_venv(cmd_py),
     ]
@@ -299,6 +322,7 @@ def recuperer_csv_pc2(T_PIVOT: float, T_MAX: float,
     cmd = [
         "scp", "-i", str(PC2_SSH_KEY),
         "-o", "StrictHostKeyChecking=no",
+        *_pc2_jump_opts(),
         f"{PC2_HOST}:{chemin_remote}",
         str(csv_local),
     ]
