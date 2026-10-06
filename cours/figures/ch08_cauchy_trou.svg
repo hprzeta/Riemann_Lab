@@ -1,0 +1,22 @@
+<svg viewBox="0 0 560 380" xmlns="http://www.w3.org/2000/svg" font-family="DejaVu Sans">
+  <rect x="0" y="0" width="560" height="380" fill="#ffffff"/>
+  <text x="280" y="24" text-anchor="middle" font-size="15" font-weight="bold">Théorème de Cauchy : le rôle du « trou »</text>
+
+  <!-- panneau gauche : disque simplement connexe, f=z^2 holomorphe partout -->
+  <circle cx="150" cy="205" r="110" fill="#8fd19e" opacity="0.3" stroke="#1a6b34" stroke-width="2"/>
+  <circle cx="150" cy="205" r="80" fill="none" stroke="#1a4f8a" stroke-width="2" stroke-dasharray="5,4"/>
+  <text x="150" y="90" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a6b34">domaine simplement connexe</text>
+  <text x="150" y="108" text-anchor="middle" font-size="12" fill="#1a6b34">f(z)=z² holomorphe partout</text>
+  <text x="150" y="330" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a4f8a">∮ z² dz = 0</text>
+
+  <!-- panneau droit : disque troue, pole au centre -->
+  <circle cx="410" cy="205" r="110" fill="#e8a598" opacity="0.3" stroke="#7a2f2f" stroke-width="2"/>
+  <circle cx="410" cy="205" r="80" fill="none" stroke="#1a4f8a" stroke-width="2" stroke-dasharray="5,4"/>
+  <circle cx="410" cy="205" r="6" fill="#c0392b"/>
+  <text x="422" y="200" font-size="12" fill="#c0392b" font-weight="bold">pôle z=0</text>
+  <text x="410" y="90" text-anchor="middle" font-size="13" font-weight="bold" fill="#7a2f2f">domaine « troué » (privé de 0)</text>
+  <text x="410" y="108" text-anchor="middle" font-size="12" fill="#7a2f2f">f(z)=1/z non holomorphe en 0</text>
+  <text x="410" y="330" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a4f8a">∮ dz/z = 2πi ≠ 0</text>
+
+  <text x="280" y="365" text-anchor="middle" font-size="11" fill="#555">Même contour (cercle pointillé) : le résultat ne dépend que de la présence ou non d'une singularité à l'intérieur.</text>
+</svg>

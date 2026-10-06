@@ -11,9 +11,9 @@ HOTES="$HOME/.config/zeta/cluster_hosts.env"
 # ─── Détection maison / déplacement (tunnel déjà positionné par wg_auto.sh) ───
 if ping -c1 -W2 ${ZETA_BASTION} >/dev/null 2>&1; then
     echo "🧳 DÉPLACEMENT — accès cluster via bastion ${ZETA_BASTION}"
-    SSH_PC2="$SSH_PC2"
-    SSH_PC3="$SSH_PC3"
-    SSH_PC4="$SSH_PC4"
+    SSH_PC2="ssh -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes -J hprzeta@${ZETA_BASTION} hprzeta@${ZETA_PC2}"
+    SSH_PC3="ssh -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes -J hprzeta@${ZETA_BASTION} hprzeta@${ZETA_PC3}"
+    SSH_PC4="ssh -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes hprzeta@${ZETA_BASTION}"
     SSH_PC5="ssh -t -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes -J hprzeta@${ZETA_BASTION} hprzeta@${ZETA_PC5}"
 else
     echo "🏠 MAISON — accès cluster direct en LAN"
@@ -32,13 +32,13 @@ tmux split-window -v -t $SESSION:0.0
 tmux split-window -v -t $SESSION:0.0
 tmux split-window -v -t $SESSION:0.2
 tmux select-pane -t $SESSION:0.0 -P 'bg=#16261b,fg=#5cb86a'
-tmux send-keys -t $SESSION:0.0 "ssh -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes -J hprzeta@${ZETA_BASTION} hprzeta@${ZETA_PC2}" Enter
+tmux send-keys -t $SESSION:0.0 "$SSH_PC2" Enter
 sleep 1
 tmux select-pane -t $SESSION:0.1 -P 'bg=#142130,fg=#4f95dc'
-tmux send-keys -t $SESSION:0.1 "ssh -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes -J hprzeta@${ZETA_BASTION} hprzeta@${ZETA_PC3}" Enter
+tmux send-keys -t $SESSION:0.1 "$SSH_PC3" Enter
 sleep 1
 tmux select-pane -t $SESSION:0.2 -P 'bg=#251628,fg=#b06fce'
-tmux send-keys -t $SESSION:0.2 "ssh -i ~/.ssh/zeta_cluster -o IdentitiesOnly=yes hprzeta@${ZETA_BASTION}" Enter
+tmux send-keys -t $SESSION:0.2 "$SSH_PC4" Enter
 sleep 1
 tmux select-pane -t $SESSION:0.3 -P 'bg=#2a2410,fg=#e0a83c'
 tmux send-keys -t $SESSION:0.3 "cd ~/projet_zeta && source zeta_env/bin/activate" Enter

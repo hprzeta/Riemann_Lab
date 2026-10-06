@@ -15,9 +15,9 @@ H = _charge_hotes()
 
 MACHINES = [
     {"name":"zeta-lab","label":"PC1 · zeta-lab","role":"Orchestrateur / Calcul principal","host":"localhost","user":None,"key":None,"color":"pc1_amber"},
-    {"name":"zeta-calc-second","label":"PC2 · zeta-calc-second","role":"Second nœud calcul (E8400 2C)","host":H["ZETA_PC2"],"user":"hprzeta","key":"~/.ssh/id_acer","color":"pc2_green","jump":True},
-    {"name":"zeta-backup","label":"PC3 · zeta-backup","role":"Backup / monitoring (E2140 2C)","host":H["ZETA_PC3"],"user":"hprzeta","key":"~/.ssh/id_acer","color":"pc3_blue","jump":True},
-    {"name":"zeta-secure","label":"PC4 · zeta-secure","role":"Bastion VPN / WireGuard (OpenBSD)","host":H["ZETA_BASTION"],"host_home":H["ZETA_PC4"],"user":"hprzeta","key":"~/.ssh/id_acer","color":"pc4_magenta","openbsd":True},
+    {"name":"zeta-calc-second","label":"PC2 · zeta-calc-second","role":"Second nœud calcul (E8400 2C)","host":H["ZETA_PC2"],"user":"hprzeta","key":"~/.ssh/zeta_cluster","color":"pc2_green","jump":True},
+    {"name":"zeta-backup","label":"PC3 · zeta-backup","role":"Backup / monitoring (E2140 2C)","host":H["ZETA_PC3"],"user":"hprzeta","key":"~/.ssh/zeta_cluster","color":"pc3_blue","jump":True},
+    {"name":"zeta-secure","label":"PC4 · zeta-secure","role":"Bastion VPN / WireGuard (OpenBSD)","host":H["ZETA_BASTION"],"host_home":H["ZETA_PC4"],"user":"hprzeta","key":"~/.ssh/zeta_cluster","color":"pc4_magenta","openbsd":True},
     {"name":"zeta-monitor","label":"PC5 · zeta-monitor","role":"Monitoring","host":H["ZETA_PC5"],"user":"hprzeta","key":"~/.ssh/zeta_cluster","color":"pc5_orange","jump":True},
 ]
 
