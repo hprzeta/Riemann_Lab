@@ -209,4 +209,56 @@ Le listage direct chez Proton n'a pas été fait : le compte SSH `hprzeta` n'a p
 | Capture de session | lancer le script de capture **avant** Claude Code pour avoir la capture brute ; sinon utiliser le convertisseur |
 
 ---
-*Archive de session du 06/10/2026 (parties A et B) — rédigée à la demande de hprzeta.*
+
+# Partie C — fin de session (nuit du 06 au 07/10)
+
+> Suite et clôture de la session du soir : défaut des PDF corrigé, archive commitée, propagation sur les quatre branches, mise à jour du Handoff et du wiki, puis « bye bye ».
+
+## 18. Correction du script de génération des PDF
+
+**Consigne de hprzeta :** « go corrige le script puis commit l'archive ».
+
+**Défaut.** En régénérant la partie B, la dernière colonne de chaque tableau était coupée dans le PDF ; l'ancien PDF du 06/10 avait déjà le même défaut (troisième colonne du tableau « bye bye » absente). **Cause :** le script de génération lisait le Markdown avec le lecteur `gfm` de pandoc, qui ne calcule pas de largeur de colonne, donc les cellules ne passaient pas à la ligne.
+
+| Élément | Décision |
+|----|----------------|
+| Correctif | lecteur `markdown` de pandoc avec les extensions qui reproduisent `gfm` (liste sans ligne vide, liens nus, texte barré, cases à cocher) ; une ligne de commande et un commentaire d'en-tête |
+| Précaution | sauvegarde datée du script avant modification ; commit séparé du commit de l'archive |
+| Commits | script `836f873`, archive (partie B, 9 pages) `c1be1b8` |
+
+**Non-régression** (anciens et nouveaux PDF comparés mot à mot, sur 7 documents) :
+
+| Document | Résultat |
+|------|-------------|
+| archive du 20/09 (sans tableau) | identique |
+| archive du 04/10, synthèse des skills (tableaux) | texte coupé restitué (+114 et +1 109 mots) ; les « mots perdus » ne sont que des fragments tronqués de l'ancien rendu |
+| 3 pages du wiki riches en formules | même nombre de pages, texte identique ou quasi (un en-tête de tableau se replie sur plusieurs lignes) |
+| un guide du dépôt | échoue à la génération avec l'ancien comme avec le nouveau script ; non investigué |
+
+**Limite :** les PDF déjà commités des anciennes archives gardent le défaut tant qu'ils ne sont pas régénérés.
+
+## 19. Push et propagation sur les quatre branches
+
+**Consigne de hprzeta :** « pousse et propage aux 3 autres branches ». Audit avant chaque push (3 fichiers, 99 lignes ajoutées, 1 PDF) : aucun résultat. Aucun `--force`.
+
+| Branche | Avant | Après | Méthode |
+|-----|---|---|-------|
+| `Riemann_Lab_IA` | `09a40a4` | `c1be1b8` | push direct |
+| `Riemann_Lab_C` | `09a40a4` | `c1be1b8` | fast-forward |
+| `main` | `b86cf96` | `ded1b78` | fusion de IA, 0 conflit |
+| `Riemann_Lab_Test` | `3ca0405` | `ac702b3` | fusion de IA, 0 conflit |
+
+Arbres : `main` et C identiques à IA ; Test = IA + 2 fichiers d'expérience. Le site public est servi par `Riemann_Lab_IA` : reconstruction vérifiée (build réussi, page en ligne). Worktrees et branches temporaires supprimés.
+
+## 20. Mise à jour du Handoff et du wiki
+
+**Consigne de hprzeta :** « go mets à jour le Handoff et le wiki ». Handoff local mis à jour (archive complétée, correctif du script, propagation, prochaines étapes) ; wiki : `Handoff.md` et `JOURNAL.md` (commit `20282d7`, poussé), texte sans détail d'infrastructure, audit des lignes ajoutées à zéro.
+
+## 21. Clôture : « bye bye »
+
+**Capture brute du terminal : absente** pour toute la journée (la capture de 17h05 est vide ; aucune n'était active le soir). Il n'y a donc rien à arrêter. **Substitut :** la transcription automatique de Claude Code a été convertie en Markdown propre par le nouvel outil (1 385 lignes, 34 messages de hprzeta, 91 réponses, contrôle de seconde passe propre), dans le dossier ignoré par git, non commitée. **Pour la prochaine fois :** lancer le script de capture **avant** Claude Code, dans le même terminal ; sinon utiliser le convertisseur.
+
+**Ce qui reste ouvert (voir la section 17) :** rotation du jeton DNS dynamique ; masquage ou non de quelques identifiants de disque déjà publics ; régénération des PDF des anciennes archives avec le script corrigé ; échec de génération d'un guide ; plan de continuité à régénérer ; divergence de matériel entre les schémas et `STACK.md`.
+
+---
+*Archive de session du 06/10/2026 (parties A, B et C) — rédigée à la demande de hprzeta (« bye bye »).*
