@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # ==============================================================================
 # zeta_script.py — menu des alias de ~/.bashrc (alias : zeta-script)
-# Liste les alias RÉELLEMENT présents dans ~/.bashrc, avec un libellé d'une phrase.
+# Liste les alias « zeta » (zeta, zeta-*) RÉELLEMENT présents dans ~/.bashrc, avec un libellé d'une phrase.
 # Aucune écriture : lecture de ~/.bashrc ; un alias n'est lancé qu'après confirmation.
 # Usage : zeta-script            (menu)  |  zeta-script --liste  (liste seule)
 # Limite : un alias qui fait « cd » ou « source » n'agit que dans le sous-shell
@@ -74,6 +74,8 @@ def lire_alias():
             if not m:
                 continue  # ligne qui n'est pas un alias
             nom, brut = m.group(1), m.group(2)  # nom et valeur brute
+            if nom != "zeta" and not nom.startswith("zeta-"):
+                continue  # on ne garde que les alias zêta (pas ll, la, alert, wg-auto...)
             try:
                 cmd = " ".join(shlex.split(brut))  # retire les guillemets du shell
             except ValueError:
@@ -109,7 +111,7 @@ def lancer(nom, cmd):
 def main():
     alias = lire_alias()  # alias actuels du fichier
     if not alias:
-        print("Aucun alias trouvé dans ~/.bashrc")
+        print("Aucun alias zeta trouvé dans ~/.bashrc")
         return 1
     afficher(alias)
     if "--liste" in sys.argv:  # mode liste seule : pas de menu
