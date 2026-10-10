@@ -1064,4 +1064,87 @@ disque LOCAL Seagate »). Appelée au démarrage de session (autostart) et dans 
 Après **chaque** clonage de `/`, `update-grub` en chroot est obligatoire : le rsync
 recopie `grub.cfg` avec les UUID du disque source. `fix_grub` l'automatise.
 
-*Mis à jour le 2026-10-10 — 1067 lignes.*
+---
+
+## Session 2026-10-10 (suite) — Script v2.4 : garde-fou de sens et restauration inverse
+
+### Besoin
+Le clone Toshiba sert de secours. Si le Seagate (disque de travail) tombe en panne, il faut
+pouvoir **restaurer dans le sens inverse** (Toshiba → disque de travail) sans risquer
+d'effacer le mauvais disque. La v2.4 de `scripts/zeta_backup_toshiba.sh` ajoute pour cela
+un **garde-fou de sens** et trois options : 8 (restauration complète), 9 (disque neuf),
+10 (restauration d'un chemin précis).
+
+### Garde-fou de sens (A)
+- `require_root_label()` lit le LABEL de la racine en cours (`lsblk -no LABEL "$(findmnt -no SOURCE /)"`).
+- Les opérations qui **écrivent sur le Toshiba** (option 1 clone, option 7 réparation du boot,
+  `fix_fstab`, `fix_grub` en mode clonage) exigent la racine `Seagate-PC1-root`. Sinon :
+  message rouge « Sens inverse interdit : lance ce script depuis le Seagate », code retour 1,
+  **aucune écriture**.
+- Les options 2, 3, 4, 5, 6 (SMART, montage, espace, démontage, vérification en lecture seule)
+  restent autorisées partout.
+- Pour les tests, la variable `ZETA_TEST_ROOT_LABEL` simule un label sans toucher aux disques.
+
+### Restauration inverse (B)
+| Option | Rôle | Écrit sur un disque ? |
+|---|---|---|
+| 8 | Restaurer Toshiba → disque de travail (dry-run, confirmation, rsync `--delete`, fstab, GRUB) | oui, après « oui » |
+| 9 | Préparer un disque **neuf** (GPT + mkfs avec les labels du Seagate) | oui, après « oui » |
+| 10 | Restaurer **un fichier ou dossier** sous `/home` ou `/mnt/data` (sans `--delete`) | oui, après « oui » |
+
+Garde-fous de l'option 8 (et 10) :
+1. refus si la racine en cours est `Seagate-PC1-root` ;
+2. refus si la partition cible est la racine montée sur `/` (contrôle par périphérique, indépendant des labels) ;
+3. refus si source et cible sont sur le même disque physique, ou si les 4 partitions cibles ne sont pas sur le même disque ;
+4. pré-requis : partitions étiquetées `Seagate-PC1-root`, `Seagate-PC1-home`, `Seagate-PC1-data`, `SG-PC1-EFI` (sinon : option 9) ;
+5. **dry-run automatique** avec résumé des suppressions avant toute écriture, puis confirmation « oui » ;
+6. rsync `-aAXHx --delete`, exclusions `/lost+found`, `/swapfile`, `Documents/SAP*` ;
+7. post-restauration : `fix_fstab` inversé (UUID Toshiba → UUID cible, lus par label), `fix_grub` inversé
+   (EFI et bind-mounts, `update-grub` en chroot, `grub-install --target=x86_64-efi --bootloader-id=ubuntu`
+   et `efibootmgr` si l'EFI de la cible est vide ou périmée), démontage garanti dans l'ordre inverse (trap EXIT) ;
+8. vérifications : 0 occurrence de l'UUID Toshiba et >0 de l'UUID cible dans `grub.cfg` ; alerte (sans correction)
+   si `resume` pointe vers un swap absent ; `zeta-boot-id` présent et label racine `Seagate*` (bande verte).
+
+Option `--dry-run` en ligne de commande : les options 1, 8, 9 et 10 s'arrêtent avant toute écriture
+(la cible de l'option 8 est alors montée en **lecture seule**).
+
+### Procédure pas à pas
+
+**Cas A — le Seagate est présent mais le système est à restaurer**
+1. Démarrer sur le Toshiba (menu de boot UEFI) ; vérifier la bande **rouge** `zeta-boot-id`.
+2. `sudo bash ~/projet_zeta/scripts/zeta_backup_toshiba.sh --dry-run` → option 8 : lire le résumé des suppressions.
+3. Sans `--dry-run` : option 8, relire le résumé, répondre `oui`. Les contrôles de fin doivent être tous verts.
+4. Redémarrer sur le Seagate ; vérifier la bande **verte**.
+
+**Cas B — le Seagate est remplacé par un disque neuf**
+1. **Débrancher l'ancien Seagate** (sinon doublons de labels `Seagate-PC1-*` : l'option 9 refuse).
+2. Brancher le disque neuf ; démarrer sur le Toshiba (ou sur une clé Ubuntu Live avec le script copié).
+3. Option 9 : taper le chemin complet du disque, puis sa taille ; le script refuse tout disque portant un label
+   `Toshiba-*`, `Seagate-*`, etc. ou monté ; lire le plan GPT (EFI 1 Go · root 74,5 Go · home 186,3 Go · data 662,2 Go · swap 7,5 Go) ; `oui`.
+4. Option 8 comme au cas A (dry-run puis `oui`). L'EFI étant vide, `grub-install` et `efibootmgr` sont lancés.
+5. Redémarrer sur le nouveau disque (choisir l'entrée `ubuntu` au menu UEFI si besoin) ; contrôler la bande verte.
+6. Reprendre ensuite le sens normal (option 1) depuis ce disque.
+
+**Cas C — récupérer un fichier ou un dossier supprimé par erreur**
+Depuis un boot sur le Toshiba : option 10 (ou `--only CHEMIN`), dry-run affiché, `oui`. Rien n'est supprimé sur la cible.
+
+### Limites (à connaître)
+- **Le travail SAP n'est PAS dans le clone** (exclusion permanente `Documents/SAP*`). Il n'est donc **pas récupérable
+  depuis le Toshiba**. Dans le sens inverse, ce qui existe déjà côté cible n'est jamais supprimé (pas de `--delete-excluded`).
+- `/swapfile` (racine) n'est pas copié ; le swap d'un disque neuf (partition 5) est créé mais pas inscrit dans le fstab restauré
+  (le fstab Toshiba n'y fait pas référence) ; un fichier `resume` pointant vers un swap absent est signalé, jamais corrigé.
+- `os-prober` doit rester désactivé (sinon une entrée « Toshiba » ferait échouer la vérification des UUID).
+- Chaîne `grub-install` + `efibootmgr` : **non testable sans un disque réellement vide** ; sa première exécution réelle aura lieu
+  lors d'un vrai remplacement de disque. Elle écrit en NVRAM (firmware).
+- Restauration ciblée limitée à `/home` et `/mnt/data` ; le système entier passe par l'option 8.
+
+### Tests réalisés le 2026-10-10 (sans aucune écriture sur un disque)
+- `bash -n` : OK. `shellcheck` : non installé sur PC1 au moment des tests.
+- Garde-fous de sens : label simulé `Toshiba-PC1-root` → refus (code 1) de `fix_fstab`, `fix_grub` et de l'option 7 ; label `Seagate-PC1-root` → autorisé.
+- Restauration : refus si racine = `Seagate-PC1-root` ; refus si la cible est la racine montée ; aucun montage ni dossier créé.
+- Option 9 : refus des labels déjà présents (doublons), du disque portant le système, du disque Toshiba, d'une partition,
+  d'un chemin inexistant, d'un préfixe de test invalide. Option 10 : refus des chemins relatifs, avec `..`, hors `/home` et `/mnt/data`, et du SAP.
+- **À faire au prochain boot sur le Toshiba** : `--dry-run` de l'option 8 et de l'option 10 ; puis restauration réelle d'un fichier de test
+  (dossier `zeta_test_restore/`) avec l'option 10. Aucune restauration complète réelle n'est lancée sans accord explicite.
+
+*Mis à jour le 2026-10-10 — 1150 lignes.*
