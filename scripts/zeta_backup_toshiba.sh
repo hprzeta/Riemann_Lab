@@ -2,7 +2,7 @@
 # =============================================================================
 # zeta_backup_toshiba.sh — Clone incrémental PC1 -> Toshiba (version allégée)
 # Projet Zêta / Riemann Lab — riemann@zeta-lab
-# Version : 2.2 — 26/09/2026
+# Version : 2.3 — 10/10/2026
 #   - v2.0 : Chemins corrigés Toshiba-PC1-root/home/data, montage auto,
 #            rsync incrémental (--delete) + correction fstab UUID sur le clone
 #   - v2.1 : Exclusion permanente du travail SAP (Documents/SAP + SAP_import)
@@ -12,6 +12,13 @@
 #            ("rsync --delete nécessite un dry-run avant, le clone peut
 #            contenir des fichiers plus récents que PC1") à chaque lancement,
 #            sans dépendre d'une vérification manuelle préalable.
+#   - v2.3 : Boot du clone fiabilisé. Le rsync de "/" recopie /boot/grub/grub.cfg
+#            de PC1 (UUID de sda1) vers le clone -> le noyau lancé depuis le
+#            Toshiba montait / sur sda1. Ajout de fix_grub() (update-grub en
+#            chroot + vérification des UUID, démontage garanti par trap EXIT),
+#            option 6 (vérifier la bootabilité, lecture seule), option 7
+#            (réparer le boot sans rsync), avertissement si /usr/local/bin/
+#            zeta-boot-id est absent de PC1 (étiquette de disque de boot).
 # Usage : sudo bash zeta_backup_toshiba.sh
 # =============================================================================
 
@@ -134,6 +141,11 @@ do_clone(){
     echo "     $SRC_ROOT  → $MNT_ROOT"
     echo "     $SRC_HOME  → $MNT_HOME  (exclusion permanente : $EXCLUDE_SAP)"
     echo "     $SRC_DATA  → $MNT_DATA"
+    # Sans zeta-boot-id sur PC1, le clone n'aurait pas d'étiquette de disque de boot
+    if [[ ! -x /usr/local/bin/zeta-boot-id ]]; then
+        warn "/usr/local/bin/zeta-boot-id ABSENT de PC1 : le clone n'aura pas d'étiquette de boot."
+        warn "Annule (réponds autre chose que 'oui'), installe-le, puis relance."
+    fi
     confirm "Résumé ci-dessus vérifié. Lancer le VRAI clonage (suppressions incluses) ?" || return 1
 
     local RSO="-aAXHx --delete --info=progress2"
@@ -154,12 +166,10 @@ do_clone(){
     rsync $RSO --exclude='lost+found' "$SRC_DATA/" "$MNT_DATA/" 2>&1 | tee -a "$LOG"
     ok "Data synchronisé"
 
-    fix_fstab
+    fix_fstab                                    # UUID de fstab : sda -> Toshiba
+    fix_grub || { err "Réparation GRUB échouée : le clone n'est PAS bootable"; return 1; }
     ok "Clone terminé — log : $LOG"
-    echo
-    warn "RAPPEL bootabilité : le clone Toshiba est déjà bootable (clone existant)."
-    info "Si tu changes de noyau, pense à mettre à jour GRUB/initramfs via chroot"
-    info "  (session dédiée — non fait ici pour rester en mode 'refresh' sûr)."
+    verify_boot                                  # résumé des contrôles (option 6)
 }
 
 # ─── Correction fstab du clone (UUID sda -> UUID Toshiba) ────────────────────
@@ -201,6 +211,160 @@ fix_fstab(){
     echo "---------------------------------------------"
 }
 
+# ─── Démontage garanti des montages du chroot (idempotent, ordre inverse) ─────
+CHROOT_MOUNTS=()    # points de montage réellement montés par fix_grub (ordre de montage)
+cleanup_chroot(){
+    local i m rc=0 left=()
+    # Parcours en ordre inverse : run, sys, proc, dev/pts, dev, boot/efi
+    for (( i=${#CHROOT_MOUNTS[@]}-1; i>=0; i-- )); do
+        m="${CHROOT_MOUNTS[$i]}"
+        if mountpoint -q "$m"; then
+            umount "$m" 2>/dev/null || { err "Échec démontage $m"; left+=("$m"); rc=1; }
+        fi
+    done
+    # On ne garde que ce qui n'a pas pu être démonté (remis dans l'ordre de montage)
+    CHROOT_MOUNTS=()
+    for (( i=${#left[@]}-1; i>=0; i-- )); do CHROOT_MOUNTS+=("${left[$i]}"); done
+    return $rc
+}
+# Filet de sécurité : même en cas d'erreur/sortie, rien ne reste sous $MNT_ROOT
+trap cleanup_chroot EXIT
+
+# Monte et enregistre la cible (dernier argument) pour le démontage
+_cm(){ mount "$@" || { err "Échec : mount $*"; return 1; }; CHROOT_MOUNTS+=("${@: -1}"); }
+
+# ─── Réparation GRUB du clone (update-grub en chroot + vérification UUID) ────
+fix_grub(){
+    banner "Réparation GRUB du clone (update-grub en chroot)"
+    local dev_root dev_efi U_SRC U_DST cfg efi_cfg n_src n_dst rc=0
+    dev_root=$(dev_from_label "$LBL_ROOT"); dev_efi=$(dev_from_label "$LBL_EFI")
+    [[ -n "$dev_root" && -n "$dev_efi" ]] || { err "Partition root/EFI du clone introuvable"; return 1; }
+    mountpoint -q "$MNT_ROOT" || { err "Root du clone non monté ($MNT_ROOT)"; return 1; }
+    # UUID lus dynamiquement (comme fix_fstab) : source = Seagate, cible = Toshiba
+    U_SRC=$(blkid -o value -s UUID "$(dev_from_label 'Seagate-PC1-root')")
+    U_DST=$(blkid -o value -s UUID "$dev_root")
+    [[ -n "$U_SRC" && -n "$U_DST" ]] || { err "UUID root source/cible introuvable"; return 1; }
+    cfg="$MNT_ROOT/boot/grub/grub.cfg"; efi_cfg="$MNT_ROOT/boot/efi/EFI/ubuntu/grub.cfg"
+
+    # Ctrl-C : démonter proprement avant de sortir
+    trap 'cleanup_chroot; exit 130' INT TERM
+
+    # Montages : EFI du clone puis bind dev, dev/pts, proc, sys, run
+    if ! mountpoint -q "$MNT_ROOT/boot/efi"; then
+        _cm "$dev_efi" "$MNT_ROOT/boot/efi" || rc=1
+    fi
+    if [[ $rc -eq 0 ]]; then
+        _cm --bind /dev     "$MNT_ROOT/dev"     && \
+        _cm --bind /dev/pts "$MNT_ROOT/dev/pts" && \
+        _cm --bind /proc    "$MNT_ROOT/proc"    && \
+        _cm --bind /sys     "$MNT_ROOT/sys"     && \
+        _cm --bind /run     "$MNT_ROOT/run"     || rc=1
+    fi
+    # Régénération de grub.cfg DANS le clone (les UUID deviennent ceux du Toshiba)
+    if [[ $rc -eq 0 ]]; then
+        chroot "$MNT_ROOT" update-grub 2>&1 | tee -a "$LOG" || rc=1
+    fi
+
+    # Vérifications (EFI encore montée à ce stade)
+    if [[ $rc -eq 0 ]]; then
+        if [[ -f "$cfg" ]]; then
+            n_src=$(grep -c "$U_SRC" "$cfg" || true); n_dst=$(grep -c "$U_DST" "$cfg" || true)
+        else n_src=1; n_dst=0; fi
+        echo "  grub.cfg clone : UUID Seagate=${n_src:-0} (attendu 0) · UUID Toshiba=${n_dst:-0} (attendu >0)"
+        if [[ "${n_src:-0}" -ne 0 || "${n_dst:-0}" -eq 0 ]]; then
+            err "grub.cfg du clone incorrect (UUID Seagate présent ou UUID Toshiba absent)"; rc=1
+        fi
+        if ! grep -q "$U_DST" "$efi_cfg" 2>/dev/null; then
+            err "EFI/ubuntu/grub.cfg du clone ne contient pas l'UUID du clone"; rc=1
+        fi
+    fi
+
+    # Démontage immédiat + contrôle qu'aucun montage ne reste sous $MNT_ROOT
+    cleanup_chroot || rc=1
+    trap - INT TERM
+    if findmnt -rn -o TARGET | grep -q "^$MNT_ROOT/"; then
+        err "Des montages restent sous $MNT_ROOT (risque pour le prochain rsync --delete)"; rc=1
+    fi
+    [[ $rc -eq 0 ]] && ok "GRUB du clone réparé et vérifié" || err "fix_grub : ÉCHEC"
+    return $rc
+}
+
+# ─── Option 6 : vérifier la bootabilité du clone (LECTURE SEULE) ─────────────
+VB_FAILS=0
+_chk(){ if [[ "$2" -eq 0 ]]; then ok "$1"; else err "ÉCHEC : $1"; VB_FAILS=$((VB_FAILS+1)); fi; }
+
+verify_boot(){
+    banner "Bootabilité du clone Toshiba (lecture seule)"
+    VB_FAILS=0
+    local dev_root dev_efi U_SRC U_DST n_src n_dst pair lbl_s lbl_d us ud rc tmp_efi
+    local cfg="$MNT_ROOT/boot/grub/grub.cfg" fstab="$MNT_ROOT/etc/fstab"
+    mountpoint -q "$MNT_ROOT" || ensure_mounted "$LBL_ROOT" "$MNT_ROOT" || return 1
+    dev_root=$(dev_from_label "$LBL_ROOT"); dev_efi=$(dev_from_label "$LBL_EFI")
+    U_SRC=$(blkid -o value -s UUID "$(dev_from_label 'Seagate-PC1-root')")
+    U_DST=$(blkid -o value -s UUID "$dev_root")
+
+    # 1) grub.cfg du clone : 0 UUID Seagate, >0 UUID Toshiba
+    n_src=$(grep -c "$U_SRC" "$cfg" 2>/dev/null || true); n_dst=$(grep -c "$U_DST" "$cfg" 2>/dev/null || true)
+    [[ "${n_src:-0}" -eq 0 && "${n_dst:-0}" -gt 0 ]]; _chk "grub.cfg root (Seagate=${n_src:-0}, Toshiba=${n_dst:-0})" $?
+
+    # 2) EFI/ubuntu/grub.cfg du clone (montage temporaire en lecture seule)
+    tmp_efi=$(mktemp -d /tmp/zeta_efi_XXXXXX); rc=1
+    if mount -o ro "$dev_efi" "$tmp_efi" 2>/dev/null; then
+        grep -q "$U_DST" "$tmp_efi/EFI/ubuntu/grub.cfg" 2>/dev/null; rc=$?
+        umount "$tmp_efi"
+    fi
+    rmdir "$tmp_efi" 2>/dev/null
+    _chk "EFI grub.cfg pointe vers l'UUID du clone" $rc
+
+    # 3) fstab : aucun UUID Seagate (root/home/data/EFI) et UUID root Toshiba présent
+    rc=0
+    for pair in "Seagate-PC1-root:$LBL_ROOT" "Seagate-PC1-home:$LBL_HOME" "Seagate-PC1-data:$LBL_DATA" "SG-PC1-EFI:$LBL_EFI"; do
+        lbl_s=${pair%%:*}; lbl_d=${pair##*:}
+        us=$(blkid -o value -s UUID "$(dev_from_label "$lbl_s")"); ud=$(blkid -o value -s UUID "$(dev_from_label "$lbl_d")")
+        [[ -n "$us" ]] && grep -q "$us" "$fstab" 2>/dev/null && rc=1
+        [[ -n "$ud" ]] && ! grep -q "$ud" "$fstab" 2>/dev/null && rc=1
+    done
+    _chk "fstab : UUID Toshiba partout, aucun UUID Seagate" $rc
+
+    # 4) resume : absent / none = OK ; sinon l'UUID doit être sur le même disque que le clone
+    local rf="$MNT_ROOT/etc/initramfs-tools/conf.d/resume" line ruuid rdev
+    rc=0
+    if [[ -f "$rf" ]]; then
+        line=$(grep -E '^RESUME=' "$rf" | tail -1)
+        if [[ -n "$line" && "$line" != "RESUME=none" ]]; then
+            ruuid=$(echo "$line" | sed -n 's/^RESUME=UUID=//p'); rdev=""
+            [[ -n "$ruuid" ]] && rdev=$(blkid -U "$ruuid" 2>/dev/null)
+            if [[ -z "$rdev" ]]; then
+                rc=1; warn "resume : RESUME=UUID=${ruuid:-?} absent de tous les disques (le boot attendrait une partition inexistante)"
+            elif [[ "$(lsblk -no PKNAME "$rdev")" != "$(lsblk -no PKNAME "$dev_root")" ]]; then
+                rc=1; warn "resume : l'UUID ${ruuid} est sur un autre disque que le clone ($rdev)"
+            fi
+            [[ $rc -ne 0 ]] && warn "ALERTE seulement : aucune correction automatique, éditer $rf à la main puis update-initramfs en chroot"
+        fi
+    fi
+    _chk "initramfs resume (absent ou sur le disque du clone)" $rc
+
+    # 5) étiquette de boot sur le clone
+    [[ -x "$MNT_ROOT/usr/local/bin/zeta-boot-id" ]];              _chk "zeta-boot-id présent sur le clone" $?
+    [[ -f "$MNT_ROOT/etc/xdg/autostart/zeta-boot-id.desktop" ]];  _chk "autostart zeta-boot-id présent" $?
+    grep -q 'zeta-boot-id' "$MNT_ROOT/etc/bash.bashrc" 2>/dev/null; _chk "ligne zeta-boot-id dans bash.bashrc" $?
+
+    echo
+    [[ $VB_FAILS -eq 0 ]] && ok "Clone bootable (contrôles statiques OK — le test réel reste le reboot)" \
+                          || err "$VB_FAILS contrôle(s) en échec"
+    return $(( VB_FAILS > 0 ))
+}
+
+# ─── Option 7 : réparer le boot du clone seulement (sans rsync) ──────────────
+do_repair_boot(){
+    banner "Réparation du boot du clone (fstab + GRUB, sans rsync)"
+    confirm "Écriture sur le Toshiba : fstab corrigé + update-grub en chroot. Continuer ?" || return 1
+    ensure_mounted "$LBL_ROOT" "$MNT_ROOT" || return 1
+    fix_fstab
+    fix_grub || return 1
+    verify_boot
+}
+
 # ─── Option 2 : SMART Toshiba ────────────────────────────────────────────────
 do_smart(){
     banner "Contrôle SMART Toshiba"
@@ -240,12 +404,14 @@ do_umount(){
 
 # ─── Menu ─────────────────────────────────────────────────────────────────────
 main_menu(){
-    banner "ZÊTA — Clone PC1 → Toshiba (allégé)  v2.2"
+    banner "ZÊTA — Clone PC1 → Toshiba (allégé)  v2.3"
     echo "  1) Clone incrémental PC1 → Toshiba  (dry-run auto + / , /home [SAP exclu] , /mnt/data)"
     echo "  2) Contrôle SMART Toshiba"
     echo "  3) Vérifier le montage"
     echo "  4) État des sauvegardes (espace)"
     echo "  5) Démonter proprement"
+    echo "  6) Vérifier la bootabilité du clone (lecture seule)"
+    echo "  7) Réparer le boot du clone seulement (fstab + GRUB, sans rsync)"
     echo "  0) Quitter"
     echo
     read -rp "  Choix : " c
@@ -255,6 +421,8 @@ main_menu(){
         3) do_check ;;
         4) do_status ;;
         5) do_umount ;;
+        6) verify_boot ;;
+        7) do_repair_boot ;;
         0) echo "Bye."; exit 0 ;;
         *) warn "Choix invalide"; sleep 1 ;;
     esac

@@ -132,8 +132,10 @@ j_sec(){
   echo "   (secrets_local + $(wc -l < "$TMP/sec.txt") fichiers secrets du projet)"
   [ -n "$DRY" ] && { echo "   [simulation] archive non creee"; return 0; }
   echo "   Phrase de passe a saisir (2 fois) :"
+  set -o pipefail                                    # un echec de tar ne doit pas etre masque par gpg
   tar -czf - -C "$HANDOFF" secrets_local -C "$PROJ" -T "$TMP/sec.txt" | gpg --symmetric --cipher-algo AES256 -o "$arc" \
-    || { echo "   [X] chiffrement echoue, rien envoye"; return 1; }
+    || { set +o pipefail; rm -f "$arc"; echo "   [X] tar ou chiffrement echoue, rien envoye, rotation sautee"; return 1; }
+  set +o pipefail
   local nom_arc rc; nom_arc="$(basename "$arc")"
   copie "secrets chiffres" "$arc" "$REMOTE/secrets_chiffres"; rc=$?
   rm -f "$arc"                                       # aucune copie locale residuelle
@@ -168,9 +170,12 @@ menu(){
 verif
 if [ "$AUTO" -eq 1 ]; then                           # mode cron : pas de menu
   echo "=== $(date -Iseconds) START horsgit ==="
-  j_md; j_mem; j_suivi; j_ns; j_calc; j_cfg; j_ign
-  echo "=== $(date -Iseconds) END horsgit ==="
-  exit 0
+  RC_AUTO=0
+  for j in j_md j_mem j_suivi j_ns j_calc j_cfg j_ign; do
+    "$j" || { echo "   [X] jeu $j en echec"; RC_AUTO=1; }       # cumul des echecs
+  done
+  echo "=== $(date -Iseconds) END horsgit (code $RC_AUTO) ==="
+  exit "$RC_AUTO"
 fi
 while true; do
   menu; read -r c || break
