@@ -25,7 +25,8 @@
 #            option 8 (dry-run auto, rsync --delete, fstab/GRUB inversés, grub-install +
 #            efibootmgr si EFI vide), option 9 (disque neuf : GPT + mkfs par labels),
 #            option 10 (restauration d'un chemin précis, sans --delete), --dry-run et
-#            --only CHEMIN. Le travail SAP n'est PAS dans le clone : non récupérable.
+#            --only CHEMIN. SAP : jamais recopié ; une ANCIENNE copie pré-exclusion
+#            existe sur le Toshiba (constat 10/10/2026), hors restauration.
 #            Variables de TEST : ZETA_TEST_ROOT_LABEL, ZETA_TEST_LABEL_PREFIX.
 # Usage : sudo bash zeta_backup_toshiba.sh [--dry-run] [--only CHEMIN]
 # =============================================================================
@@ -595,7 +596,7 @@ _do_restore(){
     echo
     echo "  TOTAL : ${DRYRUN_TOTAL} changement(s), dont ${DRYRUN_DEL} suppression(s) côté CIBLE"
     info "Détail complet dans : $DRYRUN_DIR/dryrun_restore_{root,home,data}.log"
-    warn "SAP : le travail SAP n'est PAS dans le Toshiba (exclu du clone) — il n'est PAS récupérable ici."
+    warn "SAP : exclu de la restauration. Le Toshiba n'en garde qu'une ANCIENNE copie pré-exclusion (non restaurée ici)."
     info "Ce qui existe déjà côté cible dans Documents/SAP* est préservé (jamais supprimé)."
 
     if [[ $DRYRUN_ONLY -eq 1 ]]; then
@@ -772,7 +773,7 @@ _do_restore_only(){
     esac
     rel="${p#"$base"/}"
     if [[ "$base" == "/home" && "$rel" == riemann/Documents/SAP* ]]; then
-        err "SAP : exclu du clone, rien à restaurer depuis le Toshiba"; return 1
+        err "SAP : exclu des restaurations (ancienne copie pré-exclusion sur le Toshiba, hors périmètre)"; return 1
     fi
 
     _restore_prepare || return 1       # mêmes garde-fous B1/B2 et mêmes montages que l'option 8

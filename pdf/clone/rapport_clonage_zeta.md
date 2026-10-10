@@ -1129,8 +1129,14 @@ Option `--dry-run` en ligne de commande : les options 1, 8, 9 et 10 s'arrêtent 
 Depuis un boot sur le Toshiba : option 10 (ou `--only CHEMIN`), dry-run affiché, `oui`. Rien n'est supprimé sur la cible.
 
 ### Limites (à connaître)
-- **Le travail SAP n'est PAS dans le clone** (exclusion permanente `Documents/SAP*`). Il n'est donc **pas récupérable
-  depuis le Toshiba**. Dans le sens inverse, ce qui existe déjà côté cible n'est jamais supprimé (pas de `--delete-excluded`).
+- **SAP : aucune NOUVELLE copie, mais une ANCIENNE copie existe sur le Toshiba** (constaté le 10/10/2026). L'exclusion
+  permanente `Documents/SAP*` (v2.1, 26/09) empêche de recopier le SAP ; sans `--delete-excluded`, elle ne supprime pas ce qui
+  était déjà présent. Le clone contient donc une **copie ancienne, antérieure à l'exclusion** : `Documents/SAP_import`
+  (4 048 fichiers, 4,2 Go, fichier le plus récent : 30/07) et `Documents/SAP` (41 fichiers, 19 Mo), contre 4 089 fichiers et
+  4,2 Go pour `SAP` sur le Seagate (comptages uniquement, aucun contenu lu). Cette copie est **hors périmètre des restaurations** :
+  l'option 8 exclut `SAP*` et l'option 10 refuse ce chemin ; le SAP à jour n'est donc **pas** restauré depuis le Toshiba.
+  Dans le sens inverse, ce qui existe déjà côté cible n'est jamais supprimé (pas de `--delete-excluded`).
+  *Décision du 10/10/2026 : copie laissée en place, aucune purge, documentation seulement.*
 - `/swapfile` (racine) n'est pas copié ; le swap d'un disque neuf (partition 5) est créé mais pas inscrit dans le fstab restauré
   (le fstab Toshiba n'y fait pas référence) ; un fichier `resume` pointant vers un swap absent est signalé, jamais corrigé.
 - `os-prober` doit rester désactivé (sinon une entrée « Toshiba » ferait échouer la vérification des UUID).
@@ -1147,4 +1153,5 @@ Depuis un boot sur le Toshiba : option 10 (ou `--only CHEMIN`), dry-run affiché
 - **À faire au prochain boot sur le Toshiba** : `--dry-run` de l'option 8 et de l'option 10 ; puis restauration réelle d'un fichier de test
   (dossier `zeta_test_restore/`) avec l'option 10. Aucune restauration complète réelle n'est lancée sans accord explicite.
 
-*Mis à jour le 2026-10-10 — 1150 lignes.*
+
+*Mis à jour le 2026-10-10 — 1157 lignes.*
