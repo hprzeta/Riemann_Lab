@@ -1012,4 +1012,56 @@ Toshiba-PC1-home     125G util / 246G (54%)
 Toshiba-PC1-data     49G util / 1,5T (4%)
 ```
 
-*Mis à jour le 2026-08-30 — 1014 lignes.*
+---
+
+## Session 2026-10-10 — Boot du clone Toshiba : grub.cfg recopié par rsync
+
+### Symptôme
+Au premier vrai boot depuis le Toshiba, le système ne démarrait pas correctement :
+le noyau lancé depuis le clone cherchait sa racine sur le disque interne (`sda1`)
+au lieu de la partition du Toshiba.
+
+### Cause (constatée)
+Le `rsync` de `/` recopie aussi `/boot/grub/grub.cfg` de PC1. Ce fichier contient
+l'UUID de la racine `sda1` : **27 occurrences** de l'UUID Seagate dans le `grub.cfg`
+du clone. `fix_fstab` corrigeait bien `/etc/fstab`, mais personne ne régénérait GRUB.
+
+### Correctif — `fix_grub()` (script `zeta_backup_toshiba.sh` v2.3, commit `01bd5b7`)
+- montage de l'EFI du clone puis des bind `dev`, `dev/pts`, `proc`, `sys`, `run` ;
+- `update-grub` **en chroot** dans le clone : les UUID deviennent ceux du Toshiba ;
+- `os-prober` désactivé (il pouvait réintroduire l'UUID de `sda1`) ;
+- vérification : 0 UUID Seagate et plus de 0 UUID Toshiba dans `grub.cfg`,
+  UUID du clone dans `EFI/ubuntu/grub.cfg` ;
+- démontage garanti en ordre inverse (`trap EXIT`, INT, TERM), contrôle qu'aucun
+  montage ne reste sous la racine du clone (sinon le prochain `rsync --delete` serait dangereux).
+
+Nouvelles options du menu : **6** vérifier la bootabilité (lecture seule), **7** réparer
+le boot sans rsync (`fix_fstab` + `fix_grub` + vérification). L'option 1 appelle
+désormais `fix_grub` et `verify_boot` à la fin du clonage.
+
+### Vérifications — 7/7 contrôles OK
+`grub.cfg` du clone · `EFI/ubuntu/grub.cfg` · `fstab` · `resume` d'initramfs ·
+`zeta-boot-id` présent · autostart `zeta-boot-id` · ligne dans `bash.bashrc`.
+Le contrôle `resume` émet une **alerte sans correction automatique** si
+`RESUME=UUID=…` est absent du clone.
+
+### Résultat
+**Boot réel sur le Toshiba validé le 10/10/2026.** Les contrôles statiques ne remplacent
+pas ce test : le reboot reste la preuve.
+
+### Écart constaté : `ID_BUS=ata` et non `usb`
+Sur le Toshiba, `udev` renvoie `ID_BUS=ata` : le boîtier USB→SATA est vu comme un disque ATA.
+**`ID_BUS` n'est donc pas un test fiable.** Test retenu :
+- le **LABEL de la racine** (`Toshiba-PC1-root` ou `Seagate-PC1-root`) ;
+- la colonne `TRAN` de `lsblk` (`usb` pour le Toshiba, `sata` pour le Seagate).
+
+### Étiquette de disque de boot — `zeta-boot-id`
+Commande `/usr/local/bin/zeta-boot-id` : lit le LABEL de la racine et affiche une bande
+colorée (rouge « BOOT SUR SSD EXTERNE TOSHIBA (clone de secours) », verte « Boot sur
+disque LOCAL Seagate »). Appelée au démarrage de session (autostart) et dans `bash.bashrc`.
+
+### Règle à retenir
+Après **chaque** clonage de `/`, `update-grub` en chroot est obligatoire : le rsync
+recopie `grub.cfg` avec les UUID du disque source. `fix_grub` l'automatise.
+
+*Mis à jour le 2026-10-10 — 1067 lignes.*
