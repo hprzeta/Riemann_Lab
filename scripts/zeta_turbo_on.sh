@@ -53,7 +53,8 @@ CPU_ROOT="$SYSROOT/sys/devices/system/cpu"
 SWAP_FILE="$SYSROOT/proc/sys/vm/swappiness"
 NOTURBO_FILE="$CPU_ROOT/intel_pstate/no_turbo"
 SWAP_CIBLE=10
-SERVICES=(cups avahi-daemon bluetooth ModemManager NetworkManager-wait-online snapd
+# avahi-daemon et bluetooth RETIRÉS (16/10) : réactivés aussitôt par socket/D-Bus, arrêt inopérant -> anomalie PARTIEL à chaque run
+SERVICES=(cups ModemManager NetworkManager-wait-online snapd
           packagekit apt-daily apt-daily-upgrade fwupd whoopsie kerneloops)
 
 # ── Dossier d'état : propriétaire root, pas de lien symbolique, verrou ───────────────────────────
