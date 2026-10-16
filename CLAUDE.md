@@ -1,6 +1,6 @@
 # ~/projet_zeta/CLAUDE.md — Contexte projet Riemann_Lab
 > **Fichier :** CLAUDE.md - **Dossier :** racine repo (`~/projet_zeta/`)
-> **Branche :** Riemann_Lab_C (source) -> sync main - IA - Test - **Auteur :** hprzeta - **MAJ :** 2026-10-05
+> **Branche :** Riemann_Lab_C (source) -> sync main - IA - Test - **Auteur :** hprzeta - **MAJ :** 2026-10-16
 
 ---
 
@@ -231,29 +231,50 @@ cd ~/projet_zeta/Riemann_Lab.wiki/ && git push origin master
 
 ---
 
-## ⚠️ Règle run obligatoire — SCRIPTS TURBO
+## ⚠️ Règle run obligatoire — SCRIPTS TURBO (cycle de vie par SESSION, MAJ 2026-10-16)
 
-**TOUJOURS** exécuter `scripts/zeta_turbo_on.sh` AVANT tout run de calcul.
-**TOUJOURS** exécuter `scripts/zeta_turbo_off.sh` APRÈS tout run de calcul.
-Ne jamais lancer `compute_zeros_*.py` directement — utiliser `scripts/zeta_run.sh`.
+Le turbo est activé **une fois au début de chaque session** et reste actif entre les runs ; il est
+restauré **uniquement au « bye bye »**. Ne jamais lancer `compute_zeros_*.py` directement — utiliser
+`scripts/zeta_run.sh`.
+
+| Moment | Action | Script |
+|---|---|---|
+| Ouverture d'une session dans `projet_zeta` | automatique (hook `SessionStart`, `.claude/settings.local.json`, local, non versionné) | `scripts/zeta_session_turbo.sh start` → `zeta_turbo_on.sh` |
+| Chaque gros run | arrêt des 12 services pendant le run, puis redémarrage ; le turbo CPU **reste** | `zeta-run T` → `zeta_turbo_on.sh --services` … `zeta_turbo_off.sh --services` |
+| « bye bye » | **1ʳᵉ étape garantie**, avant l'archive PDF : restaure l'état initial réel, vérifie, rapporte | `scripts/zeta_session_turbo.sh end` → `zeta_turbo_off.sh` |
+| À tout moment | état réel, lecture seule, sans sudo | `scripts/zeta_turbo_status.sh` (`TURBO_STATUS=ACTIF/INACTIF/DERIVE/INVALIDE`) |
+
+**Garanties des scripts (`zeta_turbo_on.sh` / `zeta_turbo_off.sh`, tests : `tests_turbo/`)**
+- **Idempotents** : un 2ᵉ `on` ne réécrit jamais la sauvegarde initiale (il ré-affirme seulement le turbo,
+  utile si `power-profiles-daemon` l'a défait : `status` affiche alors `DERIVE`).
+- **Restauration exacte** de l'état d'avant la 1ʳᵉ activation (gouverneur + EPP de **chaque** CPU, swappiness) —
+  jamais un `powersave` supposé ; un turbo déjà actif avant la session reste actif.
+- **Rien n'est déclaré actif sans relecture de l'état réel** ; une anomalie donne « TURBO: PARTIEL » (code 4)
+  ou « RESTAURATION INCOMPLÈTE » (code 5, état conservé pour réessayer). Le boost matériel
+  (`intel_pstate/no_turbo`) n'est **jamais modifié**, seulement rapporté.
+- Réglages **de session** : gouverneur `performance` + `vm.swappiness=10`. Les services ne sont arrêtés que
+  pendant les gros runs (`--services`).
+- État dans `/run/zeta_turbo/state` (root:adm, 0640, tmpfs), verrou `flock`.
+- **Arrêt brutal / session abandonnée** : l'état reste dans `/run`, `sudo scripts/zeta_turbo_off.sh` restaure
+  correctement. **Redémarrage** : `/run` est vidé et le système revient à ses valeurs par défaut (rien à
+  restaurer). **Aucune restauration automatique après un crash** n'est implémentée.
+- Une seule session Zêta à la fois : le premier « bye bye » restaure pour tout le système.
+- Secours : état manquant alors que `performance` est actif → `sudo scripts/zeta_turbo_off.sh --force-defaults`
+  (remet seulement `powersave` ; EPP, swappiness et services non touchés).
+
+**Droits.** `sudo` sans mot de passe est configuré pour `zeta_turbo_on.sh` et `zeta_turbo_off.sh` (arguments
+inclus). Ces fichiers sont dans un dossier **modifiable par l'utilisateur** et s'exécutent en root : toute
+modification est donc exécutée en root. **Durcissement recommandé (action root)** : copies `root:root` 0755
+dans `/usr/local/sbin/zeta_turbo_on` et `zeta_turbo_off`, et règle sudoers pointant sur ces chemins ;
+`zeta_session_turbo.sh` les utilise automatiquement dès qu'elles existent et ne sont pas modifiables par
+d'autres. Après chaque changement des scripts du dépôt, recopier les deux fichiers.
 
 ```bash
-# Run standard (workflow complet)
-zeta-run 100000           # alias ~/.bashrc → zeta_turbo_on → run → zeta_turbo_off
-
-# Ou manuellement
-sudo scripts/zeta_turbo_on.sh
-printf "100000\nO\n" | nohup python src/calculs/optimisation/compute_zeros_v4_1.py > logs/run.log &
-# ... attendre la fin ...
-sudo scripts/zeta_turbo_off.sh
+zeta-run 100000                      # services arrêtés pendant le run ; turbo CPU conservé ensuite
+scripts/zeta_turbo_status.sh         # où en est-on ?
+sudo scripts/zeta_turbo_on.sh        # (re)mettre le turbo à la main, idempotent
+sudo scripts/zeta_turbo_off.sh       # restaurer à la main (équivalent du « bye bye »)
 ```
-
-**Ce que fait `zeta_turbo_on.sh` :**
-- Arrêt de 12 services non essentiels (~143 MB RAM libérés)
-- CPU governor : `powersave` → `performance` (4 threads à fréquence max, +15–30 % calcul)
-- Animations GNOME désactivées
-- swappiness = 10 (évite le swap des workers Python sous charge)
-- État sauvegardé dans `/tmp/zeta_turbo_state.txt` pour restauration propre
 
 ---
 
@@ -281,4 +302,4 @@ sudo scripts/zeta_turbo_off.sh
 > (elle change à chaque session ; ce fichier doit rester stable).
 
 ---
-*CLAUDE.md - racine - source Riemann_Lab_C (sync 4 branches) - hprzeta - Mis à jour le 2026-10-05 — 284 lignes*
+*CLAUDE.md - racine - source Riemann_Lab_C (sync 4 branches) - hprzeta - Mis à jour le 2026-10-16 — 305 lignes*
