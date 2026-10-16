@@ -46,7 +46,7 @@ class Arbre:
     """Arbre factice : /sys/devices/system/cpu, /proc/sys/vm/swappiness, état, faux systemctl."""
 
     def __init__(self, base: Path, n_cpu=4, gov="powersave", epp="balance_performance", swap="10",
-                 services=("cups", "bluetooth"), no_turbo="0", avec_cpufreq=True):
+                 services=("cups", "ModemManager"), no_turbo="0", avec_cpufreq=True):
         self.base = base
         self.root = base / "root"
         self.etat = base / "etat"
@@ -149,7 +149,7 @@ class TestActivation(Base):
             self.assertEqual(a.actifs(), [], "services arrêtés pendant le run")
             r = a.run(OFF, "--services")
             self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
-            self.assertEqual(a.actifs(), ["bluetooth", "cups"], "services redémarrés après le run")
+            self.assertEqual(a.actifs(), ["ModemManager", "cups"], "services redémarrés après le run")
             self.assertEqual({a.gov(i) for i in range(4)}, {"performance"}, "le turbo CPU RESTE actif")
         etat_fin = a.etat_fichier.read_text()
         self.assertIn("cpu_gov_0=powersave", etat_fin, "l'état initial n'a jamais été écrasé")
@@ -327,12 +327,12 @@ class TestErreurs(Base):
 
 class TestServices(Base):
     def test_services_arretes_et_redemarres_seulement_ceux_arretes(self):
-        a = self.arbre(services=("cups", "bluetooth", "snapd"))
+        a = self.arbre(services=("cups", "ModemManager", "snapd"))
         r = a.run(ON, "--services")
         self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
         self.assertEqual(a.actifs(), [])
         a.run(OFF)
-        self.assertEqual(a.actifs(), ["bluetooth", "cups", "snapd"])
+        self.assertEqual(a.actifs(), ["ModemManager", "cups", "snapd"])
 
     def test_service_deja_inactif_n_est_pas_demarre(self):
         a = self.arbre(services=("cups",))
@@ -343,16 +343,16 @@ class TestServices(Base):
         self.assertNotIn("start avahi-daemon", calls)
 
     def test_echec_redemarrage_service_conserve_l_etat(self):
-        a = self.arbre(services=("cups", "bluetooth"))
+        a = self.arbre(services=("cups", "ModemManager"))
         a.run(ON, "--services")
-        r = a.run(OFF, env=a.env(FAKE_START_FAIL="bluetooth"))
+        r = a.run(OFF, env=a.env(FAKE_START_FAIL="ModemManager"))
         self.assertEqual(r.returncode, 5, r.stdout + r.stderr)
-        self.assertIn("service bluetooth", r.stderr)
+        self.assertIn("service ModemManager", r.stderr)
         self.assertEqual(a.actifs(), ["cups"])
         self.assertEqual(a.gov(0), "powersave", "le CPU a quand même été restauré")
-        self.assertIn("services=bluetooth", a.etat_fichier.read_text())
+        self.assertIn("services=ModemManager", a.etat_fichier.read_text())
         self.assertEqual(a.run(OFF).returncode, 0)
-        self.assertEqual(a.actifs(), ["bluetooth", "cups"])
+        self.assertEqual(a.actifs(), ["ModemManager", "cups"])
 
 
 class TestDurcissement(Base):
