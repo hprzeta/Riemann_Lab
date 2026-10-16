@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 # ==============================================================================
 # zeta_script.py — menu des alias de ~/.bashrc (alias : zeta-script)
-# Liste les alias « zeta » (zeta, zeta-*) RÉELLEMENT présents dans ~/.bashrc, avec un libellé d'une phrase.
-# Aucune écriture : lecture de ~/.bashrc ; un alias n'est lancé qu'après confirmation.
+# Liste les alias « zeta » (zeta, zeta-*) RÉELLEMENT présents dans ~/.bashrc, avec un libellé d'une phrase,
+# puis les FONCTIONS du monitoring (monitoring/zeta_monitoring_alias.sh, chargé par ~/.bashrc).
+# Aucune écriture : lecture de ~/.bashrc et du fichier monitoring ; rien n'est lancé sans confirmation.
+# Doc monitoring : monitoring/README.md (procédure avant / pendant / après un run) et Monitoring-Runs.md.
 # Usage : zeta-script            (menu)  |  zeta-script --liste  (liste seule)
 # Limite : un alias qui fait « cd » ou « source » n'agit que dans le sous-shell
 #          lancé ici ; pour qu'il agisse sur votre terminal, tapez-le directement.
@@ -14,6 +16,8 @@ import subprocess
 import sys
 
 BASHRC = os.path.expanduser("~/.bashrc")  # fichier lu en lecture seule
+# Fonctions bash du monitoring (ce ne sont pas des « alias » : lues séparément, source chargé par ~/.bashrc)
+MONITORING_SH = os.path.expanduser("~/projet_zeta/monitoring/zeta_monitoring_alias.sh")
 
 # Libellé d'une phrase par alias (un alias absent d'ici est listé « (pas de libellé) »)
 LIBELLES = {
@@ -58,11 +62,28 @@ LIBELLES = {
     "zeta-convert-jsontomd": "Convertir une session Claude Code en Markdown masqué.",
     "zeta-export-claudeai": "Exporter l'état du projet masqué pour claude.ai.",
     "zeta-script": "Ce menu des alias.",
+    # --- monitoring (fonctions bash, PC1) ---
+    "zeta-mon-on": "Démarrer le logger 1 s (5 machines) et le détecteur de runs.",
+    "zeta-mon-off": "Arrêter le logger et le détecteur de runs.",
+    "zeta-mon-status": "Vérifier logger, dernière mesure, dernier run, watcher.",
+    "zeta-run-hint": "AVANT un run : nommer le run (+ CSV de sortie).",
+    "zeta-live": "Zéros par tranche en direct (fenêtre graphique).",
+    "zeta-metrics": "T°/fréquence/load/RAM du cluster en direct (fenêtre).",
+    "zeta-gue": "Histogramme des espacements vs GUE.",
+    "zeta-report": "Régénérer le rapport d'un run (--lang en = définitif).",
+    "zeta-index": "Régénérer Monitoring-Runs.md (liste des runs).",
+    "zeta-runs": "Lister les derniers runs enregistrés.",
 }
 
 # Alias à confirmer avec un avertissement renforcé (sudo, runs lourds, écritures disque)
 SENSIBLES = {"zeta-clone", "zeta-turbo-on", "zeta-turbo-off", "zeta-run",
              "zeta-distribute", "zeta-update", "zeta-backup-horsgit"}
+
+# Fonctions monitoring qui ouvrent une fenêtre graphique : à ne PAS lancer pendant un run (écran gelé déjà vu)
+FENETRES = {"zeta-live", "zeta-metrics", "zeta-gue"}
+# Fonctions monitoring qui demandent des arguments (saisie proposée avant lancement)
+AVEC_ARGS = {"zeta-run-hint": "NOM [CSV|dossier]", "zeta-report": "[dossier_run] [--lang en]",
+             "zeta-live": "[csv|dossier]", "zeta-metrics": "[minutes] [refresh_s]", "zeta-gue": "[csv]"}
 
 
 def lire_alias():
@@ -84,15 +105,29 @@ def lire_alias():
     return resultat
 
 
+def lire_fonctions_monitoring():
+    """Retourne [(nom, commande)] des fonctions « zeta-*() » du fichier monitoring (lecture seule)."""
+    resultat = []  # accumulateur
+    try:
+        with open(MONITORING_SH, encoding="utf-8") as f:  # fichier optionnel : absent = pas de monitoring
+            for ligne in f:  # parcours ligne à ligne
+                m = re.match(r"^(zeta-[A-Za-z0-9_-]+)\(\)\s*\{", ligne)  # « zeta-nom() { »
+                if m:
+                    resultat.append((m.group(1), m.group(1) + " (fonction bash, monitoring)"))
+    except OSError:
+        pass  # fichier absent : on n'ajoute rien
+    return resultat
+
+
 def afficher(alias):
     """Affiche le menu numéroté."""
     print("\n  N°  ALIAS                    LIBELLÉ")
     print("  " + "-" * 72)
     for i, (nom, _) in enumerate(alias, 1):  # numérotation à partir de 1
-        marque = "⚠" if nom in SENSIBLES else " "  # signale les alias sensibles
+        marque = "⚠" if (nom in SENSIBLES or nom in FENETRES) else " "  # signale les alias sensibles
         lib = LIBELLES.get(nom, "(pas de libellé)")  # libellé ou valeur par défaut
         print(f"  {i:>2}{marque} {nom:<24} {lib}")
-    print("\n  ⚠ = alias sensible (sudo, run lourd ou écriture disque)")
+    print("\n  ⚠ = alias sensible (sudo, run lourd, écriture disque ou fenêtre graphique)")
 
 
 def lancer(nom, cmd):
@@ -100,16 +135,24 @@ def lancer(nom, cmd):
     print(f"\n  Alias    : {nom}\n  Commande : {cmd}")
     if nom in SENSIBLES:
         print("  ⚠ Alias sensible : relisez la commande avant de confirmer.")
+    if nom in FENETRES:
+        print("  ⚠ Ouvre une fenêtre graphique : ne PAS lancer pendant un run (pas de plein écran).")
+    args = ""  # arguments facultatifs (fonctions monitoring seulement)
+    if nom in AVEC_ARGS:
+        args = input(f"  Arguments {AVEC_ARGS[nom]} (vide = aucun) : ").strip()
+        shlex.split(args)  # lève ValueError si guillemets mal appariés, avant tout lancement
     rep = input("  Lancer ? [o/N] ").strip().lower()  # défaut = non
     if rep not in ("o", "oui"):
         print("  Annulé.")
         return
-    # Shell interactif : charge ~/.bashrc, donc l'alias est bien développé
-    subprocess.run(["bash", "-ic", nom])
+    # Shell interactif : charge ~/.bashrc, donc l'alias / la fonction est bien développé(e)
+    subprocess.run(["bash", "-ic", f"{nom} {args}".strip()])
 
 
 def main():
     alias = lire_alias()  # alias actuels du fichier
+    noms = {n for n, _ in alias}  # évite un doublon si une fonction porte le nom d'un alias
+    alias += [(n, c) for n, c in lire_fonctions_monitoring() if n not in noms]  # + fonctions monitoring
     if not alias:
         print("Aucun alias zeta trouvé dans ~/.bashrc")
         return 1
