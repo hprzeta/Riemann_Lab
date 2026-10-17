@@ -18,6 +18,8 @@ import sys
 BASHRC = os.path.expanduser("~/.bashrc")  # fichier lu en lecture seule
 # Fonctions bash du monitoring (ce ne sont pas des « alias » : lues séparément, source chargé par ~/.bashrc)
 MONITORING_SH = os.path.expanduser("~/projet_zeta/monitoring/zeta_monitoring_alias.sh")
+# Fonctions et alias des couleurs de terminal par machine (chargé par ~/.bashrc, ligne « source ~/zeta_colors.sh »)
+COLORS_SH = os.path.expanduser("~/zeta_colors.sh")
 
 # Libellé d'une phrase par alias (un alias absent d'ici est listé « (pas de libellé) »)
 LIBELLES = {
@@ -73,6 +75,14 @@ LIBELLES = {
     "zeta-report": "Régénérer le rapport d'un run (--lang en = définitif).",
     "zeta-index": "Régénérer Monitoring-Runs.md (liste des runs).",
     "zeta-runs": "Lister les derniers runs enregistrés.",
+    # --- couleurs de terminal par machine (~/zeta_colors.sh) ---
+    "zeta_set_bg": "Changer le fond (et le texte) du terminal : couleurs #RRGGBB.",
+    "zeta_reset_bg": "Remettre le fond et le texte par défaut du terminal.",
+    "zeta-reset": "Alias de zeta_reset_bg (utile après le plantage d'une session).",
+    "zeta-hp": "SSH vers PC2 (fond jaune), couleurs remises au retour.",
+    "zeta-acer": "SSH vers PC3 (fond bleu clair), couleurs remises au retour.",
+    "zeta-del": "SSH vers PC4 (fond noir), couleurs remises au retour.",
+    "zeta-color-test": "Prévisualiser les 3 couleurs sans SSH.",
     "zeta-mon-exec": "Lancer une commande SOUS monitoring (rapport MD+PDF à la fin).",
     "zeta-mon-start": "Démarrer le suivi d'un run lancé à côté (--pid PID = clôture auto).",
     "zeta-mon-stop": "Clore le suivi d'un run (--code N = code retour).",
@@ -87,7 +97,8 @@ SENSIBLES = {"zeta-clone", "zeta-turbo-on", "zeta-turbo-off", "zeta-run",
 # Fonctions monitoring qui ouvrent une fenêtre graphique : à ne PAS lancer pendant un run (écran gelé déjà vu)
 FENETRES = {"zeta-live", "zeta-metrics", "zeta-gue", "zeta-mon-fenetres"}
 # Fonctions monitoring qui demandent des arguments (saisie proposée avant lancement)
-AVEC_ARGS = {"zeta-run-hint": "NOM [CSV|dossier]", "zeta-report": "[dossier_run] [--lang en]",
+AVEC_ARGS = {"zeta_set_bg": '"#RRGGBB" ["#RRGGBB"] (guillemets obligatoires)', "zeta-hp": "[commande ssh]", "zeta-acer": "[commande ssh]", "zeta-del": "[commande ssh]",
+             "zeta-run-hint": "NOM [CSV|dossier]", "zeta-report": "[dossier_run] [--lang en]",
              "zeta-mon-exec": "--nom N --type test|prod [--csv X] -- commande", "zeta-mon-start": "--nom N --type test|prod [--pid PID]",
              "zeta-mon-stop": "--code N", "zeta-live": "[csv|dossier]", "zeta-metrics": "[minutes] [refresh_s]", "zeta-gue": "[csv]"}
 
@@ -120,6 +131,24 @@ def lire_fonctions_monitoring():
                 m = re.match(r"^(zeta-[A-Za-z0-9_-]+)\(\)\s*\{", ligne)  # « zeta-nom() { »
                 if m:
                     resultat.append((m.group(1), m.group(1) + " (fonction bash, monitoring)"))
+    except OSError:
+        pass  # fichier absent : on n'ajoute rien
+    return resultat
+
+
+def lire_couleurs():
+    """Retourne [(nom, commande)] des fonctions et alias zeta de ~/zeta_colors.sh (lecture seule)."""
+    resultat = []  # accumulateur
+    try:
+        with open(COLORS_SH, encoding="utf-8") as f:  # fichier optionnel : absent = pas de couleurs
+            for ligne in f:  # parcours ligne à ligne
+                m = re.match(r"^(zeta[-_][A-Za-z0-9_-]+)\(\)\s*\{", ligne)  # « zeta-nom() { » ou « zeta_nom() { »
+                if m:
+                    resultat.append((m.group(1), m.group(1) + " (fonction bash, couleurs)"))
+                    continue
+                m = re.match(r"^alias\s+(zeta[-_][A-Za-z0-9_-]+)=", ligne)  # « alias zeta-reset=... »
+                if m:
+                    resultat.append((m.group(1), m.group(1) + " (alias, couleurs)"))
     except OSError:
         pass  # fichier absent : on n'ajoute rien
     return resultat
@@ -159,6 +188,8 @@ def main():
     alias = lire_alias()  # alias actuels du fichier
     noms = {n for n, _ in alias}  # évite un doublon si une fonction porte le nom d'un alias
     alias += [(n, c) for n, c in lire_fonctions_monitoring() if n not in noms]  # + fonctions monitoring
+    noms = {n for n, _ in alias}  # mis à jour avant d'ajouter les couleurs
+    alias += [(n, c) for n, c in lire_couleurs() if n not in noms]  # + couleurs de terminal
     if not alias:
         print("Aucun alias zeta trouvé dans ~/.bashrc")
         return 1
