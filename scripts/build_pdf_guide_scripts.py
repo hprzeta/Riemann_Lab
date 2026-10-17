@@ -11,7 +11,7 @@ Usage :
 Sécurité : refuse d'écraser un PDF existant (l'ancien PDF reste intact).
 Le guide est PRIVÉ (il contient des IP) : ne jamais le copier dans docs/ ni dans le wiki.
 
-Auteur : hprzeta — Riemann_Lab · Version : 2026-10-04
+Auteur : hprzeta — Riemann_Lab · Version : 2026-10-17 (pied de page date + pages ; sections 8b/8c/10b)
 """
 import os                                        # chemins et existence de fichiers
 import re                                        # découpage du Markdown
@@ -19,6 +19,7 @@ import sys                                       # arguments de la ligne de comm
 import textwrap                                  # coupe des longues lignes de code
 
 from reportlab.lib import colors                 # couleurs du document
+from reportlab.pdfgen import canvas          # canvas numéroté (pied de page « page i / N »)
 from reportlab.lib.enums import TA_CENTER        # alignement centré
 from reportlab.lib.pagesizes import A4           # format A4
 from reportlab.lib.styles import ParagraphStyle  # styles de paragraphe
@@ -88,6 +89,10 @@ def tableau(lignes, largeur):
     n = len(cellules[0])                                               # nombre de colonnes
     # Poids de chaque colonne = longueur utile max (bornée) pour répartir la largeur
     poids = [max(min(len(re.sub(r"[`*]", "", row[i])), 48) for row in cellules if i < len(row)) + 6 for i in range(n)]
+    # Largeur minimale d'une colonne = son plus long mot (évite « N° », « Sudo », noms d'alias coupés)
+    for i in range(n):
+        mot = max((len(w) for row in cellules if i < len(row) for w in re.sub(r"[`*]", "", row[i]).split()), default=1)
+        poids[i] = max(poids[i], min(mot, 26) * 2.5 + 9)
     larg = [largeur * p / sum(poids) for p in poids]
     data = []
     for i, row in enumerate(cellules):                                 # une ligne de Paragraph par ligne MD
@@ -113,14 +118,36 @@ def bloc_code(lignes, largeur_car=92):
     return Preformatted("\n".join(sortie), S_CODE)
 
 
+DATE_MAJ = ""                                                          # date de mise à jour, lue dans le pied du .md
+
+
+class CanvasNumerote(canvas.Canvas):
+    """Canvas à deux passes : mémorise les pages, puis écrit « page i / N » une fois N connu."""
+
+    def __init__(self, *args, **kwargs):
+        canvas.Canvas.__init__(self, *args, **kwargs)
+        self._pages = []                                               # états de page mémorisés
+
+    def showPage(self):
+        self._pages.append(dict(self.__dict__))                        # garde l'état, n'écrit pas encore
+        self._startPage()
+
+    def save(self):
+        total = len(self._pages)                                       # nombre total de pages
+        for etat in self._pages:
+            self.__dict__.update(etat)
+            self.setFont("DV", 7.5)
+            self.setFillColor(GRIS)
+            self.drawString(2 * cm, 1.2 * cm, "Mode d'emploi scripts — Cluster Zêta / Riemann_Lab — hprzeta"
+                            + (f" — mis à jour le {DATE_MAJ}" if DATE_MAJ else ""))
+            self.drawRightString(A4[0] - 2 * cm, 1.2 * cm, f"page {self._pageNumber} / {total}")
+            canvas.Canvas.showPage(self)
+        canvas.Canvas.save(self)
+
+
 def pied_de_page(canvas, doc):
-    """Dessine le pied de page : texte à gauche, numéro de page à droite."""
-    canvas.saveState()
-    canvas.setFont("DV", 7.5)
-    canvas.setFillColor(GRIS)
-    canvas.drawString(2 * cm, 1.2 * cm, "Mode d'emploi scripts — Cluster Zêta / Riemann_Lab — hprzeta")
-    canvas.drawRightString(A4[0] - 2 * cm, 1.2 * cm, f"page {doc.page}")
-    canvas.restoreState()
+    """Le pied (date + pages) est dessiné par CanvasNumerote ; rien à faire ici."""
+    return
 
 
 def construit(md_chemin, pdf_chemin):
@@ -128,6 +155,9 @@ def construit(md_chemin, pdf_chemin):
     texte = open(md_chemin, encoding="utf-8").read()
     texte = re.sub(r"<!--.*?-->", "", texte, flags=re.S)               # retire les commentaires HTML
     lignes = texte.splitlines()
+    global DATE_MAJ
+    m = re.search(r"\*Mis à jour : (\d{4})-(\d{2})-(\d{2})", texte)           # date du pied du .md
+    DATE_MAJ = f"{m.group(3)}/{m.group(2)}/{m.group(1)}" if m else ""
     largeur = A4[0] - 4 * cm                                           # largeur utile du cadre
     doc = BaseDocTemplate(pdf_chemin, pagesize=A4, leftMargin=2 * cm, rightMargin=2 * cm,
                           topMargin=1.8 * cm, bottomMargin=2 * cm,
@@ -163,7 +193,7 @@ def construit(md_chemin, pdf_chemin):
                 flux.append(Paragraph("Mode d'emploi des scripts", S_TITRE))
                 flux.append(Paragraph("Cluster Zêta — Riemann_Lab", S_SOUS))
                 premiere_page = False
-            elif re.match(r"^\d+\.\s", titre) or titre.startswith("Aide-mémoire"):   # section numérotée
+            elif re.match(r"^\d+[a-z]?\.\s", titre) or titre.startswith("Aide-mémoire"):   # section numérotée
                 if flux and not isinstance(flux[-1], PageBreak) and titre.startswith("1."):
                     flux.append(PageBreak())                           # §1 commence sur une nouvelle page
                 flux.append(Paragraph(echappe(titre), S_H2))
@@ -199,7 +229,7 @@ def construit(md_chemin, pdf_chemin):
         else:                                                          # paragraphe courant
             flux.append(Paragraph(inline(l), S_TXT))
         i += 1
-    doc.build(flux)
+    doc.build(flux, canvasmaker=CanvasNumerote)
 
 
 if __name__ == "__main__":
