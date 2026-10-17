@@ -47,9 +47,19 @@ sudo "$(turbo_bin on)" --services \
 
 echo ""
 echo "  Lancement du calcul en arrière-plan (extinction/veille inhibées)..."
+# Monitoring (2026-10-17) : si monitoring/scripts/zeta_mon_run.py existe, la commande est enveloppée
+# (suivi, rapport MD+PDF). Type : ZETA_MON_TYPE=test (fenêtres ON) | prod (défaut, fenêtres OFF).
+CMD_CALCUL="printf '${T_MAX}\nO\n' | python ${SRC_DIR}/compute_zeros_v16.py"
+MON_RUN="${PROJET_DIR}/monitoring/scripts/zeta_mon_run.py"
+if [ -f "$MON_RUN" ]; then
+    MON_PREFIXE=(python "$MON_RUN" exec --nom "T${T_MAX}" --type "${ZETA_MON_TYPE:-prod}" \
+                 --csv "${PROJET_DIR}/calculs/" --)
+else
+    MON_PREFIXE=()
+fi
 systemd-inhibit --what=shutdown:sleep:idle --who="zeta_run.sh" \
     --why="Run T=${T_MAX} en cours" --mode=block \
-    nohup bash -c "printf '${T_MAX}\nO\n' | python ${SRC_DIR}/compute_zeros_v16.py" \
+    nohup "${MON_PREFIXE[@]}" bash -c "${CMD_CALCUL}" \
     > "${LOG_FILE}" 2>&1 &
 PID=$!
 echo "$PID" > "$PID_FILE"
