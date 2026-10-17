@@ -73,6 +73,11 @@ LIBELLES = {
     "zeta-report": "Régénérer le rapport d'un run (--lang en = définitif).",
     "zeta-index": "Régénérer Monitoring-Runs.md (liste des runs).",
     "zeta-runs": "Lister les derniers runs enregistrés.",
+    "zeta-mon-exec": "Lancer une commande SOUS monitoring (rapport MD+PDF à la fin).",
+    "zeta-mon-start": "Démarrer le suivi d'un run lancé à côté (--pid PID = clôture auto).",
+    "zeta-mon-stop": "Clore le suivi d'un run (--code N = code retour).",
+    "zeta-mon-fenetres": "Ouvrir les 3 fenêtres de graphiques rangées (sans run).",
+    "zeta-mon-fermer": "Fermer les fenêtres de graphiques.",
 }
 
 # Alias à confirmer avec un avertissement renforcé (sudo, runs lourds, écritures disque)
@@ -80,10 +85,11 @@ SENSIBLES = {"zeta-clone", "zeta-turbo-on", "zeta-turbo-off", "zeta-run",
              "zeta-distribute", "zeta-update", "zeta-backup-horsgit"}
 
 # Fonctions monitoring qui ouvrent une fenêtre graphique : à ne PAS lancer pendant un run (écran gelé déjà vu)
-FENETRES = {"zeta-live", "zeta-metrics", "zeta-gue"}
+FENETRES = {"zeta-live", "zeta-metrics", "zeta-gue", "zeta-mon-fenetres"}
 # Fonctions monitoring qui demandent des arguments (saisie proposée avant lancement)
 AVEC_ARGS = {"zeta-run-hint": "NOM [CSV|dossier]", "zeta-report": "[dossier_run] [--lang en]",
-             "zeta-live": "[csv|dossier]", "zeta-metrics": "[minutes] [refresh_s]", "zeta-gue": "[csv]"}
+             "zeta-mon-exec": "--nom N --type test|prod [--csv X] -- commande", "zeta-mon-start": "--nom N --type test|prod [--pid PID]",
+             "zeta-mon-stop": "--code N", "zeta-live": "[csv|dossier]", "zeta-metrics": "[minutes] [refresh_s]", "zeta-gue": "[csv]"}
 
 
 def lire_alias():

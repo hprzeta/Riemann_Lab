@@ -1,0 +1,11 @@
+# Monitoring : données volumineuses ou locales, non versionnées
+data/
+logs/
+runs/.actif
+runs/.hint*
+runs/.fenetres.json
+runs/*/*/metrics.csv
+runs/*/*/etat.csv
+runs/*/*/.fin
+runs/*/*/superviseur.*
+__pycache__/
