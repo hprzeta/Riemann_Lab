@@ -21,7 +21,8 @@ Photographie de l'état de PC1 et du code au moment du run (turbo : lecture `int
 | Disque libre (Go) | 26.9 |
 | Git | d275736 @ Riemann_Lab_IA, 21 fichiers modifiés non commités |
 | Python / paquets | 3.12.3 / numpy 2.4.4, pandas 3.0.2, matplotlib 3.10.8, mpmath 1.3.0 |
-| CSV des zéros | introuvable |
+| CSV des zéros | `/home/riemann/projet_zeta/calculs/v16_T100000_20261017_204620/zeros_v16_T100000_20261017_204620.csv` |
+| Taille du CSV | 11.9 Mo — 138069 zéros |
 
 ---
-*session.md · MAJ 2026-10-17 · 27 lignes*
+*session.md · MAJ 2026-10-18 · 28 lignes*
