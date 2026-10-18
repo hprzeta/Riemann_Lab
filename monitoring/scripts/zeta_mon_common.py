@@ -72,6 +72,14 @@ def csv_du_run(meta, t0, t1=None):
     return str(max(cand)[1]) if cand else None
 
 
+def titrer(fig, titre):
+    """Titre de la FENÊTRE (barre de titre) à la place de « Figure 1 » ; sans effet si le backend n'en a pas."""
+    try:
+        fig.canvas.manager.set_window_title(titre)
+    except Exception:
+        pass
+
+
 def lignes_workers(csvp, cache):
     """Nombre TOTAL de zéros écrits par TOUS les workers du run (somme sur worker_NNN.csv / worker_NNN.partial.csv).
     Par worker on prend le plus grand des deux (le .partial.csv est supprimé quand le .csv final est écrit :

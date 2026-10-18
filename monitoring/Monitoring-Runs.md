@@ -6,8 +6,22 @@ Liste de chaque run lancé, avec ses graphiques (générée automatiquement par 
 
 | Date | Run | Statut | Durée | Zéros | z/s | T max PC1 | Graphiques | Rapport · session |
 |---|---|---|---|---|---|---|---|---|
+| 2026-10-18 16:34 | T100000 | terminé | 2min32s | 138069 | 908.3 | 80.0 | [métriques](runs/test/20261018_163440_T100000/figures/metrics.png) · [zéros](runs/test/20261018_163440_T100000/figures/zeros_tranches.png) · [GUE](runs/test/20261018_163440_T100000/figures/gue.png) · [débit](runs/test/20261018_163440_T100000/figures/debit.png) | [MD](runs/test/20261018_163440_T100000/rapport.md) · [PDF](runs/test/20261018_163440_T100000/rapport.pdf) · [session](runs/test/20261018_163440_T100000/session.md) |
+| 2026-10-18 16:28 | T100000 | terminé | 2min49s | 138069 | 817.0 | — | [zéros](runs/test/20261018_162803_T100000/figures/zeros_tranches.png) · [GUE](runs/test/20261018_162803_T100000/figures/gue.png) · [débit](runs/test/20261018_162803_T100000/figures/debit.png) | [MD](runs/test/20261018_162803_T100000/rapport.md) · [PDF](runs/test/20261018_162803_T100000/rapport.pdf) · [session](runs/test/20261018_162803_T100000/session.md) |
+| 2026-10-17 20:19 | T100000 | terminé | 2min29s | 138069 | 926.6 | 79.0 | [métriques](runs/test/20261017_201929_T100000/figures/metrics.png) · [zéros](runs/test/20261017_201929_T100000/figures/zeros_tranches.png) · [GUE](runs/test/20261017_201929_T100000/figures/gue.png) · [débit](runs/test/20261017_201929_T100000/figures/debit.png) | [MD](runs/test/20261017_201929_T100000/rapport.md) · [PDF](runs/test/20261017_201929_T100000/rapport.pdf) · [session](runs/test/20261017_201929_T100000/session.md) |
+| 2026-10-17 20:14 | T100000 | terminé | 2min28s | — | — | 79.0 | [métriques](runs/test/20261017_201423_T100000/figures/metrics.png) | [MD](runs/test/20261017_201423_T100000/rapport.md) · [PDF](runs/test/20261017_201423_T100000/rapport.pdf) · [session](runs/test/20261017_201423_T100000/session.md) |
+| 2026-10-17 20:08 | T100000 | terminé | 2min43s | 138069 | 847.0 | 77.0 | [métriques](runs/test/20261017_200842_T100000/figures/metrics.png) · [zéros](runs/test/20261017_200842_T100000/figures/zeros_tranches.png) · [GUE](runs/test/20261017_200842_T100000/figures/gue.png) · [débit](runs/test/20261017_200842_T100000/figures/debit.png) | [MD](runs/test/20261017_200842_T100000/rapport.md) · [PDF](runs/test/20261017_200842_T100000/rapport.pdf) · [session](runs/test/20261017_200842_T100000/session.md) |
 | 2026-10-17 17:59 | T100000 | terminé | 2min39s | 138069 | 868.4 | 79.0 | [métriques](runs/test/20261017_175939_T100000/figures/metrics.png) · [zéros](runs/test/20261017_175939_T100000/figures/zeros_tranches.png) · [GUE](runs/test/20261017_175939_T100000/figures/gue.png) · [débit](runs/test/20261017_175939_T100000/figures/debit.png) | [MD](runs/test/20261017_175939_T100000/rapport.md) · [PDF](runs/test/20261017_175939_T100000/rapport.pdf) · [session](runs/test/20261017_175939_T100000/session.md) |
 | 2026-10-17 17:50 | T50000 | terminé | 2min16s | 63519 | 467.1 | 77.0 | [métriques](runs/test/20261017_175028_T50000/figures/metrics.png) · [zéros](runs/test/20261017_175028_T50000/figures/zeros_tranches.png) · [GUE](runs/test/20261017_175028_T50000/figures/gue.png) · [débit](runs/test/20261017_175028_T50000/figures/debit.png) | [MD](runs/test/20261017_175028_T50000/rapport.md) · [PDF](runs/test/20261017_175028_T50000/rapport.pdf) · [session](runs/test/20261017_175028_T50000/session.md) |
+
+## Runs de production
+
+| Date | Run | Statut | Durée | Zéros | z/s | T max PC1 | Graphiques | Rapport · session |
+|---|---|---|---|---|---|---|---|---|
+| 2026-10-17 20:59 | T400000 | terminé | 20min39s | 640520 | 517.0 | 79.0 | [métriques](runs/prod/20261017_205920_T400000/figures/metrics.png) · [zéros](runs/prod/20261017_205920_T400000/figures/zeros_tranches.png) · [GUE](runs/prod/20261017_205920_T400000/figures/gue.png) · [débit](runs/prod/20261017_205920_T400000/figures/debit.png) | [MD](runs/prod/20261017_205920_T400000/rapport.md) · [PDF](runs/prod/20261017_205920_T400000/rapport.pdf) · [session](runs/prod/20261017_205920_T400000/session.md) |
+| 2026-10-17 20:55 | T10000 | terminé | 0min22s | 10142 | 461.0 | 73.0 | [métriques](runs/prod/20261017_205533_T10000/figures/metrics.png) · [zéros](runs/prod/20261017_205533_T10000/figures/zeros_tranches.png) · [GUE](runs/prod/20261017_205533_T10000/figures/gue.png) | [MD](runs/prod/20261017_205533_T10000/rapport.md) · [PDF](runs/prod/20261017_205533_T10000/rapport.pdf) · [session](runs/prod/20261017_205533_T10000/session.md) |
+| 2026-10-17 20:49 | T100000 | terminé | 2min17s | — | — | 81.0 | [métriques](runs/prod/20261017_204949_T100000/figures/metrics.png) | [MD](runs/prod/20261017_204949_T100000/rapport.md) · [PDF](runs/prod/20261017_204949_T100000/rapport.pdf) · [session](runs/prod/20261017_204949_T100000/session.md) |
+| 2026-10-17 20:46 | T100000 | terminé | 2min27s | — | — | 79.0 | [métriques](runs/prod/20261017_204619_T100000/figures/metrics.png) | [MD](runs/prod/20261017_204619_T100000/rapport.md) · [PDF](runs/prod/20261017_204619_T100000/rapport.pdf) · [session](runs/prod/20261017_204619_T100000/session.md) |
 
 ## Historique (sans mesures machines)
 
@@ -17,9 +31,9 @@ Liste de chaque run lancé, avec ses graphiques (générée automatiquement par 
 
 ## Dernier run avec historique machines : T100000
 
-![métriques](runs/test/20261017_175939_T100000/figures/metrics.png)
+![métriques](runs/test/20261018_163440_T100000/figures/metrics.png)
 
-![zéros](runs/test/20261017_175939_T100000/figures/zeros_tranches.png)
+![zéros](runs/test/20261018_163440_T100000/figures/zeros_tranches.png)
 
 ## Galerie de référence (graphiques conservés)
 
@@ -45,4 +59,4 @@ Exemples **réels** de la séance du 2026-10-15 (T1b), pour savoir à quoi resse
 - `zeta-live` · `zeta-metrics` · `zeta-gue [--live]` · `zeta-report [run] [--lang en]` · `zeta-index`
 
 ---
-*Monitoring-Runs.md · MAJ 2026-10-17 · 48 lignes*
+*Monitoring-Runs.md · MAJ 2026-10-18 · 62 lignes*

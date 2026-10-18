@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 from matplotlib.animation import FuncAnimation
 
-from zeta_mon_common import compacter, placer
+from zeta_mon_common import compacter, placer, titrer
 
 BLEU, GRIS, ROUGE = "#3b78c4", "#9a9a9a", "#d62728"
 NOMS_T = ("partie_imaginaire", "gamma", "t", "zero", "zero_t", "imag", "im")
@@ -184,6 +184,7 @@ def main():
     if args.geometrie:
         compacter(args.geometrie)
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 8), constrained_layout=True)
+    titrer(fig, "Zêta — Zéros calculés en direct (tranches de t, espacements)")
     if args.geometrie:
         placer(fig, args.geometrie)
 
