@@ -194,6 +194,70 @@ def parse_worker_progress(path):
     return cache
 
 
+RESCAN_BASE = 100   # le moteur v16 numérote les workers de rescan ciblé 100+i (i = segment rescanné)
+
+
+def separer_rescans(workers):
+    """Sépare {id: (count, t, elapsed)} en (principaux, rescans).
+
+    Un id >= RESCAN_BASE n'est PAS un worker supplémentaire : c'est le rescan (STEP/2) du segment id-100,
+    qui relit des zéros déjà comptés par le worker principal correspondant. Les additionner gonflerait
+    le total (ex. 9 × 17000 = 153000 au lieu de 138069 pour un T=100000 avec un segment rescanné).
+    """
+    principaux = {k: v for k, v in workers.items() if k < RESCAN_BASE}
+    rescans = {k: v for k, v in workers.items() if k >= RESCAN_BASE}
+    return principaux, rescans
+
+
+def jetons_workers(principaux, rescans):
+    """Jetons d'affichage : (jetons principaux, jetons rescan).
+
+    Principaux : W0..W(n-1) par ordre de tri des ids ; l'id brut est ajouté entre parenthèses
+    seulement s'il diffère de l'index (« W8(id9) »). Logs normaux (ids 0..n-1) : aucun changement visible.
+    Rescans : « R<segment>(id<id>) ».
+    """
+    jp = [f"W{i}" + (f"(id{k})" if k != i else "") + f":#{v[0]}@t={v[1]:.0f}"
+          for i, (k, v) in enumerate(sorted(principaux.items()))]
+    jr = [f"R{k - RESCAN_BASE}(id{k}):#{v[0]}@t={v[1]:.0f}" for k, v in sorted(rescans.items())]
+    return jp, jr
+
+
+def envelopper(prefixe, jetons, largeur):
+    """Répartit les jetons en lignes de `largeur` caractères au plus (retour à la ligne par groupes,
+    sans couper un jeton) ; les lignes suivantes sont indentées sous le premier jeton."""
+    largeur = max(largeur, len(prefixe) + 8)
+    lignes, cour = [], prefixe
+    indent = " " * len(prefixe)
+    for j in jetons:
+        sep = "" if cour in (prefixe, indent) else "  "
+        if len(cour) + len(sep) + len(j) > largeur and cour not in (prefixe, indent):
+            lignes.append(cour)
+            cour = indent
+            sep = ""
+        cour += sep + j
+    if cour.strip():
+        lignes.append(cour)
+    return lignes or [prefixe.rstrip()]
+
+
+def dessiner_detail(stdscr, row, h, w, groupes):
+    """Dessine « Détail workers » ; groupes = [(nom, principaux, rescans, couleur)]. Retourne la ligne suivante."""
+    stdscr.addstr(row, 2, "Détail workers (count @ t — elapsed)", curses.color_pair(PAIR["fg"]) | curses.A_BOLD)
+    row += 1
+    for name, principaux, rescans, cp in groupes:
+        jp, jr = jetons_workers(principaux, rescans)
+        blocs = [(f"{name}: ", jp)]
+        if jr:
+            blocs.append((f"{name} rescan: ", jr))
+        for prefixe, jetons in blocs:
+            for ligne in envelopper(prefixe, jetons, w - 4):
+                if row >= h - 1:
+                    return row
+                stdscr.addstr(row, 2, ligne[:w - 4], curses.color_pair(cp))
+                row += 1
+    return row
+
+
 state = {"pc1": {"cpu": None, "ram": None, "disk": None, "status": "init"},
          "pc2": {"cpu": None, "ram": None, "disk": None, "status": "init"}}
 lock = threading.Lock()
@@ -242,7 +306,33 @@ def load_pct_color(pct):
     return PAIR["ok"] if pct < 60 else (PAIR["warn"] if pct < 85 else PAIR["crit"])
 
 
+def rapport_ecran(ecran, h, w, workers, segments, master, solo, log, elapsed):
+    """Touche r : capture de l'écran courant + rapport MD/PDF dans le dossier du run ACTIF
+    (monitoring/runs/test|prod/<run>/). Retourne le message à afficher dans la TUI.
+    Sans run actif : message, rien n'est écrit. ZETA_PROGRESS_SORTIE force un dossier (tests uniquement)."""
+    try:
+        import zeta_progress_rapport as zpr
+        sortie, nb = os.environ.get("ZETA_PROGRESS_SORTIE"), 1
+        if not sortie:
+            sortie, nb = zpr.detecter_run_actif()
+        if not sortie:
+            return "Rapport : aucun run actif (monitoring/runs/test|prod) — rien d'écrit."
+        png, md, pdf = zpr.generer(sortie, ecran.grille, h, w, workers, segments, master["n_total"] if master else None,
+                                   solo, log, elapsed=elapsed, eta_fn=eta_sqrt_weighted)
+        try:
+            chemin = Path(pdf or md).relative_to(PROJET_DIR)
+        except ValueError:
+            chemin = Path(pdf or md)
+        suite = " (%d runs actifs : le plus récent)" % nb if nb > 1 else ""
+        return "Rapport écrit : %s%s" % (chemin, suite)
+    except Exception as e:
+        return "Rapport impossible : %s" % str(e)[:80]
+
+
 def draw(stdscr):
+    from zeta_progress_rapport import EcranEnregistre
+    stdscr = EcranEnregistre(stdscr)    # enregistre chaque addstr : sert à la capture d'écran de la touche r
+    message = ("", 0.0)                 # (texte, échéance) affiché sans quitter la TUI
     init_colors()
     curses.curs_set(0)
     stdscr.nodelay(True)
@@ -275,6 +365,9 @@ def draw(stdscr):
         w2 = parse_worker_progress(pc2_log) if pc2_log else {}
         seg1 = parse_segments(pc1_log) if pc1_log else {}
         seg2 = parse_segments(pc2_log) if pc2_log else {}
+        w1_tous = w1
+        w1, r1 = separer_rescans(w1)    # rescans (ids >= 100) à part : exclus des totaux, de l'ETA et de la barre
+        w2, r2 = separer_rescans(w2)
         done1 = sum(c for c, _, _ in w1.values())
         done2 = sum(c for c, _, _ in w2.values())
         el1 = max((e for _, _, e in w1.values()), default=0)
@@ -285,7 +378,7 @@ def draw(stdscr):
         title = ("  ζ  ZETA RUN PROGRESS — PC1 SOLO (v16)  ζ  " if solo_mode
                   else "  ζ  ZETA RUN PROGRESS — PC1/PC2  ζ  ")
         stdscr.addstr(0, max(0, (w - len(title)) // 2), title, curses.color_pair(PAIR["pc1"]) | curses.A_BOLD)
-        stdscr.addstr(1, 2, f"Refresh:{REFRESH}s | {datetime.now().strftime('%H:%M:%S')} | q=quitter d=détail workers", curses.color_pair(PAIR["fg"]))
+        stdscr.addstr(1, 2, f"Refresh:{REFRESH}s | {datetime.now().strftime('%H:%M:%S')} | q=quitter d=détail workers r=rapport", curses.color_pair(PAIR["fg"]))
         stdscr.addstr(2, 0, "─" * w, curses.color_pair(PAIR["fg"]))
         row = 3
 
@@ -377,25 +470,29 @@ def draw(stdscr):
                 break
 
         if show_detail and row < h - 3:
-            stdscr.addstr(row, 2, "Détail workers (count @ t — elapsed)", curses.color_pair(PAIR["fg"]) | curses.A_BOLD)
-            row += 1
-            for name, workers, cp in (("PC1", w1, PAIR["pc1"]), ("PC2", w2, PAIR["pc2"])):
-                if row >= h - 1:
-                    break
-                line = f"{name}: " + "  ".join(f"W{k}:#{v[0]}@t={v[1]:.0f}" for k, v in sorted(workers.items()))
-                stdscr.addstr(row, 2, line[:w - 4], curses.color_pair(cp))
-                row += 1
+            row = dessiner_detail(stdscr, row, h, w, (("PC1", w1, r1, PAIR["pc1"]), ("PC2", w2, r2, PAIR["pc2"])))
 
-        footer = " zeta_run_progress.py · hprzeta · q=quitter d=détail "
+        footer = " zeta_run_progress.py · hprzeta · q=quitter d=détail r=rapport "
         try:
             stdscr.addstr(h - 1, max(0, (w - len(footer)) // 2), footer, curses.color_pair(PAIR["fg"]))
         except curses.error:
             pass
         stdscr.refresh()
 
+        if message[0] and time.time() < message[1] and h >= 6:
+            import textwrap       # chemin long : affiché sur 2 lignes au plus au-dessus du bandeau, jamais tronqué en silence
+            try:
+                for i, l in enumerate(textwrap.wrap(message[0], max(w - 4, 10), break_long_words=True)[:2][::-1]):
+                    stdscr.addstr(h - 2 - i, 2, l, curses.color_pair(PAIR["warn"]))
+            except curses.error:
+                pass
+        stdscr.refresh()
+
         ch = stdscr.getch()
         if ch in (ord("q"), ord("Q")):
             break
+        if ch in (ord("r"), ord("R")):
+            message = (rapport_ecran(stdscr, h, w, w1_tous, seg1, master, solo_mode, pc1_log, el1), time.time() + 20)
         if ch in (ord("d"), ord("D")):
             show_detail = not show_detail
         time.sleep(1)
