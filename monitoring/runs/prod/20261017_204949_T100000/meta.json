@@ -7,7 +7,7 @@
  "statut": "termin\u00e9",
  "lanceur": true,
  "cmd": "bash -c printf '100000\\nO\\n' | python /home/riemann/projet_zeta/src/calculs/optimisation/compute_zeros_v16.py",
- "csv": null,
+ "csv": "/home/riemann/projet_zeta/calculs/v16_T100000_20261017_204950/zeros_v16_T100000_20261017_204950.csv",
  "fenetres": false,
  "session": {
   "hote": "zeta-lab",
@@ -38,11 +38,13 @@
   "turbo": "actif (intel_pstate)",
   "charge_1min": 5.79
  },
- "zeros": null,
+ "zeros": 138069,
  "duree_s": 137.0,
- "zps": null,
+ "zps": 1007.8029197080292,
  "tmax_pc1": 81.0,
  "figures": [
-  "metrics.png"
+  "gue.png",
+  "metrics.png",
+  "zeros_tranches.png"
  ]
 }
