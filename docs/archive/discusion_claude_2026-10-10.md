@@ -112,9 +112,102 @@ Audit avant chaque push : 0 résultat ; poussée simple (fast-forward côté dis
 
 **Jamais testé en réel :** rsync inverse, dry-run des options 8 et 10, `grub-install` et `efibootmgr` (ils ne seront éprouvés qu'au premier remplacement de disque). **Aucune restauration complète (option 8) sans accord explicite de hprzeta.** Restent aussi ouverts les points du 06/10 : rotation du jeton DNS dynamique, masquage éventuel d'identifiants de disque déjà publics, régénération des PDF des anciennes archives.
 
-## 11. Clôture : « bye bye »
+## 11. Soirée : tri des médias du téléphone Samsung
+
+**Demande de hprzeta :** récupérer les photos et vidéos du téléphone branché en USB, en **lecture seule**, ne garder que ce qui concerne l'informatique, et le ranger dans le projet. Puis : tout copier sur `/mnt`, supprimer définitivement ce qui n'est pas informatique, et noter le reste à faire pour le lendemain.
+
+### 11.1 Accès au téléphone
+
+| Étape | Constat |
+|---|---|
+| Détection USB | Samsung en mode MTP ; racine vide au début |
+| Cause | Le journal gvfs indiquait que le téléphone refusait de donner la liste de ses stockages |
+| Remède (côté téléphone) | Écran déverrouillé, mode USB « Transfert de fichiers », autorisation acceptée |
+| Piège évité | Une commande d'arrêt de processus dont le motif figurait dans sa propre ligne s'est arrêtée elle-même (code 144) ; sans rapport avec le téléphone |
+
+### 11.2 Inventaire (lecture seule)
+
+| Type | Fichiers | Taille |
+|---|---:|---:|
+| Photos `.jpg` | 1 979 | 3,1 Go |
+| Vidéos `.mp4` | 664 | 23,5 Go |
+| `.png` et `.webp` | 11 | 1,2 Mo |
+| **Total** | **2 654** | **26,5 Go** |
+
+Six dossiers personnels ont été exclus d'office (jamais listés, ouverts ni copiés), ainsi que les caches de miniatures.
+
+### 11.3 Sauvegarde
+
+| Point | Résultat |
+|---|---|
+| Place sur `/home` | 28 Go libres : trop juste pour 25,7 Go ; choix de hprzeta : tout sur `/mnt/data` |
+| Médias sauvegardés | 2 654 sur 2 654, 0 échec, hash sha256 vérifiés |
+| Dossier de travail | `/mnt/data/medias_telephone/`, relié à `~/projet_zeta/medias_informatique` par un lien |
+| Ancien dossier de `/home` | Supprimé après vérification de la copie ; `/home` : 28 Go libres |
+| Téléphone | Jamais modifié |
+
+### 11.4 Corbeilles et miniatures
+
+Aucune vraie corbeille n'est visible en MTP. Seules 2 834 miniatures (137 Mo) existent ; elles contiennent très probablement des miniatures des dossiers personnels exclus. **Décision de hprzeta : ne rien copier.** À vérifier à la main : Corbeille de la Galerie Samsung (30 jours) et de Google Photos (60 jours).
+
+### 11.5 Tri thématique (liens physiques, aucun octet en double)
+
+| Thème | Fichiers | dont sensibles |
+|---|---:|---:|
+| Matériel PC | 119 | 0 |
+| Captures de logiciels | 103 | 5 |
+| Mathématiques / zêta | 95 | 0 |
+| Réseau / cluster | 84 | 48 |
+| Code et terminal | 68 | 16 |
+| SAP / ABAP | 20 | 20 |
+| Divers informatique | 12 | 9 |
+| **Total classé** | **501** | **98** |
+
+Méthode : 98 captures classées d'après le nom de l'application, 118 par examen visuel de planches-contacts (captures Chrome, YouTube et diverses), 285 photos du dossier Camera (sur 677) par planches de 20.
+
+### 11.6 Suppression des non-informatiques (hors vidéos)
+
+| Catégorie | Fichiers | Taille |
+|---|---:|---:|
+| Photos non informatiques du dossier Camera | 392 | 1,29 Go |
+| Captures non informatiques (réseaux sociaux, messagerie, banque, textes bibliques) | 1 038 | 662 Mo |
+| Autres petits dossiers | 59 | 45 Mo |
+| **Supprimés définitivement (copies sur le PC)** | **1 489** | **2 026 Mo** |
+
+Sur proposition de Claude, hprzeta a choisi de supprimer maintenant tout sauf les vidéos (option 1) ; les 663 vidéos, jamais regardées, sont conservées pour être triées. Un journal des chemins supprimés et une copie du registre ont été conservés.
+
+### 11.7 Points de sécurité relevés (images conservées)
+
+| Sujet | Gravité | Action proposée |
+|---|---|---|
+| Jeton de DNS dynamique visible (2 captures) | Haute | Le régénérer s'il est valide |
+| Chaînes ressemblant à des clés WireGuard dans des notes (4 captures) | Haute, à vérifier | Si ce sont des clés privées : les sortir des notes et les régénérer |
+| Phrase de récupération d'un compte mail | Haute | La régénérer |
+| Mot de passe Wi-Fi, étiquette de routeur, captures de la box | Moyenne | Masquer avant toute publication |
+| Ordre de mission SAP | Moyenne | Ne pas publier |
+
+### 11.8 Scripts créés (non commités)
+
+| Script | Rôle | État |
+|---|---|---|
+| `sync_tel_informatique.sh` | Sauvegarde incrémentale, registre sha256, détection des fichiers disparus, simulation, option vidéos | Testé en réel |
+| `chercher_corbeilles.sh` | Recherche de corbeilles et caches | Simulation seulement |
+| `.gitignore` | Règles de protection du dossier de médias | Modifié |
+
+### 11.9 Reste à faire (consigné dans le Handoff)
+
+| Priorité | Tâche |
+|---|---|
+| 1 | Trier les 663 vidéos (une image par vidéo), supprimer les non informatiques après décompte et confirmation |
+| 2 | Régénérer l'index des médias |
+| 3 | Traiter les points de sécurité du 11.7 |
+| 4 | Décider du commit des scripts et du `.gitignore` |
+
+Rapport détaillé : `/mnt/data/medias_telephone/RAPPORT_SESSION_20261010.md`.
+
+## 12. Clôture : « bye bye »
 
 **Capture brute du terminal : absente** pour cette session (aucun processus `script` actif) ; il n'y a donc rien à arrêter. Pour la prochaine fois : lancer `~/projet_zeta/scripts/capture.sh` **avant** `claude`. La transcription automatique de Claude Code (un fichier `.jsonl` par session) reste disponible ; `zeta-convert-jsontomd` peut la convertir en Markdown masqué (mode 600, ignoré par git, jamais commité sans demande).
 
 ---
-*Archive de session du 10/10/2026 — rédigée à la demande de hprzeta (« bye bye »).*
+*Archive de session du 10/10/2026 (matin et soir) — rédigée à la demande de hprzeta (« bye bye »).*

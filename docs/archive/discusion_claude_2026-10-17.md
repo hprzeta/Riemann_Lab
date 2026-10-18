@@ -2,7 +2,7 @@
 
 Projet Riemann_Lab — session Claude Code du 17/10/2026 (branche Riemann_Lab_IA).
 
-**Turbo Zêta :** RESTAURÉ (vérifié : 4 CPU à leur gouverneur initial (cpu0=powersave), swappiness 10) — première étape du « bye bye », code de sortie 0.
+**Turbo Zêta :** RESTAURÉ (vérifié : 4 CPU à leur gouverneur initial (cpu0=powersave), swappiness 10) — première étape du « bye bye », code de sortie 0. Au second « bye bye » de la journée : « Turbo Zêta : RIEN À RESTAURER » (code 0, état déjà restauré), TURBO_STATUS=INACTIF.
 
 **Capture brute du terminal :** active, fichier claude-traitement-journalier/session_20261017_1533.log ; le .md est généré à la fermeture (taper exit deux fois). Non commitée.
 
@@ -124,5 +124,47 @@ Le bloc de reprise du Handoff a été mis à jour à chaque jalon (monitoring, c
 4. Zéros manquants à grande hauteur (chantier V17) ; choix entre v16 et v17 pour le prochain gros run.
 5. Inchangé : sort de zeta_webmonitor.py, fichier de configuration git racine, page wiki du monitoring, durcissement des droits sudo (action root), run T = 5M avec la v17, rotation du jeton DuckDNS.
 
+
+## 11. Partie B — après le premier « bye bye » (fin de journée)
+
+La session a continué après la première clôture. Cette partie complète l'archive du jour sans remplacer la partie A (sections 1 à 10), déjà commitée (fd4d283).
+
+**Question de hprzeta sur les commits**
+
+> « tu a valider les comit? »
+
+Vérification de l'état réel plutôt que réponse de mémoire :
+
+| Commit | Contenu | Accord de hprzeta |
+|---|---|---|
+| bff901f | monitoring v2, intégration dans zeta_run.sh, wrappers, menu (52 fichiers) | après « OK pour le patch du débit puis le commit », puis « pousser » |
+| d275736 | menu zeta-script à 58 entrées et générateur de PDF (2 fichiers) | « go, commit puis propage et pousse » |
+
+Les quatre branches étaient identiques en local et sur origin (écart nul) ; audit des lignes ajoutées sans résultat, simulation des fusions sans conflit, jamais de --force. **Non validé :** aucun test automatique n'a été lancé sur ces commits ; les contrôles se limitent à la compilation et à des essais réels (six runs avec le lanceur, menu affiché, générateur de PDF exécuté). Un fichier suivi a changé après les commits : le fichier de liste des runs du monitoring, régénéré automatiquement.
+
+**Commit de l'archive du jour**
+
+> « commite aussi l'archive d'aujourd'hui »
+
+Audit du MD et du texte extrait du PDF : un seul résultat, la phrase « rotation du jeton DuckDNS » (nom du chantier, sans jeton, sans nom de domaine, sans adresse). Commit fd4d283 sur Riemann_Lab_IA (2 fichiers, 128 lignes ajoutées, aucune suppression).
+
+**Propagation**
+
+> « pousse et propage aux 3 autres branches »
+
+Simulation sans conflit pour main et Riemann_Lab_Test, audit du diff propre. Riemann_Lab_C par avance rapide ; main (89a170c) et Riemann_Lab_Test (7e61c84) par fusion sans conflit dans un worktree temporaire ; poussé sans --force. Les quatre branches sont à niveau : Riemann_Lab_IA et Riemann_Lab_C à fd4d283.
+
+**Mise à jour du Handoff**
+
+> « oui, mets à jour le Handoff »
+
+Le commit d'archive et les nouveaux hashes sont notés dans l'entrée « fin de soirée ». Une première tentative a échoué sans rien écrire, car la phrase à remplacer figurait dans deux entrées ; elle a été relancée en ne ciblant que l'entrée du dessus (copie de sécurité faite).
+
+**Second « bye bye »**
+
+- Turbo : « RIEN À RESTAURER » (déjà restauré au premier « bye bye »).
+- Capture brute du terminal : toujours active (fichier session_20261017_1533.log) ; à fermer par exit deux fois ; non commitée.
+- Cette partie B de l'archive est écrite après le commit fd4d283 : elle n'est pas encore commitée, en attente de l'accord de hprzeta.
+
 ---
-*discusion_claude_2026-10-17.md · MAJ 2026-10-17 · 128 lignes*
+*discusion_claude_2026-10-17.md · MAJ 2026-10-17 · 170 lignes*
