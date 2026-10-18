@@ -21,7 +21,7 @@ import numpy as np
 import pandas as pd
 from matplotlib.animation import FuncAnimation
 
-from zeta_mon_common import compacter, placer
+from zeta_mon_common import compacter, placer, titrer
 from zeta_plot_live import LecteurZeros, lire_zeros, trouver_csv
 
 
@@ -89,6 +89,7 @@ def main():
         if args.geometrie:
             compacter(args.geometrie)
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6), constrained_layout=True)
+        titrer(fig, "Zêta — Statistique GUE en direct (espacements normalisés)")
         if args.geometrie:
             placer(fig, args.geometrie)
         etat = {"csv": None, "lecteur": None}
