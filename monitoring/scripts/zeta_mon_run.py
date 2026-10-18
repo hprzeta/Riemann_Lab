@@ -34,7 +34,7 @@ import traceback
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from zeta_mon_common import (ACTIF, CALCULS, DATA, FENETRES, LOGS, ROOT, RUNS, csv_du_run, layout,   # noqa: E402
+from zeta_mon_common import (ACTIF, CALCULS, DATA, FENETRES, LOGS, ROOT, RUNS, csv_du_run, layout, lignes_workers,   # noqa: E402
                              lire_hint)
 
 SCR = Path(__file__).resolve().parent
@@ -246,6 +246,7 @@ def superviseur(d, pid=None):
     hist = d / "etat.csv"
     hist.write_text("horodatage,zeros,t_max,zps,temp_pc1,freq_pc1,load_pc1\n")
     lecteur, csvp, n_prev, t_prev, debut = None, None, 0, time.time(), time.time()
+    nw_prev, cache_w = None, {}          # débit : total des zéros de TOUS les workers (None = pas de fichiers de worker)
     prochain = 0
     while True:
         if (d / ".fin").exists() or (pid and not vivant(pid)) or time.time() - debut > 12 * 3600:
@@ -262,7 +263,13 @@ def superviseur(d, pid=None):
                     t = lecteur.maj()
                     n = len(t)
                     tm = time.time()
-                    zps = float("nan") if premier else (n - n_prev) / max(tm - t_prev, 1e-6)   # 1er passage : pas de débit
+                    nw = lignes_workers(csvp, cache_w)
+                    if nw is not None:                      # run multi-workers : débit = croissance du total des workers
+                        zps = float("nan") if nw_prev is None else max(nw - nw_prev, 0) / max(tm - t_prev, 1e-6)
+                        nw_prev = nw
+                        n = max(n, nw)                      # compteur « zéros » : au moins le total des workers
+                    else:
+                        zps = float("nan") if premier else (n - n_prev) / max(tm - t_prev, 1e-6)   # 1er passage : pas de débit
                     n_prev, t_prev = n, tm
                     tmax = float(t[-1]) if n else None
                     T, F, L = derniere_mesure_pc1()

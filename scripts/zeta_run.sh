@@ -27,6 +27,10 @@ PID_FILE="${LOG_DIR}/run_T${T_MAX}.pid"
 
 mkdir -p "$LOG_DIR"
 
+# Toujours se placer à la racine du dépôt : compute_zeros_v16.py écrit dans le chemin RELATIF calculs/
+# (sinon un run lancé depuis ~ écrit dans ~/calculs/ et le monitoring ne trouve pas le CSV)
+cd "$PROJET_DIR"
+
 echo "=== zeta_run.sh — T_MAX=${T_MAX} ==="
 echo "  Log → ${LOG_FILE}"
 
