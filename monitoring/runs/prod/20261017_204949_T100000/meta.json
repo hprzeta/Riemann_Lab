@@ -1,0 +1,48 @@
+{
+ "id": "20261017_204949_T100000",
+ "nom": "T100000",
+ "type": "prod",
+ "t0": "2026-10-17T20:49:49",
+ "t1": "2026-10-17T20:52:06",
+ "statut": "termin\u00e9",
+ "lanceur": true,
+ "cmd": "bash -c printf '100000\\nO\\n' | python /home/riemann/projet_zeta/src/calculs/optimisation/compute_zeros_v16.py",
+ "csv": null,
+ "fenetres": false,
+ "session": {
+  "hote": "zeta-lab",
+  "noyau": "7.0.0-38-generic",
+  "cpu_logiques": 4,
+  "python": "3.12.3",
+  "turbo": "actif (intel_pstate)",
+  "gouverneur": "performance",
+  "charge_1min": 3.79,
+  "cpu": "Intel(R) Core(TM) i7-7500U CPU @ 2.70GHz",
+  "ram_totale_Go": 15.5,
+  "ram_dispo_Go": 9.8,
+  "disque_libre_Go": 26.9,
+  "paquets": {
+   "numpy": "2.4.4",
+   "pandas": "3.0.2",
+   "matplotlib": "3.10.8",
+   "mpmath": "1.3.0"
+  },
+  "git": {
+   "commit": "d275736",
+   "branche": "Riemann_Lab_IA",
+   "fichiers_modifies": 22
+  }
+ },
+ "rc": 0,
+ "session_fin": {
+  "turbo": "actif (intel_pstate)",
+  "charge_1min": 5.79
+ },
+ "zeros": null,
+ "duree_s": 137.0,
+ "zps": null,
+ "tmax_pc1": 81.0,
+ "figures": [
+  "metrics.png"
+ ]
+}
