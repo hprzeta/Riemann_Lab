@@ -515,6 +515,9 @@ def maj_index():
             g = " · ".join("[%s](%s)" % (n, lien("%s/figures/%s" % (rel, f))) for n, f in gr if (base / "figures" / f).exists()) or "—"
             r = " · ".join("[%s](%s)" % (n, lien("%s/%s" % (rel, f))) for n, f in
                            (("MD", "rapport.md"), ("PDF", "rapport.pdf"), ("session", "session.md")) if (base / f).exists()) or "—"
+            # rapports d'écran (touche r de scripts/zeta_run_progress.py) : un lien par PDF, jamais écrasés
+            for k, pf in enumerate(sorted(base.glob("progress_rapport_*.pdf")), 1):
+                r += " · [écran %d](%s)" % (k, lien("%s/%s" % (rel, pf.name)))
             out.append("| %s | %s | %s | %s | %s | %s | %s | %s | %s |" % (
                 (m.get("t0", "")[:10] if m["_type"] == "historique" else m.get("t0", "")[:16].replace("T", " ")), m.get("nom", base.name),
                 m.get("statut", "?"), duree(m["duree_s"]) if m.get("duree_s") else "—",
@@ -540,6 +543,8 @@ def maj_index():
             "- `zeta-mon-exec --nom N --type test|prod -- <commande>` : lance un run **avec** monitoring (fenêtres pour un test), code retour, rapport",
             "- `zeta-mon-start` / `zeta-mon-stop --code N` : idem pour un run lancé à côté ; `zeta-mon-fenetres` / `zeta-mon-fermer`",
             "- `zeta-mon-on` / `zeta-mon-off` / `zeta-mon-status` : logger machines 1 s + détecteur de secours",
+            "- `python scripts/zeta_run_progress.py` : tableau de bord en direct ; touche **r** = capture de l'écran + rapport MD/PDF "
+            "expliquant l'écran de CE run, déposés dans `runs/<type>/<run>/progress_*` (run actif ; sans run actif : rien n'est écrit)",
             "- `zeta-live` · `zeta-metrics` · `zeta-gue [--live]` · `zeta-report [run] [--lang en]` · `zeta-index`"]
     ecrire_md(ROOT / "Monitoring-Runs.md", "\n".join(out))
 
