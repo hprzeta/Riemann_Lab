@@ -23,7 +23,7 @@ import pandas as pd
 from matplotlib.animation import FuncAnimation
 from matplotlib.lines import Line2D
 
-from zeta_mon_common import DATA, compacter, placer
+from zeta_mon_common import DATA, compacter, placer, titrer
 
 # Palette catégorielle (étapes « sombre »), validée sur fond #1a1a19 (skill dataviz).
 COULEURS = {"PC1": "#3987e5", "PC2": "#d95926", "PC3": "#199e70", "PC4": "#c98500", "PC5": "#d55181"}
@@ -157,6 +157,7 @@ def main():
     if a.geometrie:
         compacter(a.geometrie)
     fig, axes = creer_figure()
+    titrer(fig, "Zêta — Machines du cluster en direct (température, fréquence, load, RAM)")
     if a.geometrie:
         placer(fig, a.geometrie)
 
