@@ -72,6 +72,40 @@ def csv_du_run(meta, t0, t1=None):
     return str(max(cand)[1]) if cand else None
 
 
+def lignes_workers(csvp, cache):
+    """Nombre TOTAL de zéros écrits par TOUS les workers du run (somme sur worker_NNN.csv / worker_NNN.partial.csv).
+    Par worker on prend le plus grand des deux (le .partial.csv est supprimé quand le .csv final est écrit :
+    pas de double comptage). `cache` : dict {chemin: (mtime, taille, lignes)} pour ne recompter que ce qui change.
+    Renvoie None s'il n'y a aucun fichier de worker (run hors format v16/v17) : l'appelant garde alors son comptage."""
+    try:
+        racine = Path(csvp).parent
+        if racine.name == "checkpoints":
+            dossier = racine
+        else:
+            dossier = racine / "checkpoints"
+        if not dossier.is_dir():
+            return None
+        par_worker = {}
+        for f in list(dossier.glob("worker_*.csv")) + list(dossier.glob("worker_*.partial.csv")):
+            m = re.match(r"worker_(\d+)(\.partial)?\.csv$", f.name)
+            if not m:
+                continue
+            try:
+                st = f.stat()
+                cle = str(f)
+                if cache.get(cle, (None, None, 0))[:2] != (st.st_mtime, st.st_size):
+                    with open(f, "rb") as fh:
+                        n = max(fh.read().count(b"\n") - 1, 0)          # lignes complètes moins l'en-tête
+                    cache[cle] = (st.st_mtime, st.st_size, n)
+                n = cache[cle][2]
+            except OSError:
+                continue                                                  # fichier remplacé pendant la lecture
+            par_worker[m.group(1)] = max(par_worker.get(m.group(1), 0), n)
+        return sum(par_worker.values()) if par_worker else None
+    except Exception:
+        return None
+
+
 # ----------------------------------------------------------------------------- fenêtres
 def ecran_taille():
     """Taille de l'écran (L, H) : variable ZETA_ECRAN=1920x1080, sinon xrandr, sinon 1920x1080."""
