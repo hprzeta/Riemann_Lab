@@ -69,6 +69,29 @@ def f1(x, n=1):
 
 
 # ----------------------------------------------------------------------------- rapport
+def verdict_turing(csv):
+    """Lit le verdict Turing–Backlund dans le journal d'exécution voisin du CSV (execution_*.log).
+    Renvoie None si introuvable, sinon {statut, ok, manquants, lignes} (valeurs lues, jamais devinées)."""
+    try:
+        if not csv:
+            return None
+        logs = sorted(Path(csv).parent.glob("execution_*.log"))
+        if not logs:
+            return None
+        txt = logs[-1].read_text(errors="replace")
+        m = re.search(r"VALIDATION TURING-BACKLUND\s*\n\s*Statut\s*:\s*(.+)", txt)
+        if not m:
+            return None
+        statut = m.group(1).strip()
+        mm = re.search(r"Zéros manquants\s*:\s*(-?\d+)", txt[m.end():])
+        # lignes de contrôle « T=… calc=… attendus=… delta=… » qui suivent le statut
+        lignes = re.findall(r"^\s*(T=.+?delta=.+)$", txt[m.end():m.end() + 1500], re.M)
+        return {"statut": statut, "ok": "COMPLET" in statut and "INCOMPLET" not in statut,
+                "manquants": int(mm.group(1)) if mm else None, "lignes": lignes, "log": logs[-1].name}
+    except Exception:
+        return None
+
+
 def rapport(run_dir, lang="fr"):
     run_dir = Path(run_dir)
     meta = json.loads((run_dir / "meta.json").read_text())
@@ -154,6 +177,22 @@ def rapport(run_dir, lang="fr"):
         "**[conjecture]** = résultat non démontré.",
         "Legend: **[measured]** = figure read from data; **[heuristic]** / **[hypothesis]** = unverified interpretation; "
         "**[conjecture]** = unproven result."))
+    vt = verdict_turing(csv)
+    if vt is not None:
+        if vt["ok"]:
+            p(L("**Validation Turing–Backlund : %s** [mesuré, lu dans %s] — vérification numérique, pas une certification.",
+                "**Turing–Backlund validation: %s** [measured, read from %s] — numerical check, not a certification.") % (vt["statut"], vt["log"]))
+        else:
+            p(L("**⚠ ALERTE — Validation Turing–Backlund : %s** — %s zéro(s) manquant(s) [mesuré, lu dans %s]. "
+                "Les comptages de ce run ne sont PAS complets : ne pas utiliser ces zéros pour une statistique sans les compléter.",
+                "**⚠ ALERT — Turing–Backlund validation: %s** — %s missing zero(s) [measured, read from %s]. "
+                "This run's counts are NOT complete: do not use these zeros for statistics without completing them.")
+              % (vt["statut"], vt["manquants"] if vt["manquants"] is not None else "?", vt["log"]))
+            if vt["lignes"]:
+                ul(["`%s`" % l.strip() for l in vt["lignes"]])
+    else:
+        p(L("Validation Turing–Backlund : verdict introuvable (journal `execution_*.log` absent ou illisible) [non vérifié].",
+            "Turing–Backlund validation: verdict not found (`execution_*.log` missing or unreadable) [unverified]."))
     h(1, L("1. Résumé", "1. Summary"))
     zps = (len(t) / dur) if (t is not None and dur > 0) else None
     rows = [[L("Grandeur", "Item"), L("Valeur", "Value")],
@@ -163,7 +202,8 @@ def rapport(run_dir, lang="fr"):
             [L("Commande (extrait)", "Command (excerpt)"), "`%s`" % meta.get("cmd", "?")[:90]],
             [L("Code retour", "Exit code"), ("%s" % meta["rc"]) if meta.get("rc") is not None else L("inconnu (run non lancé par le lanceur)", "unknown (run not started by the launcher)")],
             [L("Turbo CPU début → fin", "CPU turbo start → end"), "%s → %s" % ((meta.get("session") or {}).get("turbo", "?"), (meta.get("session_fin") or {}).get("turbo", "?"))],
-            [L("CSV des zéros", "Zeros CSV"), "`%s`" % (Path(csv).name if csv else L("introuvable", "not found"))]]
+            [L("CSV des zéros", "Zeros CSV"), "`%s`" % (Path(csv).name if csv else L("introuvable", "not found"))],
+            ["Turing–Backlund", (vt["statut"] if vt else L("inconnu", "unknown"))]]
     if t is not None:
         rows += [[L("Zéros dans le CSV", "Zeros in CSV"), "%d  [%s]" % (len(t), L("mesuré", "measured"))],
                  ["t min → t max", "%.3f → %.3f" % (t[0], t[-1])],
@@ -216,10 +256,10 @@ def rapport(run_dir, lang="fr"):
         att = N_approx(t[-1]) - N_approx(t[0]) + 1
         p(L("Comptage : %d zéros dans le CSV ; formule de Riemann–von Mangoldt (sans terme S(t)) : ≈ %.1f. Écart %+.1f. "
             "**[heuristique]** un écart de quelques unités est normal ; un écart de plusieurs dizaines suggère des zéros manquants ou en double. "
-            "**Ce n'est pas une validation : la complétude se prouve par Turing–Backlund, hors de ce rapport.**",
+            "**Ce n'est pas une validation : la complétude se vérifie par Turing–Backlund (verdict en tête de ce rapport).**",
             "Count: %d zeros in the CSV; Riemann–von Mangoldt formula (without the S(t) term): ≈ %.1f. Difference %+.1f. "
             "**[heuristic]** a difference of a few units is normal; tens suggest missing or duplicated zeros. "
-            "**This is not a validation: completeness is proven by Turing–Backlund, outside this report.**") % (len(t), att, len(t) - att))
+            "**This is not a validation: completeness is checked by Turing–Backlund (verdict at the top of this report).**") % (len(t), att, len(t) - att))
         fg("gue.png", L("Figure 3 — Espacements normalisés vs GUE (Wigner surmise) et Poisson ; à droite zoom sur la répulsion (échelle log).",
                         "Figure 3 — Normalized spacings vs GUE (Wigner surmise) and Poisson; right: zoom on repulsion (log scale)."))
         tb([[L("Grandeur", "Item"), L("Mesuré", "Measured"), L("Référence", "Reference")],
