@@ -263,7 +263,8 @@ def superviseur(d, pid=None):
                     t = lecteur.maj()
                     n = len(t)
                     tm = time.time()
-                    nw = lignes_workers(csvp, cache_w)
+                    res_w = lignes_workers(csvp, cache_w)
+                    nw, tmax_w = res_w if res_w is not None else (None, None)
                     if nw is not None:                      # run multi-workers : débit = croissance du total des workers
                         zps = float("nan") if nw_prev is None else max(nw - nw_prev, 0) / max(tm - t_prev, 1e-6)
                         nw_prev = nw
@@ -271,7 +272,9 @@ def superviseur(d, pid=None):
                     else:
                         zps = float("nan") if premier else (n - n_prev) / max(tm - t_prev, 1e-6)   # 1er passage : pas de débit
                     n_prev, t_prev = n, tm
-                    tmax = float(t[-1]) if n else None
+                    tmax = float(t[-1]) if len(t) else None
+                    if tmax_w is not None:                  # t_max = le plus grand parmi tous les workers
+                        tmax = tmax_w if tmax is None else max(tmax, tmax_w)
                     T, F, L = derniere_mesure_pc1()
                     etat = dict(horodatage=maintenant(), csv=os.path.basename(csvp), zeros=n, t_max=tmax,
                                 zps=round(zps, 1) if zps == zps else None, temp_pc1=T, freq_pc1=F, load_pc1=L, turbo=turbo_etat())
