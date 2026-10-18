@@ -84,7 +84,9 @@ def lignes_workers(csvp, cache):
     """Nombre TOTAL de zéros écrits par TOUS les workers du run (somme sur worker_NNN.csv / worker_NNN.partial.csv).
     Par worker on prend le plus grand des deux (le .partial.csv est supprimé quand le .csv final est écrit :
     pas de double comptage). `cache` : dict {chemin: (mtime, taille, lignes)} pour ne recompter que ce qui change.
-    Renvoie None s'il n'y a aucun fichier de worker (run hors format v16/v17) : l'appelant garde alors son comptage."""
+    Renvoie (total, t_max) — t_max = plus grande partie imaginaire écrite par un worker (dernière ligne de chaque fichier,
+    les zéros d'un worker étant croissants) — ou None s'il n'y a aucun fichier de worker (run hors format v16/v17) :
+    l'appelant garde alors son comptage."""
     try:
         racine = Path(csvp).parent
         if racine.name == "checkpoints":
@@ -93,7 +95,7 @@ def lignes_workers(csvp, cache):
             dossier = racine / "checkpoints"
         if not dossier.is_dir():
             return None
-        par_worker = {}
+        par_worker, tmax = {}, None
         for f in list(dossier.glob("worker_*.csv")) + list(dossier.glob("worker_*.partial.csv")):
             m = re.match(r"worker_(\d+)(\.partial)?\.csv$", f.name)
             if not m:
@@ -101,15 +103,26 @@ def lignes_workers(csvp, cache):
             try:
                 st = f.stat()
                 cle = str(f)
-                if cache.get(cle, (None, None, 0))[:2] != (st.st_mtime, st.st_size):
+                if cache.get(cle, (None, None, 0, None))[:2] != (st.st_mtime, st.st_size):
                     with open(f, "rb") as fh:
-                        n = max(fh.read().count(b"\n") - 1, 0)          # lignes complètes moins l'en-tête
-                    cache[cle] = (st.st_mtime, st.st_size, n)
-                n = cache[cle][2]
+                        data = fh.read()
+                    n = max(data.count(b"\n") - 1, 0)                    # lignes complètes moins l'en-tête
+                    tm = None
+                    try:                                                  # dernière ligne complète = plus grand t du worker
+                        lignes = data[:data.rfind(b"\n")].split(b"\n")
+                        col = lignes[0].decode().split(",").index("partie_imaginaire")
+                        if len(lignes) > 1:
+                            tm = float(lignes[-1].decode().split(",")[col])
+                    except Exception:
+                        pass
+                    cache[cle] = (st.st_mtime, st.st_size, n, tm)
+                n, tm = cache[cle][2], cache[cle][3]
+                if tm is not None:
+                    tmax = tm if tmax is None else max(tmax, tm)
             except OSError:
                 continue                                                  # fichier remplacé pendant la lecture
             par_worker[m.group(1)] = max(par_worker.get(m.group(1), 0), n)
-        return sum(par_worker.values()) if par_worker else None
+        return (sum(par_worker.values()), tmax) if par_worker else None
     except Exception:
         return None
 
