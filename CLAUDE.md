@@ -202,6 +202,7 @@ C0+C1 (précision max ~1e-3). Solution : wrapper `mpmath.siegelz`.
 ## 🤝 Règles propres au projet — audit, sauvegardes, mesures
 
 - **Audit avant push** : relire les lignes ajoutées et chercher `duckdns`, `PRIVATE KEY`, `ghp_`, `github_pat`, `api key`, `token=`, `passw=`, adresses MAC, IPv4/IPv6, e-mails. **Jamais `--force`.** Si un push est refusé : s'arrêter et montrer l'erreur complète.
+- **`src/ia/prompts/` est LOCAL ONLY** : ne jamais `git add` / commit / push ce dossier (prompts Claude Code, identifiants réseau) ; sauvegarde dans `~/backup_prompts_ia`. Dossier ignoré par `.gitignore` sur les 4 branches.
 - **Copie `.bak-AAAAMMJJ`** avant toute modification de script.
 - **`sensors`** : seule la **première valeur en °C** d'une ligne est la mesure ; ignorer `high`, `crit`, `hyst` (une moyenne a déjà été faussée ainsi).
 - **rclone sur PC3** : toujours le chemin complet `~/bin/rclone` (compte de sauvegarde, v1.73.5) ; le `/usr/bin/rclone` (v1.74.3) plante en 32 bits.
@@ -302,4 +303,4 @@ sudo scripts/zeta_turbo_off.sh       # restaurer à la main (équivalent du « b
 > (elle change à chaque session ; ce fichier doit rester stable).
 
 ---
-*CLAUDE.md - racine - source Riemann_Lab_C (sync 4 branches) - hprzeta - Mis à jour le 2026-10-16 — 305 lignes*
+*CLAUDE.md - racine - source Riemann_Lab_C (sync 4 branches) - hprzeta - Mis à jour le 2026-10-23 — 306 lignes*
