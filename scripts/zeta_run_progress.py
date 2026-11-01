@@ -67,14 +67,40 @@ CMD_STATS = ("python3 -c \""
 LOG_RE = re.compile(r"\[Worker (\d+)\] z[ée]ro #(\d+) à t=([\d.]+) — ([\d.]+)s")
 
 
+_JUMP_CACHE = {"t": 0.0, "opts": []}      # décision de saut mémorisée (évite un ping toutes les 4 s)
+
+
+def _pc2_jump_opts():
+    """ProxyJump via le bastion quand PC1 est hors du LAN de PC2 (même détection que zeta_distribute.py).
+
+    Correctif du 01/11/2026 : la sonde se connectait à l'adresse brute de PC2 sans saut ->
+    « No route to host », sortie vide, puis « could not convert string to float: '' » dans le tableau de bord.
+    Le ping du bastion répond quand le tunnel est monté (PC1 en déplacement) ; sinon connexion directe.
+    """
+    maintenant = time.time()
+    if _JUMP_CACHE["t"] and maintenant - _JUMP_CACHE["t"] < 60:
+        return _JUMP_CACHE["opts"]
+    bastion = H.get("ZETA_BASTION", "")
+    opts = []
+    if bastion:
+        tunnel = subprocess.run(["ping", "-c1", "-W1", bastion],
+                                capture_output=True).returncode == 0
+        opts = ["-J", f"{PC2_USER}@{bastion}"] if tunnel else []
+    _JUMP_CACHE.update(t=maintenant, opts=opts)
+    return opts
+
+
 def ssh_or_local(host, cmd):
     if host == "localhost":
         proc = subprocess.run(["bash", "-c", cmd], capture_output=True, text=True, timeout=8)
     else:
         key = os.path.expanduser(PC2_KEY)
         args = ["ssh", "-o", "ConnectTimeout=6", "-o", "BatchMode=yes",
-                "-o", "IdentitiesOnly=yes", "-i", key, f"{PC2_USER}@{host}", cmd]
-        proc = subprocess.run(args, capture_output=True, text=True, timeout=10)
+                "-o", "IdentitiesOnly=yes", "-i", key, *_pc2_jump_opts(),
+                f"{PC2_USER}@{host}", cmd]
+        # stdin=DEVNULL : ssh ne doit jamais lire le terminal du tableau de bord ; timeout porté à 15 s (saut inclus)
+        proc = subprocess.run(args, capture_output=True, text=True, timeout=15,
+                              stdin=subprocess.DEVNULL)
     return proc.stdout.strip(), proc.returncode
 
 
@@ -267,6 +293,8 @@ def poll(name, host):
     while True:
         try:
             out, rc = ssh_or_local(host, CMD_STATS)
+            if rc != 0 or not out:             # message lisible au lieu de « could not convert string to float »
+                raise RuntimeError(f"ssh rc={rc} (injoignable ?)")
             cpu, ram, disk = (float(x) for x in out.split("|"))
             with lock:
                 state[name].update(cpu=cpu, ram=ram, disk=disk, status="ok")
