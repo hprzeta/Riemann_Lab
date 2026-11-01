@@ -15,6 +15,8 @@ Au démarrage : dossier  runs/<type>/<AAAAMMJJ_HHMMSS_nom>/  (type = test | prod
   - à la fin : génère rapport.md + rapport.pdf (figures, observations, fiche de session) et met à jour Monitoring-Runs.md.
 Fenêtres : « auto » = oui pour un run de test, non pour un run de production (CPU saturé → risque de gel).
 
+Option (v1) : ZETA_MON_EXTRA=oui ajoute zeta-proc (échantillonneur), zeta-proc-plot et zeta-log-live au lancement.
+
 Exemples (PC1) :
   zeta-mon-exec --nom "T-test-5000" --type test --csv ~/projet_zeta/calculs/x/ -- ./scripts/zeta_run.sh 5000
   zeta-mon-start --nom V17-T5M --type prod ;  ... ;  zeta-mon-stop --code 0
@@ -124,8 +126,23 @@ def vivant(pid):
         return False
 
 
+# ----------------------------------------------------------------------------- extras (v1, optionnel)
+def commandes_extra(nom, t0_iso, scripts_dir=None, captures=None):
+    """Commandes des outils d'observation du run (opt-in : variable ZETA_MON_EXTRA=oui).
+    Retourne (echantillonneur, [fenêtres]) :  zeta_proc_sample (sans fenêtre, finit seul avec le run),
+    puis zeta_plot_proc (CPU des processus + repères du journal) et zeta_log_live (journal du run)."""
+    sd = Path(scripts_dir) if scripts_dir else ROOT.parent / "scripts"
+    cap = Path(captures) if captures else Path.home() / "zeta_captures"
+    slug = re.sub(r"[^A-Za-z0-9_.-]+", "-", nom or "run").strip("-") or "run"
+    apres = t0_iso.replace("T", " ")[:19]
+    echant = [sys.executable, str(sd / "zeta_proc_sample.py"), "--intervalle", "2", "--test", slug, "--sortie", str(cap), "--attente-max", "600"]
+    fen = {"proc": [sys.executable, "-I", str(sd / "zeta_plot_proc.py"), str(cap), "--apres", apres],
+           "loglive": [sys.executable, "-I", str(sd / "zeta_log_live.py"), "--attendre"]}
+    return echant, fen
+
+
 # ----------------------------------------------------------------------------- fenêtres
-def ouvrir_fenetres(csv, apres=None):
+def ouvrir_fenetres(csv, apres=None, nom_run=None, t0_iso=None, base=True):
     """Ouvre les 3 fenêtres (priorité minimale, jamais plein écran) ; retourne la liste des PID."""
     lay = layout()
     env = {k: v for k, v in os.environ.items() if k != "MPLBACKEND"}
@@ -142,11 +159,25 @@ def ouvrir_fenetres(csv, apres=None):
                     "--geometrie", lay["metrics"]]}
     LOGS.mkdir(parents=True, exist_ok=True)
     pids = []
-    for nom, cmd in cmds.items():
+    for nom, cmd in (cmds.items() if base else []):
         with open(LOGS / ("fenetre_%s.log" % nom), "w") as lg:
             p = subprocess.Popen(cmd, env=env, stdout=lg, stderr=lg, start_new_session=True,
                                  preexec_fn=lambda: os.nice(19))
         pids.append(p.pid)
+    if os.environ.get("ZETA_MON_EXTRA", "non").lower() in ("oui", "1", "true") and t0_iso:      # v1 : opt-in
+        try:
+            echant, fen = commandes_extra(nom_run, t0_iso)
+            cap = Path.home() / "zeta_captures"
+            cap.mkdir(parents=True, exist_ok=True)
+            with open(LOGS / "extra_proc_sample.log", "w") as lg:       # PAS dans FENETRES : il écrit son résumé et s'arrête seul
+                subprocess.Popen(echant, env=env, stdout=lg, stderr=lg, start_new_session=True, preexec_fn=lambda: os.nice(19))
+            for k, cmd in fen.items():
+                with open(LOGS / ("fenetre_%s.log" % k), "w") as lg:
+                    p = subprocess.Popen(cmd, env=env, stdout=lg, stderr=lg, start_new_session=True,
+                                         preexec_fn=lambda: os.nice(19))
+                pids.append(p.pid)
+        except Exception:
+            print(traceback.format_exc(), flush=True)
     FENETRES.write_text(json.dumps(pids))
     return pids
 
@@ -235,10 +266,10 @@ def superviseur(d, pid=None):
     meta = charger(d)
     t0 = dt.datetime.fromisoformat(meta["t0"])
     print(maintenant(), "superviseur", meta["id"], "| pid suivi :", pid, flush=True)
-    if meta.get("fenetres"):
+    if meta.get("fenetres") or os.environ.get("ZETA_MON_EXTRA", "non").lower() in ("oui", "1", "true"):
         try:
             apres = meta["t0"] if not (meta.get("csv") and Path(os.path.expanduser(meta["csv"])).is_file()) else None
-            meta["fenetres_pids"] = ouvrir_fenetres(meta.get("csv"), apres)
+            meta["fenetres_pids"] = ouvrir_fenetres(meta.get("csv"), apres, meta.get("nom"), meta["t0"], bool(meta.get("fenetres")))
             sauver(d, meta)
             print(maintenant(), "fenêtres ouvertes :", meta["fenetres_pids"], flush=True)
         except Exception:
