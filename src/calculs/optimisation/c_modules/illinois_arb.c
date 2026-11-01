@@ -193,6 +193,12 @@ static double Z_arb(double t) {
  * SEUIL_1NEWTON = 20 000 : erreur estimée 4e-13 (marge ×2.4 sur tol). */
 #define SEUIL_1NEWTON 20000.0
 
+/* Seuil de pente pour le 2e pas de Newton conditionnel (01/11/2026).
+ * Mesuré (Arb 200 bits) : avec 1 seul pas, l'erreur varie comme 1/|Z'| (rang 0,84) ;
+ * tous les zéros d'erreur > 1e-9 ont |Z'| < 3 (paires proches, max 1,7e-6).
+ * Si |Z'| < SEUIL_DZ_2NEWTON au premier pas (t >= SEUIL_1NEWTON), on fait un 2e pas. */
+#define SEUIL_DZ_2NEWTON 3.0
+
 double illinois_refine_arb(double a, double b, double fa, double fb,
                            double tol, int max_iter) {
     /* init cache au premier appel de ce worker */
@@ -247,6 +253,8 @@ double illinois_refine_arb(double a, double b, double fa, double fb,
     for (int k = 0; k < n_newton; k++) {
         double dZ = (Z_rs_double(t_curr + h) - Z_rs_double(t_curr - h)) / (2.0 * h);
         if (fabs(dZ) < 1e-10) break;
+        /* pente faible : 1 pas insuffisant -> on ajoute un 2e pas (une seule fois) */
+        if (k == 0 && n_newton == 1 && fabs(dZ) < SEUIL_DZ_2NEWTON) n_newton = 2;
         double Zt = Z_arb(t_curr);
         if (g_arb_log && k == n_newton - 1)
             fprintf(g_arb_log, "NEWTON_FINAL %.15f Z=%.6e delta=%.6e n_newton=%d\n",
