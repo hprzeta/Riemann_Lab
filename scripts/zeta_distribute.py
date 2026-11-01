@@ -48,8 +48,10 @@ Auteur : hprzeta — Projet Hypothèse de Riemann
 Date   : 2026-06-17 · Option B 2026-06-24
 """
 
+import os
 import sys
 import math
+import signal
 import time
 import subprocess
 import argparse
@@ -81,8 +83,14 @@ PC2_PROJET  = "/home/hprzeta/projet_zeta"          # chemin absolu sur PC2
 #   PC1 = 822.48 z/s · PC2 = 512.19 z/s → ratio ×1.6 (PAS ×12 comme supposé avant)
 # Ancien split théorique 92.3%/7.7% (basé sur 624/52 z/s v13) INVALIDÉ par cette
 # mesure — nouveau split réel : PC1 61.6% / PC2 38.4%.
-V_PC1_DEFAULT = 822.48   # z/s — PC1, v15, T=1000, mesuré 02/08/2026
-V_PC2_DEFAULT = 512.19   # z/s — PC2, v15, T=1000, python-flint présent, mesuré 02/08/2026
+#
+# 25/10/2026 : ces valeurs T=1000 ne sont PAS représentatives à haut T (le démarrage des
+# workers domine à T=1000). Mesures à haut T (logs d'exécution v15) :
+#   PC1 : 14 → 349098   en 11,27 min = 815,16 z/s
+#   PC2 : 349098 → 500000 en 32,21 min = 138,15 z/s   (ratio de débit ≈ 5,9, pas 1,6)
+# Le défaut équilibre donc les TEMPS avec les débits de haut T ; --part-pc2 impose une part.
+V_PC1_DEFAULT = 815.16   # z/s — PC1, v15, haut T, mesuré (run 15/09/2026)
+V_PC2_DEFAULT = 138.15   # z/s — PC2, v15, haut T, mesuré (run 30/08/2026)
 
 # ── Overlap à la frontière PC1/PC2 (fix 23/06/2026 — trou de couverture au pivot)
 OVERLAP_PIVOT = 2.0     # largement > 1 STEP (~0.0044 à T=500000)
@@ -108,6 +116,17 @@ def _t_pour_n(n_cible: int, t_lo: float, t_hi: float) -> float:
         else:
             t_hi = t_mid
     return (t_lo + t_hi) / 2.0
+
+
+def calculer_pivot_part(T_MAX: float, part_pc2: float) -> float:
+    """T_PIVOT imposant à PC2 une fraction `part_pc2` des zéros attendus (ex. 0.5).
+
+    Attention : une part supérieure à l'équilibre en temps rallonge le run total
+    (PC2 est ~5,9× plus lent que PC1 à haut T) ; l'option sert à soulager PC1.
+    """
+    N_total = n_zeros_expected(T_MAX)              # nombre total de zéros attendus
+    N_pc2   = int(N_total * part_pc2)              # part de PC2, sans marge de sécurité
+    return _t_pour_n(N_total - N_pc2, 14.0, T_MAX)  # PC1 garde le reste, on inverse N(T)
 
 
 def calculer_pivot(T_MAX: float, v1: float, v2: float) -> float:
@@ -145,7 +164,8 @@ def calculer_pivot(T_MAX: float, v1: float, v2: float) -> float:
     N_total = n_zeros_expected(T_MAX)
     # Part de PC2 à l'équilibre exact : v2 / (v1 + v2)
     N_pc2_eq = int(N_total * v2 / (v1 + v2))
-    # Marge -5% sur la part de PC2 → PC2 reçoit moins de zéros → finit avant PC1
+    # Marge de 15 % (facteur 0.85, et non 5 % comme dit auparavant) sur la part de PC2
+    # → PC2 reçoit moins de zéros → finit avant PC1
     # Raison : PC2 peut swapper ou partager CPU → ralentit imprévisiblement,
     #          ce qui bloquerait l'agrégation Turing si PC2 finit en dernier.
     N_pc2   = int(N_pc2_eq * 0.85)
@@ -216,6 +236,7 @@ def lancer_pc1(T_PIVOT: float, horodatage: str, log_dir: Path) -> subprocess.Pop
         stderr=subprocess.STDOUT,
         cwd=str(PROJET_DIR),
         env=env,
+        start_new_session=True,   # groupe de processus propre → on peut tuer les 8 workers d'un coup
     )
     print(f"  [PC1] PID={proc.pid} — log → {log_pc1.name}")
     return proc, log_pc1
@@ -243,6 +264,7 @@ def lancer_pc2(T_PIVOT: float, T_MAX: float, horodatage: str, log_dir: Path) -> 
 
     proc = subprocess.Popen(
         cmd_ssh,
+        stdin=subprocess.DEVNULL,                         # 01/11/2026 : ssh ne doit pas lire le stdin du script
         stdout=open(log_pc2, "w"),
         stderr=subprocess.STDOUT,
     )
@@ -327,30 +349,41 @@ def recuperer_csv_pc2(T_PIVOT: float, T_MAX: float,
         str(csv_local),
     ]
     print(f"  [scp] {chemin_remote.split('/')[-1]} → local")
-    ret = subprocess.run(cmd, capture_output=True, text=True)
+    ret = subprocess.run(cmd, capture_output=True, text=True,
+                         stdin=subprocess.DEVNULL)           # 01/11/2026 : jamais le stdin du script
     if ret.returncode != 0:
         raise RuntimeError(f"scp échoué :\n{ret.stderr}")
     print(f"  [scp] ✅ {csv_local.name}")
     return csv_local
 
 
-def fusionner_csv(csv_paths: list, dossier_out: Path, T_MAX: float) -> Path:
-    """Fusionne + déduplique N CSVs (PC1 + PC2 [+ supplément pivot]), trie par partie_imaginaire."""
-    dfs = [pd.read_csv(p) for p in csv_paths]
+def fusionner_csv(csv_paths: list, dossier_out: Path, T_MAX: float,
+                  tol_doublon: float = 1e-5) -> Path:
+    """Fusionne + déduplique N CSVs (PC1 + PC2 [+ supplément pivot]), trie par partie_imaginaire.
 
-    # Concaténer et trier
-    df = pd.concat(dfs, ignore_index=True)
-    df = df.sort_values("partie_imaginaire").reset_index(drop=True)
+    Correctif du 01/11/2026 :
+      • lecture avec float_precision="round_trip" : l'analyseur par défaut de pandas n'est pas exact au
+        dernier bit (3 086 valeurs sur 19 721 modifiées de 1 à 2 pas de float64 mesurées) ;
+      • déduplication : un doublon est un zéro issu d'une AUTRE source (autre CSV) situé à moins de
+        tol_doublon d'un zéro déjà retenu. Deux zéros d'un même CSV ne sont jamais fusionnés (l'ancienne
+        règle « tout zéro à moins de 0,01 du précédent » pouvait supprimer deux vrais zéros voisins).
+        tol_doublon = 1e-5 : > 1e4 fois le plus grand écart mesuré entre deux calculs d'un même zéro (6e-9),
+        et très inférieur au plus petit écart réel observé entre deux zéros (0,0147 jusqu'à t = 1e5).
+    """
+    dfs = [pd.read_csv(p, float_precision="round_trip") for p in csv_paths]
 
-    # Déduplication : supprimer les doublons dans une fenêtre tolerance=0.01
-    zeros = df["partie_imaginaire"].tolist()
-    filtres = []
-    prev = -999.0
-    TOL  = 0.01
-    for z in zeros:
-        if z - prev > TOL:
-            filtres.append(z)
-            prev = z
+    # (valeur, indice de la source) pour tous les zéros, triés par valeur
+    couples = sorted((z, k) for k, d in enumerate(dfs) for z in d["partie_imaginaire"].tolist())
+
+    # Déduplication entre sources différentes seulement ; à valeurs égales on garde la source de plus petit indice
+    filtres = []                                     # liste de [valeur, source]
+    for z, k in couples:
+        if filtres and (z - filtres[-1][0]) <= tol_doublon and k != filtres[-1][1]:
+            if k < filtres[-1][1]:                   # doublon : on garde la valeur de la source prioritaire
+                filtres[-1] = [z, k]
+            continue
+        filtres.append([z, k])
+    filtres = [z for z, _ in filtres]
 
     horodatage = datetime.now().strftime("%Y%m%d_%H%M%S")
     df_final = pd.DataFrame({
@@ -435,6 +468,80 @@ def ecrire_rapport(rapport_path: Path, T_MAX: float, T_PIVOT: float,
 #  SECTION 6 — POINT D'ENTRÉE
 # ═══════════════════════════════════════════════════════════════════════════════
 
+def verifier_pc2() -> bool:
+    """Test préalable : PC2 joignable et capable d'importer le pipeline v15 (20 s max).
+
+    Évite de lancer PC1 pour rien si PC2 est cassé (cas du 15/10/2026 : pandas illisible).
+    """
+    cmd_py = ('python3 -c "import compute_zeros_v15 as m; '
+              'assert m.ARB_DISPONIBLE, \'Arb indisponible\'"')
+    cmd_ssh = ["ssh", "-i", str(PC2_SSH_KEY), "-o", "StrictHostKeyChecking=no",
+               "-o", "ConnectTimeout=10", *_pc2_jump_opts(), PC2_HOST,
+               "export PYTHONDONTWRITEBYTECODE=1; " + _cmd_venv(cmd_py)]   # pas de .pyc écrit sur PC2
+    try:
+        # 01/11/2026 : stdin=DEVNULL — sinon ssh avale le « O » envoyé par l'enveloppe (printf 'O\n' |) -> EOFError sur input()
+        ret = subprocess.run(cmd_ssh, capture_output=True, text=True, timeout=25,
+                             stdin=subprocess.DEVNULL)
+    except subprocess.TimeoutExpired:
+        print("  ❌ PC2 : test préalable expiré (25 s) — PC2 injoignable ou bloqué.")
+        return False
+    if ret.returncode != 0:
+        print("  ❌ PC2 : le pipeline v15 ne s'importe pas :")
+        print("     " + "\n     ".join((ret.stderr or ret.stdout).strip().splitlines()[-4:]))
+        return False
+    print("  ✅ PC2 : test préalable OK (v15 importable, Arb disponible)")
+    return True
+
+
+def _tuer_groupe_local(proc: subprocess.Popen) -> None:
+    """Arrête le processus PC1 et tous ses workers (groupe de processus dédié)."""
+    try:
+        os.killpg(os.getpgid(proc.pid), signal.SIGTERM)   # SIGTERM à tout le groupe
+    except (ProcessLookupError, PermissionError):
+        pass                                              # déjà terminé
+
+
+def _tuer_pc2(horodatage: str) -> None:
+    """Arrête le calcul distant de PC2 (tuer le client ssh ne suffit pas, sans tty)."""
+    # '[c]ompute' : le motif ne correspond pas à la commande pkill elle-même
+    cmd = f"pkill -f '[c]ompute_zeros_v15.py.*--horodatage {horodatage}' || true"
+    subprocess.run(["ssh", "-i", str(PC2_SSH_KEY), "-o", "StrictHostKeyChecking=no",
+                    "-o", "ConnectTimeout=10", *_pc2_jump_opts(), PC2_HOST, cmd],
+                   capture_output=True, timeout=30,
+                   stdin=subprocess.DEVNULL)                 # 01/11/2026 : jamais le stdin du script
+
+
+def attendre_deux_runs(proc_pc1: subprocess.Popen, proc_pc2: subprocess.Popen,
+                       horodatage: str, pause: float = 2.0):
+    """Surveille PC1 et PC2 ensemble ; dès qu'un des deux échoue, arrête l'autre.
+
+    Retourne (code_pc1, code_pc2, duree_pc1, duree_pc2) — durées en secondes depuis l'appel.
+    Avant 25/10/2026 : on attendait PC1 en entier avant de regarder PC2 (run du 15/10 :
+    PC2 mort à la seconde 0, découvert 22 minutes plus tard).
+    """
+    debut = time.time()
+    r1 = r2 = None
+    d1 = d2 = 0.0
+    while True:
+        if r1 is None and proc_pc1.poll() is not None:     # PC1 vient de se terminer
+            r1, d1 = proc_pc1.returncode, time.time() - debut
+            print(f"  [PC1] terminé en {d1/60:.2f} min  (ret={r1})")
+        if r2 is None and proc_pc2.poll() is not None:     # PC2 vient de se terminer
+            r2, d2 = proc_pc2.returncode, time.time() - debut
+            print(f"  [PC2] terminé en {d2/60:.2f} min  (ret={r2})")
+        if r1 is not None and r2 is not None:
+            return r1, r2, d1, d2
+        if r2 not in (None, 0):                            # PC2 a échoué → inutile de continuer PC1
+            print("  ⚠ PC2 a échoué : arrêt de PC1.")
+            _tuer_groupe_local(proc_pc1)
+            return proc_pc1.wait(), r2, time.time() - debut, d2
+        if r1 not in (None, 0):                            # PC1 a échoué → arrêter PC2 aussi
+            print("  ⚠ PC1 a échoué : arrêt de PC2.")
+            _tuer_pc2(horodatage)
+            return r1, proc_pc2.wait(), d1, time.time() - debut
+        time.sleep(pause)
+
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(
         description="Distribution du calcul v15 sur PC1+PC2"
@@ -445,6 +552,10 @@ def parse_args() -> argparse.Namespace:
                    help=f"Vitesse PC1 en z/s (défaut: {V_PC1_DEFAULT})")
     p.add_argument("--v-pc2", type=float, default=V_PC2_DEFAULT,
                    help=f"Vitesse PC2 en z/s (défaut: {V_PC2_DEFAULT})")
+    p.add_argument("--part-pc2", type=float, default=None, metavar="FRACTION",
+                   help="Part des zéros confiée à PC2, entre 0 et 1 (ex. 0.5 pour 50 %%). "
+                        "Défaut : équilibre en temps d'après --v-pc1/--v-pc2. "
+                        "Au-delà de l'équilibre, le run total s'allonge (PC2 est plus lent).")
     p.add_argument("--dry-run", action="store_true",
                    help="Afficher la segmentation sans lancer le calcul")
     return p.parse_args()
@@ -469,8 +580,16 @@ def main():
     print(f"  N(T_MAX) ≈ {n_zeros_expected(T_MAX)}")
 
     # Calcul du pivot
+    if args.part_pc2 is not None and not (0.0 < args.part_pc2 < 1.0):
+        print("  --part-pc2 doit être strictement entre 0 et 1 (ex. 0.5).")
+        sys.exit(1)
     try:
-        T_PIVOT = calculer_pivot(T_MAX, V1, V2)
+        if args.part_pc2 is not None:                     # part imposée (ex. 50 %)
+            T_PIVOT = calculer_pivot_part(T_MAX, args.part_pc2)
+            print(f"  Part de PC2 IMPOSÉE : {args.part_pc2*100:.0f} % des zéros "
+                  f"(défaut = équilibre en temps)")
+        else:                                             # équilibre en temps (défaut)
+            T_PIVOT = calculer_pivot(T_MAX, V1, V2)
     except NotImplementedError as e:
         print(f"\n  ⛔  {e}")
         sys.exit(1)
@@ -490,6 +609,14 @@ def main():
         print("\n  [dry-run] — aucun calcul lancé.")
         return
 
+    # ── Test préalable de PC2 (échoue vite, avant tout calcul et avant le turbo)
+    print()
+    if not verifier_pc2():
+        sys.exit(1)
+
+    if t_prevu_pc2 > 1.2 * t_prevu_pc1:                   # PC2 serait le facteur limitant
+        print(f"  ⚠ PC2 finira bien après PC1 : durée totale ≈ {t_prevu_pc2/60:.1f} min "
+              f"(PC1 seule ≈ {n_zeros_expected(T_MAX)/V1/60:.1f} min).")
     print()
     if input("  Lancer la distribution ? [O/n] : ").strip().lower() in ("n", "non"):
         sys.exit(0)
@@ -515,13 +642,10 @@ def main():
     print(f"\n  En attente... (tail -f {log_pc1.name})")
 
     # ── Attente
-    ret_pc1 = proc_pc1.wait()
-    duree_pc1 = time.time() - t_debut_pc1
-    print(f"  [PC1] terminé en {duree_pc1/60:.2f} min  (ret={ret_pc1})")
-
-    ret_pc2 = proc_pc2.wait()
-    duree_pc2 = time.time() - t_debut_pc2
-    print(f"  [PC2] terminé en {duree_pc2/60:.2f} min  (ret={ret_pc2})")
+    # Surveillance croisée : si l'une des machines échoue, l'autre est arrêtée aussitôt
+    ret_pc1, ret_pc2, duree_pc1, duree_pc2 = attendre_deux_runs(
+        proc_pc1, proc_pc2, horodatage
+    )
 
     if ret_pc1 != 0:
         subprocess.run(["sudo", str(SCRIPTS / "zeta_turbo_off.sh")], check=False)
@@ -557,7 +681,7 @@ def main():
     csv_fusion = fusionner_csv([csv_pc1, csv_pc2_local, csv_pivot], dossier_out, T_MAX)
 
     # ── Validation Turing globale
-    df_fusion = pd.read_csv(csv_fusion)
+    df_fusion = pd.read_csv(csv_fusion, float_precision="round_trip")   # 01/11/2026 : lecture exacte (l'analyseur par défaut altère ~13 % des valeurs de 1 à 2 pas)
     zeros = df_fusion["partie_imaginaire"].tolist()
     n_pc1 = len(pd.read_csv(csv_pc1))
     n_pc2 = len(pd.read_csv(csv_pc2_local))
