@@ -30,9 +30,9 @@ Pour σ → ∞ : ζ(σ+iT) → 1, donc arg = 0.
 Pour σ = ½ : on obtient arg ζ(½+iT) par intégration numérique.
 
 Algorithme :
-    1. Calculer N_attendu = ⌊θ(T)/π⌋ + 1  (formule de Riemann-von Mangoldt)
+    1. Calculer θ(T)/π + 1  (formule de Riemann-von Mangoldt, partie fractionnaire CONSERVÉE)
     2. Calculer S(T) = arg ζ(½+iT) / π
-    3. N(T) = N_attendu + S(T)
+    3. N(T) = round( θ(T)/π + 1 + S(T) )   [corrigé le 01/11/2026 : l'ancienne version tronquait θ/π]
     4. Comparer avec le nombre de zéros calculés : si égal → COMPLET ✅
 
 CRITÈRE DE TURING (1953)
@@ -169,39 +169,64 @@ def S_T(T: float, n_sigma: int = 50, dps: int = 35) -> float:
 
 def N_exact(T: float, dps: int = 35) -> int:
     """
-    Calcule N(T) exact = ⌊θ(T)/π⌋ + 1 + round(S(T)).
+    Calcule N(T) exact = round( θ(T)/π + 1 + S(T) ).
 
     C'est le nombre vrai de zéros non triviaux de ζ avec 0 < Im(ρ) ≤ T.
+
+    CORRECTION du 01/11/2026 : l'ancienne formule ⌊θ(T)/π⌋ + 1 + round(S(T)) était FAUSSE de -1
+    dès que la partie fractionnaire de θ(T)/π dépasse 0,5 (θ/π + 1 + S est un entier, donc
+    round(S) retire 1 dans ce cas). Constaté sur 10 milieux de zéros sur 19 et à T = 2774,67 ;
+    10933,33. Voir tests_turing/test_turing_validation.py.
+
+    ATTENTION : N(T) est discontinue en chaque zéro. Évaluer N_exact(T) pour T = la valeur
+    stockée d'un zéro donne N ou N-1 selon que cette valeur est au-dessus ou au-dessous du vrai zéro.
 
     Paramètres
     ----------
     T   : float — borne
-    dps : int   — précision mpmath pour S(T)
+    dps : int   — précision mpmath pour θ(T) et S(T)
 
     Retourne
     --------
     int — N(T)
     """
-    N_base = N_entier_attendu(T)
-    S      = S_T(T, dps=dps)
-    return N_base + round(S)
+    _dps_save = mp.dps
+    mp.dps = dps
+    try:
+        theta_sur_pi = mp.siegeltheta(mp.mpf(T)) / mp.pi      # θ(T)/π en haute précision, partie fractionnaire conservée
+        S            = S_T(T, dps=dps)                        # S(T) = arg ζ(½+iT)/π
+        return int(mp.nint(theta_sur_pi + 1 + S))             # θ/π + 1 + S est un entier : on arrondit la SOMME
+    finally:
+        mp.dps = _dps_save
 
 
 # ─── 4. Validation de Turing ─────────────────────────────────────────────────
 
-def valider_turing(zeros_calcules: list, dps: int = 35) -> dict:
+# Décalage des points de contrôle (ajouté le 01/11/2026).
+# Les points de contrôle sont des zéros DE LA LISTE ; or N(T) est discontinue en chaque zéro : évaluée
+# exactement sur la valeur stockée d'un zéro, elle vaut N ou N-1 selon que cette valeur est au-dessus ou
+# au-dessous du vrai zéro (erreur de position de l'ordre de 1e-12 à 1e-9) -> « SURPLUS +1 » factices.
+# On évalue donc à T + EPS_CONTROLE, dans l'intervalle ouvert qui suit le zéro de contrôle.
+# 1e-4 : très supérieur aux erreurs de position (≤ 6e-9 mesuré, 1,7e-6 pour la V16 d'avant le second pas de
+# Newton) et très inférieur au plus petit écart observé entre deux zéros (0,0147 jusqu'à t = 1e5).
+EPS_CONTROLE = 1e-4
+
+
+def valider_turing(zeros_calcules: list, dps: int = 35, eps_controle: float = EPS_CONTROLE) -> dict:
     """
     Vérifie que le calcul est complet par le critère de Turing-Backlund.
 
-    Pour chaque borne T parmi plusieurs points de contrôle :
-        n_calcules(T) = #{t_n ≤ T dans la liste}
-        N_exact(T)    = nombre vrai de zéros
+    Pour chaque point de contrôle T (un zéro de la liste), évalué à T_eval = T + eps_controle :
+        n_calcules(T_eval) = #{t_n ≤ T_eval dans la liste}
+        N_exact(T_eval)    = nombre vrai de zéros
         → Complet si n_calcules == N_exact
 
     Paramètres
     ----------
     zeros_calcules : list of float — les t_n calculés, triés
     dps            : précision mpmath
+    eps_controle   : décalage au-dessus du zéro de contrôle (0 = ancien comportement, instable : N(T)
+                     est discontinue en un zéro)
 
     Retourne
     --------
@@ -238,8 +263,9 @@ def valider_turing(zeros_calcules: list, dps: int = 35) -> dict:
     complet         = True
 
     for T in T_checks:
-        n_calc    = sum(1 for t in zeros if t <= T)
-        n_attendu = N_exact(T, dps=dps)
+        T_eval    = T + eps_controle                       # juste AU-DESSUS du zéro de contrôle (voir EPS_CONTROLE)
+        n_calc    = sum(1 for t in zeros if t <= T_eval)
+        n_attendu = N_exact(T_eval, dps=dps)
         delta     = n_attendu - n_calc   # positif = manque, négatif = surplus
 
         if delta == 0:
@@ -251,15 +277,17 @@ def valider_turing(zeros_calcules: list, dps: int = 35) -> dict:
             ok     = False
             complet = False
         else:
-            # Plus de zéros que prévu — surplus dû au chevauchement des workers
-            # ou légère imprécision de N_exact() : PAS une erreur
+            # Plus de zéros que prévu. Depuis les corrections du 01/11/2026 (N_exact et évaluation à T + EPS),
+            # un surplus n'est plus un artefact : c'est un DOUBLON RÉEL probable (même zéro compté deux fois,
+            # p. ex. fusion de segments) ou un décalage de la liste : à examiner. Il n'est pas compté comme manque.
+            # Historique : ces surplus étaient attribués à tort au « chevauchement des workers ».
             statut = f"⚠️  SURPLUS +{abs(delta)}"
             ok     = True   # un surplus n'est PAS un zéro manqué
 
         print(f"  {T:>10.2f}  {n_calc:>10d}  {n_attendu:>10d}  {delta:>+10d}  {statut}")
 
         verifications.append({
-            "T": T, "calcules": n_calc, "attendus": n_attendu,
+            "T": T, "T_eval": T_eval, "calcules": n_calc, "attendus": n_attendu,
             "delta": delta, "ok": ok, "statut": statut
         })
 
@@ -274,7 +302,7 @@ def valider_turing(zeros_calcules: list, dps: int = 35) -> dict:
         if any(v["delta"] < 0 for v in verifications):
             n_surplus = sum(abs(v["delta"]) for v in verifications if v["delta"] < 0)
             print(f"  ℹ️   Surplus total : {n_surplus} zéro(s) supplémentaires")
-            print(f"       (chevauchement workers ou imprécision de N(T) — normal)")
+            print(f"       (à examiner : doublon réel probable ; depuis le 01/11/2026 ce n'est plus un artefact de N(T))")
     else:
         print(f"  ❌  INCOMPLET — {manquants_total} zéro(s) manquant(s)")
         print(f"       → Relancer avec STEP plus petit")
