@@ -54,7 +54,10 @@ SWAP_FILE="$SYSROOT/proc/sys/vm/swappiness"
 NOTURBO_FILE="$CPU_ROOT/intel_pstate/no_turbo"
 SWAP_CIBLE=10
 # avahi-daemon et bluetooth RETIRÉS (16/10) : réactivés aussitôt par socket/D-Bus, arrêt inopérant -> anomalie PARTIEL à chaque run
-SERVICES=(cups ModemManager NetworkManager-wait-online snapd
+# ORDRE : un service qui dépend (Requires=) d'un autre doit figurer AVANT lui. Arrêter cups arrête aussi cups-browsed
+# (Requires=cups.service) ; s'il n'est pas dans la liste, il n'est pas enregistré et n'est jamais relancé (constaté le 01/11/2026).
+# La restauration relance dans l'ordre enregistré : cups-browsed démarre et ramène cups (Requires=) ; le « start cups » suivant est sans effet.
+SERVICES=(cups-browsed cups ModemManager NetworkManager-wait-online snapd
           packagekit apt-daily apt-daily-upgrade fwupd whoopsie kerneloops)
 
 # ── Dossier d'état : propriétaire root, pas de lien symbolique, verrou ───────────────────────────
