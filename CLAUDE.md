@@ -1,6 +1,6 @@
 # ~/projet_zeta/CLAUDE.md — Contexte projet Riemann_Lab
 > **Fichier :** CLAUDE.md - **Dossier :** racine repo (`~/projet_zeta/`)
-> **Branche :** Riemann_Lab_C (source) -> sync main - IA - Test - **Auteur :** hprzeta - **MAJ :** 2026-10-16
+> **Branche :** Riemann_Lab_C (source) -> sync main - IA - Test - **Auteur :** hprzeta - **MAJ :** 2026-11-01
 
 ---
 
@@ -241,7 +241,7 @@ restauré **uniquement au « bye bye »**. Ne jamais lancer `compute_zeros_*.py`
 | Moment | Action | Script |
 |---|---|---|
 | Ouverture d'une session dans `projet_zeta` | automatique (hook `SessionStart`, `.claude/settings.local.json`, local, non versionné) | `scripts/zeta_session_turbo.sh start` → `zeta_turbo_on.sh` |
-| Chaque gros run | arrêt des 12 services pendant le run, puis redémarrage ; le turbo CPU **reste** | `zeta-run T` → `zeta_turbo_on.sh --services` … `zeta_turbo_off.sh --services` |
+| Chaque gros run | arrêt pendant le run des services de la liste `SERVICES` de `zeta_turbo_on.sh` (**11** : `cups-browsed` (avant `cups`, il en dépend), `cups`, `ModemManager`, `NetworkManager-wait-online`, `snapd`, `packagekit`, `apt-daily`, `apt-daily-upgrade`, `fwupd`, `whoopsie`, `kerneloops` ; seuls ceux qui sont actifs sont arrêtés), puis redémarrage ; le turbo CPU **reste** | `zeta-run T` → `zeta_turbo_on.sh --services` … `zeta_turbo_off.sh --services` |
 | « bye bye » | **1ʳᵉ étape garantie**, avant l'archive PDF : restaure l'état initial réel, vérifie, rapporte | `scripts/zeta_session_turbo.sh end` → `zeta_turbo_off.sh` |
 | À tout moment | état réel, lecture seule, sans sudo | `scripts/zeta_turbo_status.sh` (`TURBO_STATUS=ACTIF/INACTIF/DERIVE/INVALIDE`) |
 
@@ -303,4 +303,4 @@ sudo scripts/zeta_turbo_off.sh       # restaurer à la main (équivalent du « b
 > (elle change à chaque session ; ce fichier doit rester stable).
 
 ---
-*CLAUDE.md - racine - source Riemann_Lab_C (sync 4 branches) - hprzeta - Mis à jour le 2026-10-23 — 306 lignes*
+*CLAUDE.md - racine - source Riemann_Lab_C (sync 4 branches) - hprzeta - Mis à jour le 2026-11-01 — 306 lignes*
