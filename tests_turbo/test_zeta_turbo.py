@@ -35,8 +35,12 @@ cmd=$1; shift
 if [ "$cmd" = "is-active" ]; then [ "${1:-}" = "--quiet" ] && shift; grep -qx "$1" "$FAKE_SVC"; exit $?; fi
 echo "$cmd $1" >> "$FAKE_SVC.calls"
 case "$cmd" in
-  stop)  [ "${FAKE_STOP_FAIL:-}" = "$1" ] && exit 1; grep -vx "$1" "$FAKE_SVC" > "$FAKE_SVC.t"; mv "$FAKE_SVC.t" "$FAKE_SVC" ;;
-  start) [ "${FAKE_START_FAIL:-}" = "$1" ] && exit 1; grep -qx "$1" "$FAKE_SVC" || echo "$1" >> "$FAKE_SVC" ;;
+  stop)  [ "${FAKE_STOP_FAIL:-}" = "$1" ] && exit 1; grep -vx "$1" "$FAKE_SVC" > "$FAKE_SVC.t"; mv "$FAKE_SVC.t" "$FAKE_SVC"
+         # Requires= : arrêter le service requis arrête aussi son dépendant (FAKE_REQUIRES="dépendant:requis")
+         if [ -n "${FAKE_REQUIRES:-}" ] && [ "$1" = "${FAKE_REQUIRES#*:}" ]; then grep -vx "${FAKE_REQUIRES%%:*}" "$FAKE_SVC" > "$FAKE_SVC.t"; mv "$FAKE_SVC.t" "$FAKE_SVC"; fi ;;
+  start) [ "${FAKE_START_FAIL:-}" = "$1" ] && exit 1; grep -qx "$1" "$FAKE_SVC" || echo "$1" >> "$FAKE_SVC"
+         # Requires= : démarrer le dépendant démarre aussi le service requis
+         if [ -n "${FAKE_REQUIRES:-}" ] && [ "$1" = "${FAKE_REQUIRES%%:*}" ]; then r="${FAKE_REQUIRES#*:}"; grep -qx "$r" "$FAKE_SVC" || echo "$r" >> "$FAKE_SVC"; fi ;;
 esac
 exit 0
 """
@@ -353,6 +357,28 @@ class TestServices(Base):
         self.assertIn("services=ModemManager", a.etat_fichier.read_text())
         self.assertEqual(a.run(OFF).returncode, 0)
         self.assertEqual(a.actifs(), ["ModemManager", "cups"])
+
+
+class TestDependances(Base):
+    """Requires= : cups-browsed s'arrête avec cups (incident du 01/11/2026, 38 services au lieu de 39 après un run)."""
+    REQ = "cups-browsed:cups"
+
+    def test_dependant_arrete_avec_son_requis_est_redemarre(self):
+        a = self.arbre(services=("cups-browsed", "cups", "ModemManager"))
+        env = a.env(FAKE_REQUIRES=self.REQ)
+        r = a.run(ON, "--services", env=env)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertEqual(a.actifs(), [], "tout est arrêté pendant le run")
+        r = a.run(OFF, "--services", env=env)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertEqual(a.actifs(), ["ModemManager", "cups", "cups-browsed"], "cups-browsed doit revenir avec cups")
+
+    def test_dependant_deja_inactif_n_est_pas_demarre(self):
+        a = self.arbre(services=("cups", "ModemManager"))
+        env = a.env(FAKE_REQUIRES=self.REQ)
+        a.run(ON, "--services", env=env)
+        a.run(OFF, "--services", env=env)
+        self.assertEqual(a.actifs(), ["ModemManager", "cups"], "cups-browsed n'était pas actif : il ne doit pas l'être après")
 
 
 class TestDurcissement(Base):
