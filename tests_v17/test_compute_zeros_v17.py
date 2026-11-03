@@ -196,5 +196,43 @@ class TestD1(unittest.TestCase):
         self.assertIsInstance(cm.exception.__cause__, OSError)
 
 
+class TestElargissementBracket(unittest.TestCase):
+    """v17-e : _elargir_bracket quand Z (Arb) ne change pas de signe dans [a, b]."""
+
+    def _lib_factice(self):
+        # lib factice : illinois_refine_arb renvoie le zéro exact z0 (bissection non testée ici)
+        class Lib:
+            @staticmethod
+            def illinois_refine_arb(a, b, fa, fb, tol, it):
+                return Z0
+        return Lib
+
+    def test_zero_hors_bracket_donne_un_bracket_elargi(self):
+        global Z0
+        a, b = 100.0, 100.001
+        Z0 = b + 2.5e-7                            # zéro juste après b
+        z = lambda t: -(t - Z0)                    # Z(a) > 0 et Z(b) > 0 : même signe
+        with mock.patch.object(m, "arb_hardy_z", side_effect=z):
+            res = m._elargir_bracket(self._lib_factice(), a, b)
+        self.assertIsNotNone(res)
+        zero, a2, b2, fa2, fb2 = res
+        self.assertEqual(zero, Z0)
+        self.assertLess(a2, a)                     # bornes réellement élargies
+        self.assertGreater(b2, b)
+        self.assertLess(fa2 * fb2, 0.0)            # vrai changement de signe
+
+    def test_aucun_zero_proche_retourne_none(self):
+        with mock.patch.object(m, "arb_hardy_z", side_effect=lambda t: 1.0):
+            self.assertIsNone(m._elargir_bracket(self._lib_factice(), 100.0, 100.001))
+
+    def test_marge_minimale_privilegiee(self):
+        global Z0
+        a, b = 100.0, 100.001
+        Z0 = b + 1e-4                              # à 0,1 largeur : la marge 0,25 suffit
+        with mock.patch.object(m, "arb_hardy_z", side_effect=lambda t: -(t - Z0)):
+            _, a2, b2, _, _ = m._elargir_bracket(self._lib_factice(), a, b)
+        self.assertAlmostEqual(b2 - b, 0.25 * (b - a), places=12)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
