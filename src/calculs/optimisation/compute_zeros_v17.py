@@ -210,6 +210,31 @@ TOL_ARB  = 1e-12  # tolérance illinois_refine_arb — abaissée de 1e-9 à 1e-1
                   # seuil LMFDB et causait 16/20 au lieu de 20/20)
 MAX_ITER = 50     # max itérations Illinois (convergence rapide avec Arb)
 
+# v17-e (2026-11-03) — élargissement du bracket quand Z ne change pas de signe.
+# Cause observée (T=400 000) : à t ≈ 3e5 la détection Z_double (float64) place parfois les
+# bornes à ~2,5e-7 du vrai zéro, du mauvais côté : Z (Arb) a alors le MÊME signe en a et b,
+# Illinois sort du crochet, le repli mpmath lève ValueError → zéro perdu (3 cas / 640 526).
+# Marges essayées de chaque côté, en fraction de la largeur (b-a) : on part de la plus petite
+# pour limiter le risque d'englober deux zéros voisins.
+ELARGISSEMENT_MARGES = (0.25, 0.5, 1.0, 2.0)
+
+
+def _elargir_bracket(lib, a, b):
+    """Cherche un bracket élargi [a2, b2] où Z (Arb) change réellement de signe, puis affine.
+
+    Retourne (zero, a2, b2, fa2, fb2) ou None si aucune marge ne donne de changement de signe
+    (ou si le résultat sort du bracket élargi). Ne lève pas pour un échec de recherche.
+    """
+    largeur = b - a                                    # largeur du bracket d'origine
+    for marge in ELARGISSEMENT_MARGES:
+        a2, b2 = a - marge * largeur, b + marge * largeur   # bornes élargies symétriquement
+        fa2, fb2 = float(arb_hardy_z(a2)), float(arb_hardy_z(b2))  # signes réels de Z (Arb)
+        if fa2 * fb2 < 0.0:                            # changement de signe confirmé
+            zero = lib.illinois_refine_arb(a2, b2, fa2, fb2, TOL_ARB, MAX_ITER)
+            if a2 - 1e-10 <= zero <= b2 + 1e-10:       # résultat dans le crochet élargi
+                return zero, a2, b2, fa2, fb2
+    return None                                        # aucun élargissement valide
+
 import json
 
 
@@ -505,14 +530,25 @@ def worker_v17(args: tuple) -> Tuple[list, dict, dict]:
                 stats["arb_C"] += 1
             else:
                 # Résultat hors intervalle → fallback mpmath (rare)
-                with chrono("mpmath_fallback"):
-                    zero = float(mpmath.findroot(
-                        arb_hardy_z, (a, b),
-                        solver="illinois", tol=1e-12, maxsteps=80,
-                    ))
-                zeros_segment.append(zero)
-                prov_segment.append(("mpmath_fallback", None, a, b, float(fa), float(fb)))
-                stats["mpmath_fallback"] += 1
+                try:
+                    with chrono("mpmath_fallback"):
+                        zero = float(mpmath.findroot(
+                            arb_hardy_z, (a, b),
+                            solver="illinois", tol=1e-12, maxsteps=80,
+                        ))
+                    zeros_segment.append(zero)
+                    prov_segment.append(("mpmath_fallback", None, a, b, float(fa), float(fb)))
+                    stats["mpmath_fallback"] += 1
+                except ValueError:
+                    # v17-e : pas de changement de signe dans [a, b] → bracket élargi
+                    with chrono("arb_C_elargi"):
+                        res = _elargir_bracket(lib, a, b)
+                    if res is None:
+                        raise   # aucun élargissement valable : échec journalisé comme avant
+                    zero, a2, b2, fa2, fb2 = res
+                    zeros_segment.append(zero)
+                    prov_segment.append(("arb_C_elargi", 64, a2, b2, fa2, fb2))
+                    stats["arb_C_elargi"] = stats.get("arb_C_elargi", 0) + 1
         except Exception as exc:
             stats["echecs"] += 1
             _journaliser_echec(checkpoint_dir, worker_id, "affinage", a, b, exc)
