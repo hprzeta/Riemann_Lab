@@ -75,6 +75,7 @@ LIBELLES = {
     "zeta-report": "Régénérer le rapport d'un run (--lang en = définitif).",
     "zeta-index": "Régénérer Monitoring-Runs.md (liste des runs).",
     "zeta-runs": "Lister les derniers runs enregistrés.",
+    "zeta-runs-suivre": "Suivre dans git les livrables de monitoring/runs (audit ; --ajouter pour indexer).",
     # --- couleurs de terminal par machine (~/zeta_colors.sh) ---
     "zeta_set_bg": "Changer le fond (et le texte) du terminal : couleurs #RRGGBB.",
     "zeta_reset_bg": "Remettre le fond et le texte par défaut du terminal.",
