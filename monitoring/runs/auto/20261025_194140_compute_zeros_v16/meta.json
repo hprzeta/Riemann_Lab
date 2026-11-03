@@ -1,0 +1,20 @@
+{
+ "id": "20261025_194140_compute_zeros_v16",
+ "nom": "compute_zeros_v16",
+ "type": "auto",
+ "t0": "2026-10-25T19:41:40",
+ "t1": "2026-10-25T19:43:54",
+ "statut": "termin\u00e9 (code inconnu)",
+ "cmd": "/home/riemann/projet_zeta/zeta_env/bin/python /home/riemann/projet_zeta/src/calculs/optimisation/compute_zeros_v16.py --t-min 95000 --t-max 100000 --horodatage A2",
+ "csv": null,
+ "pids": [
+  3087272
+ ],
+ "zeros": null,
+ "duree_s": 134.0,
+ "zps": null,
+ "tmax_pc1": 82.0,
+ "figures": [
+  "metrics.png"
+ ]
+}

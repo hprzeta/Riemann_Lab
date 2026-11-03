@@ -1,0 +1,20 @@
+{
+ "id": "20261024_223811_evince",
+ "nom": "evince",
+ "type": "auto",
+ "t0": "2026-10-24T22:38:11",
+ "t1": "2026-10-24T22:38:39",
+ "statut": "termin\u00e9 (code inconnu)",
+ "cmd": "/usr/bin/evince /home/riemann/projet_zeta/monitoring/runs/auto/20261024_221053_test_compute_zeros_v17/rapport.pdf",
+ "csv": null,
+ "pids": [
+  192098
+ ],
+ "zeros": null,
+ "duree_s": 28.0,
+ "zps": null,
+ "tmax_pc1": 59.0,
+ "figures": [
+  "metrics.png"
+ ]
+}

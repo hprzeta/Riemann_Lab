@@ -1,0 +1,20 @@
+{
+ "id": "20261024_223758_eog",
+ "nom": "eog",
+ "type": "auto",
+ "t0": "2026-10-24T22:37:58",
+ "t1": "2026-10-24T22:38:05",
+ "statut": "termin\u00e9 (code inconnu)",
+ "cmd": "/usr/bin/eog /home/riemann/projet_zeta/monitoring/runs/auto/20261024_221053_test_compute_zeros_v17/figures/metrics.png",
+ "csv": null,
+ "pids": [
+  191610
+ ],
+ "zeros": null,
+ "duree_s": 7.0,
+ "zps": null,
+ "tmax_pc1": 39.0,
+ "figures": [
+  "metrics.png"
+ ]
+}

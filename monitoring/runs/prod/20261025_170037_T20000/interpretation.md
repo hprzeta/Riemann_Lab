@@ -1,0 +1,5 @@
+- **[mesuré]** 22 491 zéros, validation Turing–Backlund COMPLET, écart à la formule de Riemann–von Mangoldt : −0,0.
+- **[mesuré]** Durée suivie 43 s ; `time` 52 s : l'écart de 9 s est identique sur quatre runs (T=20000 et T=200000).
+- **[mesuré]** PC1 à 75 °C ou plus pendant 18 % du run (maximum 76 °C) ; PC2 à PC5 inactives.
+- **[mesuré]** Variance des espacements normalisés 0,1569 (GUE : environ 0,18) ; 0,1614 pour T=100 000 et 0,1693 vers t = 5·10^6. **[hypothèse]** effet de hauteur finie, non démontré.
+- **[hypothèse]** Ce run est 16 % plus long que celui du 24/10 22:56 (43 s contre 37 s) alors que sa température maximale est plus basse (76 °C contre 77 °C) : la température seule ne l'explique pas ; cause inconnue.
