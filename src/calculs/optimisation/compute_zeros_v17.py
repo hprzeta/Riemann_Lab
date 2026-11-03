@@ -219,6 +219,18 @@ MAX_ITER = 50     # max itérations Illinois (convergence rapide avec Arb)
 ELARGISSEMENT_MARGES = (0.25, 0.5, 1.0, 2.0)
 
 
+K_ULP = 2.0   # tolérance de position en ulp de float64 (décision k = 2, 03/11/2026)
+
+
+def _marge_bracket(t: float) -> float:
+    """Marge d'acceptation d'un zéro par rapport à son bracket : max(1e-10, K_ULP * ulp(t)).
+
+    1e-10 absolu devient inférieur à 1 ulp au-delà de t ~ 4,5e5 (ulp = 9,3e-10 à 5e6) : un zéro
+    à 1 ulp du bord serait rejeté à tort. Strictement inchangé pour t < 2^18 ≈ 2,6e5 (là, 2 ulp ≤ 1e-10).
+    """
+    return max(1e-10, K_ULP * math.ulp(t))
+
+
 def _elargir_bracket(lib, a, b):
     """Cherche un bracket élargi [a2, b2] où Z (Arb) change réellement de signe, puis affine.
 
@@ -231,7 +243,7 @@ def _elargir_bracket(lib, a, b):
         fa2, fb2 = float(arb_hardy_z(a2)), float(arb_hardy_z(b2))  # signes réels de Z (Arb)
         if fa2 * fb2 < 0.0:                            # changement de signe confirmé
             zero = lib.illinois_refine_arb(a2, b2, fa2, fb2, TOL_ARB, MAX_ITER)
-            if a2 - 1e-10 <= zero <= b2 + 1e-10:       # résultat dans le crochet élargi
+            if a2 - _marge_bracket(a2) <= zero <= b2 + _marge_bracket(b2):       # résultat dans le crochet élargi
                 return zero, a2, b2, fa2, fb2
     return None                                        # aucun élargissement valide
 
@@ -524,7 +536,7 @@ def worker_v17(args: tuple) -> Tuple[list, dict, dict]:
                 zero = lib.illinois_refine_arb(a, b, float(fa), float(fb),
                                                TOL_ARB, MAX_ITER)
 
-            if a - 1e-10 <= zero <= b + 1e-10:
+            if a - _marge_bracket(a) <= zero <= b + _marge_bracket(b):
                 zeros_segment.append(zero)
                 prov_segment.append(("arb_C", 64, a, b, float(fa), float(fb)))
                 stats["arb_C"] += 1
@@ -670,13 +682,13 @@ def calculer_zeros_v17(
         snaps.append(segment_snap)
 
     profil_workers = agreger(snaps)
-    # v17-d : consolidation non destructive (variante A : sans STEP, overlap nominal 0,5).
+    # v17-d : consolidation non destructive (variante B : STEP fourni, overlap nominal 0,5).
     # Toute erreur → ConsolidationError : jamais de repli silencieux sur dedupliquer().
     msg_echec = ("ÉCHEC DE LA CONSOLIDATION — résultat NON VALIDE, aucune liste de zéros produite, "
                  "aucun repli sur dedupliquer(). Les worker_NNN.csv finaux "
                  f"({checkpoint_dir if checkpoint_dir else 'non écrits : dossier=None'}) sont intacts.")
     try:
-        res = consolider(candidats, ParamsConsolidation(overlap=0.5))
+        res = consolider(candidats, ParamsConsolidation(overlap=0.5, step=STEP))
     except Exception as exc:
         raise ConsolidationError(f"{msg_echec} Cause : consolider() : {type(exc).__name__}: {exc}") from exc
     zeros = [l.t for l in res.consolides]      # triés par t ; ambigus conservés tous les deux
@@ -693,7 +705,7 @@ def calculer_zeros_v17(
         try:
             ecrire_resultats(res, str(cible),
                              meta={"script": "compute_zeros_v17.py", "t_min": T_MIN, "t_max": T_MAX,
-                                   "step": STEP, "variante": "A_stricte_sans_STEP",
+                                   "step": STEP, "variante": "B_avec_STEP",
                                    "dossier_sortie": cible.name, "collision_evitee": collision})
         except Exception as exc:
             raise ConsolidationError(

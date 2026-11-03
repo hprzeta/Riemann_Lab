@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-zeta_distribute.py — Distribution du calcul v15 sur PC1 (local) + PC2 (SSH)
+zeta_distribute.py — Distribution du calcul v17 sur PC1 (local) + PC2 (SSH)
 Porté de v13 le 02/08/2026 (cf. commit) — mécanique de segmentation/pivot inchangée,
-seul le script cible (compute_zeros_v15.py) et les conventions de nommage changent.
+seul le script cible (compute_zeros_v17.py) et les conventions de nommage changent.
 ══════════════════════════════════════════════════════════════════════════════
 Usage :
     python scripts/zeta_distribute.py <T_MAX>
@@ -16,7 +16,7 @@ Architecture :
 
     Option B (24/06/2026) — overlap appliqué APRÈS le partitionnement, pas avant.
     Tentative précédente (23/06, Option A) : étendre T_MAX de PC1 et T_MIN de PC2
-    de ±OVERLAP_PIVOT AVANT de les passer à compute_zeros_v15.py. Problème détecté :
+    de ±OVERLAP_PIVOT AVANT de les passer à compute_zeros_v17.py. Problème détecté :
     _partitionner_adaptatif() recalcule TOUTES les frontières internes des workers
     par recherche binaire sur N(T) en fonction de ce T_MAX/T_MIN — changer le pivot
     fait donc glisser en cascade les 7 autres frontières de chaque machine, ce qui a
@@ -35,7 +35,7 @@ Architecture :
 Étapes :
     1. Calcule T_PIVOT pour équilibrer les deux runs (voir calculer_pivot)
     2. Active zeta_turbo_on.sh sur PC1 (sudo local)
-    3. Lance v15 CLI en parallèle : subprocess local + subprocess SSH (bornes EXACTES)
+    3. Lance v17 CLI en parallèle : subprocess local + subprocess SSH (bornes EXACTES)
     4. Attend la fin des deux processus
     5. Lance le supplément pivot (local, séquentiel, rapide — quelques zéros)
     6. Récupère le CSV produit par PC2 via scp
@@ -212,8 +212,8 @@ def _cmd_venv(commande: str) -> str:
 
 
 def lancer_pc1(T_PIVOT: float, horodatage: str, log_dir: Path) -> subprocess.Popen:
-    """Lance v15 en local sur [14.0, T_PIVOT], en arrière-plan, sans sudo zeta_turbo."""
-    script  = SRC_DIR / "compute_zeros_v15.py"
+    """Lance v17 en local sur [14.0, T_PIVOT], en arrière-plan, sans sudo zeta_turbo."""
+    script  = SRC_DIR / "compute_zeros_v17.py"
     log_pc1 = log_dir / f"distribute_pc1_{horodatage}.log"
     venv    = PROJET_DIR / "zeta_env" / "bin" / "python"
 
@@ -243,13 +243,13 @@ def lancer_pc1(T_PIVOT: float, horodatage: str, log_dir: Path) -> subprocess.Pop
 
 
 def lancer_pc2(T_PIVOT: float, T_MAX: float, horodatage: str, log_dir: Path) -> subprocess.Popen:
-    """Lance v15 sur PC2 via SSH pour [T_PIVOT, T_MAX]."""
+    """Lance v17 sur PC2 via SSH pour [T_PIVOT, T_MAX]."""
     log_pc2 = log_dir / f"distribute_pc2_{horodatage}.log"
     log_pc2.parent.mkdir(parents=True, exist_ok=True)
 
     # Commande Python sur PC2 (python3 sur Debian 12)
     cmd_py = (
-        f"python3 src/calculs/optimisation/compute_zeros_v15.py "
+        f"python3 src/calculs/optimisation/compute_zeros_v17.py "
         f"--t-min {T_PIVOT:.6f} --t-max {T_MAX:.6f} --horodatage {horodatage}"
     )
     cmd_ssh = [
@@ -281,7 +281,7 @@ def lancer_pivot_supplement(T_PIVOT: float, overlap: float,
     couverture structurel au pivot par un calcul à part, minuscule (~quelques
     zéros, largeur 2×overlap), lancé séquentiellement après PC1+PC2.
     """
-    script   = SRC_DIR / "compute_zeros_v15.py"
+    script   = SRC_DIR / "compute_zeros_v17.py"
     t_min    = T_PIVOT - overlap
     t_max    = T_PIVOT + overlap
     log_pivot = log_dir / f"distribute_pivot_{horodatage}.log"
@@ -317,28 +317,28 @@ def lancer_pivot_supplement(T_PIVOT: float, overlap: float,
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def _trouver_csv(dossier: Path, T_MIN: float, T_MAX: float, horodatage: str) -> Path:
-    """Retrouve le CSV v15 dans le dossier de calcul par convention de nommage."""
-    nom = f"v15_T{T_MIN:.0f}_{T_MAX:.0f}_{horodatage}"
+    """Retrouve le CSV v17 dans le dossier de calcul par convention de nommage."""
+    nom = f"v17_T{T_MIN:.0f}_{T_MAX:.0f}_{horodatage}"
     cand = dossier / nom
     # chercher le CSV dans le sous-dossier
-    csvs = list(cand.glob("zeros_v15_*.csv")) if cand.exists() else []
+    csvs = list(cand.glob("zeros_v17_*.csv")) if cand.exists() else []
     if not csvs:
         # fallback : chercher partout sous calculs/
-        csvs = sorted(dossier.glob(f"*{horodatage}*/zeros_v15_*.csv"))
+        csvs = sorted(dossier.glob(f"*{horodatage}*/zeros_v17_*.csv"))
     if not csvs:
-        raise FileNotFoundError(f"Aucun CSV v15 trouvé pour {nom} dans {dossier}")
+        raise FileNotFoundError(f"Aucun CSV v17 trouvé pour {nom} dans {dossier}")
     return csvs[0]
 
 
 def recuperer_csv_pc2(T_PIVOT: float, T_MAX: float,
                        horodatage: str, dossier_local: Path) -> Path:
     """Récupère le CSV de PC2 via scp vers dossier_local/."""
-    # Dossier : v15_T{T_MIN:.0f}_{T_MAX:.0f}_{horodatage}/
-    # CSV     : zeros_v15_T{T_MAX:.0f}_{horodatage}.csv   ← T_MAX seul (convention sauvegarder_csv v15)
+    # Dossier : v17_T{T_MIN:.0f}_{T_MAX:.0f}_{horodatage}/
+    # CSV     : zeros_v17_T{T_MAX:.0f}_{horodatage}.csv   ← T_MAX seul (convention sauvegarder_csv v17)
     chemin_remote = (
         f"{PC2_PROJET}/calculs/"
-        f"v15_T{T_PIVOT:.0f}_{T_MAX:.0f}_{horodatage}/"
-        f"zeros_v15_T{T_MAX:.0f}_{horodatage}.csv"
+        f"v17_T{T_PIVOT:.0f}_{T_MAX:.0f}_{horodatage}/"
+        f"zeros_v17_T{T_MAX:.0f}_{horodatage}.csv"
     )
     csv_local = dossier_local / f"zeros_pc2_T{T_PIVOT:.0f}_{T_MAX:.0f}_{horodatage}.csv"
     cmd = [
@@ -390,13 +390,13 @@ def fusionner_csv(csv_paths: list, dossier_out: Path, T_MAX: float,
         "n":                 range(1, len(filtres) + 1),
         "partie_imaginaire": filtres,
         "T_MAX":             T_MAX,
-        "version":           "v15_distribue",
+        "version":           "v17_distribue",
         "methode_affinage":  "arb_C_pur",
-        "step":              0.010,
+        "step":              "adaptatif",
         "n_workers":         "PC1+PC2",
         "calcule_le":        horodatage,
     })
-    csv_fusion = dossier_out / f"zeros_v15_distribue_T{T_MAX:.0f}_{horodatage}.csv"
+    csv_fusion = dossier_out / f"zeros_v17_distribue_T{T_MAX:.0f}_{horodatage}.csv"
     df_final.to_csv(csv_fusion, index=False)
     detail = " + ".join(str(len(d)) for d in dfs)
     print(f"\n  ✅ Fusion : {detail} (bruts) → {len(filtres)} zéros uniques")
@@ -431,7 +431,7 @@ def ecrire_rapport(rapport_path: Path, T_MAX: float, T_PIVOT: float,
     def L(t=""): lignes.append(t)
 
     L(sep)
-    L("  RAPPORT DISTRIBUTION v15 — PC1 + PC2")
+    L("  RAPPORT DISTRIBUTION v17 — PC1 + PC2")
     L("  Projet : Hypothèse de Riemann — hprzeta")
     L(sep); L()
 
@@ -469,11 +469,11 @@ def ecrire_rapport(rapport_path: Path, T_MAX: float, T_PIVOT: float,
 # ═══════════════════════════════════════════════════════════════════════════════
 
 def verifier_pc2() -> bool:
-    """Test préalable : PC2 joignable et capable d'importer le pipeline v15 (20 s max).
+    """Test préalable : PC2 joignable et capable d'importer le pipeline v17 (20 s max).
 
     Évite de lancer PC1 pour rien si PC2 est cassé (cas du 15/10/2026 : pandas illisible).
     """
-    cmd_py = ('python3 -c "import compute_zeros_v15 as m; '
+    cmd_py = ('python3 -c "import compute_zeros_v17 as m; '
               'assert m.ARB_DISPONIBLE, \'Arb indisponible\'"')
     cmd_ssh = ["ssh", "-i", str(PC2_SSH_KEY), "-o", "StrictHostKeyChecking=no",
                "-o", "ConnectTimeout=10", *_pc2_jump_opts(), PC2_HOST,
@@ -486,10 +486,10 @@ def verifier_pc2() -> bool:
         print("  ❌ PC2 : test préalable expiré (25 s) — PC2 injoignable ou bloqué.")
         return False
     if ret.returncode != 0:
-        print("  ❌ PC2 : le pipeline v15 ne s'importe pas :")
+        print("  ❌ PC2 : le pipeline v17 ne s'importe pas :")
         print("     " + "\n     ".join((ret.stderr or ret.stdout).strip().splitlines()[-4:]))
         return False
-    print("  ✅ PC2 : test préalable OK (v15 importable, Arb disponible)")
+    print("  ✅ PC2 : test préalable OK (v17 importable, Arb disponible)")
     return True
 
 
@@ -504,7 +504,7 @@ def _tuer_groupe_local(proc: subprocess.Popen) -> None:
 def _tuer_pc2(horodatage: str) -> None:
     """Arrête le calcul distant de PC2 (tuer le client ssh ne suffit pas, sans tty)."""
     # '[c]ompute' : le motif ne correspond pas à la commande pkill elle-même
-    cmd = f"pkill -f '[c]ompute_zeros_v15.py.*--horodatage {horodatage}' || true"
+    cmd = f"pkill -f '[c]ompute_zeros_v17.py.*--horodatage {horodatage}' || true"
     subprocess.run(["ssh", "-i", str(PC2_SSH_KEY), "-o", "StrictHostKeyChecking=no",
                     "-o", "ConnectTimeout=10", *_pc2_jump_opts(), PC2_HOST, cmd],
                    capture_output=True, timeout=30,
@@ -544,7 +544,7 @@ def attendre_deux_runs(proc_pc1: subprocess.Popen, proc_pc2: subprocess.Popen,
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(
-        description="Distribution du calcul v15 sur PC1+PC2"
+        description="Distribution du calcul v17 sur PC1+PC2"
     )
     p.add_argument("t_max", type=float,
                    help="Borne supérieure du calcul (ex. 100000)")
@@ -573,7 +573,7 @@ def main():
 
     print()
     print("=" * 65)
-    print("  DISTRIBUTION v15 — PC1 (local) + PC2 (SSH)")
+    print("  DISTRIBUTION v17 — PC1 (local) + PC2 (SSH)")
     print("=" * 65)
     print(f"  T_MAX  = {T_MAX:.0f}")
     print(f"  V_PC1  = {V1:.0f} z/s · V_PC2 = {V2:.0f} z/s")
@@ -622,7 +622,7 @@ def main():
         sys.exit(0)
 
     horodatage  = datetime.now().strftime("%Y%m%d_%H%M%S")
-    dossier_out = PROJET_DIR / "calculs" / f"v15_distribue_T{T_MAX:.0f}_{horodatage}"
+    dossier_out = PROJET_DIR / "calculs" / f"v17_distribue_T{T_MAX:.0f}_{horodatage}"
     dossier_out.mkdir(parents=True, exist_ok=True)
     LOG_DIR.mkdir(parents=True, exist_ok=True)
 
