@@ -34,7 +34,7 @@ Architecture :
 
 Étapes :
     1. Calcule T_PIVOT pour équilibrer les deux runs (voir calculer_pivot)
-    2. Active zeta_turbo_on.sh sur PC1 (sudo local)
+    2. zeta_turbo_on.sh --services sur PC1 (turbo CPU de session conservé)
     3. Lance v17 CLI en parallèle : subprocess local + subprocess SSH (bornes EXACTES)
     4. Attend la fin des deux processus
     5. Lance le supplément pivot (local, séquentiel, rapide — quelques zéros)
@@ -42,7 +42,7 @@ Architecture :
     7. Fusionne + déduplique les 3 CSVs (PC1 + PC2 + supplément pivot)
     8. Valide Turing global sur [14, T_MAX]
     9. Génère un rapport de distribution
-    10. Désactive zeta_turbo_off.sh
+    10. zeta_turbo_off.sh --services (redémarre les services ; ne touche pas au turbo CPU)
 
 Auteur : hprzeta — Projet Hypothèse de Riemann
 Date   : 2026-06-17 · Option B 2026-06-24
@@ -542,6 +542,14 @@ def attendre_deux_runs(proc_pc1: subprocess.Popen, proc_pc2: subprocess.Popen,
         time.sleep(pause)
 
 
+def turbo_bin(action: str) -> str:
+    """Chemin du script turbo : copie durcie root:root si dispo (cf. CLAUDE.md « Droits »), sinon dépôt."""
+    d = Path(f"/usr/local/sbin/zeta_turbo_{action}")             # copie durcie éventuelle
+    if d.exists() and os.access(d, os.X_OK) and d.stat().st_uid == 0 and not (d.stat().st_mode & 0o022):
+        return str(d)                                            # copie root non modifiable
+    return str(SCRIPTS / f"zeta_turbo_{action}.sh")              # repli : script du dépôt
+
+
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(
         description="Distribution du calcul v17 sur PC1+PC2"
@@ -556,6 +564,8 @@ def parse_args() -> argparse.Namespace:
                    help="Part des zéros confiée à PC2, entre 0 et 1 (ex. 0.5 pour 50 %%). "
                         "Défaut : équilibre en temps d'après --v-pc1/--v-pc2. "
                         "Au-delà de l'équilibre, le run total s'allonge (PC2 est plus lent).")
+    p.add_argument("--yes", "-y", action="store_true",
+                   help="Ne pas demander confirmation (usage non interactif)")
     p.add_argument("--dry-run", action="store_true",
                    help="Afficher la segmentation sans lancer le calcul")
     return p.parse_args()
@@ -618,7 +628,7 @@ def main():
         print(f"  ⚠ PC2 finira bien après PC1 : durée totale ≈ {t_prevu_pc2/60:.1f} min "
               f"(PC1 seule ≈ {n_zeros_expected(T_MAX)/V1/60:.1f} min).")
     print()
-    if input("  Lancer la distribution ? [O/n] : ").strip().lower() in ("n", "non"):
+    if not args.yes and input("  Lancer la distribution ? [O/n] : ").strip().lower() in ("n", "non"):
         sys.exit(0)
 
     horodatage  = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -627,8 +637,9 @@ def main():
     LOG_DIR.mkdir(parents=True, exist_ok=True)
 
     # ── Turbo on PC1
-    print("\n  Activation turbo PC1...")
-    subprocess.run(["sudo", str(SCRIPTS / "zeta_turbo_on.sh")], check=False)
+    # Turbo CPU de SESSION : on ré-affirme (idempotent) et on arrête les services pendant le run
+    print("\n  Turbo PC1 (idempotent) + arrêt des services pendant le run...")
+    subprocess.run(["sudo", turbo_bin("on"), "--services"], check=False)
 
     debut_global = time.time()
 
@@ -648,22 +659,22 @@ def main():
     )
 
     if ret_pc1 != 0:
-        subprocess.run(["sudo", str(SCRIPTS / "zeta_turbo_off.sh")], check=False)
+        subprocess.run(["sudo", turbo_bin("off"), "--services"], check=False)  # services seuls, turbo CPU conservé
         print(f"  ❌ PC1 a échoué (code {ret_pc1}) — voir {log_pc1}")
         sys.exit(1)
     if ret_pc2 != 0:
-        subprocess.run(["sudo", str(SCRIPTS / "zeta_turbo_off.sh")], check=False)
+        subprocess.run(["sudo", turbo_bin("off"), "--services"], check=False)  # services seuls, turbo CPU conservé
         print(f"  ❌ PC2 a échoué (code {ret_pc2}) — voir {log_pc2}")
         sys.exit(1)
 
-    # ── Supplément pivot (Option B) — séquentiel, après PC1+PC2, avant turbo off
+    # ── Supplément pivot (Option B) — séquentiel, après PC1+PC2, avant redémarrage des services
     print("\n  Lancement du supplément pivot...")
     csv_pivot = lancer_pivot_supplement(T_PIVOT, OVERLAP_PIVOT, horodatage, LOG_DIR)
 
     duree_total = time.time() - debut_global
 
-    # ── Turbo off PC1
-    subprocess.run(["sudo", str(SCRIPTS / "zeta_turbo_off.sh")], check=False)
+    # ── Redémarrage des services PC1 (le turbo CPU reste actif jusqu'au « bye bye »)
+    subprocess.run(["sudo", turbo_bin("off"), "--services"], check=False)  # services seuls, turbo CPU conservé
 
     # ── Récupération CSV PC2 (bornes exactes du pivot, sans overlap)
     print("\n  Récupération CSV PC2...")
