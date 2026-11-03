@@ -1,0 +1,20 @@
+{
+ "id": "20261024_221053_test_compute_zeros_v17",
+ "nom": "test_compute_zeros_v17",
+ "type": "auto",
+ "t0": "2026-10-24T22:10:53",
+ "t1": "2026-10-24T22:11:08",
+ "statut": "termin\u00e9 (code inconnu)",
+ "cmd": "zeta_env/bin/python3 -B -I tests_v17/test_compute_zeros_v17.py",
+ "csv": null,
+ "pids": [
+  127010
+ ],
+ "zeros": null,
+ "duree_s": 15.0,
+ "zps": null,
+ "tmax_pc1": 61.0,
+ "figures": [
+  "metrics.png"
+ ]
+}
