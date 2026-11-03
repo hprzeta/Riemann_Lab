@@ -179,6 +179,7 @@ def affiner(fenetres, t: np.ndarray, log=print):
 
 def main():
     global _DPS
+    sys.stdout.reconfigure(line_buffering=True)   # log visible en direct même redirigé vers un fichier
     ap = argparse.ArgumentParser(description="Localise par dichotomie les zéros manquants d'un CSV")
     ap.add_argument("csv", help="CSV avec colonne partie_imaginaire")
     ap.add_argument("--workers", type=int, default=4, help="processus (défaut 4)")
