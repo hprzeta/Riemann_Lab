@@ -28,7 +28,7 @@ fi
 # Lancer le run en arrière-plan
 # "O\n" auto-répondu à la confirmation interactive de zeta_distribute.py
 # python -u (01/11/2026) : sortie non tamponnée, sinon le log reste vide vers un fichier (marqueur de démarrage invisible, tail -f muet)
-nohup bash -c 'printf "O\n" | python -u scripts/zeta_distribute.py '"$T_MAX"'' \
+nohup bash -c 'printf "O\n" | python -u scripts/zeta_distribute.py '"$T_MAX"'; rm -f /tmp/zeta_distribute.pid' \
   > "$LOG" 2>&1 &
 PID=$!
 echo $PID > /tmp/zeta_distribute.pid
