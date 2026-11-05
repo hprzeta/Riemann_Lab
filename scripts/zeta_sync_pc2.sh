@@ -12,6 +12,10 @@
 #      illinois_arb.so (ce dernier lie libflint-arb système, pas python-flint
 #      comme sur PC1 — chemin détecté automatiquement via ldconfig)
 #
+# MAJ 2026-11-05 (V17) : synchronise aussi scripts_v17/ et les en-têtes FLINT 3.3.1 ;
+#   illinois_arb.so est compilé contre la libflint de python-flint de PC2 (en-têtes 3.3.1),
+#   dans un fichier provisoire, sauvegardé (.bak-AAAAMMJJ) puis échangé seulement si la compilation réussit.
+#   Ancienne version (liait contre libflint-arb 2.23 du système, inadaptée à la V16/V17) : .bak-20261105.
 # Auteur : hprzeta — Riemann_Lab_C — 2026-06-23
 
 set -e
@@ -55,6 +59,20 @@ rsync -avzi \
     "$SRC_DIR/c_modules/" "$PC2_HOST:$PC2_PROJET/src/calculs/optimisation/c_modules/"
 echo
 
+echo "→ Sync scripts_v17/ (consolider_v17.py, etc. — *.py seulement)..."
+rsync -avzi \
+    -e "$SSH_CMD" \
+    --exclude="__pycache__" \
+    --include="*.py" --exclude="*" \
+    "$PROJET_DIR/scripts_v17/" "$PC2_HOST:$PC2_PROJET/scripts_v17/"
+echo
+
+echo "→ Sync en-têtes FLINT 3.3.1 (c_modules/flint-headers-3.3.1/)..."
+rsync -avzi \
+    -e "$SSH_CMD" \
+    "$SRC_DIR/c_modules/flint-headers-3.3.1/" "$PC2_HOST:$PC2_PROJET/src/calculs/optimisation/c_modules/flint-headers-3.3.1/"
+echo
+
 echo "→ Recompilation sur PC2 (architecture différente — jamais de .so copié)..."
 $SSH_CMD "$PC2_HOST" bash -s <<'REMOTE_SCRIPT'
 set -e
@@ -66,16 +84,19 @@ make scan_arb.so
 echo "  [PC2] make illinois_mpfr.so"
 make illinois_mpfr.so
 
-echo "  [PC2] illinois_arb.so — détection libflint-arb système (pas python-flint)"
-LIBFLINT_PATH=$(PATH=/sbin:/usr/sbin:$PATH ldconfig -p 2>/dev/null | grep -m1 'libflint-arb\.so' | awk '{print $NF}')
-if [ -z "$LIBFLINT_PATH" ]; then
-    echo "  ✗ libflint-arb introuvable sur PC2 (apt install libflint-arb2 ?)" >&2
+echo "  [PC2] illinois_arb.so — libflint de python-flint (en-têtes 3.3.1), fichier provisoire puis échange"
+LIBFLINT_SO_PATH=$(ls /home/hprzeta/.local/lib/python3.*/site-packages/python_flint.libs/libflint-*.so* 2>/dev/null | head -1)
+if [ -z "$LIBFLINT_SO_PATH" ]; then
+    echo "  ✗ libflint de python-flint introuvable sur PC2 (pip install --user python-flint ?)" >&2
     exit 1
 fi
-LIBFLINT_DIR=$(dirname "$LIBFLINT_PATH")
-LIBFLINT_SO=$(basename "$LIBFLINT_PATH")
+LIBFLINT_DIR=$(dirname "$LIBFLINT_SO_PATH")
+LIBFLINT_SO=$(basename "$LIBFLINT_SO_PATH")
 echo "  [PC2] libflint trouvé : $LIBFLINT_DIR/$LIBFLINT_SO"
-make illinois_arb.so LIBFLINT_DIR="$LIBFLINT_DIR" LIBFLINT_SO="$LIBFLINT_SO"
+gcc -O3 -march=native -fPIC -Wall -Wextra -Iflint-headers-3.3.1 -shared -o illinois_arb_new.so illinois_arb.c \
+    -L"$LIBFLINT_DIR" -l:"$LIBFLINT_SO" -Wl,-rpath,"$LIBFLINT_DIR" -lm
+if [ -f illinois_arb.so ]; then cp -p illinois_arb.so "illinois_arb.so.bak-$(date +%Y%m%d)"; fi
+mv illinois_arb_new.so illinois_arb.so
 
 echo
 echo "  [PC2] .so produits :"
