@@ -206,6 +206,12 @@ def _partitionner_adaptatif(
 # ═══════════════════════════════════════════════════════════════════════════════
 
 TOL_ARB  = 1e-12  # tolérance illinois_refine_arb — abaissée de 1e-9 à 1e-12
+
+# Décalage de phase du rescan, en fraction de STEP original (05/11/2026).
+# Grille rescan = seg_a + RESCAN_PHASE·STEP + k·STEP/2 : distance minimale à la grille
+# principale (seg_a + m·STEP) = STEP/6 pour 1/3 (0 avec l'ancien départ à seg_a, qui
+# CONTENAIT la grille principale → un zéro collé à un point de grille restait invisible).
+RESCAN_PHASE = 1.0 / 3.0
                   # (double précision ~1e-15 → 1e-12 fiable ; 1e-9 trop proche du
                   # seuil LMFDB et causait 16/20 au lieu de 20/20)
 MAX_ITER = 50     # max itérations Illinois (convergence rapide avec Arb)
@@ -784,7 +790,7 @@ def rescan_segments_deficit(
     # Rescan parallèle : un worker par segment en déficit (Pool)
     # worker_id 100+i pour distinguer dans les logs des workers principaux
     args_rescan = [
-        (seg_a, seg_b, step_rescan, SO_PATH, TOL_ARB, 100 + i, None)
+        (seg_a + RESCAN_PHASE * step_original, seg_b, step_rescan, SO_PATH, TOL_ARB, 100 + i, None)
         for i, seg_a, seg_b, t_lo, t_hi, d in segments_a_rescanner
     ]
     with multiprocessing.Pool(processes=len(args_rescan)) as pool:
