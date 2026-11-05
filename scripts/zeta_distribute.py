@@ -89,8 +89,13 @@ PC2_PROJET  = "/home/hprzeta/projet_zeta"          # chemin absolu sur PC2
 #   PC1 : 14 → 349098   en 11,27 min = 815,16 z/s
 #   PC2 : 349098 → 500000 en 32,21 min = 138,15 z/s   (ratio de débit ≈ 5,9, pas 1,6)
 # Le défaut équilibre donc les TEMPS avec les débits de haut T ; --part-pc2 impose une part.
-V_PC1_DEFAULT = 815.16   # z/s — PC1, v15, haut T, mesuré (run 15/09/2026)
-V_PC2_DEFAULT = 138.15   # z/s — PC2, v15, haut T, mesuré (run 30/08/2026)
+# 05/11/2026 (V17, illinois_arb.so à jour sur PC2) : mesuré à T=100000 en distribué, 8 workers des deux côtés :
+#   PC1 : 121 061 zéros en 1,80 min = 1121 z/s · PC2 : 17 006 zéros en 0,60 min = 472 z/s (ratio ≈ 2,4, PAS 5,9).
+# Avec les anciens défauts (815 / 138 z/s) PC2 recevait 12 % des zéros et finissait 3 fois plus tôt que PC1.
+# Valeurs valables vers T = 10^5 ; à remesurer à T plus grand (--part-pc2 impose une part).
+V_PC1_DEFAULT = 1121.0   # z/s — PC1, v17, T=1e5, mesuré (run 05/11/2026)
+V_PC2_DEFAULT = 472.0    # z/s — PC2, v17, T=1e5, mesuré (run 05/11/2026)
+# (anciennes valeurs v15 : PC1 815,16 z/s (15/09/2026), PC2 138,15 z/s (30/08/2026))
 
 # ── Overlap à la frontière PC1/PC2 (fix 23/06/2026 — trou de couverture au pivot)
 OVERLAP_PIVOT = 2.0     # largement > 1 STEP (~0.0044 à T=500000)
@@ -644,19 +649,34 @@ def main():
     debut_global = time.time()
 
     # ── Lancement parallèle PC1 + PC2 (bornes EXACTES — Option B, pas d'overlap ici)
-    print("\n  Lancement parallèle...")
-    proc_pc1, log_pc1 = lancer_pc1(T_PIVOT, horodatage, LOG_DIR)
-    proc_pc2, log_pc2 = lancer_pc2(T_PIVOT, T_MAX, horodatage, LOG_DIR)
-    t_debut_pc1 = time.time()
-    t_debut_pc2 = t_debut_pc1
+    # 05/11/2026 (D48) : Ctrl+C / SIGTERM arrêtent PC1 ET PC2 et redémarrent les services
+    # (avant : le calcul de PC1, dans son propre groupe de processus, continuait seul
+    # et les services restaient arrêtés).
+    def _interrompu(signum, frame):                    # SIGTERM suit le même chemin que Ctrl+C
+        raise KeyboardInterrupt
+    signal.signal(signal.SIGTERM, _interrompu)
+    proc_pc1 = proc_pc2 = None
+    try:
+        print("\n  Lancement parallèle...")
+        proc_pc1, log_pc1 = lancer_pc1(T_PIVOT, horodatage, LOG_DIR)
+        proc_pc2, log_pc2 = lancer_pc2(T_PIVOT, T_MAX, horodatage, LOG_DIR)
+        t_debut_pc1 = time.time()
+        t_debut_pc2 = t_debut_pc1
 
-    print(f"\n  En attente... (tail -f {log_pc1.name})")
+        print(f"\n  En attente... (tail -f {log_pc1.name})")
 
-    # ── Attente
-    # Surveillance croisée : si l'une des machines échoue, l'autre est arrêtée aussitôt
-    ret_pc1, ret_pc2, duree_pc1, duree_pc2 = attendre_deux_runs(
-        proc_pc1, proc_pc2, horodatage
-    )
+        # ── Attente
+        # Surveillance croisée : si l'une des machines échoue, l'autre est arrêtée aussitôt
+        ret_pc1, ret_pc2, duree_pc1, duree_pc2 = attendre_deux_runs(
+            proc_pc1, proc_pc2, horodatage
+        )
+    except KeyboardInterrupt:
+        print("\n  ⚠ Interruption : arrêt de PC1 et de PC2, redémarrage des services.")
+        if proc_pc1 is not None:
+            _tuer_groupe_local(proc_pc1)               # PC1 et tous ses workers
+        _tuer_pc2(horodatage)                          # calcul distant de PC2
+        subprocess.run(["sudo", turbo_bin("off"), "--services"], check=False)  # services seuls, turbo CPU conservé
+        sys.exit(130)
 
     if ret_pc1 != 0:
         subprocess.run(["sudo", turbo_bin("off"), "--services"], check=False)  # services seuls, turbo CPU conservé
@@ -669,7 +689,12 @@ def main():
 
     # ── Supplément pivot (Option B) — séquentiel, après PC1+PC2, avant redémarrage des services
     print("\n  Lancement du supplément pivot...")
-    csv_pivot = lancer_pivot_supplement(T_PIVOT, OVERLAP_PIVOT, horodatage, LOG_DIR)
+    try:
+        csv_pivot = lancer_pivot_supplement(T_PIVOT, OVERLAP_PIVOT, horodatage, LOG_DIR)
+    except KeyboardInterrupt:                          # D48 : ne jamais laisser les services arrêtés
+        print("\n  ⚠ Interruption pendant le supplément pivot : redémarrage des services.")
+        subprocess.run(["sudo", turbo_bin("off"), "--services"], check=False)
+        sys.exit(130)
 
     duree_total = time.time() - debut_global
 
