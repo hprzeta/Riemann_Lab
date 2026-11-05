@@ -279,6 +279,15 @@ sudo scripts/zeta_turbo_off.sh       # restaurer à la main (équivalent du « b
 
 ---
 
+## 📘 Guide de run — fichier UNIQUE (règle permanente, 2026-11-05)
+
+- Source qui fait foi : `md/Guide_Run_Zeta.md` (le `.md` prime). PDF : `pdf/Guide_Run_Zeta.pdf` (même nom que le `.md`, sans suffixe de date), **même nom** à chaque régénération.
+- À chaque avancée du projet : mettre à jour le `.md` (étiquettes mesuré / guide / déduit / à tester / rapporté / vérifié, pied de page avec `wc -l` réel), puis régénérer le PDF depuis le `.md` (Python/ReportLab, contrôle `pdftotext`).
+- Aucune autre copie du guide hors `md/archive/` et `pdf/archive/` (jamais de suppression, on archive).
+- `md/` est dans `.git/info/exclude` (décision 05/11) : le guide `.md` reste LOCAL ; seul `pdf/Guide_Run_Zeta.pdf` est commité. `pdf/archive/` n'est pas commité. Aucun `git add` sans validation explicite.
+
+---
+
 ## Fichiers de contexte (cascade Claude Code)
 
 | Fichier | Portée |
@@ -303,4 +312,4 @@ sudo scripts/zeta_turbo_off.sh       # restaurer à la main (équivalent du « b
 > (elle change à chaque session ; ce fichier doit rester stable).
 
 ---
-*CLAUDE.md - racine - source Riemann_Lab_C (sync 4 branches) - hprzeta - Mis à jour le 2026-11-01 — 306 lignes*
+*CLAUDE.md - racine - source Riemann_Lab_C (sync 4 branches) - hprzeta - Mis à jour le 2026-11-05 — 315 lignes*
