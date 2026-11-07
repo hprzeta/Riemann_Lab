@@ -99,16 +99,22 @@ V_PC2_DEFAULT = 472.0    # z/s — PC2, v17, T=1e5, mesuré (run 05/11/2026)
 # 05/11/2026 (remesure à T=500000, V17) : les débits DÉPENDENT de T (coût par zéro croissant, PC2 plus sensible) :
 #   T=1e5   : PC1 1123 z/s ([14 ; 77125], 92 s) · PC2 496 z/s ([77125 ; 1e5], 70 s)
 #   T=5e5   : PC1  858 z/s ([14 ; 383935], 714 s) · PC2 173 z/s ([383935 ; 5e5], 1194 s)  → PC2 finissait en 19,9 min contre 11,9 pour PC1
-# Le défaut interpole donc (linéairement en ln T) entre ces deux points, sans extrapoler : valeurs figées en dehors.
-# Validé seulement pour 1e5 <= T <= 5e5 ; au-delà de 5e5 les débits sont ceux de 5e5 (à remesurer).
-ANCRES_VITESSES = ((1.0e5, 1123.0, 496.0), (5.0e5, 858.0, 173.0))   # (T, v_PC1, v_PC2)
+#   T=1e6   : PC1  506 z/s ([14 ; 868524], 2958 s) · PC2  97 z/s ([868524 ; 1e6], 2578 s)  (07/11/2026, 1 747 146 zéros, Turing COMPLET, mur 49,34 min)
+#             → avec les débits 858/173 figés, la prévision était 29,1 min (PC1) / 24,0 min (PC2) : trop optimiste d'un facteur ~1,7 (PC1) et ~1,8 (PC2)
+# Le défaut interpole donc (linéairement en ln T) entre ces trois points (par morceaux), sans extrapoler : valeurs figées en dehors.
+# Validé seulement pour 1e5 <= T <= 1e6 ; au-delà de 1e6 les débits sont ceux de 1e6 (à remesurer).
+ANCRES_VITESSES = ((1.0e5, 1123.0, 496.0), (5.0e5, 858.0, 173.0), (1.0e6, 506.0, 97.0))   # (T, v_PC1, v_PC2)
 
 
 def vitesses_defaut(T_MAX: float):
-    """Débits (PC1, PC2) en z/s adaptés à T_MAX : interpolation en ln T entre les deux mesures, valeurs figées au-delà."""
-    (t_a, v1a, v2a), (t_b, v1b, v2b) = ANCRES_VITESSES
-    x = min(1.0, max(0.0, (math.log(T_MAX) - math.log(t_a)) / (math.log(t_b) - math.log(t_a))))
-    return v1a + x * (v1b - v1a), v2a + x * (v2b - v2a)
+    """Débits (PC1, PC2) en z/s adaptés à T_MAX : interpolation par morceaux en ln T entre les ancres mesurées, valeurs figées au-delà."""
+    if T_MAX <= ANCRES_VITESSES[0][0]:                  # en dessous de la 1re ancre : valeurs figées
+        return ANCRES_VITESSES[0][1], ANCRES_VITESSES[0][2]
+    for (t_a, v1a, v2a), (t_b, v1b, v2b) in zip(ANCRES_VITESSES, ANCRES_VITESSES[1:]):
+        if T_MAX <= t_b:                                # intervalle [t_a ; t_b] contenant T_MAX
+            x = (math.log(T_MAX) - math.log(t_a)) / (math.log(t_b) - math.log(t_a))
+            return v1a + x * (v1b - v1a), v2a + x * (v2b - v2a)
+    return ANCRES_VITESSES[-1][1], ANCRES_VITESSES[-1][2]   # au-delà de la dernière ancre : valeurs figées
 # (anciennes valeurs v15 : PC1 815,16 z/s (15/09/2026), PC2 138,15 z/s (30/08/2026))
 
 # ── Overlap à la frontière PC1/PC2 (fix 23/06/2026 — trou de couverture au pivot)
