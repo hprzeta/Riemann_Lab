@@ -396,6 +396,40 @@ def _checkpoint_periodique(checkpoint_dir, worker_id, t_start, t_end, zeros, pro
     return etat
 
 
+PAS_MIN_PAR_BLOC = 1_000_000                              # taille minimale d'un bloc de scan, en pas (réglable pour les tests)
+
+
+def _scan_arb_par_blocs(t_debut: float, t_fin: float, step: float, max_brackets: int, worker_id) -> list:
+    """scan_arb par blocs de pas ENTIERS, avec une ligne de progression entre deux blocs (option B, 07/11/2026).
+
+    Avant : un seul appel C opaque → aucun signe de vie pendant toute la phase de scan (mesuré à T=10^6 :
+    18 à 45 min sans une ligne par worker, d'où un tableau de bord à 0 %).
+    Grille : le C calcule t = t_min + k·step ; le bloc j démarre à t_debut + j·K·step et finit à
+    t_debut + (j+1)·K·step, donc chaque bracket [t_k, t_(k+1)] appartient à exactement un bloc (aucun perdu,
+    aucun doublon). Seul l'arrondi de t_min + k·step peut différer d'au plus 1 ulp d'un découpage à l'autre
+    (équivalence vérifiée par tests_v17/test_scan_par_blocs.py).
+    Une seule entrée si le segment est court (< 2 blocs) : comportement identique à l'ancien appel unique.
+    """
+    if t_debut >= t_fin:                                   # segment vide : rien à scanner
+        return []
+    n_pas = int((t_fin - t_debut) / step)                  # nombre de pas de la grille sur le segment
+    pas_par_bloc = max(PAS_MIN_PAR_BLOC, -(-n_pas // 40))  # ≈ 40 blocs, jamais moins de PAS_MIN_PAR_BLOC pas
+    if n_pas <= pas_par_bloc:                              # segment court : appel unique, comme avant
+        return scan_arb(t_debut, t_fin, step=step, max_brackets=max_brackets)
+    brackets = []                                          # brackets cumulés, dans l'ordre croissant de t
+    debut = time.time()                                    # chronomètre de la phase de scan
+    k = 0                                                  # indice du premier pas du bloc courant
+    while k < n_pas:
+        k_fin = min(k + pas_par_bloc, n_pas)               # indice du dernier pas du bloc (inclus comme borne)
+        t_a = t_debut + k * step                           # début du bloc (même expression que le C)
+        t_b = t_fin if k_fin == n_pas else t_debut + k_fin * step   # fin du bloc ; le dernier bloc va jusqu'à t_fin
+        brackets.extend(scan_arb(t_a, t_b, step=step, max_brackets=max_brackets))
+        k = k_fin
+        print(f"  [Worker {worker_id}] scan {100 * k // n_pas}% à t={t_b:.2f} — {time.time() - debut:.1f}s",
+              flush=True)
+    return brackets
+
+
 def worker_v17(args: tuple) -> Tuple[list, dict, dict]:
     """Worker v17 — détection scan_arb.c + affinage illinois_refine_arb (algorithme de v16).
 
@@ -511,7 +545,7 @@ def worker_v17(args: tuple) -> Tuple[list, dict, dict]:
     _progression(checkpoint_dir, worker_id, phase="scan", t_start=t_start, t_end=t_end)
     if SCAN_ARB_DISPONIBLE:
         with chrono("detection"):
-            brackets = scan_arb(t_start_main, t_end, step=step, max_brackets=_max_brackets) if t_start_main < t_end else []
+            brackets = _scan_arb_par_blocs(t_start_main, t_end, step, _max_brackets, worker_id)
     else:
         TAILLE_BLOC = 5000
         brackets    = []
