@@ -121,6 +121,18 @@ def tail_lines(path, n=3000, chunk=16384):
         return []
 
 
+def duree_depuis_nom(chemin):
+    """Secondes écoulées depuis l'horodatage AAAAMMJJ_HHMMSS du nom du log (= démarrage du run), ou 0 si illisible.
+    Sert à afficher une durée pendant la phase de scan, où `el1`/`el2` (tirés des lignes des workers) valent 0."""
+    m = re.search(r"_(\d{8})_(\d{6})\.log$", str(chemin) if chemin else "")
+    if not m:
+        return 0.0
+    try:
+        return max(0.0, time.time() - time.mktime(time.strptime(m.group(1) + m.group(2), "%Y%m%d%H%M%S")))
+    except ValueError:
+        return 0.0
+
+
 def latest_file(pattern):
     files = glob.glob(str(LOG_DIR / pattern))
     return max(files, key=os.path.getmtime) if files else None
@@ -464,7 +476,12 @@ def draw(stdscr):
                 n_reporting = len(set(segs.keys()) & set(workers_dict.keys()))
                 n_segs = len(segs)
                 eta_w = eta_sqrt_weighted(segs, workers_dict, elapsed)
-                if eta_w is not None and n_segs and n_reporting == n_segs:
+                if done == 0 and n_reporting == 0:
+                    # Aucun worker n'a encore loggé : les workers v17 n'écrivent leur 1re ligne « zéro #1000 »
+                    # qu'après la phase de scan (silencieuse, mesuré le 07/11 à T=10⁶ : 18 à 45 min).
+                    # 0 % ne signifie donc PAS « bloqué » : on l'indique au lieu d'afficher une ETA trompeuse.
+                    eta_label = f"phase de scan en cours (aucun compteur avant la fin du scan) · {duree_depuis_nom(pc1_log if name == 'pc1' else pc2_log)/60:.1f} min écoulées"
+                elif eta_w is not None and n_segs and n_reporting == n_segs:
                     # Tous les workers ont au moins 1 point de mesure : le "pire
                     # worker" (max sur tous) est une estimation fiable.
                     eta_label = f"ETA(√t) {eta_w/60:.1f} min"
