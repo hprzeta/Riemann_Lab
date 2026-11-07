@@ -95,6 +95,20 @@ PC2_PROJET  = "/home/hprzeta/projet_zeta"          # chemin absolu sur PC2
 # Valeurs valables vers T = 10^5 ; à remesurer à T plus grand (--part-pc2 impose une part).
 V_PC1_DEFAULT = 1121.0   # z/s — PC1, v17, T=1e5, mesuré (run 05/11/2026)
 V_PC2_DEFAULT = 472.0    # z/s — PC2, v17, T=1e5, mesuré (run 05/11/2026)
+#
+# 05/11/2026 (remesure à T=500000, V17) : les débits DÉPENDENT de T (coût par zéro croissant, PC2 plus sensible) :
+#   T=1e5   : PC1 1123 z/s ([14 ; 77125], 92 s) · PC2 496 z/s ([77125 ; 1e5], 70 s)
+#   T=5e5   : PC1  858 z/s ([14 ; 383935], 714 s) · PC2 173 z/s ([383935 ; 5e5], 1194 s)  → PC2 finissait en 19,9 min contre 11,9 pour PC1
+# Le défaut interpole donc (linéairement en ln T) entre ces deux points, sans extrapoler : valeurs figées en dehors.
+# Validé seulement pour 1e5 <= T <= 5e5 ; au-delà de 5e5 les débits sont ceux de 5e5 (à remesurer).
+ANCRES_VITESSES = ((1.0e5, 1123.0, 496.0), (5.0e5, 858.0, 173.0))   # (T, v_PC1, v_PC2)
+
+
+def vitesses_defaut(T_MAX: float):
+    """Débits (PC1, PC2) en z/s adaptés à T_MAX : interpolation en ln T entre les deux mesures, valeurs figées au-delà."""
+    (t_a, v1a, v2a), (t_b, v1b, v2b) = ANCRES_VITESSES
+    x = min(1.0, max(0.0, (math.log(T_MAX) - math.log(t_a)) / (math.log(t_b) - math.log(t_a))))
+    return v1a + x * (v1b - v1a), v2a + x * (v2b - v2a)
 # (anciennes valeurs v15 : PC1 815,16 z/s (15/09/2026), PC2 138,15 z/s (30/08/2026))
 
 # ── Overlap à la frontière PC1/PC2 (fix 23/06/2026 — trou de couverture au pivot)
@@ -561,10 +575,10 @@ def parse_args() -> argparse.Namespace:
     )
     p.add_argument("t_max", type=float,
                    help="Borne supérieure du calcul (ex. 100000)")
-    p.add_argument("--v-pc1", type=float, default=V_PC1_DEFAULT,
-                   help=f"Vitesse PC1 en z/s (défaut: {V_PC1_DEFAULT})")
-    p.add_argument("--v-pc2", type=float, default=V_PC2_DEFAULT,
-                   help=f"Vitesse PC2 en z/s (défaut: {V_PC2_DEFAULT})")
+    p.add_argument("--v-pc1", type=float, default=None,
+                   help="Vitesse PC1 en z/s (défaut : interpolée selon T_MAX, mesures du 05/11/2026)")
+    p.add_argument("--v-pc2", type=float, default=None,
+                   help="Vitesse PC2 en z/s (défaut : interpolée selon T_MAX, mesures du 05/11/2026)")
     p.add_argument("--part-pc2", type=float, default=None, metavar="FRACTION",
                    help="Part des zéros confiée à PC2, entre 0 et 1 (ex. 0.5 pour 50 %%). "
                         "Défaut : équilibre en temps d'après --v-pc1/--v-pc2. "
@@ -579,8 +593,9 @@ def parse_args() -> argparse.Namespace:
 def main():
     args = parse_args()
     T_MAX = args.t_max
-    V1    = args.v_pc1
-    V2    = args.v_pc2
+    V1_auto, V2_auto = vitesses_defaut(max(T_MAX, 20.0))          # 05/11/2026 : débits selon T (voir ANCRES_VITESSES)
+    V1    = args.v_pc1 if args.v_pc1 is not None else V1_auto
+    V2    = args.v_pc2 if args.v_pc2 is not None else V2_auto
 
     if T_MAX < 20:
         print("  T_MAX doit être ≥ 20.")
