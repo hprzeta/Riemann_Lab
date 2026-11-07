@@ -1,0 +1,253 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+build_pdf_guide_run.py — Génère le PDF du « Guide Run Zêta » (md/Guide_Run_Zeta.md) avec ReportLab.
+
+Dérivé de build_pdf_guide_scripts.py (07/11/2026), avec trois corrections propres à ce guide :
+  1. les spans de code (`...`) sont mis à l'abri AVANT la conversion gras/italique (un `*` dans un
+     span, ex. `zeta-log-*`, produisait des balises imbriquées et faisait planter ReportLab) ;
+  2. le titre `# ...` et les citations `> ...` du .md sont normalisés en mémoire (le .md n'est pas modifié) ;
+  3. la version (vX.YY) est lue dans le .md (« enrichi cas par cas (vX.YY) ») pour le titre et le pied.
+
+Usage :
+    python scripts/build_pdf_guide_run.py md/Guide_Run_Zeta.md pdf/Guide_Run_Zeta.pdf
+Sécurité : refuse d'écraser un PDF existant (archiver l'ancien avant, jamais de suppression).
+"""
+import os                                        # chemins et existence de fichiers
+import re                                        # découpage du Markdown
+import sys                                       # arguments de la ligne de commande
+import textwrap                                  # coupe des longues lignes de code
+
+from reportlab.lib import colors                 # couleurs du document
+from reportlab.pdfgen import canvas          # canvas numéroté (pied de page « page i / N »)
+from reportlab.lib.enums import TA_CENTER        # alignement centré
+from reportlab.lib.pagesizes import A4           # format A4
+from reportlab.lib.styles import ParagraphStyle  # styles de paragraphe
+from reportlab.lib.units import cm               # unités en centimètres
+from reportlab.pdfbase import pdfmetrics         # enregistrement des polices
+from reportlab.pdfbase.ttfonts import TTFont     # polices TrueType
+from reportlab.platypus import (BaseDocTemplate, Frame, PageTemplate, Paragraph,
+                                Spacer, Table, TableStyle, PageBreak,
+                                Preformatted, HRFlowable, KeepTogether)
+
+FONT_DIR = "/usr/share/fonts/truetype/dejavu"   # polices DejaVu (accents et symboles)
+# Enregistre les polices : texte, gras, italique, mono et mono gras
+for nom, fichier in [("DV", "DejaVuSans.ttf"), ("DV-B", "DejaVuSans-Bold.ttf"),
+                     ("DV-I", "DejaVuSans-Oblique.ttf"), ("DV-BI", "DejaVuSans-BoldOblique.ttf"),
+                     ("DVM", "DejaVuSansMono.ttf"), ("DVM-B", "DejaVuSansMono-Bold.ttf")]:
+    pdfmetrics.registerFont(TTFont(nom, os.path.join(FONT_DIR, fichier)))
+pdfmetrics.registerFontFamily("DV", normal="DV", bold="DV-B", italic="DV-I", boldItalic="DV-BI")
+
+BLEU = colors.HexColor("#1f4e79")                # bleu des titres et des en-têtes de tableau
+VERT = colors.HexColor("#1b6e4f")                # vert du sous-titre
+GRIS = colors.HexColor("#666666")                # gris des textes secondaires
+CODE_FOND = colors.HexColor("#f2f2f2")           # fond des blocs de commandes
+CODE_TEXTE = colors.HexColor("#9c2f2f")          # texte des blocs de commandes
+LIGNE_PAIRE = colors.HexColor("#eef3f9")         # lignes alternées des tableaux
+
+# --- Styles --------------------------------------------------------------------------------------
+S_TITRE = ParagraphStyle("titre", fontName="DV-B", fontSize=27, leading=32, textColor=BLEU, alignment=TA_CENTER)
+S_SOUS = ParagraphStyle("sous", fontName="DV-B", fontSize=16, leading=20, textColor=VERT, alignment=TA_CENTER, spaceAfter=18)
+S_INTRO = ParagraphStyle("intro", fontName="DV", fontSize=10, leading=14, alignment=TA_CENTER, spaceAfter=14)
+S_DATE = ParagraphStyle("date", fontName="DV", fontSize=8.5, leading=11, textColor=GRIS, alignment=TA_CENTER, spaceAfter=14)
+S_H2 = ParagraphStyle("h2", fontName="DV-B", fontSize=17, leading=21, textColor=BLEU, spaceBefore=14, spaceAfter=6, keepWithNext=1)
+S_H3 = ParagraphStyle("h3", fontName="DV-B", fontSize=11.5, leading=15, textColor=BLEU, spaceBefore=10, spaceAfter=4, keepWithNext=1)
+S_SCRIPT = ParagraphStyle("script", fontName="DVM-B", fontSize=11.5, leading=15, spaceBefore=8, spaceAfter=2, keepWithNext=1)
+S_LABEL = ParagraphStyle("label", fontName="DV-B", fontSize=9.5, leading=13, spaceBefore=4, spaceAfter=2, keepWithNext=1)
+S_TXT = ParagraphStyle("txt", fontName="DV", fontSize=9, leading=12.6, spaceAfter=3)
+S_MACH = ParagraphStyle("mach", fontName="DV", fontSize=8, leading=11, textColor=GRIS, spaceAfter=2, keepWithNext=1)
+S_CELL = ParagraphStyle("cell", fontName="DV", fontSize=7.6, leading=9.8)
+S_CELLH = ParagraphStyle("cellh", fontName="DV-B", fontSize=7.8, leading=10, textColor=colors.white)
+S_CODE = ParagraphStyle("code", fontName="DVM", fontSize=7.6, leading=9.6, textColor=CODE_TEXTE,
+                        backColor=CODE_FOND, borderPadding=(4, 5, 4, 5), spaceBefore=2, spaceAfter=7, leftIndent=4)
+S_PIED = ParagraphStyle("pied", fontName="DV-I", fontSize=8, leading=10, textColor=GRIS, spaceBefore=8)
+
+
+def echappe(t):
+    """Échappe les caractères réservés du XML de ReportLab."""
+    return t.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def inline(t):
+    """Convertit le Markdown en ligne (gras, code, italique) en balises ReportLab."""
+    t = echappe(t)                                                     # protège & < >
+    codes = []                                                         # spans de code mis de côté (leurs * ne sont pas du Markdown)
+    def _garde(m):
+        codes.append(m.group(1)); return "\x00%d\x00" % (len(codes) - 1)
+    t = re.sub(r"`([^`]+)`", _garde, t)
+    t = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", t)                      # gras
+    t = re.sub(r"(?<![\w*])\*([^*\n]+)\*(?![\w*])", r"<i>\1</i>", t)   # italique
+    t = re.sub(r"\x00(\d+)\x00", lambda m: '<font name="DVM" size="8">%s</font>' % codes[int(m.group(1))], t)
+    return t
+
+
+def nettoie_titre(t):
+    """Retire les ** et les ` d'un titre."""
+    return t.replace("**", "").replace("`", "").strip()
+
+
+def tableau(lignes, largeur):
+    """Construit un tableau ReportLab à partir de lignes Markdown (| a | b |)."""
+    cellules = [[c.strip() for c in l.strip().strip("|").split("|")] for l in lignes
+                if not re.match(r"^\|\s*:?-{3,}", l.strip())]          # ignore la ligne de séparation
+    n = len(cellules[0])                                               # nombre de colonnes
+    # Poids de chaque colonne = longueur utile max (bornée) pour répartir la largeur
+    poids = [max(min(len(re.sub(r"[`*]", "", row[i])), 48) for row in cellules if i < len(row)) + 6 for i in range(n)]
+    # Largeur minimale d'une colonne = son plus long mot (évite « N° », « Sudo », noms d'alias coupés)
+    for i in range(n):
+        mot = max((len(w) for row in cellules if i < len(row) for w in re.sub(r"[`*]", "", row[i]).split()), default=1)
+        poids[i] = max(poids[i], min(mot, 26) * 2.5 + 9)
+    larg = [largeur * p / sum(poids) for p in poids]
+    data = []
+    for i, row in enumerate(cellules):                                 # une ligne de Paragraph par ligne MD
+        row = (row + [""] * n)[:n]
+        data.append([Paragraph(inline(c.replace("<br>", " ")), S_CELLH if i == 0 else S_CELL) for c in row])
+    t = Table(data, colWidths=larg, repeatRows=1)                      # en-tête répété sur chaque page
+    t.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, 0), BLEU),
+                           ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, LIGNE_PAIRE]),
+                           ("GRID", (0, 0), (-1, -1), 0.3, colors.HexColor("#c8c8c8")),
+                           ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                           ("LEFTPADDING", (0, 0), (-1, -1), 4), ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+                           ("TOPPADDING", (0, 0), (-1, -1), 2.5), ("BOTTOMPADDING", (0, 0), (-1, -1), 2.5)]))
+    return [t, Spacer(1, 6)]
+
+
+def bloc_code(lignes, largeur_car=92):
+    """Bloc de commandes : coupe les lignes trop longues pour qu'aucune ne soit tronquée."""
+    sortie = []
+    for l in lignes:
+        morceaux = textwrap.wrap(l, width=largeur_car, subsequent_indent="    ",
+                                 break_long_words=True, replace_whitespace=False) or [""]
+        sortie.extend(morceaux)
+    return Preformatted("\n".join(sortie), S_CODE)
+
+
+VERSION_GUIDE = ""                                                     # version du guide, lue dans le .md
+DATE_MAJ = ""                                                          # date de mise à jour, lue dans le pied du .md
+
+
+class CanvasNumerote(canvas.Canvas):
+    """Canvas à deux passes : mémorise les pages, puis écrit « page i / N » une fois N connu."""
+
+    def __init__(self, *args, **kwargs):
+        canvas.Canvas.__init__(self, *args, **kwargs)
+        self._pages = []                                               # états de page mémorisés
+
+    def showPage(self):
+        self._pages.append(dict(self.__dict__))                        # garde l'état, n'écrit pas encore
+        self._startPage()
+
+    def save(self):
+        total = len(self._pages)                                       # nombre total de pages
+        for etat in self._pages:
+            self.__dict__.update(etat)
+            self.setFont("DV", 7.5)
+            self.setFillColor(GRIS)
+            self.drawString(2 * cm, 1.2 * cm, f"Guide Run Zêta {VERSION_GUIDE} / Riemann_Lab — hprzeta"
+                            + (f" — mis à jour le {DATE_MAJ}" if DATE_MAJ else ""))
+            self.drawRightString(A4[0] - 2 * cm, 1.2 * cm, f"page {self._pageNumber} / {total}")
+            canvas.Canvas.showPage(self)
+        canvas.Canvas.save(self)
+
+
+def pied_de_page(canvas, doc):
+    """Le pied (date + pages) est dessiné par CanvasNumerote ; rien à faire ici."""
+    return
+
+
+def construit(md_chemin, pdf_chemin):
+    """Lit le .md et écrit le PDF."""
+    texte = open(md_chemin, encoding="utf-8").read()
+    texte = re.sub(r"<!--.*?-->", "", texte, flags=re.S)               # retire les commentaires HTML
+    lignes = texte.splitlines()
+    global DATE_MAJ, VERSION_GUIDE
+    mv = re.search(r"enrichi cas par cas \((v\d+\.\d+)\)", texte)       # version dans le statut du .md
+    VERSION_GUIDE = mv.group(1) if mv else ""
+    lignes = [("**" + l[2:] + "**") if (k == 0 and l.startswith("# ")) else (l[2:] if l.startswith("> ") else l)
+              for k, l in enumerate(lignes)]               # titre h1 -> gras ; citations -> texte simple
+    m = re.search(r"\*Mis à jour : (\d{4})-(\d{2})-(\d{2})", texte)           # date du pied du .md
+    DATE_MAJ = f"{m.group(3)}/{m.group(2)}/{m.group(1)}" if m else ""
+    largeur = A4[0] - 4 * cm                                           # largeur utile du cadre
+    doc = BaseDocTemplate(pdf_chemin, pagesize=A4, leftMargin=2 * cm, rightMargin=2 * cm,
+                          topMargin=1.8 * cm, bottomMargin=2 * cm,
+                          title=f"Guide Run Zêta {VERSION_GUIDE}".strip(), author="hprzeta")
+    doc.addPageTemplates([PageTemplate(id="p", frames=[Frame(2 * cm, 2 * cm, largeur, A4[1] - 3.8 * cm, id="f")],
+                                       onPage=pied_de_page)])
+    flux, i, premiere_page = [], 0, True
+    while i < len(lignes):
+        l = lignes[i].rstrip()
+        if not l.strip() or l.strip() == "---":                        # lignes vides et filets : ignorés
+            i += 1
+            continue
+        if l.startswith("```"):                                        # bloc de code
+            i += 1
+            bloc = []
+            while i < len(lignes) and not lignes[i].startswith("```"):
+                bloc.append(lignes[i])
+                i += 1
+            flux.append(bloc_code(bloc))
+            i += 1
+            continue
+        if l.startswith("|"):                                          # tableau
+            bloc = []
+            while i < len(lignes) and lignes[i].startswith("|"):
+                bloc.append(lignes[i])
+                i += 1
+            flux.extend(tableau(bloc, largeur))
+            continue
+        if l.startswith("## "):                                        # titre de niveau 2
+            titre = nettoie_titre(l[3:])
+            if premiere_page and titre.startswith("Mode d'emploi"):    # page de couverture
+                flux.append(Spacer(1, 3 * cm))
+                flux.append(Paragraph("Mode d'emploi des scripts", S_TITRE))
+                flux.append(Paragraph("Cluster Zêta — Riemann_Lab", S_SOUS))
+                premiere_page = False
+            elif re.match(r"^\d+[a-z]?\.\s", titre) or titre.startswith("Aide-mémoire"):   # section numérotée
+                if flux and not isinstance(flux[-1], PageBreak) and titre.startswith("1."):
+                    flux.append(PageBreak())                           # §1 commence sur une nouvelle page
+                flux.append(Paragraph(echappe(titre), S_H2))
+                flux.append(HRFlowable(width="100%", thickness=0.6, color=colors.HexColor("#bbbbbb"), spaceAfter=4))
+            elif titre.startswith("Comment le lancer"):                # libellé de fiche
+                flux.append(Paragraph("Comment le lancer :", S_LABEL))
+            else:                                                      # nom de script (fiche)
+                if not (flux and isinstance(flux[-1], HRFlowable)):    # pas de double filet sous un titre de section
+                    flux.append(HRFlowable(width="100%", thickness=0.3, color=colors.HexColor("#d0d0d0"), spaceBefore=6))
+                flux.append(Paragraph(echappe(titre), S_SCRIPT))
+            i += 1
+            continue
+        if l.startswith("### "):                                       # titre de niveau 3
+            flux.append(Paragraph(echappe(nettoie_titre(l[4:])), S_H3))
+            i += 1
+            continue
+        if l.startswith("- "):                                         # liste à puces
+            flux.append(Paragraph("• " + inline(l[2:]), ParagraphStyle("li", parent=S_TXT, leftIndent=12, firstLineIndent=-8)))
+            i += 1
+            continue
+        if l.startswith("*Mis à jour"):                                # pied du .md
+            flux.append(Paragraph(inline(l), S_PIED))
+            i += 1
+            continue
+        if l.startswith("Machine :"):                                  # ligne « Machine : ... »
+            flux.append(Paragraph(inline(l), S_MACH))
+        elif flux and len(flux) < 12 and "Aide-mémoire complet" in l:  # phrase d'accroche de la couverture
+            flux.append(Paragraph(inline(l), S_INTRO))
+        elif flux and len(flux) < 14 and l.startswith("hprzeta •"):    # ligne auteur/date de la couverture
+            flux.append(Paragraph(inline(l), S_DATE))
+        elif l.startswith("**À savoir"):                               # piège : marqueur carré
+            flux.append(Paragraph("■ " + inline(l), S_TXT))
+        else:                                                          # paragraphe courant
+            flux.append(Paragraph(inline(l), S_TXT))
+        i += 1
+    doc.build(flux, canvasmaker=CanvasNumerote)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 3:                                             # contrôle des arguments
+        sys.exit("Usage : build_pdf_guide_run.py source.md sortie.pdf")
+    src, out = sys.argv[1], sys.argv[2]
+    if not os.path.isfile(src):                                        # le .md doit exister
+        sys.exit(f"Source introuvable : {src}")
+    if os.path.exists(out):                                            # jamais d'écrasement
+        sys.exit(f"Refus d'écraser un fichier existant : {out}")
+    construit(src, out)
+    print(f"PDF généré : {out}")
