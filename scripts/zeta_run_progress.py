@@ -65,6 +65,18 @@ CMD_STATS = ("python3 -c \""
     "\"")
 
 LOG_RE = re.compile(r"\[Worker (\d+)\] z[ée]ro #(\d+) à t=([\d.]+) — ([\d.]+)s")
+SCAN_RE = re.compile(r"\[Worker (\d+)\] scan (\d+)% à t=([\d.]+) — ([\d.]+)s")   # progression du scan (v17, option B, 07/11/2026)
+
+
+def parse_scan_progress(path):
+    """Dernier pourcentage de scan connu par worker : {worker: pct}. Vide si le log n'a pas de ligne « scan N% »
+    (ancien moteur, PC2 pas à jour, ou segment court scanné en un seul bloc)."""
+    etat = {}
+    for ligne in tail_lines(path):
+        m = SCAN_RE.search(ligne)
+        if m:
+            etat[int(m.group(1))] = max(etat.get(int(m.group(1)), 0), int(m.group(2)))
+    return etat
 
 
 _JUMP_CACHE = {"t": 0.0, "opts": []}      # décision de saut mémorisée (évite un ping toutes les 4 s)
@@ -480,7 +492,13 @@ def draw(stdscr):
                     # Aucun worker n'a encore loggé : les workers v17 n'écrivent leur 1re ligne « zéro #1000 »
                     # qu'après la phase de scan (silencieuse, mesuré le 07/11 à T=10⁶ : 18 à 45 min).
                     # 0 % ne signifie donc PAS « bloqué » : on l'indique au lieu d'afficher une ETA trompeuse.
-                    eta_label = f"phase de scan en cours (aucun compteur avant la fin du scan) · {duree_depuis_nom(pc1_log if name == 'pc1' else pc2_log)/60:.1f} min écoulées"
+                    log_cour = pc1_log if name == "pc1" else pc2_log
+                    scans = parse_scan_progress(log_cour) if log_cour else {}
+                    duree_txt = f"{duree_depuis_nom(log_cour)/60:.1f} min écoulées"
+                    if scans and n_segs:      # moyenne sur TOUS les workers (ceux sans ligne comptent pour 0 %)
+                        eta_label = f"phase de scan {sum(scans.values()) / n_segs:.0f} % ({len(scans)}/{n_segs} workers ont signalé) · {duree_txt}"
+                    else:                     # pas de ligne « scan N% » : on le dit sans inventer de pourcentage
+                        eta_label = f"phase de scan en cours (pas de pourcentage disponible) · {duree_txt}"
                 elif eta_w is not None and n_segs and n_reporting == n_segs:
                     # Tous les workers ont au moins 1 point de mesure : le "pire
                     # worker" (max sur tous) est une estimation fiable.
