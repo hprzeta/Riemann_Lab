@@ -28,6 +28,7 @@ Riemann_Lab.wiki
 .claude/*
 !.claude/skills/
 !.claude/skills/**
+.claude/skills/**/*.bak*
 claude-traitement-journalier/
 
 # Audit systeme local
