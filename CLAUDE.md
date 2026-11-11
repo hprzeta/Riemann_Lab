@@ -1,6 +1,6 @@
 # ~/projet_zeta/CLAUDE.md — Contexte projet Riemann_Lab
 > **Fichier :** CLAUDE.md - **Dossier :** racine repo (`~/projet_zeta/`)
-> **Branche :** Riemann_Lab_C (source) -> sync main - IA - Test - **Auteur :** hprzeta - **MAJ :** 2026-11-01
+> **Branche :** Riemann_Lab_C (source) -> sync main - IA - Test - **Auteur :** hprzeta - **MAJ :** 2026-11-11
 
 ---
 
@@ -288,6 +288,17 @@ sudo scripts/zeta_turbo_off.sh       # restaurer à la main (équivalent du « b
 
 ---
 
+## 🗂️ Mises à jour du site — dossier unique `pdf/site/` (règle permanente, 2026-11-11)
+
+- Chaque mise à jour du site (`docs/index.html`) et/ou du wiki ouvre un dossier daté **`pdf/site/maj_site_AAAAMMJJ/`** (date du jour de la mise à jour). C'est là, et nulle part ailleurs, que se range le dossier de livrables : jamais à la racine du dépôt, jamais dans `docs/` (réservé au site publié), jamais dans une branche `ops/*`.
+- Contenu type : `MAJ_SITE_ZETA_AAAAMMJJ_HHMM.pdf` (récapitulatif horodaté : tableau `page | ligne in | ligne out | date heure`, ajouts en vert, suppressions en rouge, captures avant/après en annexe), `ERREURS_NON_CORRIGEES_AAAAMMJJ.md` (points non corrigés, rechargeable par Claude Code) et `captures/`. Une seule version à jour du PDF par dossier : les versions intermédiaires du même jour sont remplacées.
+- Historique : `maj_site_20260912/` (récapitulatif wiki et corrections KaTeX du 12/09/2026) et `maj_site_20261111/` (mise à jour V17 du 11/11/2026).
+- Dépôt : branche `Riemann_Lab_IA` uniquement (convention `pdf/<sujet>/`), sans cherry-pick sur les autres branches. Audit avant commit (IP, MAC, clés, tokens, e-mails) ; captures de pages publiques seulement ; les listes matériel `~/zeta_inventaire/MATERIEL/` restent privées et n'entrent jamais dans ce dossier.
+- Dépôt dans le projet claude.ai « SITE ZETA » : manuel (glisser-déposer par hprzeta, après suppression des anciennes versions du même fichier).
+- Aucun `git add` / commit / push sans validation explicite de hprzeta.
+
+---
+
 ## Fichiers de contexte (cascade Claude Code)
 
 | Fichier | Portée |
@@ -312,4 +323,4 @@ sudo scripts/zeta_turbo_off.sh       # restaurer à la main (équivalent du « b
 > (elle change à chaque session ; ce fichier doit rester stable).
 
 ---
-*CLAUDE.md - racine - source Riemann_Lab_C (sync 4 branches) - hprzeta - Mis à jour le 2026-11-05 — 315 lignes*
+*CLAUDE.md - racine - source Riemann_Lab_C (sync 4 branches) - hprzeta - Mis à jour le 2026-11-11 — 326 lignes*
