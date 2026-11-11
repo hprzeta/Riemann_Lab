@@ -2,8 +2,13 @@
 # build_pdf_riemann.sh — convertit un .md (wiki Riemann_Lab) en PDF scientifique (style hprzeta)
 # Usage : ./build_pdf_riemann.sh chemin/source.md [sortie.pdf]
 # Dépend : pandoc, xelatex (texlive), latexmk, polices DejaVu. Auteur : hprzeta.
+# Date du pied de page en français (corrigé le 2026-11-11) : DATE_FR calculée dans ce script, sans dépendre de la locale.
 set -euo pipefail
 export LANG=C.UTF-8 LC_ALL=C.UTF-8
+# Date en français, calculée ici (indépendante de la locale et de LC_ALL=C.UTF-8) : « 1er » pour le premier du mois.
+MOIS=(janvier février mars avril mai juin juillet août septembre octobre novembre décembre)
+JOUR="$(date +%-d)"; [ "$JOUR" = 1 ] && JOUR="1er"
+DATE_FR="$JOUR ${MOIS[$(( $(date +%-m) - 1 ))]} $(date +%Y)"
 SRC="$1"
 OUT="${2:-$(basename "${SRC%.md}").pdf}"
 BASE="$(basename "$SRC")"
@@ -19,10 +24,11 @@ cat > "$WORK/header.tex" << 'EOF'
 \date{\small Auteur : hprzeta --- \today}
 EOF
 
+sed -i "s/\\\\today/$DATE_FR/" "$WORK/header.tex"   # \date de l'en-tête : date française
 # 2) Pré-traitement : titre H1, emojis, mermaid, marqueurs, pipes nus dans les maths
-python3 - "$SRC" "$WORK" "$BASE" << 'PY'
+python3 - "$SRC" "$WORK" "$BASE" "$DATE_FR" << 'PY'
 import re, sys
-src, work, base = sys.argv[1], sys.argv[2], sys.argv[3]
+src, work, base, date_fr = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 s = open(src, encoding='utf-8').read()
 s = re.sub(r'[\U0001F000-\U0001FAFF\u2B50\u270F\uFE0F\u2699]', '', s)          # emojis
 s = re.sub(r'```mermaid.*?```', '> *(Diagramme Mermaid — version interactive sur le wiki.)*', s, flags=re.S)
@@ -36,7 +42,7 @@ open(f'{work}/body.md','w',encoding='utf-8').write(f'---\ntitle: "{title}"\n---\
 esc = base.replace('_', r'\_')
 open(f'{work}/footer.tex','w',encoding='utf-8').write(
   '\\vfill\n\\noindent\\rule{\\textwidth}{0.4pt}\\\\\n'
-  '{\\small Document créé le \\today{} --- source \\texttt{'+esc+'} --- Riemann\\_Lab --- hprzeta}\n')
+  '{\\small Document créé le '+date_fr+' --- source \\texttt{'+esc+'} --- Riemann\\_Lab --- hprzeta}\n')
 print("Titre:", title)
 PY
 
