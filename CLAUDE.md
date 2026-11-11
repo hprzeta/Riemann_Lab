@@ -296,6 +296,7 @@ sudo scripts/zeta_turbo_off.sh       # restaurer à la main (équivalent du « b
 - Dépôt : branche `Riemann_Lab_IA` uniquement (convention `pdf/<sujet>/`), sans cherry-pick sur les autres branches. Audit avant commit (IP, MAC, clés, tokens, e-mails) ; captures de pages publiques seulement ; les listes matériel `~/zeta_inventaire/MATERIEL/` restent privées et n'entrent jamais dans ce dossier.
 - Dépôt dans le projet claude.ai « SITE ZETA » : manuel (glisser-déposer par hprzeta, après suppression des anciennes versions du même fichier).
 - Aucun `git add` / commit / push sans validation explicite de hprzeta.
+- **Claude in Chrome toujours ouvert sur la page modifiée (règle du 11/11/2026)** : pour toute modification du site (`docs/index.html`, animations, pages du wiki), ouvrir Claude in Chrome sur la page en question pour que hprzeta voie le changement (aperçu local avant commit, page en ligne après push). Aucune modification du site sans Claude in Chrome activé.
 
 ---
 
@@ -323,4 +324,4 @@ sudo scripts/zeta_turbo_off.sh       # restaurer à la main (équivalent du « b
 > (elle change à chaque session ; ce fichier doit rester stable).
 
 ---
-*CLAUDE.md - racine - source Riemann_Lab_C (sync 4 branches) - hprzeta - Mis à jour le 2026-11-11 — 326 lignes*
+*CLAUDE.md - racine - source Riemann_Lab_C (sync 4 branches) - hprzeta - Mis à jour le 2026-11-11 — 327 lignes*
