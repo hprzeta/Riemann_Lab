@@ -1,5 +1,5 @@
 #!/bin/sh
-# zeta_diag_publier.sh — copie les diagnostics privés (A) vers la version publiable (B), sans IP ni MAC.
+# zeta_diag_publier.sh — copie les diagnostics privés (A) vers la version publiable (B), sans IP, MAC ni e-mail.
 # A (privé)  : ~/zeta_inventaire/DIAGNOSTIC
 # B (dépôt)  : ~/projet_zeta/docs/diagnostics   (aucun git add/commit ici)
 SRC="$HOME/zeta_inventaire/DIAGNOSTIC"
@@ -11,6 +11,7 @@ for f in "$SRC"/*.md; do
     -e 's/([0-9a-fA-F]{2}[:-]){5}[0-9a-fA-F]{2}/<MAC>/g' \
     -e 's/[0-9a-fA-F]{1,4}(:[0-9a-fA-F]{1,4}){3,7}(::)?(\/[0-9]+)?/<IPv6>/g' \
     -e 's/[0-9]{1,3}(\.[0-9]{1,3}){3}(\/[0-9]+)?/<IP>/g' \
+    -e 's/[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/[EMAIL]/g' \
     "$f" > "$DST/$(basename "$f")"
   echo "copié : $(basename "$f")"
 done
