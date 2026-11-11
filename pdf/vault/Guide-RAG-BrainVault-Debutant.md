@@ -1,7 +1,7 @@
 # 🧠 Guide RAG / BrainVault pour débutant — comprendre et surveiller la partie IA de Riemann_Lab
 
 > **Fichier :** Guide-RAG-BrainVault-Debutant.md · **Dossier :** wiki (racine)
-> **Branche :** master (wiki) · **Auteur :** hprzeta · **MAJ :** 2026-07-19
+> **Branche :** master (wiki) · **Auteur :** hprzeta · **MAJ :** 2026-11-11
 
 > 🧭 **Rôle de cette page.** Expliquer **sans jargon** comment fonctionne le cerveau IA du projet
 > (le RAG « BrainVault » sur le SSD `/mnt/vault_rag`), ce que sont tous ces fichiers mystérieux
@@ -40,12 +40,12 @@ Sans RAG, il inventerait (« hallucination »). Avec RAG, il consulte.
 |---|---|---|
 | **LLM** | Le « cerveau » : un modèle de langage qui lit et écrit du texte | `mathstral` (spécialisé maths), `deepseek-coder`, `qwen3` via Ollama |
 | **Ollama** | Le logiciel qui fait tourner les LLM **en local** sur ton PC (pas de cloud) | modèles stockés sur `/mnt/data/models_ia/ollama/` |
-| **Chunk** | Un **morceau** de document (~quelques paragraphes). On découpe car le LLM ne peut pas tout lire d'un coup | 106 documents → **838 chunks** |
+| **Chunk** | Un **morceau** de document (~quelques paragraphes). On découpe car le LLM ne peut pas tout lire d'un coup | **1258 chunks** depuis la réingestion du 04/10/2026 (838 chunks, 106 documents, à l'ingestion initiale du 05/07) |
 | **Embedding** | La **traduction d'un texte en nombres** : une liste de 384 nombres qui capture le *sens* du texte | modèle `all-MiniLM-L6-v2` |
 | **Vecteur** | Cette liste de nombres, vue comme une **flèche dans un espace à 384 dimensions**. Deux textes de sens proche → flèches qui pointent presque dans la même direction | 1 chunk = 1 vecteur de 384 nombres |
 | **Similarité** | La mesure « ces deux flèches pointent-elles dans la même direction ? » (angle entre vecteurs). C'est ça, la **recherche sémantique** : par le SENS, pas par les mots exacts | « seuil Newton » retrouve « SEUIL_1NEWTON=20000 » même sans mot commun |
 | **Base vectorielle** | La base de données qui stocke tous les vecteurs et sait trouver les plus proches **très vite** | **ChromaDB** dans `/mnt/vault_rag/chromadb/` |
-| **Collection** | Un « rayon » de la base vectorielle (un ensemble de chunks) | `riemann_lab_corpus` (838 chunks) |
+| **Collection** | Un « rayon » de la base vectorielle (un ensemble de chunks) | `riemann_lab_corpus` (1258 chunks au 04/10/2026 ; 838 au 05/07) |
 | **HNSW** | L'astuce qui rend la recherche instantanée : un réseau de « raccourcis » entre vecteurs voisins, comme un GPS qui évite de tester toutes les routes | fichier `link_lists.bin` |
 | **LlamaIndex** | Le **chef d'orchestre** : lit les documents, découpe en chunks, appelle l'embedding, remplit ChromaDB, puis pilote les requêtes | installé dans `zeta_env` (core 0.14.23) |
 | **Ingestion** | L'opération « remplir la bibliothèque » : documents → chunks → vecteurs → ChromaDB | log : `agent_logs/ingestion_20260705_140201.log` |
@@ -69,7 +69,7 @@ Sans RAG, il inventerait (« hallucination »). Avec RAG, il consulte.
                           └──────────────────────────┘   │ llamaindex_cache/*.json   │
                                                          │ agent_logs/ingestion_*.log│
                                                          └───────────────────────────┘
-                               106 docs → 838 chunks → 838 vecteurs
+         05/07 : 106 docs → 838 chunks → 838 vecteurs · 04/10 : réingestion → 1258 chunks
 ```
 
 ### Phase B — Requête (chaque question posée au RAG)
@@ -110,7 +110,7 @@ Ce qu'on voit dans `/mnt/vault_rag/` après l'ingestion :
 | Fichier / dossier | Rôle | Analogie |
 |---|---|---|
 | `chromadb/chroma.sqlite3` | **Métastore** : le texte des chunks, leurs métadonnées (fichier source, date), la liste des collections | Le **catalogue** de la bibliothèque |
-| `chromadb/<uuid>/data_level0.bin` | Les **vecteurs** eux-mêmes (838 × 384 nombres) | Les fiches de sens de chaque passage |
+| `chromadb/<uuid>/data_level0.bin` | Les **vecteurs** eux-mêmes (1258 × 384 nombres depuis le 04/10/2026 ; 838 × 384 avant) | Les fiches de sens de chaque passage |
 | `chromadb/<uuid>/link_lists.bin` | Le graphe **HNSW** : les raccourcis entre vecteurs voisins | Le plan des rayons pour trouver vite |
 | `chromadb/<uuid>/header.bin`, `length.bin` | Paramètres de l'index, tailles des entrées | Étiquettes techniques |
 | `llamaindex_cache/docstore.json` | Les chunks avec leur texte et provenance, côté LlamaIndex | Photocopies des passages |
@@ -231,7 +231,7 @@ fixé à l'avance, ex. K=6). Seuls ces K chunks sont donnés à mathstral pour g
 Question posée
       │
       ▼
-ChromaDB calcule la distance entre la question et les 838 chunks
+ChromaDB calcule la distance entre la question et les 1258 chunks (838 avant le 04/10/2026)
       │
       ▼
 Tri par distance croissante :
@@ -268,7 +268,7 @@ Résultat : les distances de **tout le corpus** se retrouvent entassées entre 1
 | Changer de modèle d'embedding | Moyen | Meilleure discrimination, mais **ré-ingestion complète obligatoire** |
 | Améliorer le chunking (garder code + contexte ensemble) | Long | Chunks plus riches sémantiquement |
 
-> ⚠️ Changer le modèle d'embedding = tout refaire : les 838 vecteurs actuels deviennent
+> ⚠️ Changer le modèle d'embedding = tout refaire : les 1258 vecteurs actuels (838 avant le 04/10/2026) deviennent
 > inutilisables car calculés avec l'ancien modèle. Les deux modèles parlent des "langues de
 > nombres" incompatibles.
 
@@ -355,6 +355,7 @@ Deux faux positifs trouvés et corrigés dans la même session :
 | 8. Fix faux positifs (basename + séparateurs milliers) | ✅ | 19/07 (`3307bad`) |
 | 9. Améliorer le retrieval (K, modèle embedding, chunking) | 🔜 | — |
 | 10. Parcours Skilljar (API → MCP → Subagents → Agent Skills) | 🔜 | — |
+| 11. Réingestion du corpus : **1258 passages** (contre 838) ; `rag_query.py` avec `--k 4` par défaut et avertissement si le prompt dépasse la fenêtre d'Ollama (4096 tokens) | ✅ | 04/10 |
 
 **Chantier RAG 3 blocs considéré clos.** La base est industrialisée et durcie.
 Prochaine décision : améliorer le retrieval (§7) ou passer au parcours Skilljar.
@@ -371,4 +372,4 @@ Prochaine décision : améliorer le retrieval (§7) ou passer au parcours Skillj
 - `scripts/rag_query.py` — script RAG industrialisé (commit `3307bad`)
 
 ---
-*Guide-RAG-BrainVault-Debutant.md · wiki racine · branche master · hprzeta · MAJ 2026-07-19 · 374 lignes*
+*Guide-RAG-BrainVault-Debutant.md · wiki racine · branche master · hprzeta · MAJ 2026-11-11 · 375 lignes*
