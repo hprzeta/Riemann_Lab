@@ -628,7 +628,7 @@
     <div class="subtitle">
       <span class="badge gold">Ubuntu 24.04</span>
       <span class="badge gold">Python · mpmath</span>
-      <span class="badge gold">138 069 zéros validés · v16 · 0 manquant ✅ · Obj2 atteint 04/07/2026, amélioré 08/08/2026</span>
+      <span class="badge gold">138 069 zéros validés · V17 en production (03/11/2026) · 0 manquant ✅ · Obj2 atteint 04/07/2026</span>
     </div>
   </header>
 
@@ -711,6 +711,42 @@
       <span class="lc-desc">Définition, Stirling, équation fonctionnelle, Backlund — 3 animations simultanées.</span>
       <span class="lc-arrow">↗</span>
     </a>
+    <a href="animation_zeros_non_triviaux.html" class="link-card" style="border-top:1px solid var(--border);">
+      <span class="lc-icon">∅</span>
+      <span class="lc-title">Zéros non triviaux</span>
+      <span class="lc-desc">Plan \(\mathbb{C}\) + \(Z(t)\) de Hardy : changements de signe et droite critique.</span>
+      <span class="lc-arrow">↗</span>
+    </a>
+    <a href="animation_mur_latence.html" class="link-card" style="border-top:1px solid var(--border);">
+      <span class="lc-icon">⚡</span>
+      <span class="lc-title">Mur de latence</span>
+      <span class="lc-desc">Goulot \(O(\sqrt{t})\) de Riemann-Siegel, performance v4.1.</span>
+      <span class="lc-arrow">↗</span>
+    </a>
+    <a href="animation_gaps_gue.html" class="link-card" style="border-top:1px solid var(--border);">
+      <span class="lc-icon">Δ</span>
+      <span class="lc-title">Distribution des gaps — GUE vs STEP</span>
+      <span class="lc-desc">Loi de Wigner, choix du pas STEP, zéros manquants.</span>
+      <span class="lc-arrow">↗</span>
+    </a>
+    <a href="animation_illinois_adaptatif.html" class="link-card" style="border-top:1px solid var(--border);">
+      <span class="lc-icon">⟳</span>
+      <span class="lc-title">Illinois adaptatif — v7</span>
+      <span class="lc-desc">Affinage en 2 phases de calcul (v6 contre v7).</span>
+      <span class="lc-arrow">↗</span>
+    </a>
+    <a href="animation_ntermes_rs.html" class="link-card" style="border-top:1px solid var(--border);">
+      <span class="lc-icon">√</span>
+      <span class="lc-title">Coût RS — N_termes</span>
+      <span class="lc-desc">Nombre de termes, goulot de l'affinage, vitesse en \(1/\sqrt{t}\).</span>
+      <span class="lc-arrow">↗</span>
+    </a>
+    <a href="animation_prec_mpfr.html" class="link-card" style="border-top:1px solid var(--border);">
+      <span class="lc-icon">⚙</span>
+      <span class="lc-title">Précision mpfr &amp; limbs</span>
+      <span class="lc-desc">Pourquoi 64 bits (1 limb, SIMD) est ×16 plus rapide que 116 bits.</span>
+      <span class="lc-arrow">↗</span>
+    </a>
   </div>
 
   <div class="stats">
@@ -736,13 +772,14 @@
         <span class="step-num">01</span>
         <div class="step-body">
           <h3>Calcul des zéros non triviaux</h3>
-          <p>v16 opérationnel — Illinois hybride 2-phases + cache RS 33 KB + Phase 2 adaptative
-             (SEUIL_1NEWTON=20k) + <strong>Z_arb à précision fixe</strong> (acb_dirichlet_hardy_z,
-             64 bits, remplace l'escalade automatique arb_fpwrap ~1e-16 surdimensionnée vs le
-             besoin réel 1e-12). <strong>138&nbsp;069 zéros</strong> calculés jusqu'à T=100&nbsp;000 en
-             <strong>1.6 min</strong> · 1407 z/s (avec turbo) · <strong>0 manquant</strong>.
-             Turing-Backlund COMPLET ✅ · LMFDB 20/20 ✅ · ×2.75 vs v15 · ×787.5 vs v1.</p>
-          <div class="pill done">Opérationnel — v16 ⭐ · Objectif 2 largement dépassé ✅</div>
+          <p>V17 en production depuis le 03/11/2026 : la v16 (Illinois hybride 2-phases, Z_arb à précision fixe)
+             <strong>durcie</strong> — <strong>consolider()</strong> à la place de la déduplication à 0,01, journal JSONL
+             des échecs, checkpoints atomiques, élargissement du bracket. <strong>138&nbsp;069 zéros</strong>
+             jusqu'à T=100&nbsp;000 · Turing-Backlund COMPLET ✅ : <strong>1,84 min</strong> en distribué PC1+PC2,
+             <strong>2 min 40 s</strong> sur PC1 seul (mesures du 05/11/2026). Historique : v16 = 1.6 min · 1407 z/s
+             (PC1 seul, turbo). La V17 vise la fiabilité, pas la vitesse. Plus haut : T=400&nbsp;000 → 640&nbsp;526 zéros ;
+             T=5·10⁶ → 10&nbsp;016&nbsp;474 zéros (référence interne).</p>
+          <div class="pill done">Opérationnel — V17 ⭐ · Objectif 2 largement dépassé ✅</div>
         </div>
         <div class="step-stat status-done">
           138&nbsp;069<br>
@@ -754,9 +791,10 @@
         <span class="step-num">02</span>
         <div class="step-body">
           <h3>Visualisations avancées</h3>
-          <p>8 animations interactives en ligne — \(\theta(t)\), \(Z(t)\), plan \(\mathbb{C}\),
-             Gamma, Dirichlet, produit eulérien, distribution des zéros, mur de latence.</p>
-          <div class="pill done">8 animations en ligne</div>
+          <p>12 animations interactives en ligne — \(\theta(t)\), \(Z(t)\), plan \(\mathbb{C}\),
+             Gamma, Dirichlet, produit eulérien, distribution des zéros, mur de latence, gaps GUE vs STEP,
+             Illinois adaptatif, coût RS, précision mpfr.</p>
+          <div class="pill done">12 animations en ligne</div>
         </div>
         <div class="step-stat status-done">En ligne</div>
       </div>
@@ -765,8 +803,9 @@
         <span class="step-num">03</span>
         <div class="step-body">
           <h3>Intelligence artificielle locale</h3>
-          <p>BrainVault structuré — inbox-ia opérationnel, 26 pavés ingérés (PDF → MD).
-             Ollama + Mathstral : exploratoire. RAG non encore opérationnel.</p>
+          <p>BrainVault : RAG réingéré le 04/10/2026 (<strong>1258 passages</strong>), script rag_query.py utilisable
+             (--k 4). Test de fumée sur 3 questions : aucune valeur inventée, mais le modèle recopie parfois un
+             passage hors sujet. Ollama + Mathstral : exploratoire.</p>
           <div class="pill wip">Exploratoire</div>
         </div>
         <div class="step-stat status-wip">WIP</div>
@@ -1091,6 +1130,30 @@
       <span class="cc-desc">Espacements normalisés · loi de Wigner GUE · Poisson · \(N(T)\) interactif · connexion matrices aléatoires</span>
       <span class="cc-status status-active">● disponible</span>
     </a>
+    <a href="animation_gaps_gue.html" class="cours-card">
+      <span class="cc-level">Animation</span>
+      <span class="cc-title">Δ Distribution des gaps — GUE vs STEP</span>
+      <span class="cc-desc">Loi de Wigner · choix de STEP · zéros manquants</span>
+      <span class="cc-status status-active">● disponible</span>
+    </a>
+    <a href="animation_illinois_adaptatif.html" class="cours-card">
+      <span class="cc-level">Animation</span>
+      <span class="cc-title">⟳ Illinois adaptatif — v7 : 2 phases de calcul</span>
+      <span class="cc-desc">10 itérations Illinois · phase rapide puis phase pleine précision</span>
+      <span class="cc-status status-active">● disponible</span>
+    </a>
+    <a href="animation_ntermes_rs.html" class="cours-card">
+      <span class="cc-level">Animation</span>
+      <span class="cc-title">√ Coût RS — N_termes et bottleneck illinois_C</span>
+      <span class="cc-desc">Nombre de termes Riemann-Siegel · vitesse en \(1/\sqrt{t}\)</span>
+      <span class="cc-status status-active">● disponible</span>
+    </a>
+    <a href="animation_prec_mpfr.html" class="cours-card">
+      <span class="cc-level">Animation</span>
+      <span class="cc-title">⚙ Précision mpfr &amp; limbs — le vrai levier v7</span>
+      <span class="cc-desc">Limbs · SIMD · ×16 sur le goulot, ×3.7 global</span>
+      <span class="cc-status status-active">● disponible</span>
+    </a>
   </div>
 
   <div class="section-title">Ressources</div>
@@ -1110,7 +1173,7 @@
     <a href="https://github.com/hprzeta/Riemann_Lab/issues" target="_blank" class="link-card">
       <span class="lc-icon">⚠</span>
       <span class="lc-title">Issues ouvertes</span>
-      <span class="lc-desc">Vérif B [300,700] complète · goulot O(√t) à grands t</span>
+      <span class="lc-desc">4 ouvertes (#2 à #5, du 14/04/2026) : plan des Étapes 1 à 4 — calcul et vérification, visualisations, IA locale, Lean 4 · suivi à jour : wiki (Handoff, Roadmap)</span>
       <span class="lc-arrow">↗</span>
     </a>
   </div>
@@ -1364,7 +1427,7 @@
 <section style="padding: 3rem 2rem; max-width: 900px; margin: 0 auto;">
   <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
     <div style="width: 2rem; height: 1px; background: #c9a84c;"></div>
-    <span style="font-size: 0.75rem; letter-spacing: 0.15em; color: #c9a84c;">PROGRESSION V1 → V16</span>
+    <span style="font-size: 0.75rem; letter-spacing: 0.15em; color: #c9a84c;">PROGRESSION V1 → V17</span>
   </div>
   <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 1.5rem;">
     <div style="background:#1a1a1a; border-radius:8px; padding:0.75rem; text-align:center;">
@@ -1565,13 +1628,13 @@
         <td style="padding:10px 12px; color:#c9a84c; font-size:12px;"><a class="formula-link" style="border-bottom-color: rgba(201,168,76,0.4);" href="https://github.com/hprzeta/Riemann_Lab/wiki/Bibliotheques#18--v16--z_arb-à-précision-fixe--acb_dirichlet_hardy_z-remplace-arb_fpwrap-2026-08-08" target="_blank">acb_dirichlet_hardy_z 64 bits</a> (remplace arb_fpwrap, escalade ~1e-16 surdimensionnée) · T=100k · 1.6 min · LMFDB 20/20 ✅ · Obj2 ✅✅</td>
         <td style="padding:10px 12px; font-size:12px;"><a class="analyse-link" style="color: var(--gold2); border-bottom-color: rgba(201,168,76,0.4);" href="https://github.com/hprzeta/Riemann_Lab/blob/main/pdf/optimisation/analyse_problemes_v1_v16.pdf" target="_blank">rapport global v1→v16 (PDF) ↗</a></td>
       </tr>
-      <tr style="border-bottom:1px solid #222; border-top:1px dashed #444;">
-        <td style="padding:10px 12px; color:#888; font-weight:500;">v17 <span style="font-size:11px;">(en préparation)</span></td>
-        <td style="padding:10px 12px; color:#555;">—</td>
-        <td style="padding:10px 12px; color:#555;">—</td>
-        <td style="padding:10px 12px; color:#888;">Audit de v16 · aucun code modifié</td>
-        <td style="padding:10px 12px; color:#666; font-size:12px;">Référence T=100k : 6 runs identiques (138 069 zéros, LMFDB 20/20) · test T1b sur [4,90 M ; 4,986 M] : la déduplication à 0,01 a supprimé <strong>4 vraies paires</strong> de zéros (écarts 0,003 à 0,008, confirmées par mpmath) en plus de 7 doublons de frontière · un seul intervalle, à étendre</td>
-        <td style="padding:10px 12px; font-size:12px;"><a class="analyse-link" href="https://github.com/hprzeta/Riemann_Lab/blob/main/pdf/optimisation/analyse_problemes_v16_v17.pdf" target="_blank">v16→v17 (PDF) ↗</a></td>
+      <tr style="background:#0d1a0d; border-top:1px dashed #444;">
+        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">V17 ✦</td>
+        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">138 069 zéros en 1,84 min (PC1+PC2) · 2 min 40 s (PC1 seul)</td>
+        <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">durcissement — pas un gain de vitesse</td>
+        <td style="padding:10px 12px; color:#c9a84c;">v16 durcie · consolider() · journal d'échecs</td>
+        <td style="padding:10px 12px; color:#c9a84c; font-size:12px;">En production depuis le 03/11/2026 : v17-a journal JSONL des échecs · v17-b CSV enrichi · v17-c checkpoints atomiques · v17-d <strong>consolider()</strong> (remplace la déduplication à 0,01, qui supprimait de vraies paires) · bracket élargi · marge max(1e-10, 2·ulp(t)) · rescan décalé STEP/3 (gain non mesurable) · T=400 000 : 640 526 zéros · T=5·10⁶ : 97 manquants retrouvés</td>
+        <td style="padding:10px 12px; font-size:12px;"><a class="analyse-link" style="color: var(--gold2); border-bottom-color: rgba(201,168,76,0.4);" href="https://github.com/hprzeta/Riemann_Lab/blob/main/pdf/optimisation/analyse_problemes_v16_v17.pdf" target="_blank">v16→v17 (PDF) ↗</a></td>
       </tr>
     </tbody>
   </table>
@@ -1590,7 +1653,7 @@
     </div>
   </div>
 </section>
-<!-- FIN SECTION PROGRESSION V1→V16 -->
+<!-- FIN SECTION PROGRESSION V1→V17 -->
 
   <!-- ══ CLUSTER ZETA ══ -->
   <section id="cluster" style="margin: 3rem 0;">
@@ -1605,7 +1668,7 @@
         <p><strong>RAM :</strong> 16 GB + 16 GB swap</p>
         <p><strong>GPU :</strong> NVIDIA GTX 960M 4 GB</p>
         <p><strong>OS :</strong> Ubuntu Linux</p>
-        <p><strong>Vitesse :</strong> 1407 z/s (v16) · 517 z/s (v15)</p>
+        <p><strong>Vitesse :</strong> V17 à T=100 000 : 2 min 40 s (PC1 seul) · historique : 1407 z/s (v16, turbo) · 517 z/s (v15)</p>
         <span class="cluster-badge green">✅ Actif — Calcul</span>
       </div>
 
@@ -1664,25 +1727,41 @@
     </div>
 
     <div class="cluster-perf" style="margin-top:1.5rem;">
-      <h3>📊 Run T=5 000 000 — v13 — PC1 seul — Terminé 30 juin 2026</h3>
+      <h3>📊 V17 — mesures du 03 au 07/11/2026</h3>
+      <table>
+        <tr><th>Configuration</th><th>T</th><th>Zéros</th><th>Durée</th><th>Statut</th></tr>
+        <tr><td>PC1+PC2 distribué</td><td>1 000</td><td>649</td><td>—</td><td>✅ Turing COMPLET · 0 écart avec le run du 03/11</td></tr>
+        <tr><td>PC1+PC2 distribué</td><td>20 000</td><td>22 491</td><td>0,53 min</td><td>✅ Turing COMPLET</td></tr>
+        <tr><td>PC1+PC2 distribué</td><td>100 000</td><td>138 069</td><td>1,84 min</td><td>✅ Turing COMPLET</td></tr>
+        <tr><td>PC1 seul</td><td>100 000</td><td>138 069</td><td>2 min 40 s</td><td>—</td></tr>
+        <tr><td>PC1+PC2 distribué</td><td>1 000 000</td><td>1 747 146</td><td>49,34 min</td><td>✅ Turing COMPLET</td></tr>
+        <tr><td>run de production</td><td>400 000</td><td>640 526</td><td>10 h 24</td><td>✅ Turing COMPLET (3 zéros hors bracket corrigés)</td></tr>
+      </table>
+      <p style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);margin-top:0.75rem;">
+        <em>Les écarts entre le jeu distribué et le jeu PC1 seul (max 3,35·10⁻⁸ à T=100 000) viennent de la partition de la grille, pas de PC2 · à T=100 000 PC2 est sous-utilisé</em>
+      </p>
+    </div>
+
+    <div class="cluster-perf" style="margin-top:1.5rem;">
+      <h3>📊 Run T=5 000 000 — v13 — PC1 seul — Terminé 30 juin 2026 · complété le 05/11/2026</h3>
       <table>
         <tr><th>Paramètre</th><th>Valeur</th></tr>
         <tr><td>Zéros attendus N(5M)</td><td>10 016 473</td></tr>
-        <tr><td>Zéros trouvés</td><td>10 016 377</td></tr>
-        <tr><td>Manquants</td><td>96 — paires de zéros proches, pas de changement de signe visible sur grille Z_double</td></tr>
-        <tr><td>REJECT / FALLBACK arb</td><td>0 ✅ confirmé par ZETA_DEBUG_BRACKETS</td></tr>
-        <tr><td>Illinois</td><td>correct — tous les brackets fournis bien affinés</td></tr>
+        <tr><td>Zéros trouvés</td><td>10 016 377 (v13) + 97 retrouvés le 05/11/2026 = <strong>10 016 474</strong> · Turing COMPLET ✅</td></tr>
+        <tr><td>Manquants</td><td>97 (le journal de juin disait 96), tous confirmés par mpmath.siegelz · 84 vraies paires supprimées par la déduplication à 0,01 + 13 zéros isolés (mesuré le 05/11 ; ≈ 85 + ≈ 12 dans l'analyse du 01/11)</td></tr>
+        <tr><td>REJECT / FALLBACK arb</td><td>0 en juin (ZETA_DEBUG_BRACKETS) · les 13 isolés sont collés à un point de grille d'un worker (≤ 6·10⁻⁷) : association confirmée, mécanisme reproduit sur 3 zéros seulement</td></tr>
+        <tr><td>Illinois</td><td>correct pour la quasi-totalité des brackets ; la cause principale du déficit est la déduplication, pas l'affinage</td></tr>
         <tr><td>Durée</td><td>~35h (loi T^1.5)</td></tr>
       </table>
       <p style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);margin-top:0.75rem;">
-        <em>Piste : v16 T=5M (gain ×2.75 supplémentaire vs v15 mesuré à T=100k, non encore mesuré à cette échelle) — même STEP → 96 manquants probablement identiques · rescan ciblé STEP/2 pour réduction</em>
+        <em>Jeu fusionné = référence interne 5·10⁶ (SHA-256 b3a98a34…), publication non décidée · V17 : rescan décalé de STEP/3, gain non mesurable en conditions réelles (rejeu sur les 13 isolés : le scan principal les retrouve déjà)</em>
       </p>
     </div>
   </section>
   <!-- FIN CLUSTER ZETA -->
 
   <footer>
-    <p>hprzeta · Riemann Lab · août 2026</p>
+    <p>hprzeta · Riemann Lab · novembre 2026 · mis à jour le 11/11/2026</p>
     <p>
       <a href="https://github.com/hprzeta/Riemann_Lab" target="_blank">GitHub</a>
       &nbsp;·&nbsp;
