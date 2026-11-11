@@ -31,6 +31,17 @@ s = re.sub(r'[\U0001F000-\U0001FAFF\u2B50\u270F\uFE0F\u2699]', '', s)
 s = re.sub(r'```mermaid.*?```', '> *(Diagramme Mermaid — version interactive sur le wiki.)*', s, flags=re.S)
 s = s.replace('✅', r'$\checkmark$').replace('❌', r'$\times$').replace('⚠', '(!)')
 s = s.replace(r'$|z|$', r'$\lvert z\rvert$')
+# \lstinline (code en ligne) ne supporte pas l'Unicode sous lualatex (erreur « Undefined control sequence ») :
+# translitterer les spans `...` contenant des caracteres non ASCII ; les blocs ``` ... ``` ne sont pas touches (corrige le 2026-11-11).
+_TR = {'≤': '<=', '≥': '>=', '×': 'x', '·': '.', '→': '->', '←': '<-', '−': '-', '–': '-', '—': '-', '…': '...', '’': "'", '«': '"', '»': '"',
+       'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e', 'à': 'a', 'â': 'a', 'ç': 'c', 'ô': 'o', 'î': 'i', 'ï': 'i', 'û': 'u', 'ù': 'u', 'É': 'E', '°': 'deg'}
+def _code_ascii(m):
+    t = m.group(1)
+    if t.isascii(): return m.group(0)
+    for k, v in _TR.items(): t = t.replace(k, v)
+    return '`' + ''.join(c if c.isascii() else '?' for c in t) + '`'
+_parts = re.split(r'(```.*?```)', s, flags=re.S)
+s = ''.join(p if i % 2 else re.sub(r'(?<!`)`([^`\n]+)`(?!`)', _code_ascii, p) for i, p in enumerate(_parts))
 lines=s.splitlines(); title=''; out=[]
 for l in lines:
     if not title and l.startswith('# '): title=l[2:].strip(); continue
