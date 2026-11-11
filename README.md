@@ -12,12 +12,12 @@
 | ![GitHub Issues personnelles](https://img.shields.io/badge/issues-personnelles-blue) | [Mes issues assignées](https://github.com/issues?q=is%3Aopen+assignee%3Ahprzeta) |
 | ![GitHub Project](https://img.shields.io/badge/Project-Kanban-blue) | [Voir le Kanban](https://github.com/users/hprzeta/projects/1) |
 
-## 🚀 État actuel — juillet 2026
+## 🚀 État actuel — novembre 2026
 
 | Métrique | Valeur |
 |---|---|
-| Zéros calculés | **10 016 377** (T=5M, 96 manquants) |
-| Pipeline | **v15** · Illinois hybride `arb_C` · `SEUIL_1NEWTON=20k` · 517 z/s · T=100k en **4.4 min** |
+| Zéros calculés | **10 016 474** (T=5·10⁶ : jeu V13 + 97 zéros retrouvés le 05/11/2026, Turing complet · référence interne, publication non décidée) |
+| Pipeline | **V17** (en production depuis le 03/11/2026) · v16 durcie : `consolider()`, journal d'échecs, checkpoints atomiques · T=100k : 138 069 zéros en **1,84 min** (distribué PC1+PC2) · **2 min 40 s** (PC1 seul) |
 | 🌐 Site | [https://hprzeta.github.io/Riemann_Lab/](https://hprzeta.github.io/Riemann_Lab/) |
 | 📚 Wiki | [https://github.com/hprzeta/Riemann_Lab/wiki](https://github.com/hprzeta/Riemann_Lab/wiki) |
 | 💡 Config matérielle | [Wiki — Configuration-Materielle-Logicielle](https://github.com/hprzeta/Riemann_Lab/wiki/Configuration-Materielle-Logicielle) |
@@ -39,7 +39,7 @@ Le projet combine :
 > 📄 Cette section est documentée en détail sur le Wiki :
 > **[Wiki — Configuration Matérielle & Logicielle](https://github.com/hprzeta/Riemann_Lab/wiki/Configuration-Materielle-Logicielle)**
 >
-> Contenu : matériel (i7-7500U, GTX 960M, RAM 8Go), structure projet, organisation `src/`,
+> Contenu : matériel (i7-7500U, GTX 960M, RAM 16 Go), structure projet, organisation `src/`,
 > bibliothèques, fichiers générés dans `/mnt/data`, scripts d'installation.
 
 ## 📊 Résultats des tests Démo d'exploration de ζ(s)
