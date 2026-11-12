@@ -1644,7 +1644,7 @@
         <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">138 069 zéros en 1,84 min (PC1+PC2) · 2 min 40 s (PC1 seul)</td>
         <td style="padding:10px 12px; color:#c9a84c; font-weight:500;">durcissement — pas un gain de vitesse</td>
         <td style="padding:10px 12px; color:#c9a84c;">v16 durcie · consolider() · journal d'échecs</td>
-        <td style="padding:10px 12px; color:#c9a84c; font-size:12px;">En production depuis le 03/11/2026 : v17-a journal JSONL des échecs · v17-b CSV enrichi · v17-c checkpoints atomiques · v17-d <strong>consolider()</strong> (remplace la déduplication à 0,01, qui supprimait de vraies paires) · bracket élargi · marge max(1e-10, 2·ulp(t)) · rescan décalé STEP/3 (gain non mesurable) · T=400 000 : 640 526 zéros · T=5·10⁶ : 97 manquants retrouvés</td>
+        <td style="padding:10px 12px; color:#c9a84c; font-size:12px;">En production depuis le 03/11/2026 : v17-a journal JSONL des échecs · v17-b CSV enrichi · v17-c checkpoints atomiques · v17-d <strong>consolider()</strong> (remplace la déduplication à 0,01, qui supprimait de vraies paires) · bracket élargi · marge max(1e-10, 2·ulp(t)) · rescan décalé STEP/3 (gain mesuré le 07/11 sur un déficit fabriqué, non transposable tel quel à la production) · T=400 000 : 640 526 zéros · T=5·10⁶ : 97 manquants retrouvés</td>
         <td style="padding:10px 12px; font-size:12px;"><a class="analyse-link" style="color: var(--gold2); border-bottom-color: rgba(201,168,76,0.4);" href="https://github.com/hprzeta/Riemann_Lab/blob/main/pdf/optimisation/analyse_problemes_v16_v17.pdf" target="_blank">v16→v17 (PDF) ↗</a></td>
       </tr>
     </tbody>
@@ -1765,7 +1765,7 @@
         <tr><td>Durée</td><td>~35h (loi T^1.5)</td></tr>
       </table>
       <p style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);margin-top:0.75rem;">
-        <em>Jeu fusionné = référence interne 5·10⁶ (SHA-256 b3a98a34…), publication non décidée · V17 : rescan décalé de STEP/3, gain non mesurable en conditions réelles (rejeu sur les 13 isolés : le scan principal les retrouve déjà)</em>
+        <em>Jeu fusionné = référence interne 5·10⁶ (SHA-256 b3a98a34…), publication non décidée · V17 : rescan décalé de STEP/3, gain mesuré le 07/11/2026 avec un déficit fabriqué (STEP de scan 0,20 à 0,45, très supérieur à la production) : à 10⁵ (31 095 zéros), 36/118/385 manquants restants en phase 1/3 contre 66/184/605 en phase 0 ; à 10⁶ (9 533 zéros), 16/58/181 contre 20/100/364 ; la phase 0 retrouve parfois des zéros que 1/3 rate ; non transposable tel quel à la production, où le rescan ne se déclenche presque jamais (source : docs/V17.md)</em>
       </p>
     </div>
   </section>
