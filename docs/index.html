@@ -559,9 +559,15 @@
   @media (max-width: 600px) {
     .stats { grid-template-columns: 1fr; }
     .stat + .stat { border-left: none; border-top: 1px solid var(--border); }
-    .links-grid { grid-template-columns: 1fr; }
+    .links-grid { grid-template-columns: 1fr !important; }
+    .zeros-table, .cluster-perf { overflow-x: auto; }
+    section > table { display: block; overflow-x: auto; }
     .link-card + .link-card { border-left: none; border-top: 1px solid var(--border); }
     .link-card:nth-child(3) { border-top: 1px solid var(--border); }
+    div[style*="repeat(5, 1fr)"] { grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)) !important; }
+    .cours-grid { grid-template-columns: 1fr; }
+    .cours-card { border-left: none; }
+    .cours-card + .cours-card { border-top: 1px solid var(--border); }
     .step { grid-template-columns: auto 1fr; }
     .step-stat { display: none; }
   }
