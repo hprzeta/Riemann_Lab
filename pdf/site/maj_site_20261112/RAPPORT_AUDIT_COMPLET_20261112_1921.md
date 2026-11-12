@@ -1,4 +1,4 @@
-# Rapport — Audit complet des liens du site et du wiki — 12/11/2026 19:21
+# Rapport — Audit complet des liens du site et du wiki — 12/11/2026 19:25
 
 > Exécution de `PROMPT_AUDIT_COMPLET_LIENS_20261112_1812.md` (étape 0 adaptée : pas de zip, prompt fourni seul). Aucun `--force`, aucun renommage. STOP respectés : « go archive », « go correction », « go commit wiki », « go push wiki », « go commit site », « go push », « go commit archive ».
 
@@ -89,7 +89,7 @@ Pages wiki avec au moins un lien `a.absent` : **0** sur 84. Aucune.
 | Échantillon | Liens | Réponse |
 |---|---|---|
 | 1 (avant corrections) | 3 « Lire → » (chapitres 1, 7, 14) + 7 liens à ancre (`Formules_zeta#…`, `Bibliotheques#…`) | « c » → interprété : **C** pour les 10 (au bon endroit) |
-| 2 (après corrections) | ancres de `Animations`, sommaire de `Phase-C`, liens `Étape 2/3` de `Home` | en attente de hprzeta |
+| 2 (après corrections) | ancres de `Animations`, sommaire de `Phase-C`, liens `Étape 2/3` de `Home` | 1C 2C 3C 4C 5C 6C : les 6 liens arrivent au bon endroit (réponse de hprzeta, 12/11/2026) |
 
 ## 4. Scripts archivés
 
@@ -166,4 +166,4 @@ Commits : wiki `2bd4258` · site `05217b8` (IA ; main `4165de3`, C `773bdff`, Te
 - Le choix `Home` Étape 2 → `Animations`, Étape 3 → `Guide-Ollama-Pratique`, Étape 4 sans lien a été fait par Claude (convention de `Structure-Projet-Complet`) : modifiable sur demande.
 
 ---
-*RAPPORT_AUDIT_COMPLET_20261112_1921.md · projet SITE ZETA · hprzeta · 12/11/2026 19:21 · 169 lignes*
+*RAPPORT_AUDIT_COMPLET_20261112_1921.md · projet SITE ZETA · hprzeta · 12/11/2026 19:25 · 169 lignes*
