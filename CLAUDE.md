@@ -207,6 +207,7 @@ C0+C1 (précision max ~1e-3). Solution : wrapper `mpmath.siegelz`.
 - **`sensors`** : seule la **première valeur en °C** d'une ligne est la mesure ; ignorer `high`, `crit`, `hyst` (une moyenne a déjà été faussée ainsi).
 - **rclone sur PC3** : toujours le chemin complet `~/bin/rclone` (compte de sauvegarde, v1.73.5) ; le `/usr/bin/rclone` (v1.74.3) plante en 32 bits.
 - **`zeta-backup-status`** : « aucun fichier » signifie « rien de nouveau à copier », pas forcément une panne.
+- **Écriture des `.md`** : utiliser l'outil Write ou un heredoc protégé (`<<'EOF'`), jamais `<<EOF` : `$$` est développé en PID (bug du 14/11).
 
 ---
 
@@ -324,4 +325,4 @@ sudo scripts/zeta_turbo_off.sh       # restaurer à la main (équivalent du « b
 > (elle change à chaque session ; ce fichier doit rester stable).
 
 ---
-*CLAUDE.md - racine - source Riemann_Lab_C (sync 4 branches) - hprzeta - Mis à jour le 2026-11-11 — 327 lignes*
+*CLAUDE.md - racine - source Riemann_Lab_C (sync 4 branches) - hprzeta - Mis à jour le 2026-11-14 — 328 lignes*
