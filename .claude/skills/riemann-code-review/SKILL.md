@@ -117,7 +117,7 @@ doit passer cette checklist **avant** d'autoriser un run long.
 ## 8. Checklist optimisations Arb/Flint (v12 → v16)
 
 Leçons capitalisées lors de l'accélération de l'affinage en C (Phase C — voir aussi le skill
-`phase-c-illinois` pour la traçabilité complète par commit). À vérifier avant toute régression
+`riemann-phase-c-illinois` pour la traçabilité complète par commit). À vérifier avant toute régression
 de performance ou nouvelle version vN+1 :
 
 1. **Précision fixe 64 bits (1 limb MPFR)** au lieu de l'escalade dynamique vers 170 bits par
