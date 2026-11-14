@@ -1,8 +1,8 @@
 # HANDOFF site — 14/11/2026
 
 **Fait et publié (sans `--force`) :** wiki `382c030` (20 formules + titre Ch05, 9 pages + index) et `c81894c` (index, titre du chapitre 5 sans formule dans le lien). Vérifié en ligne : 0 zone rouge, liens et console OK.
-**Commité et poussé (`6f85a26`, `Riemann_Lab_IA`) :** détecteur `verif_formules_wiki.js`, diagnostic, rapports, captures (49 fichiers). Restent locaux : `.bak*`, `A_DEPOSER/` (exclus).
-**Prochaine action (à décider par hprzeta) :** 1) déposer A_DEPOSER/ dans le projet SITE ZETA ; 2) nouvel essai forcé (règle 10) ; 3) PermitRootLogin no sur PC2 (optionnel) ; 4) valider le détecteur (faux positifs, `=` → EGAL) ; 5) commit + sync de CLAUDE.md (règle heredoc).
+**Commité et poussé (sans `--force`) :** `6f85a26` (`Riemann_Lab_IA`) : détecteur `verif_formules_wiki.js`, diagnostic, rapports, captures (49 fichiers) ; `95500dd` (`Riemann_Lab_IA`) : Handoff ; règle d'écriture des `.md` dans `CLAUDE.md` sur les 4 branches : `Riemann_Lab_C` `4cdf365`, `main` `bdf53ca`, `Riemann_Lab_IA` `44f33d2`, `Riemann_Lab_Test` `ded9e60` (contenu identique, vérifié). Restent locaux : `.bak*`, `A_DEPOSER/` (exclus), `monitoring/Monitoring-Runs.md` (modifié avant la session).
+**Prochaine action (à décider par hprzeta) :** 1) déposer A_DEPOSER/ dans le projet SITE ZETA ; 2) nouvel essai forcé (règle 10) ; 3) PermitRootLogin no sur PC2 (optionnel) ; 4) valider le détecteur (faux positifs, `=` → EGAL). La sync de `CLAUDE.md` (règle heredoc) est faite.
 
 
 ## Test automatique V2 (14/11/2026 13:35)
@@ -30,4 +30,4 @@
 **Reste :** PC2 : `PermitRootLogin` non défini = `prohibit-password` (root par clé possible) ; aligner sur PC4 (`no`) — décision hprzeta. Rien d'autre sur les formules du wiki ni sur SSH (PC2 et PC4 en clé seule). Rapport : `RAPPORT_PC2_FORMULES_20261114.md`.
 
 ---
-*Mis à jour le 2026-11-14 (lignes 4-5 : état du dépôt et prochaine action) — 33 lignes*
+*Mis à jour le 2026-11-14 (lignes 4-5 : hashes poussés, sync de CLAUDE.md faite) — 33 lignes*
