@@ -28,7 +28,7 @@ tâche impliquant plusieurs agents, relire `AGENTS.md` puis appliquer les règle
 
 | Agent | Rôle privilégié | Interdits |
 |---|---|---|
-| **Claude Code** | Architecture, refactoring, rédaction mathématique/wiki, orchestration, gardien de `CLAUDE.md` et de `.claude/skills/` | Modifier `c_modules/` sans passer par `phase-c-illinois` |
+| **Claude Code** | Architecture, refactoring, rédaction mathématique/wiki, orchestration, gardien de `CLAUDE.md` et de `.claude/skills/` | Modifier `c_modules/` sans passer par `riemann-phase-c-illinois` |
 | **Codex** | Code algorithmique expérimental, tests unitaires, scripts C/`arb_C` | Modifier `CLAUDE.md`, push direct sur `main`, toucher `.claude/skills/` sans validation Claude Code |
 | **Ollama (mathstral, local)** | Premier filtre / conjectures exploratoires offline, économie de tokens | Faire office de source de vérité — toute sortie doit être vérifiée (§3) |
 
@@ -126,7 +126,7 @@ Réflexes obligatoires :
 
 1. La tâche est-elle bien du ressort de l'agent visé (§1) ?
 2. Le fichier `handoff/` correspondant est-il complet et autonome (pas de contexte implicite) ?
-3. Si la tâche touche `c_modules/` ou `arb_C` → `phase-c-illinois` a-t-il été consulté ?
+3. Si la tâche touche `c_modules/` ou `arb_C` → `riemann-phase-c-illinois` a-t-il été consulté ?
 4. Si la tâche touche `.mcp.json`, `scripts/` ou des secrets → `riemann-security-review` a-t-il
    validé ?
 5. Le run est-il `T > 50 000` ? → arrêt et confirmation utilisateur avant exécution.

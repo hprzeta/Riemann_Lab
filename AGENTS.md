@@ -8,7 +8,7 @@
 
 | Agent | Rôle privilégié | Ne fait jamais |
 |---|---|---|
-| **Claude Code** | Architecture, refactoring, rédaction mathématique/wiki, orchestration, gardien de `CLAUDE.md` et des skills `.claude/skills/` | Modifier `c_modules/` sans repasser par le skill `phase-c-illinois` |
+| **Claude Code** | Architecture, refactoring, rédaction mathématique/wiki, orchestration, gardien de `CLAUDE.md` et des skills `.claude/skills/` | Modifier `c_modules/` sans repasser par le skill `riemann-phase-c-illinois` |
 | **Codex** | Génération de code algorithmique expérimental, tests unitaires, scripts C/`arb_C` | Modifier `CLAUDE.md`, pousser directement sur `main`, toucher `.claude/skills/` sans validation Claude Code |
 | **Ollama (mathstral, local)** | Premier filtre / conjectures exploratoires offline avant d'solliciter Claude Code ou Codex (économie de tokens) | Servir de source de vérité — toute réponse Ollama/RAG doit être vérifiée (voir §3) |
 
@@ -32,7 +32,7 @@ Chaque fichier est réécrit à chaque passation (pas d'historique empilé — l
 | Besoin | Où regarder |
 |---|---|
 | Règles permanentes, formules canoniques | `CLAUDE.md` |
-| Historique et leçons Phase C (Illinois/Arb) | skill `.claude/skills/phase-c-illinois/` |
+| Historique et leçons Phase C (Illinois/Arb) | skill `.claude/skills/riemann-phase-c-illinois/` |
 | Contenu mathématique, KaTeX, wiki | skill `.claude/skills/riemann-lab/` |
 | Checklist avant commit | skill `.claude/skills/riemann-code-review/` |
 | Checklist sécurité | skill `.claude/skills/riemann-security-review/` |
