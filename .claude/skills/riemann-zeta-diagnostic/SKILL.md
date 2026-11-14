@@ -1,5 +1,5 @@
 ---
-name: "zeta-diagnostic"
+name: "riemann-zeta-diagnostic"
 description: "À utiliser pour tout diagnostic du cluster Zêta (réseau, matériel, services, PC1 à PC5) : où le ranger, comment le nommer, quel gabarit, et comment le publier sans IP."
 ---
 

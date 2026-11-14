@@ -1,5 +1,5 @@
 ---
-name: phase-c-illinois
+name: riemann-phase-c-illinois
 description: >
   Skill pour la Phase C du projet Riemann_Lab — accélération de l'affinage Illinois
   via un module C/libmpfr (illinois_mpfr.so) appelé depuis Python par ctypes.
@@ -180,11 +180,11 @@ mpfr-config --version
 | **v15 — SEUIL_1NEWTON=20k (Phase 2 adaptative)** — T=100k **4.4 min (×1.93)** · LMFDB 20/20 ✅ | ✅ |
 | **v16 — Z_arb à précision fixe (acb_dirichlet_hardy_z, 64 bits)** — T=100k **1.6 min (×2.75)** · LMFDB 20/20 ✅ | ✅ ⭐ |
 | **Condition Objectif 2 : T=100k < 5 min** | ✅ **ATTEINTE le 04/07/2026, améliorée le 08/08/2026 (1.6 min)** |
-| Run T=5 000 000 v13 — 10 016 377 / 10 016 473 zéros · 96 manquants au 04/07/2026 (chiffre révisé : 97 manquants retrouvés et fusionnés le 05/11/2026, 10 016 474 zéros, Turing complet) | ✅ terminé |
+| Run T=5 000 000 v13 — 10 016 377 / 10 016 473 zéros · 96 manquants (grille Z_double) | ✅ terminé |
 | Rapport `analyse_problemes_v13_v15.md` + PDF | ✅ FAIT — wiki `2f845e4` · pdf `fda4fb9` |
 | RAG vault BrainVault (`/mnt/vault_rag`) — 838 chunks, `rag_monitor.py` | ✅ (05/07/2026) |
 | Rapport `v5 → v4.1` (`pdf/optimisation/analyse_problemes_v5_v4_1.pdf`) | ⏳ à faire |
-| Run T=5M avec v16 — investigation des manquants | ✅ clos (diagnostic 06/09/2026 ; cause mesurée le 05/11/2026 : 84 paires retirées par la déduplication + 13 isolés ; 97 retrouvés et fusionnés) |
+| Run T=5M avec v16 — investigation 96 manquants | ⏳ prochaine session |
 
 ---
 
@@ -459,8 +459,8 @@ sa première ligne de progression — c'est voulu, pas un bug d'affichage.
 > priorité courante. Ne pas dupliquer ici.
 
 1. Rapport `v5 → v4.1` (`pdf/optimisation/analyse_problemes_v5_v4_1.pdf`).
-2. ~~Run T=5M avec v16 — investigation des 96 manquants~~ — fait : 97 manquants retrouvés et fusionnés le 05/11/2026 (10 016 474 zéros, Turing complet).
+2. Run T=5M avec v16 — investigation des 96 manquants (~18h estimé, réduit par le gain v16).
 3. Industrialiser la boucle RAG (retrieval + génération) — voir `STACK.md` § Objectif 2.
 
 ---
-*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026 · 9 juin 2026 (Mur de latence RÉSOLU ×27) · 10 juin 2026 (STEP adaptatif v2) · 11 juin 2026 (v7 validée 30.9 min — prec_fast=64 bits SIMD) · 12 juin 2026 (v9 Brent validée, sudoers OK) · 4 juillet 2026 (v14 cache RS, v15 SEUIL_1NEWTON, Obj2 ✅, T=5M 96 manquants) · **5 juillet 2026 (fusion des deux lignées v7/v8 et v9-v15 — RAG vault en service)** · **5 août 2026 (architecture scan-puis-affinage documentée)** · **8 août 2026 (v16 — Z_arb précision fixe acb_dirichlet_hardy_z, T=100k 1.6 min, Obj2 amélioré) · 11 novembre 2026 (manquants T=5M révisés : 97 retrouvés) · 466 lignes***
+*Skill du projet Riemann_Lab · Auteur : hprzeta · Mise à jour : 3 juin 2026 · 9 juin 2026 (Mur de latence RÉSOLU ×27) · 10 juin 2026 (STEP adaptatif v2) · 11 juin 2026 (v7 validée 30.9 min — prec_fast=64 bits SIMD) · 12 juin 2026 (v9 Brent validée, sudoers OK) · 4 juillet 2026 (v14 cache RS, v15 SEUIL_1NEWTON, Obj2 ✅, T=5M 96 manquants) · **5 juillet 2026 (fusion des deux lignées v7/v8 et v9-v15 — RAG vault en service)** · **5 août 2026 (architecture scan-puis-affinage documentée)** · **8 août 2026 (v16 — Z_arb précision fixe acb_dirichlet_hardy_z, T=100k 1.6 min, Obj2 amélioré)***

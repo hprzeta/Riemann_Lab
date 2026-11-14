@@ -92,7 +92,7 @@
 <line x1="340" y1="827" x2="340" y2="844" stroke="#888780" stroke-width="1" fill="none" marker-end="url(#arrow)"/>
 <rect x="40" y="844" width="600" height="30" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="0.5"/>
 <text class="th" x="340" y="859" text-anchor="middle" fill="#042C53">6 — Skills Claude Code</text>
-<text class="ts" x="60" y="886">□ ~/.claude/skills/phase-c-illinois/SKILL.md — résultats vN, règles, v(N+1) planifiée</text>
+<text class="ts" x="60" y="886">□ ~/.claude/skills/riemann-phase-c-illinois/SKILL.md — résultats vN, règles, v(N+1) planifiée</text>
 <text class="ts" x="60" y="902">□ ~/.claude/skills/riemann-lab/SKILL.md — état projet, script actif, bottleneck</text>
 <text class="ts" x="60" y="918">□ Syncer .claude/skills/ → repo Riemann_Lab_C (git add + commit)</text>
 

@@ -476,7 +476,7 @@ float64 ($\varepsilon \approx 10^{-16}$) est sous la tolérance → précision s
 
 > Contexte : Phase C, branche `Riemann_Lab_C`. Le module C `illinois_mpfr.so`
 > expose `illinois_refine` depuis le commit `581e34d`. Règle post-fork obligatoire
-> (voir skill `phase-c-illinois`).
+> (voir skill `riemann-phase-c-illinois`).
 
 ### Règle post-fork — chargement dans chaque worker
 

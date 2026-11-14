@@ -112,7 +112,7 @@ disponible ; ne pas halluciner de valeurs numériques tant que le fichier n'a pa
 
 ## 5. Articulation avec les autres skills
 
-- Données sources → pipeline `riemann-lab` / `phase-c-illinois` (calcul des zéros).
+- Données sources → pipeline `riemann-lab` / `riemann-phase-c-illinois` (calcul des zéros).
 - Résultats théoriques de référence → `riemann-literature-scout`.
 - Validation croisée des zéros avant analyse → `riemann-lmfdb-cross-validation`.
 
