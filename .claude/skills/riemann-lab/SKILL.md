@@ -39,6 +39,8 @@ sur la fonction zêta de Riemann (ζ) et l'hypothèse de Riemann (HdR), dévelop
 
 Le projet utilise **KaTeX** (pas MathJax). Certaines commandes LaTeX standard sont bloquées.
 
+> **Wiki GitHub** : les règles mesurées du skill `riemann-site-update` (§7) priment. GitHub retire le `\` devant la ponctuation ASCII : jamais `\_ \# \, \; \! \%` dans `$…$` ou `$$…$$`. Les règles `\_` et `\%` ci-dessous (audit 05/07/2026) ne valent que pour le **HTML du site** et restent à revérifier.
+
 ### ❌ Commandes interdites
 ```
 \operatorname{Re}   →  utiliser \text{Re}
@@ -50,7 +52,7 @@ T_{10%}             →  utiliser T_{10\%}  (% = commentaire KaTeX !)
 \left\{             →  seul sans \right\} → erreur (souvent causé par % commentaire)
 ```
 
-### 🔒 Règles d'échappement systématiques (audit 05/07/2026)
+### 🔒 Règles d'échappement — HTML du site (audit 05/07/2026, à revérifier)
 - Underscore brut dans `\text{...}` → toujours `\_` (ex: `\text{gap\_moyen}`)
 - `%` brut en mode math, y compris dans les indices (ex: `T_{10%}`) → toujours `\%`
 - Accolades d'ensemble littérales (notation `{...}`) → toujours `\{ ... \}`
@@ -58,7 +60,7 @@ T_{10%}             →  utiliser T_{10\%}  (% = commentaire KaTeX !)
   `\sqrt{}`, les exposants/indices `^{}` `_{}`, ou l'idiome virgule française `{,}` —
   ceux-là restent des accolades non échappées, ce sont des arguments LaTeX légitimes)
 
-### ⚠️ Pièges spécifiques GitHub KaTeX (découverts en production)
+### ⚠️ Pièges KaTeX — HTML du site (wiki : voir l'encadré ci-dessus)
 
 **Piège 1 — Le `%` est un commentaire dans KaTeX**
 ```
