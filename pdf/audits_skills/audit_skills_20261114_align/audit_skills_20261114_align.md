@@ -21,7 +21,7 @@ D8 est appliqué et poussé sur les 4 branches. 9 zips sont prêts pour le compt
 | `riemann-lab/references/Bibliotheques.md` | 913 | 913 | `4f25002f9c0879b5` | `4f25002f9c0879b5` | aucun |
 | `riemann-lab/references/Formules_zeta.md` | 1656 | 1656 | `9231fcdbd5111801` | `9231fcdbd5111801` | aucun |
 | `riemann-literature-scout` | 85 | 85 | `719cd4c9932550e1` | `719cd4c9932550e1` | aucun |
-| `riemann-proof-status` | 107 | 107 | `5c9c1837fa3482c3` | `5c9c1837fa3482c3` | aucun |
+| `riemann-proof-status` | 107 → 97 | 97 | `5c9c1837fa3482c3` → `e0d2fd55dd5da6f4` | `e0d2fd55dd5da6f4` | **description ≤ 1024 (e342b1e)** |
 | `riemann-security-review` | 162 | 162 | `85578eea1227c5e9` | `85578eea1227c5e9` | aucun |
 | `riemann-site-check` | 69 | 69 | `f8d690fc309dd9b4` | `f8d690fc309dd9b4` | aucun |
 | `riemann-site-update` | 141 | 141 | `49f71a1a439f34b4` | `49f71a1a439f34b4` | aucun |
@@ -63,7 +63,7 @@ Les 3 reports sont des `cherry-pick -x 15e41da`.
 
 ## Zips pour le compte (9)
 
-SHA-256 du `SKILL.md` zippé (16 premiers caractères), tous identiques au dépôt : `riemann-bastion-hardening` `ad3e3ee9f0278990` · `riemann-lab` `eadff0d49ba0915e` · `phase-c-illinois` `be39ad8fc1b4fcd8` · `riemann-agent-bridge` `e3cc6523d31f0a5f` · `riemann-code-review` `119f21c9dac1c2d4` · `riemann-literature-scout` `719cd4c9932550e1` · `riemann-proof-status` `5c9c1837fa3482c3` · `riemann-security-review` `85578eea1227c5e9` · `riemann-statistics-gue` `6496cb24d43c96a6`. Pas de zip pour `riemann-site-update` (déjà aligné dans le compte).
+SHA-256 du `SKILL.md` zippé (16 premiers caractères), tous identiques au dépôt : `riemann-bastion-hardening` `ad3e3ee9f0278990` · `riemann-lab` `eadff0d49ba0915e` · `phase-c-illinois` `be39ad8fc1b4fcd8` · `riemann-agent-bridge` `e3cc6523d31f0a5f` · `riemann-code-review` `119f21c9dac1c2d4` · `riemann-literature-scout` `719cd4c9932550e1` · `riemann-proof-status` `e0d2fd55dd5da6f4` (zip refait le 14/11 18h35, voir correction) · `riemann-security-review` `85578eea1227c5e9` · `riemann-statistics-gue` `6496cb24d43c96a6`. Pas de zip pour `riemann-site-update` (déjà aligné dans le compte).
 
 ## Méthode et réserves
 
@@ -79,9 +79,13 @@ SHA-256 du `SKILL.md` zippé (16 premiers caractères), tous identiques au dép�
 4. D8b : retitrer ou non le bloc « Commandes interdites » et le « Piège 1 ».
 5. E-mail ligne 112 de `riemann-security-review` : laisser (adresse publique) ou remplacer par un marqueur, avant import dans le compte.
 
+## Correction du 14/11/2026 18h35 — `riemann-proof-status`
+
+Import refusé par le compte (« description must be at most 1024 characters »). Bloc `description: |` remplacé par une ligne unique de 722 caractères (`yaml.safe_load`) ; `name:` inchangé. Commit `e342b1e` sur `Riemann_Lab_IA`, reports `af76a0d` (main), `4d771f0` (Riemann_Lab_C), `1f6448c` (Riemann_Lab_Test), sans `--force`. Zip refait (dossier à la racine, 6195 octets), SHA-256 complet du `SKILL.md` : `e0d2fd55dd5da6f40688f342aba407d0553221c0a04cda3ca6a6dcd497c75002`. Les 11 autres descriptions sont toutes < 1024 (maximum : `riemann-security-review`, 934). Ancien zip archivé dans `pdf/archive/`.
+
 ## Après Claude Code (hprzeta, sur claude.ai)
 
 Paramètres → Skills : importer les 9 zips (remplacer s'il existe), puis redonner ce rapport à claude.ai (SKILLS ZETA) pour la comparaison SHA-256 des skills dépôt / compte.
 
 ---
-*audit_skills_20261114_align.md — 2026-11-14 — 87 lignes*
+*audit_skills_20261114_align.md — 2026-11-14 — 91 lignes*
