@@ -1,0 +1,4 @@
+step_gros,n_ref,base_retrouves,base_manquants,phase0_manquants_restants,phase13_manquants_restants,recuperes_phase0,recuperes_phase13,recuperes_par_13_seul,recuperes_par_0_seul
+0.2,9533,9319,214,20,16,194,198,18,14
+0.3,9533,8824,709,100,58,609,651,82,40
+0.45,9533,7333,2200,364,181,1836,2019,293,110

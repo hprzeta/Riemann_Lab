@@ -20,6 +20,7 @@ Liste de chaque run lancé, avec ses graphiques (générée automatiquement par 
 
 | Date | Run | Statut | Durée | Zéros | z/s | T max PC1 | Graphiques | Rapport · session |
 |---|---|---|---|---|---|---|---|---|
+| 2026-11-05 21:33 | T100000 | terminé | 2min26s | 138069 | 945.7 | — | [zéros](runs/prod/20261105_213329_T100000/figures/zeros_tranches.png) · [GUE](runs/prod/20261105_213329_T100000/figures/gue.png) · [débit](runs/prod/20261105_213329_T100000/figures/debit.png) | [MD](runs/prod/20261105_213329_T100000/rapport.md) · [PDF](runs/prod/20261105_213329_T100000/rapport.pdf) · [session](runs/prod/20261105_213329_T100000/session.md) |
 | 2026-11-03 09:54 | T400000 | terminé | 20min46s | 640526 | 514.1 | — | [zéros](runs/prod/20261103_095447_T400000/figures/zeros_tranches.png) · [GUE](runs/prod/20261103_095447_T400000/figures/gue.png) · [débit](runs/prod/20261103_095447_T400000/figures/debit.png) | [MD](runs/prod/20261103_095447_T400000/rapport.md) · [PDF](runs/prod/20261103_095447_T400000/rapport.pdf) · [session](runs/prod/20261103_095447_T400000/session.md) |
 | 2026-11-03 09:28 | T400000 | abandonné (panne de batterie, relancé 09:54) | — | — | — | — | — | — |
 | 2026-11-03 09:18 | T200000 | terminé | 6min24s | 298200 | 776.6 | — | [zéros](runs/prod/20261103_091845_T200000/figures/zeros_tranches.png) · [GUE](runs/prod/20261103_091845_T200000/figures/gue.png) · [débit](runs/prod/20261103_091845_T200000/figures/debit.png) | [MD](runs/prod/20261103_091845_T200000/rapport.md) · [PDF](runs/prod/20261103_091845_T200000/rapport.pdf) · [session](runs/prod/20261103_091845_T200000/session.md) |
@@ -102,4 +103,4 @@ Exemples **réels** de la séance du 2026-10-15 (T1b), pour savoir à quoi resse
 - `zeta-live` · `zeta-metrics` · `zeta-gue [--live]` · `zeta-report [run] [--lang en]` · `zeta-index`
 
 ---
-*Monitoring-Runs.md · MAJ 2026-11-03 · 105 lignes*
+*Monitoring-Runs.md · MAJ 2026-11-05 · 106 lignes*

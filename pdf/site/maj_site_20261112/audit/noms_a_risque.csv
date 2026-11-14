@@ -1,0 +1,40 @@
+type,nom actuel,caractères à risque,forme encodée,liens entrants,nom ASCII proposé
+page wiki,Etape-1-Calcul-des-zéros-non-triviaux,accent,Etape-1-Calcul-des-z%C3%A9ros-non-triviaux,19,Etape-1-Calcul-des-zeros-non-triviaux
+page wiki,Interprétation-des-résultats-de-tests,accent,Interpr%C3%A9tation-des-r%C3%A9sultats-de-tests,2,Interpretation-des-resultats-de-tests
+page wiki,Partie-1-La-Théorie-Étape_1,accent,Partie-1-La-Th%C3%A9orie-%C3%89tape_1,1,Partie-1-La-Theorie-Etape_1
+page wiki,Projet-Zêta,accent,Projet-Z%C3%AAta,1,Projet-Zeta
+page wiki,Tableau-Symboles-Mathématiques,accent,Tableau-Symboles-Math%C3%A9matiques,2,Tableau-Symboles-Mathematiques
+ancre,#-animation_gaps_gue--distribution-des-gaps--gue-vs-step,double tiret+tiret début/fin,-animation_gaps_gue--distribution-des-gaps--gue-vs-step,1,#animation_gaps_gue-distribution-des-gaps-gue-vs-step
+ancre,#-animation_illinois_adaptatif--illinois-adaptatif--v7--2-phases-de-calcul,double tiret+tiret début/fin,-animation_illinois_adaptatif--illinois-adaptatif--v7--2-phases-de-calcul,1,#animation_illinois_adaptatif-illinois-adaptatif-v7-2-phases-de-calcul
+ancre,#-animation_ntermes_rs--coût-rs--n_termes-et-bottleneck-illinois_c,accent+double tiret+tiret début/fin,-animation_ntermes_rs--co%C3%BBt-rs--n_termes-et-bottleneck-illinois_c,1,#animation_ntermes_rs-cout-rs-n_termes-et-bottleneck-illinois_c
+ancre,#-animation_prec_mpfr--précision-mpfr--limbs--le-vrai-levier-v7,accent+double tiret+tiret début/fin,-animation_prec_mpfr--pr%C3%A9cision-mpfr--limbs--le-vrai-levier-v7,1,#animation_prec_mpfr-precision-mpfr-limbs-le-vrai-levier-v7
+ancre,#-animation_theta--θt-de-riemann-siegel,grec+double tiret+tiret début/fin,-animation_theta--%CE%B8t-de-riemann-siegel,1,#animation_theta-t-de-riemann-siegel
+ancre,#-animationdistribution_zeros--distribution-des-zéros,accent+double tiret+tiret début/fin,-animationdistribution_zeros--distribution-des-z%C3%A9ros,1,#animationdistribution_zeros-distribution-des-zeros
+ancre,#-animationgamma--fonction-gamma,double tiret+tiret début/fin,-animationgamma--fonction-gamma,1,#animationgamma-fonction-gamma
+ancre,#-animationmur_latence--mur-de-latence,double tiret+tiret début/fin,-animationmur_latence--mur-de-latence,1,#animationmur_latence-mur-de-latence
+ancre,#-animationplan_complexe--plan-complexe,double tiret+tiret début/fin,-animationplan_complexe--plan-complexe,1,#animationplan_complexe-plan-complexe
+ancre,#-animationproduit_eulerien--produit-eulérien,accent+double tiret+tiret début/fin,-animationproduit_eulerien--produit-eul%C3%A9rien,1,#animationproduit_eulerien-produit-eulerien
+ancre,#-animationseries_dirichlet--séries-de-dirichlet,accent+double tiret+tiret début/fin,-animationseries_dirichlet--s%C3%A9ries-de-dirichlet,1,#animationseries_dirichlet-series-de-dirichlet
+ancre,#-animationzeros_non_triviaux--zéros-non-triviaux,accent+double tiret+tiret début/fin,-animationzeros_non_triviaux--z%C3%A9ros-non-triviaux,1,#animationzeros_non_triviaux-zeros-non-triviaux
+ancre,#12-arb--flint--affinage-rapide-haute-précision-levier-phase-c,accent+double tiret,12-arb--flint--affinage-rapide-haute-pr%C3%A9cision-levier-phase-c,1,#12-arb-flint-affinage-rapide-haute-precision-levier-phase-c
+ancre,#15-formules-appliquées-dans-compute_zeros_v1py-historique,accent,15-formules-appliqu%C3%A9es-dans-compute_zeros_v1py-historique,1,#15-formules-appliquees-dans-compute_zeros_v1py-historique
+ancre,#16--brent_mpfrc--zeta_turbo-sudoers-v9-2026-06-12,double tiret,16--brent_mpfrc--zeta_turbo-sudoers-v9-2026-06-12,1,#16-brent_mpfrc-zeta_turbo-sudoers-v9-2026-06-12
+ancre,#17-le-mur-de-latence-du-calcul--modèle-de-coût-complet-synthèse,accent+double tiret,17-le-mur-de-latence-du-calcul--mod%C3%A8le-de-co%C3%BBt-complet-synth%C3%A8se,1,#17-le-mur-de-latence-du-calcul-modele-de-cout-complet-synthese
+ancre,#17bis--v13v15--cache-rs-statique--phase-2-adaptative-2026-07-04,double tiret,17bis--v13v15--cache-rs-statique--phase-2-adaptative-2026-07-04,1,#17bis-v13v15-cache-rs-statique-phase-2-adaptative-2026-07-04
+ancre,#18--v16--z_arb-à-précision-fixe--acb_dirichlet_hardy_z-remplace-arb_fpwrap-2026-08-08,accent+double tiret,18--v16--z_arb-%C3%A0-pr%C3%A9cision-fixe--acb_dirichlet_hardy_z-remplace-arb_fpwrap-2026-08-08,1,#18-v16-z_arb-a-precision-fixe-acb_dirichlet_hardy_z-remplace-arb_fpwrap-2026-08-08
+ancre,#19--option-b--illinois_refine--ancrage-fafb-et-résultats-3-juin-2026,accent+double tiret,19--option-b--illinois_refine--ancrage-fafb-et-r%C3%A9sultats-3-juin-2026,1,#19-option-b-illinois_refine-ancrage-fafb-et-resultats-3-juin-2026
+ancre,#2-problème-mathématique,accent,2-probl%C3%A8me-math%C3%A9matique,1,#2-probleme-mathematique
+ancre,#2-problèmes-résolus,accent,2-probl%C3%A8mes-r%C3%A9solus,1,#2-problemes-resolus
+ancre,#23-step-adaptatif--théorie-et-valeurs-mesurées-2026-06-10,accent+double tiret,23-step-adaptatif--th%C3%A9orie-et-valeurs-mesur%C3%A9es-2026-06-10,1,#23-step-adaptatif-theorie-et-valeurs-mesurees-2026-06-10
+ancre,#24--benchmark-v8--plancher-hardware-i7-7500u-11-juin-2026,double tiret,24--benchmark-v8--plancher-hardware-i7-7500u-11-juin-2026,1,#24-benchmark-v8-plancher-hardware-i7-7500u-11-juin-2026
+ancre,#27--brent-cmpfr-deux-phases-v9-2026-06-12,double tiret,27--brent-cmpfr-deux-phases-v9-2026-06-12,1,#27-brent-cmpfr-deux-phases-v9-2026-06-12
+ancre,#28--illinois-hybride-2-phases-v12-2026-06-13,double tiret,28--illinois-hybride-2-phases-v12-2026-06-13,1,#28-illinois-hybride-2-phases-v12-2026-06-13
+ancre,#3-fonction-z-de-hardy--détection-des-zéros--méthode-utilisée-dans-v3,accent+double tiret,3-fonction-z-de-hardy--d%C3%A9tection-des-z%C3%A9ros--m%C3%A9thode-utilis%C3%A9e-dans-v3,1,#3-fonction-z-de-hardy-detection-des-zeros-methode-utilisee-dans-v3
+ancre,#30--biais-z_rs-et-seuil-seuil_1newton-v15-2026-07-04,double tiret,30--biais-z_rs-et-seuil-seuil_1newton-v15-2026-07-04,1,#30-biais-z_rs-et-seuil-seuil_1newton-v15-2026-07-04
+ancre,#4-gains-mesurés,accent,4-gains-mesur%C3%A9s,1,#4-gains-mesures
+ancre,#4-multiprocessing--parallélisation-4-cœurs,accent+double tiret,4-multiprocessing--parall%C3%A9lisation-4-c%C5%93urs,1,#4-multiprocessing-parallelisation-4-curs
+ancre,#6-méthode-daffinage-illinois--correction-v3--8090-du-temps-de-calcul,accent+double tiret,6-m%C3%A9thode-daffinage-illinois--correction-v3--8090-du-temps-de-calcul,1,#6-methode-daffinage-illinois-correction-v3-8090-du-temps-de-calcul
+ancre,#7-fichiers-générés,accent,7-fichiers-g%C3%A9n%C3%A9r%C3%A9s,1,#7-fichiers-generes
+ancre,#8-formule-de-riemann-von-mangoldt--comptage-nt--correction-critique-v3,double tiret,8-formule-de-riemann-von-mangoldt--comptage-nt--correction-critique-v3,1,#8-formule-de-riemann-von-mangoldt-comptage-nt-correction-critique-v3
+ancre,#8-prochaines-étapes,accent,8-prochaines-%C3%A9tapes,1,#8-prochaines-etapes
+ancre,#cache-log_n--isqrt_n-v14,double tiret,cache-log_n--isqrt_n-v14,1,#cache-log_n-isqrt_n-v14

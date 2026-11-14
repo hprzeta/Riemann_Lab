@@ -1,0 +1,47 @@
+cible,forme,type de lien,fichier,ligne,extrait
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),[[…]],Animations.md,160,*Page du 11 juin 2026 : chiffres v7 estimés avant mesure ; voir [[«ANCIEN»]].*
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),[[…]],Architecture-Cluster-Zeta.md,777,- [[«ANCIEN»]] — pipeline v12
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),texte/autre,Archive-Fichiers-Obsoletes.md,96,| `«ANCIEN».md` | Wiki ✅ |
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),texte/autre,Formules_zeta.md,1411,"- Gain cumulé v1→v9 turbo : ×4 500 *(non reproductible, corrigé le 11/11/2026 : 21 h à T=10 000 / 26,6 min à T"
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),texte/autre,Guide-Ollama-Pratique.md,101,"| 25/07/2026 | mathstral | Q1 SEUIL_1NEWTON | 8 chunks (RAG, `--k 8`) | **117.0 s** (cold — chargement modèle "
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),Markdown,Home.md,23,| [Étape 1 — Calcul des zéros](«ANCIEN») | ✅ | v1 → V17 — 138 069 zéros à T=100 0
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),[[…]],Home.md,145,"> **V17** : `consolider()` à la place de la déduplication à 0,01, journal JSONL des échecs, checkpoints atomiq"
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),texte/autre,JOURNAL.md,868,Liens cassés (5) corrigés dans `«ANCIEN».md` et
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),[[…]],Optimisation-Pourquoi-le-calcul-va-vite.md,178,- [[«ANCIEN»]] — première approche du calcul
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),Markdown,Phase-Optimisation-compute_zeros_v3.md,3,> **Lien parent :** [Étape 1 – Calcul des zéros non triviaux](«ANCIEN»)
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),texte/autre,Plancher-Hardware-Architecture.md,100,> **Lignes v13 → V17 (ajout du 11/11/2026)** : seuls les gains relatifs mesurés sont donnés (sources : `Etape-
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),[[…]],Plancher-Hardware-Architecture.md,281,- [[«ANCIEN»]] — pipeline v12 complet
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),[[…]],Projet-Zêta.md,8,Pour le détail du calcul des zéros : [[«ANCIEN»]] · feuille de route : [[Roadmap]
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),[[…]],Roadmap.md,77,> Gains cumulés : les rapports « depuis v1 » comparaient 21 h (T=10 000) à des durées à T=100 000 ; référence 
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),[[…]],Roadmap.md,201,- [[«ANCIEN»]] — détail technique v1→V17
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),[[…]],STACK.md,539,> ⚠️ **Corrigé le 11/11/2026** : les « gains globaux » ci-dessus comparent 21 h (T=10 000) à des durées à T=10
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),[[…]],Structure-Projet-Complet.md,148,"| `src/calculs/` | Algorithmes sur ζ(s), recherche des zéros | [[«ANCIEN»]] |"
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),[[…]],Structure-Projet-Complet.md,229,"| Résultats | [[«ANCIEN»]], [[Rapport_validation_T10000]] |"
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),[[…]],analyse_problemes_v10_v12.md,3,> 📌 **Note du 11/11/2026 (gains cumulés)** — les gains « depuis v1 » de ce document comparent 21 h (mesurées à
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),[[…]],analyse_problemes_v13_v15.md,5,> 📌 **Note du 11/11/2026 (gains cumulés)** — les gains « depuis v1 » de ce document comparent 21 h (mesurées à
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),[[…]],analyse_problemes_v1_v16.md,5,> 📌 **Note du 11/11/2026 (gains cumulés)** — les gains « depuis v1 » de ce document comparent 21 h (mesurées à
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),[[…]],analyse_problemes_v7_v8.md,3,> 📌 **Note du 11/11/2026 (gains cumulés)** — les gains « depuis v1 » de ce document comparent 21 h (mesurées à
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),[[…]],analyse_problemes_v8_v9.md,3,> 📌 **Note du 11/11/2026 (gains cumulés)** — les gains « depuis v1 » de ce document comparent 21 h (mesurées à
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),[[…]],analyse_problemes_v9_v10.md,3,> 📌 **Note du 11/11/2026 (gains cumulés)** — les gains « depuis v1 » de ce document comparent 21 h (mesurées à
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),texte/autre,etat_rag_brainvault_20260704.md,90,- `«ANCIEN».md` (pavés v13/v14/v15)
+Etape-1-Calcul-des-zéros-non-triviaux,accent (NFC),texte/autre,etat_rag_brainvault_20260704.md,110,"**Wiki (déjà listé en B/C ci-dessus)** : `JOURNAL.md`, `Formules_zeta.md` (§30), `Bibliotheques.md` (§17), `ST"
+Interprétation-des-résultats-de-tests,accent (NFC),texte/autre,Archive-Fichiers-Obsoletes.md,93,| `«ANCIEN».md` | Wiki ✅ |
+Interprétation-des-résultats-de-tests,accent (NFC),texte/autre,Guide-Git-GitHub.md,105,"git add ""🔬-«ANCIEN».md"""
+Interprétation-des-résultats-de-tests,accent (NFC),Markdown,Home.md,22,| [🔬 Interprétation des premiers tests T40](«ANCIEN») | ✅ | Résultats T40 — 6 zér
+Interprétation-des-résultats-de-tests,accent (NFC),texte/autre,JOURNAL.md,869,`«ANCIEN».md`. Liens `[[...]]` dangereux (5) redirigés ou
+Interprétation-des-résultats-de-tests,accent (NFC),[[…]],Optimisation-Pourquoi-le-calcul-va-vite.md,181,- [[«ANCIEN»]] — lecture et validation des résultats
+Interprétation-des-résultats-de-tests,accent (NFC),texte/autre,etat_rag_brainvault_20260704.md,99,"- `session_20260606.md`, `Rapport-Session-27-06-2026.md`, `Rapport_validation_T10000.md`, `Interprétation-des-"
+Partie-1-La-Théorie-Étape_1,accent (NFC),texte/autre,Archive-Fichiers-Obsoletes.md,95,| `«ANCIEN».md` | Wiki ✅ |
+Partie-1-La-Théorie-Étape_1,accent (NFC),Markdown,Home.md,24,"| [Partie 1 — La Théorie de l'Étape 1](«ANCIEN») | ✅ | ζ(s), Z(t), θ(t), équation fonctionn"
+Partie-1-La-Théorie-Étape_1,accent (NFC),texte/autre,etat_rag_brainvault_20260704.md,102,"- `niveau-0-prerequis.md` → `niveau-5-expert.md`, `«ANCIEN».md`, `Katex-cheatsheet.md`, `Ta"
+Projet-Zêta,accent (NFC),texte/autre,docs/archive/discusion_claude_2026-11-11.md,18,> **Étape 1 :** ouvrir Claude in Chrome et créer un onglet « Recherche MAJ site ». **Étape 2 :** parcourir le 
+Projet-Zêta,accent (NFC),texte/autre,docs/archive/discusion_claude_2026-11-11.md,28,| Wiki : 8 pages | 🟢/🟡 | rendu correct ; «ANCIEN» est un stub « page déplacée » ; en-têtes MAJ de Structure
+Projet-Zêta,accent (NFC),texte/autre,docs/archive/discusion_claude_2026-11-11.md,41,"> **Lot 1 — secret en clair (priorité) :** remplacer l'adresse e-mail trouvée par un marqueur, auditer tout le"
+Projet-Zêta,accent (NFC),Markdown,Home.md,18,"| [🧮 Documentation générale du projet ζ(s)](«ANCIEN») | ✅ | Vue d'ensemble du projet, état d'avancement |"
+Projet-Zêta,accent (NFC),texte/autre,JOURNAL.md,48,"- **Lot 1 (wiki `d0edac9`)** : `Home` (bandeau V17, 12 animations, résultats V17), `«ANCIEN»` (redirection "
+Projet-Zêta,accent (NFC),texte/autre,etat_rag_brainvault_20260704.md,102,"- `niveau-0-prerequis.md` → `niveau-5-expert.md`, `Partie-1-La-Théorie-Étape_1.md`, `Katex-cheatsheet.md`, `Ta"
+Tableau-Symboles-Mathématiques,accent (NFC),texte/autre,Archive-Fichiers-Obsoletes.md,89,| `«ANCIEN».md` | Wiki ✅ |
+Tableau-Symboles-Mathématiques,accent (NFC),Markdown,Home.md,21,| [📐 Symboles mathématiques](«ANCIEN») | ✅ | Référence rapide — notations d'analyse comp
+Tableau-Symboles-Mathématiques,accent (NFC),texte/autre,JOURNAL.md,734,colonnes de `«ANCIEN».md` (376 lignes) et l'indentation de listes
+Tableau-Symboles-Mathématiques,accent (NFC),[[…]],Structure-Projet-Complet.md,227,"| Maths | [[Formules_zeta]], [[Bibliotheques]], [[«ANCIEN»]] |"
+Tableau-Symboles-Mathématiques,accent (NFC),texte/autre,etat_rag_brainvault_20260704.md,102,"- `niveau-0-prerequis.md` → `niveau-5-expert.md`, `Partie-1-La-Théorie-Étape_1.md`, `Katex-cheatsheet.md`, `Ta"

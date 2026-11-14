@@ -88,3 +88,8 @@ pdf/optimisation/*.out
 # Textes produits par des IA tierces (sources de travail, jamais versionnés)
 sources_ia/
 src/ia/prompts/
+# Retrait du commit 8f6eaa1 (14/11/2026) : resultats et livrables a deposer restent locaux
+resultats_v17/
+**/A_DEPOSER/
+# Captures d'interface privee claude.ai (non publiques)
+pdf/site/maj_site_20261111/captures/depot_avant_*.jpg

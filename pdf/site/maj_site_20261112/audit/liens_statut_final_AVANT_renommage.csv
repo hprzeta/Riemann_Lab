@@ -1,0 +1,849 @@
+source,ligne,texte,url,type,http,ancre,statut,action,note
+docs/animation_distribution_zeros.html,7,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css,link,200,-,🟢,,
+docs/animation_distribution_zeros.html,8,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js,script,200,-,🟢,,
+docs/animation_distribution_zeros.html,9,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js,script,200,-,🟢,,
+docs/animation_distribution_zeros.html,83,>tableau de bord,index.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_distribution_zeros.html,83,>zéros non-triviaux,animation_zeros_non_triviaux.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_distribution_zeros.html,83,>θ(t),animation_theta.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_gamma.html,7,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css,link,200,-,🟢,,
+docs/animation_gamma.html,8,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js,script,200,-,🟢,,
+docs/animation_gamma.html,9,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js,script,200,-,🟢,,
+docs/animation_gamma.html,83,>tableau de bord,index.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_gamma.html,83,>θ(t),animation_theta.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_gamma.html,83,>plan complexe,animation_plan_complexe.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_gaps_gue.html,7,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css,link,200,-,🟢,,
+docs/animation_gaps_gue.html,8,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js,script,200,-,🟢,,
+docs/animation_gaps_gue.html,9,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js,script,200,-,🟢,,
+docs/animation_gaps_gue.html,86,>tableau de bord,index.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_gaps_gue.html,86,>distribution des zéros,animation_distribution_zeros.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_gaps_gue.html,86,>coût RS & bottleneck,animation_ntermes_rs.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_illinois_adaptatif.html,7,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css,link,200,-,🟢,,
+docs/animation_illinois_adaptatif.html,8,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js,script,200,-,🟢,,
+docs/animation_illinois_adaptatif.html,9,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js,script,200,-,🟢,,
+docs/animation_illinois_adaptatif.html,202,>← Coût RS et N_termes,animation_ntermes_rs.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_illinois_adaptatif.html,203,>Accueil Riemann_Lab,index.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_mur_latence.html,9,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css,link,200,-,🟢,,
+docs/animation_mur_latence.html,10,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js,script,200,-,🟢,,
+docs/animation_mur_latence.html,11,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js,script,200,-,🟢,,
+docs/animation_mur_latence.html,99,"style=""color:#7F77DD"">cours n°1",animation_theta.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_ntermes_rs.html,7,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css,link,200,-,🟢,,
+docs/animation_ntermes_rs.html,8,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js,script,200,-,🟢,,
+docs/animation_ntermes_rs.html,9,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js,script,200,-,🟢,,
+docs/animation_ntermes_rs.html,85,>tableau de bord,index.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_ntermes_rs.html,85,>gaps GUE &amp; STEP,animation_gaps_gue.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_ntermes_rs.html,85,>θ(t),animation_theta.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_plan_complexe.html,7,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css,link,200,-,🟢,,
+docs/animation_plan_complexe.html,8,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js,script,200,-,🟢,,
+docs/animation_plan_complexe.html,9,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js,script,200,-,🟢,,
+docs/animation_plan_complexe.html,79,>tableau de bord,index.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_plan_complexe.html,79,>série de Dirichlet,animation_series_dirichlet.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_plan_complexe.html,79,>θ(t),animation_theta.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_plan_complexe.html,79,>zéros,animation_zeros_non_triviaux.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_prec_mpfr.html,7,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css,link,200,-,🟢,,
+docs/animation_prec_mpfr.html,8,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js,script,200,-,🟢,,
+docs/animation_prec_mpfr.html,9,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js,script,200,-,🟢,,
+docs/animation_prec_mpfr.html,106,>← Retour,index.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_prec_mpfr.html,339,>← Page principale,index.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_produit_eulerien.html,7,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css,link,200,-,🟢,,
+docs/animation_produit_eulerien.html,8,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js,script,200,-,🟢,,
+docs/animation_produit_eulerien.html,9,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js,script,200,-,🟢,,
+docs/animation_produit_eulerien.html,81,>tableau de bord,index.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_produit_eulerien.html,81,>série de Dirichlet,animation_series_dirichlet.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_produit_eulerien.html,81,>zéros non-triviaux,animation_zeros_non_triviaux.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_series_dirichlet.html,7,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css,link,200,-,🟢,,
+docs/animation_series_dirichlet.html,8,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js,script,200,-,🟢,,
+docs/animation_series_dirichlet.html,9,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js,script,200,-,🟢,,
+docs/animation_series_dirichlet.html,86,>tableau de bord,index.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_series_dirichlet.html,86,>cours n°1 (θ),animation_theta.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_series_dirichlet.html,86,>cours n°3 (zéros),animation_zeros_non_triviaux.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_theta.html,7,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css,link,200,-,🟢,,
+docs/animation_theta.html,8,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js,script,200,-,🟢,,
+docs/animation_theta.html,9,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js,script,200,-,🟢,,
+docs/animation_theta.html,85,>cours n°3,animation_zeros_non_triviaux.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_theta.html,170,"target=""_blank"">lmfdb.org/zeros/zeta/",https://www.lmfdb.org/zeros/zeta/,externe,200,-,🟢,,
+docs/animation_zeros_non_triviaux.html,9,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css,link,200,-,🟢,,
+docs/animation_zeros_non_triviaux.html,10,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js,script,200,-,🟢,,
+docs/animation_zeros_non_triviaux.html,11,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js,script,200,-,🟢,,
+docs/animation_zeros_non_triviaux.html,90,>cours n°1,animation_theta.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_zeros_non_triviaux.html,90,>cours n°2,animation_mur_latence.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/animation_zeros_non_triviaux.html,166,"target=""_blank"">lmfdb.org/zeros/zeta/",https://www.lmfdb.org/zeros/zeta/,externe,200,-,🟢,,
+docs/images/T10Demo/zeta_demovisualisation.html,25,(URL nue),https://plotly.com/javascript/animations/,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,25,(URL nue),https://plotly.com/javascript/animations/,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,1938,(URL nue),https://github.com/mikolalysenko/glsl-read-float/blob/master/index.glsl,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,2012,(URL nue),https://get.webgl.org,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,2635,(URL nue),http://get.webgl.org,externe,200,-,🟡,http:// → https://,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,2712,(URL nue),http://get.webgl.org,externe,200,-,🟡,http:// → https://,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,2717,>OpenStreetMap,https://www.openstreetmap.org/copyright,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,2717,>Carto,https://carto.com/,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,2717,>Stamen Design,https://stamen.com,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,2717,>CC BY 3.0,https://creativecommons.org/licenses/by/3.0,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,2717,>OpenStreetMap,https://openstreetmap.org,externe,200 → https://www.openstreetmap.org/,-,🟡,redirection → https://www.openstreetmap.org/,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,2717,>ODbL,https://www.openstreetmap.org/copyright,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,2717,>Stamen Design,https://stamen.com,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,2717,>CC BY 3.0,https://creativecommons.org/licenses/by/3.0,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,2717,>OpenStreetMap,https://openstreetmap.org,externe,200 → https://www.openstreetmap.org/,-,🟡,redirection → https://www.openstreetmap.org/,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,2717,>CC BY SA,https://creativecommons.org/licenses/by-sa/3.0,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,2718,(URL nue),https://www.mapbox.com/help/define-access-token/,externe,200 → https://docs.mapbox.com/help/glossary/access-token/,-,🟡,redirection → https://docs.mapbox.com/help/glossary/access-token/,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,2722,(URL nue),https://www.mapbox.com/api-documentation/#access-tokens-and-token-scopes,externe,200 → https://docs.mapbox.com/api/,ABSENTE,🔴,ancre absente de la page cible,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,2722,(URL nue),https://www.mapbox.com/api-documentation/#access-tokens-and-token-scopes,externe,200 → https://docs.mapbox.com/api/,ABSENTE,🔴,ancre absente de la page cible,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,2722,(URL nue),https://github.com/mapbox/mapbox-gl-js/issues/2907,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,3218,>ESRI,http://www.esri.com,externe,200 → https://www.esri.com/en-us/home,-,🟡,redirection → https://www.esri.com/en-us/home ; http:// → https://,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,3218,(URL nue),https://www.mapbox.com/mapbox-gl-js/api/,externe,200 → https://docs.mapbox.com/mapbox-gl-js/api/,-,🟡,redirection → https://docs.mapbox.com/mapbox-gl-js/api/,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,3218,(URL nue),https://plotly.com/python/maplibre-migration/,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,3218,(URL nue),https://plotly.com/javascript/maplibre-migration/,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,3218,(URL nue),https://plotly.com/python/maplibre-migration/,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,3218,(URL nue),https://plotly.com/javascript/maplibre-migration/,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,3218,(URL nue),https://plotly.com/python/maplibre-migration/,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,3218,(URL nue),https://plotly.com/javascript/maplibre-migration/,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,3218,(URL nue),https://plotly.com/python/maplibre-migration/,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,3218,(URL nue),https://plotly.com/javascript/maplibre-migration/,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,3229,>ESRI,http://www.esri.com,externe,200 → https://www.esri.com/en-us/home,-,🟡,redirection → https://www.esri.com/en-us/home ; http:// → https://,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,3229,>OpenStreetMap,https://www.openstreetmap.org/copyright,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,3232,(URL nue),https://github.com/mapbox/mapbox-gl-js/issues/2907,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,3807,"target=""_blank"">MapLibre",https://maplibre.org/,externe,200,-,🟢,,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,3807,"dy"",function(i){return i.needsConvertToTspans?0:""0.75em""}).each(function(i){var a=this,o=tf.select(a),s=i.wrappingNeeded",")}):E;i.fragments=T.map(function(L){return{text:L,width:null}}),i.fragments.push({fragment:Ya.wrapSpacer,width:null}),p=T.join(Ya.lineBreaker)+Ya.lineBreaker+Ya.wrapSpacer}else delete i.fragments,p=_;return p}).attr(",fichier du dépôt/relatif,-,-,⚪,faux positif : URL entourée de ` ou ** dans le texte : artefact d'extraction,"dépôt: copie locale NON, main NON, IA NON ; code tiers Plotly minifié"
+docs/images/T10Demo/zeta_demovisualisation.html,3838,(URL nue),http://getify.mit-license.org,externe,200 → https://getify.mit-license.org/,-,🟡,redirection → https://getify.mit-license.org/ ; http:// → https://,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,3843,(URL nue),http://syntheti.cc,externe,200,-,🟡,http:// → https://,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,3845,(URL nue),https://github.com/voidqk/polybooljs,externe,404,-,🔴,HTTP 404,code tiers Plotly minifié
+docs/images/T10Demo/zeta_demovisualisation.html,3880,(URL nue),https://github.com/maplibre/maplibre-gl-js/blob/v4.7.1/LICENSE.txt,externe,200,-,🟢,,code tiers Plotly minifié
+docs/index.html,8,,"https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=JetBrains+Mono:wght@300;400;500&display=swap",link,200,-,🟢,,
+docs/index.html,10,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css,link,200,-,🟢,,
+docs/index.html,11,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js,script,200,-,🟢,,
+docs/index.html,12,,https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js,script,200,-,🟢,,
+docs/index.html,622,,images/header_riemann_lab.svg,image,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,675,"class=""btn"">▶ Ouvrir l'animation",animation_theta.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,676,"class=""btn ghost"" target=""_blank"">GitHub →",https://github.com/hprzeta/Riemann_Lab,fichier du dépôt,200,-,🟢,,
+docs/index.html,677,"class=""btn ghost"" target=""_blank"">Wiki →",https://github.com/hprzeta/Riemann_Lab/wiki,page wiki,200,-,🟢,,
+docs/index.html,684,"class=""link-card"">",animation_series_dirichlet.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,690,"class=""link-card"">",animation_produit_eulerien.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,696,"class=""link-card"">",animation_plan_complexe.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,702,"class=""link-card"" style=""border-top:1px solid var(--border);border-left:none;"">",animation_gamma.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,708,"class=""link-card"" style=""border-top:1px solid var(--border);"">",animation_distribution_zeros.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,714,"class=""link-card"" style=""border-top:1px solid var(--border);"">",animation_theta.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,720,"class=""link-card"" style=""border-top:1px solid var(--border);"">",animation_zeros_non_triviaux.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,726,"class=""link-card"" style=""border-top:1px solid var(--border);"">",animation_mur_latence.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,732,"class=""link-card"" style=""border-top:1px solid var(--border);"">",animation_gaps_gue.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,738,"class=""link-card"" style=""border-top:1px solid var(--border);"">",animation_illinois_adaptatif.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,744,"class=""link-card"" style=""border-top:1px solid var(--border);"">",animation_ntermes_rs.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,750,"class=""link-card"" style=""border-top:1px solid var(--border);"">",animation_prec_mpfr.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,853,,https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/docs/csv/T1000_V2/zeros_zeta_T10000_20260424_205325.csv,fichier du dépôt,200,-,🟢,,
+docs/index.html,877,"target=""_blank"">Lire →",https://github.com/hprzeta/Riemann_Lab/wiki/Formation-Zeta-HR-Ch01,page wiki,200,-,🟢,,
+docs/index.html,878,"target=""_blank"">PDF VAULT ↓",https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/Cours_Zeta_HR_complet.pdf,PDF,200,-,🟢,,
+docs/index.html,889,"target=""_blank"">Lire →",https://github.com/hprzeta/Riemann_Lab/wiki/Formation-Zeta-HR-Ch02,page wiki,200,-,🟢,,
+docs/index.html,890,"target=""_blank"">PDF VAULT ↓",https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/Cours_Zeta_HR_complet.pdf,PDF,200,-,🟢,,
+docs/index.html,901,"target=""_blank"">Lire →",https://github.com/hprzeta/Riemann_Lab/wiki/Formation-Zeta-HR-Ch03,page wiki,200,-,🟢,,
+docs/index.html,902,"target=""_blank"">PDF VAULT ↓",https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/Cours_Zeta_HR_complet.pdf,PDF,200,-,🟢,,
+docs/index.html,913,"target=""_blank"">Lire →",https://github.com/hprzeta/Riemann_Lab/wiki/Formation-Zeta-HR-Ch04,page wiki,200,-,🟢,,
+docs/index.html,914,"target=""_blank"">PDF VAULT ↓",https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/Cours_Zeta_HR_complet.pdf,PDF,200,-,🟢,,
+docs/index.html,925,"target=""_blank"">Lire →",https://github.com/hprzeta/Riemann_Lab/wiki/Formation-Zeta-HR-Ch05,page wiki,200,-,🟢,,
+docs/index.html,926,"target=""_blank"">PDF VAULT ↓",https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/Cours_Zeta_HR_complet.pdf,PDF,200,-,🟢,,
+docs/index.html,937,"target=""_blank"">Lire →",https://github.com/hprzeta/Riemann_Lab/wiki/Formation-Zeta-HR-Ch06,page wiki,200,-,🟢,,
+docs/index.html,938,"target=""_blank"">PDF VAULT ↓",https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/Cours_Zeta_HR_complet.pdf,PDF,200,-,🟢,,
+docs/index.html,949,"target=""_blank"">Lire →",https://github.com/hprzeta/Riemann_Lab/wiki/Formation-Zeta-HR-Ch07,page wiki,200,-,🟢,,
+docs/index.html,950,"target=""_blank"">PDF VAULT ↓",https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/Cours_Zeta_HR_complet.pdf,PDF,200,-,🟢,,
+docs/index.html,961,"target=""_blank"">Lire →",https://github.com/hprzeta/Riemann_Lab/wiki/Formation-Zeta-HR-Ch08,page wiki,200,-,🟢,,
+docs/index.html,962,"target=""_blank"">PDF VAULT ↓",https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/Cours_Zeta_HR_complet.pdf,PDF,200,-,🟢,,
+docs/index.html,973,"target=""_blank"">Lire →",https://github.com/hprzeta/Riemann_Lab/wiki/Formation-Zeta-HR-Ch09,page wiki,200,-,🟢,,
+docs/index.html,974,"target=""_blank"">PDF VAULT ↓",https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/Cours_Zeta_HR_complet.pdf,PDF,200,-,🟢,,
+docs/index.html,985,"target=""_blank"">Lire →",https://github.com/hprzeta/Riemann_Lab/wiki/Formation-Zeta-HR-Ch10,page wiki,200,-,🟢,,
+docs/index.html,986,"target=""_blank"">PDF VAULT ↓",https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/Cours_Zeta_HR_complet.pdf,PDF,200,-,🟢,,
+docs/index.html,997,"target=""_blank"">Lire →",https://github.com/hprzeta/Riemann_Lab/wiki/Formation-Zeta-HR-Ch11,page wiki,200,-,🟢,,
+docs/index.html,998,"target=""_blank"">PDF VAULT ↓",https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/Cours_Zeta_HR_complet.pdf,PDF,200,-,🟢,,
+docs/index.html,1009,"target=""_blank"">Lire →",https://github.com/hprzeta/Riemann_Lab/wiki/Formation-Zeta-HR-Ch12,page wiki,200,-,🟢,,
+docs/index.html,1010,"target=""_blank"">PDF VAULT ↓",https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/Cours_Zeta_HR_complet.pdf,PDF,200,-,🟢,,
+docs/index.html,1021,"target=""_blank"">Lire →",https://github.com/hprzeta/Riemann_Lab/wiki/Formation-Zeta-HR-Ch13,page wiki,200,-,🟢,,
+docs/index.html,1022,"target=""_blank"">PDF VAULT ↓",https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/Cours_Zeta_HR_complet.pdf,PDF,200,-,🟢,,
+docs/index.html,1033,"target=""_blank"">Lire →",https://github.com/hprzeta/Riemann_Lab/wiki/Formation-Zeta-HR-Ch14,page wiki,200,-,🟢,,
+docs/index.html,1034,"target=""_blank"">PDF VAULT ↓",https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/Cours_Zeta_HR_complet.pdf,PDF,200,-,🟢,,
+docs/index.html,1049,"target=""_blank"" class=""cours-card"">",https://github.com/hprzeta/Riemann_Lab/wiki/Methode,page wiki,200,-,🟢,,
+docs/index.html,1055,"target=""_blank"" class=""cours-card"">",https://github.com/hprzeta/Riemann_Lab/wiki/niveau-0-prerequis,page wiki,200,-,🟢,,
+docs/index.html,1061,"target=""_blank"" class=""cours-card"">",https://github.com/hprzeta/Riemann_Lab/wiki/niveau-1-series,page wiki,200,-,🟢,,
+docs/index.html,1067,"target=""_blank"" class=""cours-card"">",https://github.com/hprzeta/Riemann_Lab/wiki/niveau-2-analyse-complexe,page wiki,200,-,🟢,,
+docs/index.html,1073,"target=""_blank"" class=""cours-card"">",https://github.com/hprzeta/Riemann_Lab/wiki/niveau-3-gamma-dirichlet,page wiki,200,-,🟢,,
+docs/index.html,1079,"target=""_blank"" class=""cours-card"">",https://github.com/hprzeta/Riemann_Lab/wiki/niveau-4-zeta,page wiki,200,-,🟢,,
+docs/index.html,1085,"target=""_blank"" class=""cours-card"">",https://github.com/hprzeta/Riemann_Lab/wiki/niveau-5-expert,page wiki,200,-,🟢,,
+docs/index.html,1091,"class=""cours-card"">",animation_theta.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,1097,"class=""cours-card"">",animation_mur_latence.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,1103,"class=""cours-card"">",animation_zeros_non_triviaux.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,1109,"class=""cours-card"">",animation_series_dirichlet.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,1115,"class=""cours-card"">",animation_produit_eulerien.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,1121,"class=""cours-card"">",animation_plan_complexe.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,1127,"class=""cours-card"">",animation_gamma.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,1133,"class=""cours-card"">",animation_distribution_zeros.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,1139,"class=""cours-card"">",animation_gaps_gue.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,1145,"class=""cours-card"">",animation_illinois_adaptatif.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,1151,"class=""cours-card"">",animation_ntermes_rs.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,1157,"class=""cours-card"">",animation_prec_mpfr.html,fichier du dépôt/relatif,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+docs/index.html,1167,"target=""_blank"" class=""link-card"">",https://github.com/hprzeta/Riemann_Lab/wiki,page wiki,200,-,🟢,,
+docs/index.html,1173,"target=""_blank"" class=""link-card"">",https://github.com/hprzeta/Riemann_Lab/tree/main/src,fichier du dépôt,200,-,🟢,,
+docs/index.html,1179,"target=""_blank"" class=""link-card"">",https://github.com/hprzeta/Riemann_Lab/issues,fichier du dépôt,200,-,🟢,,
+docs/index.html,1527,"target=""_blank"">ζ(½+it) Newton séquentiel, 1 worker",https://github.com/hprzeta/Riemann_Lab/wiki/Formules_zeta#15-formules-appliquées-dans-compute_zeros_v1py-historique,ancre vers une autre page,200,présente,🟢,,
+docs/index.html,1535,"target=""_blank"">Z(t) = eiθ(t)ζ(½+it)",https://github.com/hprzeta/Riemann_Lab/wiki/Formules_zeta#3-fonction-z-de-hardy--détection-des-zéros--méthode-utilisée-dans-v3,ancre vers une autre page,200,présente,🟢,,
+docs/index.html,1535,"target=""_blank"">Illinois bracket",https://github.com/hprzeta/Riemann_Lab/wiki/Formules_zeta#6-méthode-daffinage-illinois--correction-v3--8090-du-temps-de-calcul,ancre vers une autre page,200,présente,🟢,,
+docs/index.html,1536,"target=""_blank"">v2→v3 (PDF) ↗",https://github.com/hprzeta/Riemann_Lab/blob/main/pdf/optimisation/analyse_problemes_v2_v3_phase0.pdf,PDF,200,-,🟢,,
+docs/index.html,1543,"target=""_blank"">T/W par worker · post-fork .so",https://github.com/hprzeta/Riemann_Lab/wiki/Bibliotheques#4-multiprocessing--parallélisation-4-cœurs,ancre vers une autre page,200,présente,🟢,,
+docs/index.html,1543,"target=""_blank"">N(T) corrigé",https://github.com/hprzeta/Riemann_Lab/wiki/Formules_zeta#8-formule-de-riemann-von-mangoldt--comptage-nt--correction-critique-v3,ancre vers une autre page,200,présente,🟢,,
+docs/index.html,1544,"target=""_blank"">v3→v4 (PDF) ↗",https://github.com/hprzeta/Riemann_Lab/blob/main/pdf/optimisation/analyse_problemes_v3_v4.pdf,PDF,200,-,🟢,,
+docs/index.html,1551,"target=""_blank"">(fa,fb) pré-calculés Python→C",https://github.com/hprzeta/Riemann_Lab/wiki/Formules_zeta#19--option-b--illinois_refine--ancrage-fafb-et-résultats-3-juin-2026,ancre vers une autre page,200,présente,🟢,,
+docs/index.html,1552,"target=""_blank"">v4.1→v5 (PDF) ↗",https://github.com/hprzeta/Riemann_Lab/blob/main/pdf/optimisation/analyse_problemes_v4_1_v5.pdf,PDF,200,-,🟢,,
+docs/index.html,1559,"target=""_blank"">arb_fpwrap_cdouble_hardy_z",https://github.com/hprzeta/Riemann_Lab/wiki/Bibliotheques#12-arb--flint--affinage-rapide-haute-précision-levier-phase-c,ancre vers une autre page,200,présente,🟢,,
+docs/index.html,1560,"target=""_blank"">v5→v6 (PDF) ↗",https://github.com/hprzeta/Riemann_Lab/blob/main/pdf/optimisation/analyse_problemes_v5_v6.pdf,PDF,200,-,🟢,,
+docs/index.html,1567,"target=""_blank"">STEP=0.010 fixe",https://github.com/hprzeta/Riemann_Lab/wiki/Formules_zeta#23-step-adaptatif--théorie-et-valeurs-mesurées-2026-06-10,ancre vers une autre page,200,présente,🟢,,
+docs/index.html,1568,"target=""_blank"">v6→v7 (PDF) ↗",https://github.com/hprzeta/Riemann_Lab/blob/main/pdf/optimisation/analyse_problemes_v6_v7.pdf,PDF,200,-,🟢,,
+docs/index.html,1575,"target=""_blank"">prec=64 bits → 1 limb → SIMD ×16",https://github.com/hprzeta/Riemann_Lab/wiki/Formules_zeta#17-le-mur-de-latence-du-calcul--modèle-de-coût-complet-synthèse,ancre vers une autre page,200,présente,🟢,,
+docs/index.html,1576,"target=""_blank"">v7→v8 (PDF) ↗",https://github.com/hprzeta/Riemann_Lab/blob/main/pdf/optimisation/analyse_problemes_v7_v8.pdf,PDF,200,-,🟢,,
+docs/index.html,1583,"target=""_blank"">prec_full=80 bits",https://github.com/hprzeta/Riemann_Lab/wiki/Formules_zeta#24--benchmark-v8--plancher-hardware-i7-7500u-11-juin-2026,ancre vers une autre page,200,présente,🟢,,
+docs/index.html,1584,"target=""_blank"">v8→v9 (PDF) ↗",https://github.com/hprzeta/Riemann_Lab/blob/main/pdf/optimisation/analyse_problemes_v8_v9.pdf,PDF,200,-,🟢,,
+docs/index.html,1591,"target=""_blank"">IQI+sécante+bissection",https://github.com/hprzeta/Riemann_Lab/wiki/Formules_zeta#27--brent-cmpfr-deux-phases-v9-2026-06-12,ancre vers une autre page,200,présente,🟢,,
+docs/index.html,1592,"target=""_blank"">v9→v10 (PDF) ↗",https://github.com/hprzeta/Riemann_Lab/blob/main/pdf/optimisation/analyse_problemes_v9_v10.pdf,PDF,200,-,🟢,,
+docs/index.html,1599,"target=""_blank"">W=8 forcé",https://github.com/hprzeta/Riemann_Lab/wiki/Bibliotheques#16--brent_mpfrc--zeta_turbo-sudoers-v9-2026-06-12,ancre vers une autre page,200,présente,🟢,,
+docs/index.html,1600,"target=""_blank"">v10→v12 (PDF) ↗",https://github.com/hprzeta/Riemann_Lab/blob/main/pdf/optimisation/analyse_problemes_v10_v12.pdf,PDF,200,-,🟢,,
+docs/index.html,1607,"target=""_blank"">Z_rs_double Phase1 + 2 Newton Z_arb",https://github.com/hprzeta/Riemann_Lab/wiki/Formules_zeta#28--illinois-hybride-2-phases-v12-2026-06-13,ancre vers une autre page,200,présente,🟢,,
+docs/index.html,1615,"target=""_blank"">T_SEUIL 200→65",https://github.com/hprzeta/Riemann_Lab/wiki/Bibliotheques#17bis--v13v15--cache-rs-statique--phase-2-adaptative-2026-07-04,ancre vers une autre page,200,présente,🟢,,
+docs/index.html,1616,"target=""_blank"">v13→v15 (PDF) ↗",https://github.com/hprzeta/Riemann_Lab/blob/main/pdf/optimisation/analyse_problemes_v13_v15.pdf,PDF,200,-,🟢,,
+docs/index.html,1623,"target=""_blank"">log_n_cache[2101] + isqrt_n_cache[2101]",https://github.com/hprzeta/Riemann_Lab/wiki/Bibliotheques#cache-log_n--isqrt_n-v14,ancre vers une autre page,200,présente,🟢,,
+docs/index.html,1631,"target=""_blank"">SEUIL_1NEWTON=20k",https://github.com/hprzeta/Riemann_Lab/wiki/Formules_zeta#30--biais-z_rs-et-seuil-seuil_1newton-v15-2026-07-04,ancre vers une autre page,200,présente,🟢,,
+docs/index.html,1639,"target=""_blank"">acb_dirichlet_hardy_z 64 bits",https://github.com/hprzeta/Riemann_Lab/wiki/Bibliotheques#18--v16--z_arb-à-précision-fixe--acb_dirichlet_hardy_z-remplace-arb_fpwrap-2026-08-08,ancre vers une autre page,200,présente,🟢,,
+docs/index.html,1640,"target=""_blank"">rapport global v1→v16 (PDF) ↗",https://github.com/hprzeta/Riemann_Lab/blob/main/pdf/optimisation/analyse_problemes_v1_v16.pdf,PDF,200,-,🟢,,
+docs/index.html,1648,"target=""_blank"">v16→v17 (PDF) ↗",https://github.com/hprzeta/Riemann_Lab/blob/main/pdf/optimisation/analyse_problemes_v16_v17.pdf,PDF,200,-,🟢,,
+docs/index.html,1768,"target=""_blank"">V17.md",https://github.com/hprzeta/Riemann_Lab/blob/main/docs/V17.md,fichier du dépôt,200,-,🟢,,
+docs/index.html,1777,"target=""_blank"">GitHub",https://github.com/hprzeta/Riemann_Lab,fichier du dépôt,200,-,🟢,,
+docs/index.html,1779,"target=""_blank"">LMFDB",https://www.lmfdb.org/zeros/zeta/,externe,200,-,🟢,,
+docs/index.html,1781,"target=""_blank"">Wiki",https://github.com/hprzeta/Riemann_Lab/wiki,page wiki,200,-,🟢,,
+docs/Bibliotheques.md,701,analyse_problemes_v10_v12,[[analyse_problemes_v10_v12]],page wiki,200,-,🟢,,wiki local OK
+docs/Bibliotheques.md,757,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+docs/Bibliotheques.md,778,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+docs/Bibliotheques.md,931,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+docs/Bibliotheques.md,949,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+docs/Bibliotheques.md,959,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+docs/Bibliotheques.md,959,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+docs/Bibliotheques.md,964,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+docs/Formules_zeta.md,1692,Bibliotheques,[[Bibliotheques]],page wiki,200,-,🟢,,wiki local OK
+docs/Formules_zeta.md,1693,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+docs/Formules_zeta.md,1705,Bibliotheques,[[Bibliotheques]],page wiki,200,-,🟢,,wiki local OK
+docs/Formules_zeta.md,1722,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+docs/Formules_zeta.md,1733,Bibliotheques,[[Bibliotheques]],page wiki,200,-,🟢,,wiki local OK
+docs/Formules_zeta.md,1758,Bibliotheques,[[Bibliotheques]],page wiki,200,-,🟢,,wiki local OK
+docs/Formules_zeta.md,1764,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+docs/archive/discusion_claude_2026-09-06.md,113,Page,[[Page]],page wiki,200 → https://github.com/hprzeta/Riemann_Lab/wiki/,-,⚪,faux positif : exemple de syntaxe cité dans le texte (pas un lien),wiki local ABSENT
+docs/archive/discusion_claude_2026-09-06.md,122,Étape-2/3/4,[[Étape-2/3/4]],page wiki,200 → https://github.com/hprzeta/Riemann_Lab/wiki/,-,⚪,faux positif : exemple de syntaxe cité dans le texte (pas un lien),wiki local ABSENT
+docs/archive/discusion_claude_2026-09-27.md,156,(URL nue),http://localhost:20128`,externe,0,-,⚪,faux positif : URL entourée de ` ou ** dans le texte : artefact d'extraction,
+README.md,1,Riemann Lab Header,docs/images/header_riemann_lab.svg,image,200,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+README.md,10,GitHub Issues,https://img.shields.io/github/issues/hprzeta/Riemann_Lab,image,200,-,🟢,,
+README.md,11,GitHub Closed Issues,https://img.shields.io/github/issues-closed/hprzeta/Riemann_Lab,image,200,-,🟢,,
+README.md,12,GitHub Issues personnelles,https://img.shields.io/badge/issues-personnelles-blue,image,200,-,🟢,,
+README.md,12,Mes issues assignées,https://github.com/issues?q=is%3Aopen+assignee%3Ahprzeta,externe,404,-,🟡,404 sans connexion (page privée/connectée) : à tester dans le Chrome connecté,
+README.md,13,GitHub Project,https://img.shields.io/badge/Project-Kanban-blue,image,200,-,🟢,,
+README.md,13,Voir le Kanban,https://github.com/users/hprzeta/projects/1,fichier du dépôt,404,-,🟡,404 sans connexion (page privée/connectée) : à tester dans le Chrome connecté,
+README.md,21,https://hprzeta.github.io/Riemann_Lab/,https://hprzeta.github.io/Riemann_Lab/,page du site,200,-,🟢,,
+README.md,22,https://github.com/hprzeta/Riemann_Lab/wiki,https://github.com/hprzeta/Riemann_Lab/wiki,page wiki,200,-,🟢,,
+README.md,23,Wiki — Configuration-Materielle-Logicielle,https://github.com/hprzeta/Riemann_Lab/wiki/Configuration-Materielle-Logicielle,page wiki,200,-,🟢,,
+README.md,40,Wiki — Configuration Matérielle & Logicielle,https://github.com/hprzeta/Riemann_Lab/wiki/Configuration-Materielle-Logicielle,page wiki,200,-,🟢,,
+README.md,48,,images/T10Demo/zeta_demoExc.png,image,-,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+README.md,51,,images/T10Demo/zeta_demoresultatsCal.png,image,-,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+README.md,54,,images/T10Demo/zeta_demomatplotRel.png,image,-,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+README.md,57,"target=""_blank"">",https://hprzeta.github.io/Riemann_Lab/images/T10Demo/zeta_demovisualisation.html,page du site,200,-,🟢,,
+README.md,58,,images/T10Demo/zeta_demoplotlyImg.png,image,-,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+README.md,65,,images/T10Demo/zeta_demoia1.png,image,-,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+README.md,67,,images/T10Demo/zeta_demoia2.png,image,-,-,🟢,,"dépôt: copie locale oui, main oui, IA oui"
+README.md,91,Hypothèse de Riemann - Wikipedia,https://fr.wikipedia.org/wiki/Hypoth%C3%A8se_de_Riemann,externe,200,-,🟢,,
+README.md,92,Fonction zêta de Riemann - MathWorld,https://mathworld.wolfram.com/RiemannZetaFunction.html,externe,200,-,🟢,,
+README.md,93,"Images de Zêta - Avec ""Les Mathématiques en couleurs"" ",https://graphes-fonctions-holomorphes.toile-libre.org/FoncHol/zeta.html,externe,200,-,🟢,,
+README.md,94,mpmath documentation,https://mpmath.org/,externe,200,-,🟢,,
+README.md,95,Ollama - LLMs locaux,https://ollama.com/,externe,200,-,🟢,,
+Riemann_Lab.wiki/Analyse-Deficit-Zeros-Grille-20260906.md,6,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Analyse-Deficit-Zeros-Grille-20260906.md,6,analyse_problemes_v16_v17,[[analyse_problemes_v16_v17]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Analyse-Deficit-Zeros-Grille-20260906.md,11,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Analyse-Deficit-Zeros-Grille-20260906.md,11,Bibliotheques,[[Bibliotheques]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Analyse-Deficit-Zeros-Grille-20260906.md,183,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Analyse-Deficit-Zeros-Grille-20260906.md,185,Bibliotheques,[[Bibliotheques]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Analyse-Deficit-Zeros-Grille-20260906.md,195,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Animations.md,4,hprzeta.github.io/Riemann_Lab,https://hprzeta.github.io/Riemann_Lab/,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Animations.md,14,θ(t) de Riemann-Siegel,#-animation_theta--θt-de-riemann-siegel,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Animations.md,14,niveau-4-zeta,[[niveau-4-zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Animations.md,15,Séries de Dirichlet,#-animation_series_dirichlet--séries-de-dirichlet,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Animations.md,15,niveau-1-series,[[niveau-1-series]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Animations.md,16,Produit eulérien,#️-animation_produit_eulerien--produit-eulérien,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Animations.md,16,niveau-1-series,[[niveau-1-series]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Animations.md,17,Plan complexe,#ℂ-animation_plan_complexe--plan-complexe,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Animations.md,17,niveau-2-analyse-complexe,[[niveau-2-analyse-complexe]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Animations.md,18,Fonction Γ,#γ-animation_gamma--fonction-gamma,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Animations.md,18,niveau-3-gamma-dirichlet,[[niveau-3-gamma-dirichlet]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Animations.md,19,Distribution des zéros,#-animation_distribution_zeros--distribution-des-zéros,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Animations.md,19,niveau-5-expert,[[niveau-5-expert]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Animations.md,20,Zéros non triviaux,#-animation_zeros_non_triviaux--zéros-non-triviaux,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Animations.md,20,niveau-4-zeta,[[niveau-4-zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Animations.md,21,Mur de latence,#-animation_mur_latence--mur-de-latence,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Animations.md,21,niveau-5-expert,[[niveau-5-expert]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Animations.md,22,Distribution des gaps — GUE vs STEP,#-animation_gaps_gue--distribution-des-gaps--gue-vs-step,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Animations.md,22,niveau-5-expert,[[niveau-5-expert]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Animations.md,23,Illinois adaptatif — v7,#-animation_illinois_adaptatif--illinois-adaptatif--v7--2-phases-de-calcul,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Animations.md,23,niveau-4-zeta,[[niveau-4-zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Animations.md,24,Coût RS — N_termes,#-animation_ntermes_rs--coût-rs--n_termes-et-bottleneck-illinois_c,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Animations.md,24,niveau-4-zeta,[[niveau-4-zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Animations.md,25,Précision mpfr & limbs,#-animation_prec_mpfr--précision-mpfr--limbs--le-vrai-levier-v7,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Animations.md,25,niveau-4-zeta,[[niveau-4-zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Animations.md,33,▶ Ouvrir l'animation,https://hprzeta.github.io/Riemann_Lab/animation_theta.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Animations.md,50,▶ Ouvrir l'animation,https://hprzeta.github.io/Riemann_Lab/animation_series_dirichlet.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Animations.md,62,▶ Ouvrir l'animation,https://hprzeta.github.io/Riemann_Lab/animation_produit_eulerien.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Animations.md,75,▶ Ouvrir l'animation,https://hprzeta.github.io/Riemann_Lab/animation_plan_complexe.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Animations.md,87,▶ Ouvrir l'animation,https://hprzeta.github.io/Riemann_Lab/animation_gamma.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Animations.md,100,▶ Ouvrir l'animation,https://hprzeta.github.io/Riemann_Lab/animation_distribution_zeros.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Animations.md,114,▶ Ouvrir l'animation,https://hprzeta.github.io/Riemann_Lab/animation_zeros_non_triviaux.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Animations.md,126,▶ Ouvrir l'animation,https://hprzeta.github.io/Riemann_Lab/animation_mur_latence.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Animations.md,138,▶ Ouvrir l'animation,https://hprzeta.github.io/Riemann_Lab/animation_gaps_gue.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Animations.md,146,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Animations.md,152,▶ Ouvrir l'animation,https://hprzeta.github.io/Riemann_Lab/animation_illinois_adaptatif.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Animations.md,160,Etape-1-Calcul-des-zéros-non-triviaux,[[Etape-1-Calcul-des-zéros-non-triviaux]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Animations.md,166,▶ Ouvrir l'animation,https://hprzeta.github.io/Riemann_Lab/animation_ntermes_rs.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Animations.md,180,▶ Ouvrir l'animation,https://hprzeta.github.io/Riemann_Lab/animation_prec_mpfr.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Animations.md,210,niveau-1-series,[[niveau-1-series]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Animations.md,211,niveau-2-analyse-complexe,[[niveau-2-analyse-complexe]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Animations.md,212,niveau-3-gamma-dirichlet,[[niveau-3-gamma-dirichlet]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Animations.md,213,niveau-4-zeta,[[niveau-4-zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Animations.md,214,niveau-5-expert,[[niveau-5-expert]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Architecture-Cluster-Zeta.md,2,Diagnostic-WireGuard-Hotspot,[[Diagnostic-WireGuard-Hotspot]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Architecture-Cluster-Zeta.md,39,Diagnostic-WireGuard-Hotspot,[[Diagnostic-WireGuard-Hotspot]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Architecture-Cluster-Zeta.md,392,Migration-PC4-Compaq-CQ58-20260816,[[Migration-PC4-Compaq-CQ58-20260816]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Architecture-Cluster-Zeta.md,458,Diagnostic-WireGuard-Hotspot,[[Diagnostic-WireGuard-Hotspot]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Architecture-Cluster-Zeta.md,664,§18 PC5 — zeta-monitor,#18-pc5--zeta-monitor-nœud-monitoring,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Architecture-Cluster-Zeta.md,776,Plancher-Hardware-Architecture,[[Plancher-Hardware-Architecture]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Architecture-Cluster-Zeta.md,777,Etape-1-Calcul-des-zéros-non-triviaux,[[Etape-1-Calcul-des-zéros-non-triviaux]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Architecture-Cluster-Zeta.md,778,STACK,[[STACK]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Architecture-Cluster-Zeta.md,779,Guide-Linux-Commandes,[[Guide-Linux-Commandes]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Architecture-Cluster-Zeta.md,780,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Bibliotheques.md,701,analyse_problemes_v10_v12,[[analyse_problemes_v10_v12]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Bibliotheques.md,757,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Bibliotheques.md,778,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Bibliotheques.md,931,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Bibliotheques.md,949,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Bibliotheques.md,959,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Bibliotheques.md,959,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Bibliotheques.md,964,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Bonnes-Pratiques-Claude-Code.md,126,(URL nue),https://status.claude.com**,externe,0,-,⚪,faux positif : URL entourée de ` ou ** dans le texte : artefact d'extraction,
+Riemann_Lab.wiki/Bonnes-Pratiques-Claude-Code.md,945,prompts_claude_2026-08-18,[[prompts_claude_2026-08-18]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Bonnes-Pratiques-Claude-Code.md,946,analyse_math_deficit_2026-08-18,[[analyse_math_deficit_2026-08-18]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Configuration-Materielle-Logicielle.md,23,Plancher-Hardware-Architecture,[[Plancher-Hardware-Architecture]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Configuration-Materielle-Logicielle.md,56,Structure-Projet-Complet,[[Structure-Projet-Complet]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Configuration-Materielle-Logicielle.md,99,Bibliotheques,[[Bibliotheques]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Configuration-Materielle-Logicielle.md,114,Plancher-Hardware-Architecture,[[Plancher-Hardware-Architecture]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Configuration-Materielle-Logicielle.md,115,Structure-Projet-Complet,[[Structure-Projet-Complet]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Configuration-Materielle-Logicielle.md,116,Bibliotheques,[[Bibliotheques]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Configuration-Materielle-Logicielle.md,117,STACK,[[STACK]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Diagnostic-WireGuard-Hotspot.md,6,Guide-WireGuard-Acces-Distant,[[Guide-WireGuard-Acces-Distant]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Diagnostic-WireGuard-Hotspot.md,32,Guide-WireGuard-Acces-Distant,[[Guide-WireGuard-Acces-Distant]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Diagnostic-WireGuard-Hotspot.md,60,Migration-PC4-Compaq-CQ58-20260816,[[Migration-PC4-Compaq-CQ58-20260816]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Diagnostic-WireGuard-Hotspot.md,218,Schéma diagnostic WireGuard hotspot,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/docs/images/schema_diagnostic.png,image,200,-,🟢,,
+Riemann_Lab.wiki/Diagnostic-WireGuard-Hotspot.md,219,Schéma automatisation wg_auto.sh,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/docs/images/schema_automatisation.png,image,200,-,🟢,,
+Riemann_Lab.wiki/Diagnostic-WireGuard-Hotspot.md,284,Migration-PC4-Compaq-CQ58-20260816,[[Migration-PC4-Compaq-CQ58-20260816]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Diagnostic-WireGuard-Hotspot.md,506,Guide-WireGuard-Acces-Distant,[[Guide-WireGuard-Acces-Distant]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Diagnostic-WireGuard-Hotspot.md,523,Guide-WireGuard-Acces-Distant,[[Guide-WireGuard-Acces-Distant]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Diagnostic-WireGuard-Hotspot.md,526,Migration-PC4-Compaq-CQ58-20260816,[[Migration-PC4-Compaq-CQ58-20260816]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Diagnostic-WireGuard-Hotspot.md,529,Architecture-Cluster-Zeta,[[Architecture-Cluster-Zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Diagnostic-WireGuard-Hotspot.md,531,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Diagnostic-WireGuard-Hotspot.md,532,STACK,[[STACK]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Diagnostic-WireGuard-Hotspot.md,533,Guide-Linux-Commandes,[[Guide-Linux-Commandes]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,6,compute_zeros_v1.py,https://raw.githubusercontent.com/hprzeta/Riemann_Lab/main/docs/archive/python_obsoletes/compute_zeros_v1.py,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,8,Paramètres de lancement,https://raw.githubusercontent.com/hprzeta/Riemann_Lab/main/config/zeros_config.yaml,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,12,Rapport d'exécution ,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/images/T1000_V1/zeros_zeta_T10000_etape1_Exc_bug-overflow.png,image,200,-,🟢,,
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,39,`zeros_zeta_final.csv`,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/docs/archive/csv_anciens/zeros_zeta_final.csv,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,40,`zeros_intermediaire.csv`,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/docs/csv/T1000_V1/zeros_intermediaire.csv,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,41,`zeros_zeta.log`,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/logs/T1000_V1/zeros_zeta.log,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,70,compute_zeros_v2.py,https://raw.githubusercontent.com/hprzeta/Riemann_Lab/main/docs/archive/python_obsoletes/compute_zeros_v2.py,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,100,Console — exécution complète v2,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/images/T1000_V2/zeros_zeta_T10000_Exc_20260424_205325.png,image,200,-,🟢,,
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,131,Distribution des espacements et droite critique,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/images/T1000_V2/zeros_zeta_T10000_20260424_205325.png,image,200,-,🟢,,
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,135,`zeros_zeta_T10000_20260424_205325.csv`,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/csv/T1000_V2/zeros_zeta_T10000_20260424_205325.csv,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,136,`zeros_zeta_T10000_intermediaire_20260424_205325.csv`,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/csv/T1000_V2/zeros_zeta_T10000_intermediaire_20260424_205325.csv,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,137,`zeros_zeta_T10000_20260424_205325.log`,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/logs/T1000_V2/zeros_zeta_T10000_20260424_205325.log,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,142,LMFDB – Zeros of ζ(s),https://www.lmfdb.org/zeros/zeta/,externe,200,-,🟢,,
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,143,Formule de Riemann-von Mangoldt,https://fr.wikipedia.org/wiki/Formule_de_Riemann-von_Mangoldt,externe,200,-,🟢,,
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,150,Phase Optimisation – compute_zeros_v3,Phase-Optimisation-compute_zeros_v3,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,151,`analyse_problemes_v2_v3_phase0.pdf`,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/pdf/optimisation/analyse_problemes_v2_v3_phase0.pdf,PDF,200,-,🟢,,
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,153,Rapport_validation_T10000,https://github.com/hprzeta/Riemann_Lab/wiki/Rapport_validation_T10000,page wiki,200,-,🟢,,
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,217,analyse_problemes_v4_1_v5,[[analyse_problemes_v4_1_v5]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,218,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,219,Bibliotheques,[[Bibliotheques]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,251,analyse_problemes_v6_v7,[[analyse_problemes_v6_v7]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,268,analyse_problemes_v7_v8,[[analyse_problemes_v7_v8]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,268,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,306,analyse_problemes_v8_v9,[[analyse_problemes_v8_v9]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,380,analyse_problemes_v10_v12,[[analyse_problemes_v10_v12]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,461,analyse_problemes_v13_v15,[[analyse_problemes_v13_v15]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,462,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,463,Bibliotheques,[[Bibliotheques]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,498,analyse_problemes_v16_v17,[[analyse_problemes_v16_v17]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,528,analyse_problemes_v16_v17,[[analyse_problemes_v16_v17]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,529,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Etape-1-Calcul-des-zéros-non-triviaux.md,529,Bibliotheques,[[Bibliotheques]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch01.md,1,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch01.md,1,Chapitre 2 →,Formation-Zeta-HR-Ch02,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch01.md,130,"Domaine de convergence absolue de ζ(s) : σ>1 en vert, bande σ≤1 nécessitant un prolongement",https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/figures/ch01_domaine_convergence.png,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch01.md,132,figures/ch01_domaine_convergence.svg,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/cours/figures/ch01_domaine_convergence.svg,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch01.md,136,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch01.md,136,Chapitre 2 →,Formation-Zeta-HR-Ch02,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch01.md,140,github.com/hprzeta/Riemann_Lab,https://github.com/hprzeta/Riemann_Lab,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch02.md,1,← Chapitre 1,Formation-Zeta-HR-Ch01,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch02.md,1,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch02.md,1,Chapitre 3 →,Formation-Zeta-HR-Ch03,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch02.md,100,"Comparaison série/intégrale pour f(x)=1/x², rectangles encadrant l'aire",https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/figures/ch02_serie_integrale.png,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch02.md,102,figures/ch02_serie_integrale.svg,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/cours/figures/ch02_serie_integrale.svg,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch02.md,106,← Chapitre 1,Formation-Zeta-HR-Ch01,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch02.md,106,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch02.md,106,Chapitre 3 →,Formation-Zeta-HR-Ch03,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch02.md,110,github.com/hprzeta/Riemann_Lab,https://github.com/hprzeta/Riemann_Lab,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch03.md,1,← Chapitre 2,Formation-Zeta-HR-Ch02,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch03.md,1,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch03.md,1,Chapitre 4 →,Formation-Zeta-HR-Ch04,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch03.md,78,Module et argument de z=3+4i dans le plan complexe,https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/figures/ch03_module_argument.png,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch03.md,80,figures/ch03_module_argument.svg,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/cours/figures/ch03_module_argument.svg,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch03.md,84,← Chapitre 2,Formation-Zeta-HR-Ch02,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch03.md,84,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch03.md,84,Chapitre 4 →,Formation-Zeta-HR-Ch04,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch03.md,88,github.com/hprzeta/Riemann_Lab,https://github.com/hprzeta/Riemann_Lab,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch04.md,1,← Chapitre 3,Formation-Zeta-HR-Ch03,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch04.md,1,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch04.md,1,Chapitre 5 →,Formation-Zeta-HR-Ch05,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch04.md,74,"Cercle unité, vecteur position y=e^{iθ} et vecteur vitesse y'=iy perpendiculaire",https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/figures/ch04_euler_ode.png,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch04.md,76,figures/ch04_euler_ode.svg,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/cours/figures/ch04_euler_ode.svg,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch04.md,80,← Chapitre 3,Formation-Zeta-HR-Ch03,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch04.md,80,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch04.md,80,Chapitre 5 →,Formation-Zeta-HR-Ch05,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch04.md,84,github.com/hprzeta/Riemann_Lab,https://github.com/hprzeta/Riemann_Lab,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch05.md,1,← Chapitre 4,Formation-Zeta-HR-Ch04,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch05.md,1,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch05.md,1,Chapitre 6 →,Formation-Zeta-HR-Ch06,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch05.md,75,figures/ch05_fonction_Z.svg,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/cours/figures/ch05_fonction_Z.svg,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch05.md,79,← Chapitre 4,Formation-Zeta-HR-Ch04,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch05.md,79,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch05.md,79,Chapitre 6 →,Formation-Zeta-HR-Ch06,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch05.md,83,github.com/hprzeta/Riemann_Lab,https://github.com/hprzeta/Riemann_Lab,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch06.md,1,← Chapitre 5,Formation-Zeta-HR-Ch05,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch06.md,1,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch06.md,1,Chapitre 7 →,Formation-Zeta-HR-Ch07,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch06.md,74,"Trois bandes du plan complexe : série de Dirichlet, fonction êta, équation fonctionnelle",https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/figures/ch06_cascade_prolongement.png,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch06.md,76,figures/ch06_cascade_prolongement.svg,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/cours/figures/ch06_cascade_prolongement.svg,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch06.md,80,← Chapitre 5,Formation-Zeta-HR-Ch05,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch06.md,80,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch06.md,80,Chapitre 7 →,Formation-Zeta-HR-Ch07,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch06.md,84,github.com/hprzeta/Riemann_Lab,https://github.com/hprzeta/Riemann_Lab,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch07.md,1,← Chapitre 6,Formation-Zeta-HR-Ch06,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch07.md,1,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch07.md,1,Chapitre 8 →,Formation-Zeta-HR-Ch08,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch07.md,69,"Cercle unité paramétré γ(t)=e^{it}, sens positif",https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/figures/ch07_contour_parametre.png,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch07.md,71,figures/ch07_contour_parametre.svg,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/cours/figures/ch07_contour_parametre.svg,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch07.md,75,← Chapitre 6,Formation-Zeta-HR-Ch06,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch07.md,75,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch07.md,75,Chapitre 8 →,Formation-Zeta-HR-Ch08,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch07.md,79,github.com/hprzeta/Riemann_Lab,https://github.com/hprzeta/Riemann_Lab,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch08.md,1,← Chapitre 7,Formation-Zeta-HR-Ch07,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch08.md,1,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch08.md,1,Chapitre 9 →,Formation-Zeta-HR-Ch09,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch08.md,65,"Domaine simplement connexe (f=z², intégrale nulle) vs domaine troué (f=1/z, intégrale=2πi)",https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/figures/ch08_cauchy_trou.png,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch08.md,67,figures/ch08_cauchy_trou.svg,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/cours/figures/ch08_cauchy_trou.svg,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch08.md,71,← Chapitre 7,Formation-Zeta-HR-Ch07,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch08.md,71,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch08.md,71,Chapitre 9 →,Formation-Zeta-HR-Ch09,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch08.md,75,github.com/hprzeta/Riemann_Lab,https://github.com/hprzeta/Riemann_Lab,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch09.md,1,← Chapitre 8,Formation-Zeta-HR-Ch08,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch09.md,1,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch09.md,1,Chapitre 10 →,Formation-Zeta-HR-Ch10,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch09.md,70,"Contour entourant trois pôles z1, z2, z3, un pôle hors contour ignoré",https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/figures/ch09_residus_poles.png,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch09.md,72,figures/ch09_residus_poles.svg,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/cours/figures/ch09_residus_poles.svg,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch09.md,76,← Chapitre 8,Formation-Zeta-HR-Ch08,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch09.md,76,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch09.md,76,Chapitre 10 →,Formation-Zeta-HR-Ch10,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch09.md,80,github.com/hprzeta/Riemann_Lab,https://github.com/hprzeta/Riemann_Lab,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch10.md,1,← Chapitre 9,Formation-Zeta-HR-Ch09,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch10.md,1,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch10.md,1,Chapitre 11 →,Formation-Zeta-HR-Ch11,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch10.md,77,Décroissance de ln|Γ(1/2+it)| en fonction de t,https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/figures/ch10_stirling_decay.png,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch10.md,79,figures/ch10_stirling_decay.svg,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/cours/figures/ch10_stirling_decay.svg,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch10.md,83,← Chapitre 9,Formation-Zeta-HR-Ch09,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch10.md,83,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch10.md,83,Chapitre 11 →,Formation-Zeta-HR-Ch11,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch10.md,87,github.com/hprzeta/Riemann_Lab,https://github.com/hprzeta/Riemann_Lab,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch11.md,1,← Chapitre 10,Formation-Zeta-HR-Ch10,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch11.md,1,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch11.md,1,Chapitre 12 →,Formation-Zeta-HR-Ch12,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch11.md,63,Symétrie ξ(s)=ξ(1-s) autour de la droite σ=1/2,https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/figures/ch11_symetrie_miroir.png,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch11.md,65,figures/ch11_symetrie_miroir.svg,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/cours/figures/ch11_symetrie_miroir.svg,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch11.md,69,← Chapitre 10,Formation-Zeta-HR-Ch10,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch11.md,69,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch11.md,69,Chapitre 12 →,Formation-Zeta-HR-Ch12,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch11.md,73,github.com/hprzeta/Riemann_Lab,https://github.com/hprzeta/Riemann_Lab,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch12.md,1,← Chapitre 11,Formation-Zeta-HR-Ch11,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch12.md,1,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch12.md,1,Chapitre 13 →,Formation-Zeta-HR-Ch13,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch12.md,67,"Zéros ρ et leurs symétriques 1-ρ, ρ̄ sur la droite critique",https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/figures/ch12_symetrie_zeros.png,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch12.md,69,figures/ch12_symetrie_zeros.svg,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/cours/figures/ch12_symetrie_zeros.svg,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch12.md,73,← Chapitre 11,Formation-Zeta-HR-Ch11,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch12.md,73,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch12.md,73,Chapitre 13 →,Formation-Zeta-HR-Ch13,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch12.md,77,github.com/hprzeta/Riemann_Lab,https://github.com/hprzeta/Riemann_Lab,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch13.md,1,← Chapitre 12,Formation-Zeta-HR-Ch12,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch13.md,1,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch13.md,1,Chapitre 14 →,Formation-Zeta-HR-Ch14,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch13.md,65,Convergence du produit d'Euler tronqué vers ζ(2),https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/figures/ch13_produit_euler.png,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch13.md,67,figures/ch13_produit_euler.svg,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/cours/figures/ch13_produit_euler.svg,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch13.md,71,← Chapitre 12,Formation-Zeta-HR-Ch12,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch13.md,71,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch13.md,71,Chapitre 14 →,Formation-Zeta-HR-Ch14,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch13.md,75,github.com/hprzeta/Riemann_Lab,https://github.com/hprzeta/Riemann_Lab,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch14.md,1,← Chapitre 13,Formation-Zeta-HR-Ch13,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch14.md,1,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch14.md,76,Escalier N(T) réel vs formule asymptotique T/(2π)ln(T/2πe),https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/cours/figures/ch14_comptage_NT.png,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch14.md,78,figures/ch14_comptage_NT.svg,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/cours/figures/ch14_comptage_NT.svg,image,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch14.md,82,← Chapitre 13,Formation-Zeta-HR-Ch13,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch14.md,82,Sommaire,Formation-Zeta-HR,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR-Ch14.md,86,github.com/hprzeta/Riemann_Lab,https://github.com/hprzeta/Riemann_Lab,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR.md,5,github.com/hprzeta/Riemann_Lab,https://github.com/hprzeta/Riemann_Lab,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Formation-Zeta-HR.md,13,Chapitre 1 — Série de Dirichlet & convergence de ζ(s),Formation-Zeta-HR-Ch01,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR.md,14,Chapitre 2 — Critère série ↔ intégrale,Formation-Zeta-HR-Ch02,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR.md,15,Chapitre 3 — Nombres complexes : module & argument,Formation-Zeta-HR-Ch03,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR.md,16,Chapitre 4 — Formule d'Euler (deux démonstrations),Formation-Zeta-HR-Ch04,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR.md,17,Chapitre 5 — Module |e^{iθ}|=1 et |n⁻ˢ|,Formation-Zeta-HR-Ch05,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR.md,18,Chapitre 6 — Fonction êta de Dirichlet & prolongement (bande 0<σ≤1),Formation-Zeta-HR-Ch06,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR.md,19,"Chapitre 7 — Chemins, contours, intégrale de contour",Formation-Zeta-HR-Ch07,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR.md,20,Chapitre 8 — Théorème de Cauchy & holomorphie,Formation-Zeta-HR-Ch08,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR.md,21,"Chapitre 9 — Singularités, pôles, résidus (ordre 2, 3, n)",Formation-Zeta-HR-Ch09,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR.md,22,Chapitre 10 — Facteurs Gamma & Stirling (n! et complexe),Formation-Zeta-HR-Ch10,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR.md,23,Chapitre 11 — Prolongement analytique & équation fonctionnelle,Formation-Zeta-HR-Ch11,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR.md,24,"Chapitre 12 — Fonction ξ, produit de Hadamard, Ξ(t)",Formation-Zeta-HR-Ch12,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR.md,25,Chapitre 13 — Produit d'Euler & nombres premiers,Formation-Zeta-HR-Ch13,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR.md,26,"Chapitre 14 — Résidus de ζ'/ζ, principe de l'argument, N(T), Hypothèse de Riemann",Formation-Zeta-HR-Ch14,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formation-Zeta-HR.md,30,github.com/hprzeta/Riemann_Lab,https://github.com/hprzeta/Riemann_Lab,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Formules_zeta.md,1671,Bibliotheques,[[Bibliotheques]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formules_zeta.md,1672,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formules_zeta.md,1686,Bibliotheques,[[Bibliotheques]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formules_zeta.md,1704,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formules_zeta.md,1715,Bibliotheques,[[Bibliotheques]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formules_zeta.md,1741,Bibliotheques,[[Bibliotheques]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Formules_zeta.md,1747,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-Git-GitHub.md,50,github.com,https://github.com,externe,200,-,🟢,,
+Riemann_Lab.wiki/Guide-Git-GitHub.md,619,(URL nue),https://github.com/login/device`,externe,404,-,⚪,faux positif : URL entourée de ` ou ** dans le texte : artefact d'extraction,
+Riemann_Lab.wiki/Guide-Linux-Commandes.md,111,Diagnostic-WireGuard-Hotspot,[[Diagnostic-WireGuard-Hotspot]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-Linux-Commandes.md,294,Diagnostic-WireGuard-Hotspot,[[Diagnostic-WireGuard-Hotspot]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-Linux-Commandes.md,905,Diagnostic-WireGuard-Hotspot,[[Diagnostic-WireGuard-Hotspot]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-Linux-Commandes.md,1464,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-Linux-Commandes.md,1510,Diagnostic-WireGuard-Hotspot,[[Diagnostic-WireGuard-Hotspot]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-Linux-Commandes.md,1527,Diagnostic-WireGuard-Hotspot,[[Diagnostic-WireGuard-Hotspot]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-Linux-Commandes.md,1613,Diagnostic-WireGuard-Hotspot,[[Diagnostic-WireGuard-Hotspot]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-Linux-Commandes.md,1614,Guide-WireGuard-Acces-Distant,[[Guide-WireGuard-Acces-Distant]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-Linux-Commandes.md,1652,Diagnostic-WireGuard-Hotspot,[[Diagnostic-WireGuard-Hotspot]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-Linux-Commandes.md,1653,Guide-WireGuard-Acces-Distant,[[Guide-WireGuard-Acces-Distant]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-Ollama-Pratique.md,42,(URL nue),http://127.0.0.1:11434`,externe,0,-,⚪,faux positif : URL entourée de ` ou ** dans le texte : artefact d'extraction,
+Riemann_Lab.wiki/Guide-Ollama-Pratique.md,149,htop threads ollama,images/ollama_htop_threads.png,image,-,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-Ollama-Pratique.md,158,bind address already in use,images/ollama_bind_address_in_use.png,image,-,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-Ollama-Pratique.md,167,mathstral confirmé malgré erreur bind,images/ollama_mathstral_confirme.png,image,-,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-Ollama-Pratique.md,242,Guide-RAG-BrainVault-Debutant,[[Guide-RAG-BrainVault-Debutant]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-Ollama-Pratique.md,243,STACK,[[STACK]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-RAG-BrainVault-Debutant.md,162,etat_rag_brainvault_20260704,[[etat_rag_brainvault_20260704]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-RAG-BrainVault-Debutant.md,180,STACK,[[STACK]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-RAG-BrainVault-Debutant.md,367,etat_rag_brainvault_20260704,[[etat_rag_brainvault_20260704]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-RAG-BrainVault-Debutant.md,368,Guide-Ollama-Pratique,[[Guide-Ollama-Pratique]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-RAG-BrainVault-Debutant.md,369,ORGANISATION_FICHIERS,[[ORGANISATION_FICHIERS]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-RAG-BrainVault-Debutant.md,370,STACK,[[STACK]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-RAG-BrainVault-Debutant.md,371,Bonnes-Pratiques-Claude-Code,[[Bonnes-Pratiques-Claude-Code]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-WireGuard-Acces-Distant.md,268,Diagnostic-WireGuard-Hotspot,[[Diagnostic-WireGuard-Hotspot]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-WireGuard-Acces-Distant.md,272,Architecture-Cluster-Zeta,[[Architecture-Cluster-Zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-WireGuard-Acces-Distant.md,273,Guide-Linux-Commandes,[[Guide-Linux-Commandes]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Guide-WireGuard-Acces-Distant.md,274,STACK,[[STACK]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Handoff.md,205,Guide-WireGuard-Acces-Distant,[[Guide-WireGuard-Acces-Distant]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,1,,https://raw.githubusercontent.com/hprzeta/Riemann_Lab/main/docs/images/header_riemann_lab.svg,image,200,-,🟢,,
+Riemann_Lab.wiki/Home.md,17,🗺️ Parcours complet — cours niveaux 0→5,Parcours-complet,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,18,🧮 Documentation générale du projet ζ(s),Projet-Zêta,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,19,🧭 Guide Git & GitHub,Guide-Git-GitHub,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,20,🖥️ Guide Vscode WorkSpaces,Guide-VSCode-Bonnes-Pratiques,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,21,📐 Symboles mathématiques,Tableau-Symboles-Mathématiques,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,22,🔬 Interprétation des premiers tests T40,Interprétation-des-résultats-de-tests,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,23,Étape 1 — Calcul des zéros,Etape-1-Calcul-des-zéros-non-triviaux,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,24,Partie 1 — La Théorie de l'Étape 1,Partie-1-La-Théorie-Étape_1,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,25,Étape 2 — Visualisations avancées,Animations,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,26,Étape 3 — Intelligence artificielle,Guide-Ollama-Pratique,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,28,🏗️ Architecture hardware & mur de latence,Plancher-Hardware-Architecture,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,29,🗂️ Structure projet complète,Structure-Projet-Complet,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,37,Méthode d'apprentissage,Methode,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,38,Prérequis — Nombres complexes,niveau-0-prerequis,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,39,"Suites, séries et exponentielle complexe",niveau-1-series,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,40,Analyse complexe,niveau-2-analyse-complexe,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,41,"Fonction Γ, Dirichlet et équation fonctionnelle",niveau-3-gamma-dirichlet,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,42,"Zéros, Hardy et Riemann-Siegel",niveau-4-zeta,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,43,"Expert — TNP, GUE, fonctions L",niveau-5-expert,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,49,GitHub Pages,https://hprzeta.github.io/Riemann_Lab/,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Home.md,53,θ(t) de Riemann-Siegel,https://hprzeta.github.io/Riemann_Lab/animation_theta.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Home.md,54,Séries de Dirichlet,https://hprzeta.github.io/Riemann_Lab/animation_series_dirichlet.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Home.md,55,Produit eulérien,https://hprzeta.github.io/Riemann_Lab/animation_produit_eulerien.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Home.md,56,Plan complexe,https://hprzeta.github.io/Riemann_Lab/animation_plan_complexe.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Home.md,57,Fonction Γ,https://hprzeta.github.io/Riemann_Lab/animation_gamma.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Home.md,58,Distribution des zéros,https://hprzeta.github.io/Riemann_Lab/animation_distribution_zeros.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Home.md,59,Zéros non triviaux,https://hprzeta.github.io/Riemann_Lab/animation_zeros_non_triviaux.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Home.md,60,Mur de latence,https://hprzeta.github.io/Riemann_Lab/animation_mur_latence.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Home.md,61,Distribution des gaps — GUE vs STEP,https://hprzeta.github.io/Riemann_Lab/animation_gaps_gue.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Home.md,62,Illinois adaptatif — v7 : 2 phases de calcul,https://hprzeta.github.io/Riemann_Lab/animation_illinois_adaptatif.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Home.md,63,Coût RS — N_termes et bottleneck illinois_C,https://hprzeta.github.io/Riemann_Lab/animation_ntermes_rs.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Home.md,64,Précision mpfr & limbs — le vrai levier v7,https://hprzeta.github.io/Riemann_Lab/animation_prec_mpfr.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Home.md,66,Animations,[[Animations]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,90,Plancher-Hardware-Architecture,[[Plancher-Hardware-Architecture]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,91,Structure-Projet-Complet,[[Structure-Projet-Complet]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,111,animation_theta.html,https://hprzeta.github.io/Riemann_Lab/animation_theta.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Home.md,145,Etape-1-Calcul-des-zéros-non-triviaux,[[Etape-1-Calcul-des-zéros-non-triviaux]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,145,analyse_problemes_v16_v17,[[analyse_problemes_v16_v17]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Home.md,162,📦 Code source,https://github.com/hprzeta/Riemann_Lab/tree/Riemann_Lab_IA/src,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Home.md,163,🐛 Issues,https://github.com/hprzeta/Riemann_Lab/issues,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Home.md,164,🚀 GitHub Pages,https://hprzeta.github.io/Riemann_Lab/,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Home.md,165,🗄️ LMFDB — Base de données L-fonctions,https://www.lmfdb.org/zeros/zeta/,externe,200,-,🟢,,
+Riemann_Lab.wiki/Home.md,166,📖 Formule de Riemann–von Mangoldt,https://fr.wikipedia.org/wiki/Formule_de_Riemann-von_Mangoldt,externe,200,-,🟢,,
+Riemann_Lab.wiki/Interprétation-des-résultats-de-tests.md,11,Rapport d'exécution Spyder — T_MAX=40,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/src/tests/interpreation_test/T40zero/zeros_zeta_Exec_T40_20260421_190821.png,image,200,-,🟢,,
+Riemann_Lab.wiki/Interprétation-des-résultats-de-tests.md,66,zeros_zeta_T40_20260421_190235.csv,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/src/tests/archive/interpreation_test_A/T40zero/zeros_zeta_T40_20260421_190235.csv,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Interprétation-des-résultats-de-tests.md,87,Graphiques des zéros de ζ(1/2+it) — T_MAX=40,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/src/tests/interpreation_test/T40zero/zeros_zeta_T40_20260421_190235.png,image,200,-,🟢,,
+Riemann_Lab.wiki/JOURNAL.md,359,Guide-WireGuard-Acces-Distant,[[Guide-WireGuard-Acces-Distant]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,426,Handoff,[[Handoff]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,606,Handoff,[[Handoff]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,692,Handoff,[[Handoff]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,717,cible,[[label]],page wiki,200 → https://github.com/hprzeta/Riemann_Lab/wiki/,-,⚪,faux positif : exemple de syntaxe cité dans le texte (pas un lien),wiki local ABSENT
+Riemann_Lab.wiki/JOURNAL.md,718,f,s,fichier du dépôt/relatif,200 → https://github.com/hprzeta/Riemann_Lab/wiki/,-,⚪,faux positif : exemple de syntaxe cité dans le texte (pas un lien),wiki local ABSENT
+Riemann_Lab.wiki/JOURNAL.md,815,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,857,...,[[...]],page wiki,200 → https://github.com/hprzeta/Riemann_Lab/wiki/,-,⚪,faux positif : exemple de syntaxe cité dans le texte (pas un lien),wiki local ABSENT
+Riemann_Lab.wiki/JOURNAL.md,869,...,[[...]],page wiki,200 → https://github.com/hprzeta/Riemann_Lab/wiki/,-,⚪,faux positif : exemple de syntaxe cité dans le texte (pas un lien),wiki local ABSENT
+Riemann_Lab.wiki/JOURNAL.md,871,Étape-2/3/4,[[Étape-2/3/4]],page wiki,200 → https://github.com/hprzeta/Riemann_Lab/wiki/,-,⚪,faux positif : exemple de syntaxe cité dans le texte (pas un lien),wiki local ABSENT
+Riemann_Lab.wiki/JOURNAL.md,959,Diagnostic-WireGuard-Hotspot,[[Diagnostic-WireGuard-Hotspot]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,976,Guide-WireGuard-Acces-Distant,[[Guide-WireGuard-Acces-Distant]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,978,Diagnostic-WireGuard-Hotspot,[[Diagnostic-WireGuard-Hotspot]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,979,Guide-Linux-Commandes,[[Guide-Linux-Commandes]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,980,STACK,[[STACK]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,985,Guide-WireGuard-Acces-Distant,[[Guide-WireGuard-Acces-Distant]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,986,Diagnostic-WireGuard-Hotspot,[[Diagnostic-WireGuard-Hotspot]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,1038,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,1056,Handoff,[[Handoff]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,1111,Diagnostic-WireGuard-Hotspot,[[Diagnostic-WireGuard-Hotspot]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,1167,Architecture-Cluster-Zeta,[[Architecture-Cluster-Zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,1182,Architecture-Cluster-Zeta,[[Architecture-Cluster-Zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,1184,Diagnostic-WireGuard-Hotspot,[[Diagnostic-WireGuard-Hotspot]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,1247,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,1265,Handoff,[[Handoff]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,1273,analyse_math_deficit_2026-08-18,[[analyse_math_deficit_2026-08-18]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,1275,prompts_claude_2026-08-18,[[prompts_claude_2026-08-18]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,1300,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,1302,STACK,[[STACK]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,1304,Bibliotheques,[[Bibliotheques]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,1306,Bonnes-Pratiques-Claude-Code,[[Bonnes-Pratiques-Claude-Code]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,1309,Guide-Linux-Commandes,[[Guide-Linux-Commandes]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,1316,analyse_math_deficit_2026-08-18,[[analyse_math_deficit_2026-08-18]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,1317,prompts_claude_2026-08-18,[[prompts_claude_2026-08-18]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,1370,Handoff,[[Handoff]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,1454,Handoff,[[Handoff]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,1540,Handoff,[[Handoff]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,3549,Guide-Linux-Commandes,[[Guide-Linux-Commandes]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,4074,analyse_math_deficit_2026-08-18,[[analyse_math_deficit_2026-08-18]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,4778,Architecture-Cluster-Zeta,[[Architecture-Cluster-Zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/JOURNAL.md,4787,Migration-PC4-Compaq-CQ58-20260816,[[Migration-PC4-Compaq-CQ58-20260816]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Methode.md,138,Nom de la page,[[Nom de la page]],page wiki,200 → https://github.com/hprzeta/Riemann_Lab/wiki/,-,⚪,faux positif : exemple de syntaxe cité dans le texte (pas un lien),wiki local ABSENT
+Riemann_Lab.wiki/Migration-PC4-Compaq-CQ58-20260816.md,8,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Migration-PC4-Compaq-CQ58-20260816.md,10,Architecture-Cluster-Zeta,[[Architecture-Cluster-Zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Migration-PC4-Compaq-CQ58-20260816.md,10,Guide-Linux-Commandes,[[Guide-Linux-Commandes]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Migration-PC4-Compaq-CQ58-20260816.md,11,Diagnostic-WireGuard-Hotspot,[[Diagnostic-WireGuard-Hotspot]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Migration-PC4-Compaq-CQ58-20260816.md,17,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Migration-PC4-Compaq-CQ58-20260816.md,190,Guide-Linux-Commandes,[[Guide-Linux-Commandes]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Migration-PC4-Compaq-CQ58-20260816.md,270,Guide-Linux-Commandes,[[Guide-Linux-Commandes]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Migration-PC4-Compaq-CQ58-20260816.md,317,Diagnostic-WireGuard-Hotspot,[[Diagnostic-WireGuard-Hotspot]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Migration-PC4-Compaq-CQ58-20260816.md,450,Diagnostic-WireGuard-Hotspot,[[Diagnostic-WireGuard-Hotspot]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Migration-PC4-Compaq-CQ58-20260816.md,461,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Migration-PC4-Compaq-CQ58-20260816.md,462,Architecture-Cluster-Zeta,[[Architecture-Cluster-Zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Migration-PC4-Compaq-CQ58-20260816.md,463,Guide-Linux-Commandes,[[Guide-Linux-Commandes]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Migration-PC4-Compaq-CQ58-20260816.md,464,Diagnostic-WireGuard-Hotspot,[[Diagnostic-WireGuard-Hotspot]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Migration-PC4-Compaq-CQ58-20260816.md,465,Guide-Linux-Commandes,[[Guide-Linux-Commandes]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/ORGANISATION_FICHIERS.md,9,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/ORGANISATION_FICHIERS.md,9,STACK,[[STACK]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/ORGANISATION_FICHIERS.md,21,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/ORGANISATION_FICHIERS.md,21,STACK,[[STACK]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/ORGANISATION_FICHIERS.md,54,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/ORGANISATION_FICHIERS.md,54,Bibliotheques,[[Bibliotheques]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/ORGANISATION_FICHIERS.md,55,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/ORGANISATION_FICHIERS.md,56,STACK,[[STACK]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/ORGANISATION_FICHIERS.md,128,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/ORGANISATION_FICHIERS.md,128,STACK,[[STACK]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/ORGANISATION_FICHIERS.md,163,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/ORGANISATION_FICHIERS.md,164,STACK,[[STACK]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/ORGANISATION_FICHIERS.md,165,Guide-Git-GitHub,[[Guide-Git-GitHub]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/ORGANISATION_FICHIERS.md,166,Bonnes-Pratiques-Claude-Code,[[Bonnes-Pratiques-Claude-Code]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Optimisation-Pourquoi-le-calcul-va-vite.md,39,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Optimisation-Pourquoi-le-calcul-va-vite.md,39,niveau-4-zeta,[[niveau-4-zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Optimisation-Pourquoi-le-calcul-va-vite.md,73,niveau-5-expert,[[niveau-5-expert]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Optimisation-Pourquoi-le-calcul-va-vite.md,73,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Optimisation-Pourquoi-le-calcul-va-vite.md,164,niveau-0-prerequis,[[niveau-0-prerequis]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Optimisation-Pourquoi-le-calcul-va-vite.md,165,niveau-1-series,[[niveau-1-series]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Optimisation-Pourquoi-le-calcul-va-vite.md,166,niveau-2-analyse-complexe,[[niveau-2-analyse-complexe]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Optimisation-Pourquoi-le-calcul-va-vite.md,167,niveau-3-gamma-dirichlet,[[niveau-3-gamma-dirichlet]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Optimisation-Pourquoi-le-calcul-va-vite.md,168,niveau-4-zeta,[[niveau-4-zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Optimisation-Pourquoi-le-calcul-va-vite.md,169,niveau-5-expert,[[niveau-5-expert]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Optimisation-Pourquoi-le-calcul-va-vite.md,170,Parcours-complet,[[Parcours-complet]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Optimisation-Pourquoi-le-calcul-va-vite.md,173,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Optimisation-Pourquoi-le-calcul-va-vite.md,174,Katex-cheatsheet,[[Katex-cheatsheet]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Optimisation-Pourquoi-le-calcul-va-vite.md,177,Methode,[[Methode]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Optimisation-Pourquoi-le-calcul-va-vite.md,178,Etape-1-Calcul-des-zéros-non-triviaux,[[Etape-1-Calcul-des-zéros-non-triviaux]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Optimisation-Pourquoi-le-calcul-va-vite.md,179,Phase-Optimisation-compute_zeros_v3,[[Phase-Optimisation-compute_zeros_v3]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Optimisation-Pourquoi-le-calcul-va-vite.md,180,Phase-C-compute_zeros_v4,[[Phase-C-compute_zeros_v4]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Optimisation-Pourquoi-le-calcul-va-vite.md,181,Interprétation-des-résultats-de-tests,[[Interprétation-des-résultats-de-tests]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Optimisation-Pourquoi-le-calcul-va-vite.md,185, ,[[ ]],page wiki,200,-,⚪,faux positif : exemple de syntaxe cité dans le texte (pas un lien),wiki local ABSENT
+Riemann_Lab.wiki/Parcours-complet.md,11,🔢 0,niveau-0-prerequis,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Parcours-complet.md,12,📈 1,niveau-1-series,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Parcours-complet.md,13,🌀 2,niveau-2-analyse-complexe,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Parcours-complet.md,14,🎯 3,niveau-3-gamma-dirichlet,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Parcours-complet.md,15,ζ 4,niveau-4-zeta,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Parcours-complet.md,16,🏆 5,niveau-5-expert,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Partie-1-La-Théorie-Étape_1.md,81,Ouvrir en plein écran,https://hprzeta.github.io/Riemann_Lab/animation_theta.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/Phase-C-compute_zeros_v4.md,3,Phase Optimisation v3,Phase-Optimisation-compute_zeros_v3,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Phase-C-compute_zeros_v4.md,12,Contexte — objectif de la Phase C,#1-contexte,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Phase-C-compute_zeros_v4.md,13,Problème mathématique — incohérence Z_RS vs vrais zéros,#2-problème-mathématique--incohérence-z_rs-vs-vrais-zéros,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Phase-C-compute_zeros_v4.md,14,Solution choisie — Option B hybride,#3-solution-choisie--option-b-hybride,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Phase-C-compute_zeros_v4.md,15,Architecture Phase C — fichiers produits,#4-architecture-phase-c--fichiers-produits,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Phase-C-compute_zeros_v4.md,16,Benchmark mesuré — gains Illinois C,#5-benchmark-mesuré--gains-illinois-c,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Phase-C-compute_zeros_v4.md,17,Limitations fondamentales connues,#6-limitations-fondamentales-connues,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Phase-C-compute_zeros_v4.md,18,Questions ouvertes — v5 et au-delà,#7-questions-ouvertes--v5-et-au-delà,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Phase-Optimisation-compute_zeros_v3.md,3,Étape 1 – Calcul des zéros non triviaux,Etape-1-Calcul-des-zéros-non-triviaux,fichier du dépôt/relatif,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Phase-Optimisation-compute_zeros_v3.md,4,`analyse_problemes_v2_v3_phase0.pdf`,https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/pdf/optimisation/analyse_problemes_v2_v3_phase0.pdf,PDF,200,-,🟢,,
+Riemann_Lab.wiki/Phase-Optimisation-compute_zeros_v3.md,12,Contexte — pourquoi optimiser,#1-contexte,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Phase-Optimisation-compute_zeros_v3.md,13,10 problèmes identifiés et résolus,#2-problèmes-résolus,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Phase-Optimisation-compute_zeros_v3.md,14,Architecture v3 — 5 fichiers,#3-architecture-v3,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Phase-Optimisation-compute_zeros_v3.md,15,Gains mesurés,#4-gains-mesurés,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Phase-Optimisation-compute_zeros_v3.md,16,Benchmarks de performance 15 min,#5-benchmarks-de-performance-15-min,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Phase-Optimisation-compute_zeros_v3.md,17,GPU GTX 960M — intégration CuPy,#6-gpu-gtx-960m,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Phase-Optimisation-compute_zeros_v3.md,18,Fichiers générés,#7-fichiers-générés,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Phase-Optimisation-compute_zeros_v3.md,19,Prochaines étapes,#8-prochaines-étapes,ancre interne,en ligne,présente,🟢,,
+Riemann_Lab.wiki/Phase-Optimisation-compute_zeros_v3.md,223,`src/calculs/optimisation/theta_rapide.py`,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/src/calculs/optimisation/theta_rapide.py,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Phase-Optimisation-compute_zeros_v3.md,224,`src/calculs/optimisation/riemann_siegel_batch.py`,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/src/calculs/optimisation/riemann_siegel_batch.py,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Phase-Optimisation-compute_zeros_v3.md,225,`src/calculs/optimisation/parallel_scanner.py`,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/src/calculs/optimisation/parallel_scanner.py,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Phase-Optimisation-compute_zeros_v3.md,226,`src/calculs/optimisation/turing_validation.py`,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/src/calculs/optimisation/turing_validation.py,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Phase-Optimisation-compute_zeros_v3.md,227,`src/calculs/optimisation/compute_zeros_v3.py`,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/src/calculs/optimisation/compute_zeros_v3.py,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Phase-Optimisation-compute_zeros_v3.md,228,`src/calculs/optimisation/benchmark_15min.py`,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/src/calculs/optimisation/benchmark_15min.py,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Phase-Optimisation-compute_zeros_v3.md,231,`pdf/optimisation/analyse_problemes_v2_v3_phase0.pdf`,https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/pdf/optimisation/analyse_problemes_v2_v3_phase0.pdf,PDF,200,-,🟢,,
+Riemann_Lab.wiki/Phase-Optimisation-compute_zeros_v3.md,496,Rapport complet PDF,https://raw.githubusercontent.com/hprzeta/Riemann_Lab/Riemann_Lab_IA/pdf/optimisation/analyse_problemes_v2_v3_phase0.pdf,PDF,200,-,🟢,,
+Riemann_Lab.wiki/Phase-Optimisation-compute_zeros_v3.md,497,LMFDB — Zeros of ζ(s),https://www.lmfdb.org/zeros/zeta/,externe,200,-,🟢,,
+Riemann_Lab.wiki/Phase-Optimisation-compute_zeros_v3.md,498,Titchmarsh (1986) PDF — Rutgers,https://sites.math.rutgers.edu/~zeilberg/EM18/TitchmarshZeta.pdf,PDF,200,-,🟢,,
+Riemann_Lab.wiki/Phase-Optimisation-compute_zeros_v3.md,499,Turing (1953) PDF — UMN/Odlyzko,https://www-users.cse.umn.edu/~odlyzko/doc/turing.zeta.pdf,PDF,200,-,🟢,,
+Riemann_Lab.wiki/Phase-Optimisation-compute_zeros_v3.md,500,Odlyzko & Schönhage (1988) PDF — UMN officiel,https://www-users.cse.umn.edu/~odlyzko/doc/arch/fast.zeta.eval.pdf,PDF,200,-,🟢,,
+Riemann_Lab.wiki/Plancher-Hardware-Architecture.md,281,Etape-1-Calcul-des-zéros-non-triviaux,[[Etape-1-Calcul-des-zéros-non-triviaux]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Plancher-Hardware-Architecture.md,282,analyse_problemes_v10_v12,[[analyse_problemes_v10_v12]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Plancher-Hardware-Architecture.md,283,Bibliotheques,[[Bibliotheques]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Plancher-Hardware-Architecture.md,284,STACK,[[STACK]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Projet-Zêta.md,6,Home,[[Home]],page wiki,200 → https://github.com/hprzeta/Riemann_Lab/wiki,-,🟢,,Home = accueil du wiki
+Riemann_Lab.wiki/Projet-Zêta.md,8,Etape-1-Calcul-des-zéros-non-triviaux,[[Etape-1-Calcul-des-zéros-non-triviaux]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Projet-Zêta.md,8,Roadmap,[[Roadmap]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Prompts-Claude-Code.md,8,`scripts/ia_prompts/ia_prompts_riemann_lab_complet.md`,https://github.com/hprzeta/Riemann_Lab/blob/Riemann_Lab_IA/scripts/ia_prompts/ia_prompts_riemann_lab_complet.md,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/Prompts-Claude-Code.md,52,Bonnes-Pratiques-Claude-Code,[[Bonnes-Pratiques-Claude-Code]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Prompts-Claude-Code.md,53,Guide-Git-GitHub,[[Guide-Git-GitHub]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Prompts-Claude-Code.md,54,STACK,[[STACK]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Roadmap.md,77,Etape-1-Calcul-des-zéros-non-triviaux,[[Etape-1-Calcul-des-zéros-non-triviaux]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Roadmap.md,199,STACK,[[STACK]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Roadmap.md,200,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Roadmap.md,201,Etape-1-Calcul-des-zéros-non-triviaux,[[Etape-1-Calcul-des-zéros-non-triviaux]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Roadmap.md,202,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Roadmap.md,203,Site du projet ↗,https://hprzeta.github.io/Riemann_Lab/,page du site,200,-,🟢,,
+Riemann_Lab.wiki/STACK.md,18,(URL nue),https://hprzeta.github.io/Riemann_Lab/`,page du site,404,-,⚪,faux positif : URL entourée de ` ou ** dans le texte : artefact d'extraction,
+Riemann_Lab.wiki/STACK.md,43,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/STACK.md,53,f,s,fichier du dépôt/relatif,200 → https://github.com/hprzeta/Riemann_Lab/wiki/,-,⚪,faux positif : exemple de syntaxe cité dans le texte (pas un lien),wiki local ABSENT
+Riemann_Lab.wiki/STACK.md,177,Guide-WireGuard-Acces-Distant,[[Guide-WireGuard-Acces-Distant]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/STACK.md,354,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/STACK.md,354,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/STACK.md,469,(URL nue),https://hprzeta.github.io/Riemann_Lab/,page du site,200,-,🟢,,
+Riemann_Lab.wiki/STACK.md,470,(URL nue),https://github.com/hprzeta/Riemann_Lab/tree/Riemann_Lab_IA/src,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/STACK.md,471,(URL nue),https://www.lmfdb.org/zeros/zeta/,externe,200,-,🟢,,
+Riemann_Lab.wiki/STACK.md,472,(URL nue),https://doi.org/10.1090/S0002-9947-1988-0961614-2,externe,200 → https://pubs.ams.org/journals/tran/1988-309-02/S0002-9947-1988-0961614-2,-,🟡,redirection → https://pubs.ams.org/journals/tran/1988-309-02/S0002-9947-1988-0961614-2,
+Riemann_Lab.wiki/STACK.md,473,(URL nue),https://doi.org/10.1112/plms/s3-3.1.99,externe,403,-,🟡,403 (anti-robot de l'éditeur) : à tester dans le navigateur,
+Riemann_Lab.wiki/STACK.md,474,(URL nue),https://archive.org/details/theoryofriemann00titc,externe,404,-,🔴,HTTP 404,
+Riemann_Lab.wiki/STACK.md,525,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/STACK.md,539,Etape-1-Calcul-des-zéros-non-triviaux,[[Etape-1-Calcul-des-zéros-non-triviaux]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/STACK.md,664,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/STACK.md,693,Guide-WireGuard-Acces-Distant,[[Guide-WireGuard-Acces-Distant]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/STACK.md,693,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/STACK.md,693,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/STACK.md,693,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/STACK.md,696,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/STACK.md,703,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,13,ORGANISATION_FICHIERS,[[ORGANISATION_FICHIERS]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,148,Etape-1-Calcul-des-zéros-non-triviaux,[[Etape-1-Calcul-des-zéros-non-triviaux]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,149,Phase-C-compute_zeros_v4,[[Phase-C-compute_zeros_v4]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,150,Bibliotheques,[[Bibliotheques]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,151,Animations,[[Visualisations avancées\]],page wiki,200 → https://github.com/hprzeta/Riemann_Lab/wiki/,-,🟢,,[[texte\|page]] : cibles Animations / Guide-Ollama-Pratique (a.internal.present)
+Riemann_Lab.wiki/Structure-Projet-Complet.md,152,Guide-Ollama-Pratique,[[Intelligence artificielle\]],page wiki,200 → https://github.com/hprzeta/Riemann_Lab/wiki/,-,🟢,,[[texte\|page]] : cibles Animations / Guide-Ollama-Pratique (a.internal.present)
+Riemann_Lab.wiki/Structure-Projet-Complet.md,153,STACK,[[STACK]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,155,Parcours-complet,[[Parcours-complet]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,226,Home,[[Home]],page wiki,200 → https://github.com/hprzeta/Riemann_Lab/wiki,-,🟢,,Home = accueil du wiki
+Riemann_Lab.wiki/Structure-Projet-Complet.md,226,ORGANISATION_FICHIERS,[[ORGANISATION_FICHIERS]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,226,STACK,[[STACK]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,226,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,227,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,227,Bibliotheques,[[Bibliotheques]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,227,Tableau-Symboles-Mathématiques,[[Tableau-Symboles-Mathématiques]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,228,niveau-0-prerequis,[[niveau-0-prerequis]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,228,niveau-5-expert,[[niveau-5-expert]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,228,Parcours-complet,[[Parcours-complet]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,229,Etape-1-Calcul-des-zéros-non-triviaux,[[Etape-1-Calcul-des-zéros-non-triviaux]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,229,Rapport_validation_T10000,[[Rapport_validation_T10000]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,230,Plancher-Hardware-Architecture,[[Plancher-Hardware-Architecture]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,230,Optimisation-Pourquoi-le-calcul-va-vite,[[Optimisation-Pourquoi-le-calcul-va-vite]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,231,Guide-Git-GitHub,[[Guide-Git-GitHub]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,231,Guide-VSCode-Bonnes-Pratiques,[[Guide-VSCode-Bonnes-Pratiques]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,231,Bonnes-Pratiques-Claude-Code,[[Bonnes-Pratiques-Claude-Code]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,237,ORGANISATION_FICHIERS,[[ORGANISATION_FICHIERS]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,238,Plancher-Hardware-Architecture,[[Plancher-Hardware-Architecture]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,239,STACK,[[STACK]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/Structure-Projet-Complet.md,240,Arbre_dossiers_projet,[[Arbre_dossiers_projet]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_math_deficit_2026-08-18.md,3,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_math_deficit_2026-08-18.md,3,analyse_problemes_v16_v17,[[analyse_problemes_v16_v17]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_math_deficit_2026-08-18.md,421,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_math_deficit_2026-08-18.md,422,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_math_deficit_2026-08-18.md,423,Bibliotheques,[[Bibliotheques]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_math_deficit_2026-08-18.md,424,STACK,[[STACK]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_math_deficit_2026-08-18.md,425,Version PDF (9 pages),https://github.com/hprzeta/Riemann_Lab/blob/main/pdf/optimisation/analyse_math_deficit_2026-08-18.pdf,PDF,200,-,🟢,,
+Riemann_Lab.wiki/analyse_problemes_v10_v12.md,3,Etape-1-Calcul-des-zéros-non-triviaux,[[Etape-1-Calcul-des-zéros-non-triviaux]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v13_v15.md,3,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v13_v15.md,3,analyse_problemes_v16_v17,[[analyse_problemes_v16_v17]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v13_v15.md,5,Etape-1-Calcul-des-zéros-non-triviaux,[[Etape-1-Calcul-des-zéros-non-triviaux]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v16_v17.md,26,analyse_problemes_v1_v16,[[analyse_problemes_v1_v16]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v16_v17.md,28,analyse_problemes_v1_v16,[[analyse_problemes_v1_v16]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v16_v17.md,28,Plancher-Hardware-Architecture,[[Plancher-Hardware-Architecture]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v16_v17.md,29,Optimisation-Pourquoi-le-calcul-va-vite,[[Optimisation-Pourquoi-le-calcul-va-vite]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v16_v17.md,29,Analyse-Deficit-Zeros-Grille-20260906,[[Analyse-Deficit-Zeros-Grille-20260906]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v16_v17.md,30,analyse_math_deficit_2026-08-18,[[analyse_math_deficit_2026-08-18]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v16_v17.md,89,Analyse-Deficit-Zeros-Grille-20260906,[[Analyse-Deficit-Zeros-Grille-20260906]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v16_v17.md,142,analyse_problemes_v13_v15,[[analyse_problemes_v13_v15]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v16_v17.md,179,analyse_problemes_v1_v16,[[analyse_problemes_v1_v16]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v1_v16.md,3,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v1_v16.md,3,analyse_problemes_v16_v17,[[analyse_problemes_v16_v17]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v1_v16.md,5,Etape-1-Calcul-des-zéros-non-triviaux,[[Etape-1-Calcul-des-zéros-non-triviaux]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v4_1_v6_synthese.md,146,analyse_problemes_v4_1_v5,[[analyse_problemes_v4_1_v5]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v4_1_v6_synthese.md,147,analyse_problemes_v5_v6,[[analyse_problemes_v5_v6]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v4_1_v6_synthese.md,148,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v4_1_v6_synthese.md,149,Bibliotheques,[[Bibliotheques]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v4_1_v6_synthese.md,150,animation_gaps_gue.html,https://hprzeta.github.io/Riemann_Lab/animation_gaps_gue.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/analyse_problemes_v4_1_v6_synthese.md,151,animation_ntermes_rs.html,https://hprzeta.github.io/Riemann_Lab/animation_ntermes_rs.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/analyse_problemes_v5_v6.md,147,analyse_problemes_v4_1_v6_synthese,[[analyse_problemes_v4_1_v6_synthese]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v5_v6.md,148,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v5_v6.md,149,Bibliotheques,[[Bibliotheques]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v6_v7.md,207,Bonnes-Pratiques-Claude-Code,[[Bonnes-Pratiques-Claude-Code]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v6_v7.md,207,maths_v7_ntermes_adaptatif,[[maths_v7_ntermes_adaptatif]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v7_v8.md,3,Etape-1-Calcul-des-zéros-non-triviaux,[[Etape-1-Calcul-des-zéros-non-triviaux]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v7_v8.md,152,Formules_zeta,[[Formules_zeta]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v7_v8.md,152,analyse_problemes_v6_v7,[[analyse_problemes_v6_v7]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v7_v8.md,152,STACK,[[STACK]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v8_v9.md,3,Etape-1-Calcul-des-zéros-non-triviaux,[[Etape-1-Calcul-des-zéros-non-triviaux]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/analyse_problemes_v9_v10.md,3,Etape-1-Calcul-des-zéros-non-triviaux,[[Etape-1-Calcul-des-zéros-non-triviaux]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/etat_rag_brainvault_20260704.md,4,Guide-RAG-BrainVault-Debutant,[[Guide-RAG-BrainVault-Debutant]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/knowledge_base_obj2.md,11,(URL nue),https://github.com/hprzeta/Riemann_Lab,fichier du dépôt,200,-,🟢,,
+Riemann_Lab.wiki/knowledge_base_obj2.md,12,(URL nue),https://hprzeta.github.io/Riemann_Lab/,page du site,200,-,🟢,,
+Riemann_Lab.wiki/knowledge_base_obj2.md,14,(URL nue),https://github.com/hprzeta/Riemann_Lab/wiki,page wiki,200,-,🟢,,
+Riemann_Lab.wiki/niveau-0-prerequis.md,12,▶ Plan complexe,https://hprzeta.github.io/Riemann_Lab/animation_plan_complexe.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/niveau-1-series.md,12,▶ Séries de Dirichlet,https://hprzeta.github.io/Riemann_Lab/animation_series_dirichlet.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/niveau-1-series.md,13,▶ Produit eulérien,https://hprzeta.github.io/Riemann_Lab/animation_produit_eulerien.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/niveau-2-analyse-complexe.md,12,▶ Plan complexe,https://hprzeta.github.io/Riemann_Lab/animation_plan_complexe.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/niveau-3-gamma-dirichlet.md,12,▶ Fonction Γ,https://hprzeta.github.io/Riemann_Lab/animation_gamma.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/niveau-3-gamma-dirichlet.md,13,▶ Produit eulérien,https://hprzeta.github.io/Riemann_Lab/animation_produit_eulerien.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/niveau-4-zeta.md,12,▶ θ(t) de Riemann-Siegel,https://hprzeta.github.io/Riemann_Lab/animation_theta.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/niveau-4-zeta.md,13,▶ Zéros non triviaux,https://hprzeta.github.io/Riemann_Lab/animation_zeros_non_triviaux.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/niveau-4-zeta.md,14,▶ Distribution des zéros,https://hprzeta.github.io/Riemann_Lab/animation_distribution_zeros.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/niveau-5-expert.md,12,▶ Distribution des zéros,https://hprzeta.github.io/Riemann_Lab/animation_distribution_zeros.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/niveau-5-expert.md,13,▶ Mur de latence,https://hprzeta.github.io/Riemann_Lab/animation_mur_latence.html,page du site,200,-,🟢,,
+Riemann_Lab.wiki/prompts_claude_2026-08-18.md,258,analyse\_math\_deficit\_2026-08-18,[[analyse\_math\_deficit\_2026-08-18]],page wiki,200 → https://github.com/hprzeta/Riemann_Lab/wiki/,-,⚪,faux positif : nom échappé \_ dans un .md d'archive de discussion,wiki local ABSENT
+Riemann_Lab.wiki/prompts_claude_2026-08-18.md,259,Bonnes-Pratiques-Claude-Code,[[Bonnes-Pratiques-Claude-Code]],page wiki,200,-,🟢,,wiki local OK
+Riemann_Lab.wiki/prompts_claude_2026-08-18.md,260,JOURNAL,[[JOURNAL]],page wiki,200,-,🟢,,wiki local OK
