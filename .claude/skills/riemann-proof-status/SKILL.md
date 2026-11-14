@@ -1,16 +1,6 @@
 ---
 name: riemann-proof-status
-description: |
-  Statut honnête des affirmations mathématiques du projet `Riemann_Lab` de hprzeta — registre append-only distinguant théorème prouvé, conjecture, heuristique, résultat vérifié numériquement, et question transmise sans réponse.
-
-  Utiliser ce skill dès que l'utilisateur demande de :
-  - Évaluer si une affirmation (la sienne, celle d'un article, celle générée par Ollama/RAG) est prouvée, conjecturée, ou seulement observée numériquement
-  - Consigner un résultat nouveau (calcul, lemme, observation statistique) avec son statut exact
-  - Vérifier la fraîcheur d'un statut déjà consigné (un résultat "conjecturé" a-t-il depuis été prouvé ou réfuté dans la littérature ?)
-  - Rédiger une section "état de l'art" ou une réponse qui mélange plusieurs niveaux de certitude et risque de les confondre
-  - Décider si une piste de recherche doit être transmise (à un humain, à Codex, à un article externe) faute de pouvoir être tranchée ici
-
-  Déclencher aussi pour : toute discussion sur l'Hypothèse de Riemann elle-même, ses équivalents, ou tout résultat "trop beau pour être vrai" qui mérite un statut prudent avant d'être répété.
+description: "Statut honnête des affirmations mathématiques du projet Riemann_Lab de hprzeta : registre append-only qui distingue théorème prouvé, conjecture, heuristique, résultat vérifié numériquement et question transmise sans réponse. Utiliser pour évaluer si une affirmation (de hprzeta, d'un article, d'Ollama ou du RAG) est prouvée, conjecturée ou seulement observée ; consigner un résultat nouveau avec son statut exact ; vérifier la fraîcheur d'un statut déjà consigné ; rédiger un état de l'art sans confondre les niveaux de certitude ; décider de transmettre une piste qu'on ne peut pas trancher ici. Déclencher aussi pour toute discussion sur l'Hypothèse de Riemann, ses équivalents, ou un résultat trop beau pour être vrai."
 ---
 
 # Riemann Proof Status Skill
