@@ -1,0 +1,53 @@
+{
+ "page": "JOURNAL",
+ "url": "https://github.com/hprzeta/Riemann_Lab/wiki/JOURNAL",
+ "date_mesure": "2026-11-14",
+ "rouges": 8,
+ "verts": 82,
+ "blocs": null,
+ "katexError": 0,
+ "zones_enregistrees": 8,
+ "note": "Mesure du 14/11/2026 avec verif_formules_wiki.js (reecrit, non valide) sur la page publiee. Extraits tronques (70 a 100 caracteres) ; les caracteres = & ? sont ecrits EGAL / ET / QQ car l'outil de navigation bloque les chaines ressemblant a des parametres d'URL. window.__vf complet non recuperable tel quel. Nombre de blocs non releve pour cette page. Nombre de blocs non releve.",
+ "details": [
+  {
+   "n": 1,
+   "bloc": "p",
+   "extrait": "/$|\\Lambda(\\rho)-\\Lambda(1-\\rho)|$) — sur la droite critique cette égalité est automatique"
+  },
+  {
+   "n": 2,
+   "bloc": "p",
+   "extrait": "/$\\theta$, recommandation réduite à une validation"
+  },
+  {
+   "n": 3,
+   "bloc": "li",
+   "extrait": "–$0{,}08$ zéro attendu sur la fenêtre testée, contre 18-51 observés (2 ordres de grandeur"
+  },
+  {
+   "n": 4,
+   "bloc": "td",
+   "extrait": "Réécriture complète — 6 sections de cours (def. Γ, Stirling, eq. fonctionnelle ζ EGAL e^{−iθ}Z,"
+  },
+  {
+   "n": 5,
+   "bloc": "li",
+   "extrait": "(tous les zéros à $t<300 EGAL $ seuil → 100 % fallback mpmath)."
+  },
+  {
+   "n": 6,
+   "bloc": "p",
+   "extrait": "{\\text{zéros}} \\times \\underbrace{102}"
+  },
+  {
+   "n": 7,
+   "bloc": "p",
+   "extrait": "{\\text{appels Illinois}} \\times \\underbrace{1.5\\ \\text{ms}}_{\\text{siegelz @ dps EGAL 35}} \\app"
+  },
+  {
+   "n": 8,
+   "bloc": "p",
+   "extrait": "réduire Phase 2 à 1 Newton FIXE → erreur ~1e-6 pour t ≈ 65–77 (LMFDB 14/20). Cause : le bi"
+  }
+ ]
+}

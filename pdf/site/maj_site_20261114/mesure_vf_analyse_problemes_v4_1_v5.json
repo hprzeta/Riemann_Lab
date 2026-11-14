@@ -1,0 +1,38 @@
+{
+ "page": "analyse_problemes_v4_1_v5",
+ "url": "https://github.com/hprzeta/Riemann_Lab/wiki/analyse_problemes_v4_1_v5",
+ "date_mesure": "2026-11-14",
+ "rouges": 5,
+ "verts": 70,
+ "blocs": null,
+ "katexError": 0,
+ "zones_enregistrees": 5,
+ "note": "Mesure du 14/11/2026 avec verif_formules_wiki.js (reecrit, non valide) sur la page publiee. Extraits tronques (70 a 100 caracteres) ; les caracteres = & ? sont ecrits EGAL / ET / QQ car l'outil de navigation bloque les chaines ressemblant a des parametres d'URL. window.__vf complet non recuperable tel quel. Nombre de blocs non releve.",
+ "details": [
+  {
+   "n": 1,
+   "bloc": "p",
+   "extrait": "Avec W EGAL 4 et segmentation 1/$\\sqrt{t}$, la mesure réelle :"
+  },
+  {
+   "n": 2,
+   "bloc": "h3",
+   "extrait": "Solution : segmentation 1/$\\sqrt{t}$"
+  },
+  {
+   "n": 3,
+   "bloc": "td",
+   "extrait": "Segmentation 1/$\\sqrt{t}$"
+  },
+  {
+   "n": 4,
+   "bloc": "p",
+   "extrait": "pire que v1 et v2 — STEP EGAL δ/3 ne protège pas contre les gaps GUE ($\\delta_{\\min} EGAL 0.019 \\l"
+  },
+  {
+   "n": 5,
+   "bloc": "p",
+   "extrait": "La segmentation 1/$\\sqrt{t}$ équilibre le nombre de zéros mais pas le temps d'affinage (Il"
+  }
+ ]
+}

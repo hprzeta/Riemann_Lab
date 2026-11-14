@@ -1,0 +1,23 @@
+{
+ "page": "STACK",
+ "url": "https://github.com/hprzeta/Riemann_Lab/wiki/STACK",
+ "date_mesure": "2026-11-14",
+ "rouges": 2,
+ "verts": 25,
+ "blocs": null,
+ "katexError": 0,
+ "zones_enregistrees": 2,
+ "note": "Mesure du 14/11/2026 avec verif_formules_wiki.js (reecrit, non valide) sur la page publiee. Extraits tronques (70 a 100 caracteres) ; les caracteres = & ? sont ecrits EGAL / ET / QQ car l'outil de navigation bloque les chaines ressemblant a des parametres d'URL. window.__vf complet non recuperable tel quel. Nombre de blocs non releve.",
+ "details": [
+  {
+   "n": 1,
+   "bloc": "p",
+   "extrait": "(le pas de la grille de détection de signe de $Z(t)$) — une marge trop petite fait tomber deux zéros"
+  },
+  {
+   "n": 2,
+   "bloc": "p",
+   "extrait": "12 septembre 2026 — rendu KaTeX cassé sur tout le wiki : 4 causes racines identifiées et corrigées ("
+  }
+ ]
+}

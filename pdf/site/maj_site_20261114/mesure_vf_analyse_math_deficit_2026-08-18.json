@@ -1,0 +1,18 @@
+{
+ "page": "analyse_math_deficit_2026-08-18",
+ "url": "https://github.com/hprzeta/Riemann_Lab/wiki/analyse_math_deficit_2026-08-18",
+ "date_mesure": "2026-11-14",
+ "rouges": 1,
+ "verts": 152,
+ "blocs": null,
+ "katexError": 0,
+ "zones_enregistrees": 1,
+ "note": "Mesure du 14/11/2026 avec verif_formules_wiki.js (reecrit, non valide) sur la page publiee. Extraits tronques (70 a 100 caracteres) ; les caracteres = & ? sont ecrits EGAL / ET / QQ car l'outil de navigation bloque les chaines ressemblant a des parametres d'URL. window.__vf complet non recuperable tel quel. Nombre de blocs non releve.",
+ "details": [
+  {
+   "n": 1,
+   "bloc": "th",
+   "extrait": "à $T{ EGAL }5$M"
+  }
+ ]
+}

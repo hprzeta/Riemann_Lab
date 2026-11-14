@@ -1,0 +1,133 @@
+{
+ "page": "analyse_problemes_v1_v16",
+ "url": "https://github.com/hprzeta/Riemann_Lab/wiki/analyse_problemes_v1_v16",
+ "date_mesure": "2026-11-14",
+ "rouges": 24,
+ "verts": 0,
+ "blocs": 21,
+ "katexError": 0,
+ "zones_enregistrees": 24,
+ "note": "Mesure du 14/11/2026 avec verif_formules_wiki.js (reecrit, non valide) sur la page publiee. Extraits tronques (70 a 100 caracteres) ; les caracteres = & ? sont ecrits EGAL / ET / QQ car l'outil de navigation bloque les chaines ressemblant a des parametres d'URL. window.__vf complet non recuperable tel quel.",
+ "details": [
+  {
+   "n": 1,
+   "bloc": "p",
+   "extrait": "Ce rapport synthétise la trajectoire complète d'optimisation du calcul des zéros non-triviaux de (\\z"
+  },
+  {
+   "n": 2,
+   "bloc": "p",
+   "extrait": "v1 : Newton scalaire séquentiel, 1 worker, ~21h pour 10 000 zéros. v2 introduit la méthode d'Illinoi"
+  },
+  {
+   "n": 3,
+   "bloc": "p",
+   "extrait": "dans (2\\pi e) est obligatoire, son omission sous-estime N(T) de 64 % à T EGAL 100 000)."
+  },
+  {
+   "n": 4,
+   "bloc": "p",
+   "extrait": "§ Règle benchmark avant implémentation) : réduire le nombre de termes RS ((N_\\text{fast} EGAL N_\\text{f"
+  },
+  {
+   "n": 5,
+   "bloc": "li",
+   "extrait": "biaisé jusqu'à un bracket serré ((|b-a| < 10^{-6}))."
+  },
+  {
+   "n": 6,
+   "bloc": "li",
+   "extrait": "(Arb/FLINT, coûteux mais précis) : 1 à 2 pas de Newton depuis le pseudo-zéro Phase 1 pour converger"
+  },
+  {
+   "n": 7,
+   "bloc": "p",
+   "extrait": "de 200 à 65 (le RS a des signes fiables dès (N_\\text{RS} EGAL 3) termes, soit (t \\geq 65)) et resserre"
+  },
+  {
+   "n": 8,
+   "bloc": "p",
+   "extrait": "de (10^{-9}) à (10^{-12}) (le seuil précédent était trop proche du critère de validation LMFDB et ca"
+  },
+  {
+   "n": 9,
+   "bloc": "p",
+   "extrait": "suit (\\text{biais}(t) \\approx C \\cdot t^{-5/4}) ((C \\approx 0.305), calibré sur LMFDB), et que l'err"
+  },
+  {
+   "n": 10,
+   "bloc": "p",
+   "extrait": "pas de Newton ((\\varepsilon \\approx C^2 \\cdot t^{-5/2})) descend sous"
+  },
+  {
+   "n": 11,
+   "bloc": "td",
+   "extrait": "(5.0\\times10^{-3})"
+  },
+  {
+   "n": 12,
+   "bloc": "td",
+   "extrait": "(1.75\\times10^{-6})"
+  },
+  {
+   "n": 13,
+   "bloc": "td",
+   "extrait": "(3.7\\times10^{-6})"
+  },
+  {
+   "n": 14,
+   "bloc": "td",
+   "extrait": "(9.8\\times10^{-12})"
+  },
+  {
+   "n": 15,
+   "bloc": "td",
+   "extrait": "(6.4\\times10^{-7})"
+  },
+  {
+   "n": 16,
+   "bloc": "td",
+   "extrait": "(4\\times10^{-13})"
+  },
+  {
+   "n": 17,
+   "bloc": "td",
+   "extrait": "(9.6\\times10^{-9})"
+  },
+  {
+   "n": 18,
+   "bloc": "td",
+   "extrait": "(9.2\\times10^{-17})"
+  },
+  {
+   "n": 19,
+   "bloc": "p",
+   "extrait": "(t) donne LMFDB 14/20 (erreur (1.75\\times10^{-6}) à (t\\approx65)) — la"
+  },
+  {
+   "n": 20,
+   "bloc": "p",
+   "extrait": "~(10^{-16})"
+  },
+  {
+   "n": 21,
+   "bloc": "td",
+   "extrait": "(4.6\\times10^{-11})"
+  },
+  {
+   "n": 22,
+   "bloc": "td",
+   "extrait": "(9.5\\times10^{-5})"
+  },
+  {
+   "n": 23,
+   "bloc": "p",
+   "extrait": "lui-même, marge ~7 décimales au-dessus du besoin théorique ~40 bits (t"
+  },
+  {
+   "n": 24,
+   "bloc": "p",
+   "extrait": "actuel ; pour T EGAL 50M, (N_\\text{RS}\\approx2823) → fallback sans cache. O"
+  }
+ ]
+}

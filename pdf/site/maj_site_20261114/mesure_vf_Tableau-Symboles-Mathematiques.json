@@ -1,0 +1,33 @@
+{
+ "page": "Tableau-Symboles-Mathematiques",
+ "url": "https://github.com/hprzeta/Riemann_Lab/wiki/Tableau-Symboles-Mathematiques",
+ "date_mesure": "2026-11-14",
+ "rouges": 4,
+ "verts": 337,
+ "blocs": null,
+ "katexError": 0,
+ "zones_enregistrees": 4,
+ "note": "Mesure du 14/11/2026 avec verif_formules_wiki.js (reecrit, non valide) sur la page publiee. Extraits tronques (70 a 100 caracteres) ; les caracteres = & ? sont ecrits EGAL / ET / QQ car l'outil de navigation bloque les chaines ressemblant a des parametres d'URL. window.__vf complet non recuperable tel quel. Nombre de blocs non releve.",
+ "details": [
+  {
+   "n": 1,
+   "bloc": "td",
+   "extrait": "$\\sum_{d"
+  },
+  {
+   "n": 2,
+   "bloc": "td",
+   "extrait": "$\\sum_{p"
+  },
+  {
+   "n": 3,
+   "bloc": "td",
+   "extrait": "\\zeta\\left(\\frac{1}{2}+it\\right)\\right"
+  },
+  {
+   "n": 4,
+   "bloc": "td",
+   "extrait": "^{2k} dt`"
+  }
+ ]
+}
