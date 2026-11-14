@@ -1,8 +1,8 @@
 # HANDOFF site — 14/11/2026
 
 **Fait et publié (sans `--force`) :** wiki `382c030` (20 formules + titre Ch05, 9 pages + index) et `c81894c` (index, titre du chapitre 5 sans formule dans le lien). Vérifié en ligne : 0 zone rouge, liens et console OK.
-**Non commité (local, `pdf/site/maj_site_20261114/`) :** détecteur `verif_formules_wiki.js`, diagnostic, rapport, captures, `bak/`.
-**Prochaine action (à décider par hprzeta) :** voir les restes de la ligne « Reste » de la section « Test automatique V2 » ci-dessous.
+**Commité et poussé (`6f85a26`, `Riemann_Lab_IA`) :** détecteur `verif_formules_wiki.js`, diagnostic, rapports, captures (49 fichiers). Restent locaux : `.bak*`, `A_DEPOSER/` (exclus).
+**Prochaine action (à décider par hprzeta) :** 1) déposer A_DEPOSER/ dans le projet SITE ZETA ; 2) nouvel essai forcé (règle 10) ; 3) PermitRootLogin no sur PC2 (optionnel) ; 4) valider le détecteur (faux positifs, `=` → EGAL) ; 5) commit + sync de CLAUDE.md (règle heredoc).
 
 
 ## Test automatique V2 (14/11/2026 13:35)
@@ -30,4 +30,4 @@
 **Reste :** PC2 : `PermitRootLogin` non défini = `prohibit-password` (root par clé possible) ; aligner sur PC4 (`no`) — décision hprzeta. Rien d'autre sur les formules du wiki ni sur SSH (PC2 et PC4 en clé seule). Rapport : `RAPPORT_PC2_FORMULES_20261114.md`.
 
 ---
-*Mis à jour le 2026-11-14 — 33 lignes*
+*Mis à jour le 2026-11-14 (lignes 4-5 : état du dépôt et prochaine action) — 33 lignes*
