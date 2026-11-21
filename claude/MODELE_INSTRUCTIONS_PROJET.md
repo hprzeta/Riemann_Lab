@@ -85,9 +85,10 @@ Procédure « Mise à jour instructions » : `claude/PROMPT_MAJ_INSTRUCTIONS_MOD
 | HR ZETA | cours | cours_hr_ | cours.md |
 | MONITO & UPDATE ZETA | script | maj_monito_ | script.md |
 | BACKUP ZETA | archive | backup_ | archive.md |
+| ZETA-TELANDROID | telandroid | tri_ | telandroid.md |
 | SKILLS ZETA, SECURITE ZETA | audits_skills, secur | (voir leur ETAT) | — |
 
 Structure d'un dossier : `ETAT_<X>_ZETA.md` à la racine + un sous-dossier par session `<préfixe>_<AAAAMMJJ>/` (RAPPORT .md/.pdf, HANDOFF, captures/, A_DEPOSER/). Skills : communs dans `.claude/skills/` (une seule copie de référence, D9) ; un skill personnalisé n'est créé dans le dossier d'un projet que s'il ne sert qu'à ce projet (aucun aujourd'hui). Le projet claude.ai liste ses skills dans sa section 8.
 
 ---
-Mis à jour le 2026-11-21 · 93 lignes
+Mis à jour le 2026-11-21 · 94 lignes
