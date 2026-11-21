@@ -28,6 +28,8 @@ Riemann_Lab.wiki
 .claude/*
 !.claude/skills/
 !.claude/skills/**
+!.claude/rules/
+!.claude/settings.json
 .claude/skills/**/*.bak*
 claude-traitement-journalier/
 
