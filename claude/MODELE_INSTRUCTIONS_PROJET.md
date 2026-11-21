@@ -69,5 +69,25 @@ Pour toute valeur (nombre de zéros, version, performances…), vérifier toutes
 
 Procédure « Mise à jour instructions » : `claude/PROMPT_MAJ_INSTRUCTIONS_MODELE.md`. Copie de référence : dépôt `~/projet_zeta/claude/` ; copie dans le projet SKILLS ZETA.
 
+## Annexe — Correspondance projets claude.ai ↔ dossiers locaux
+
+| Projet claude.ai | Dossier | Préfixe des rapports | Règle |
+|---|---|---|---|
+| ZETA FORMATION | formation | audit_formation_ | formation.md |
+| VAULT ZETA | vault | audit_vault_ | vault.md |
+| SITE ZETA | site | maj_site_ | site.md |
+| OPTIMISATION ZETA | optimisation | audit_optimisation_ | optimisation.md |
+| MATOS ZETA | matos | audit_matos_ | matos.md |
+| CLONAGE ZETA | clone | audit_clone_ | clone.md |
+| DEBUG ZETA | diagnostics | debug_ | diagnostics.md |
+| RESEAU ZETA | cluster | audit_reseau_ | cluster.md |
+| MATH ZETA | cours | cours_math_ | cours.md |
+| HR ZETA | cours | cours_hr_ | cours.md |
+| MONITO & UPDATE ZETA | script | maj_monito_ | script.md |
+| BACKUP ZETA | archive | backup_ | archive.md |
+| SKILLS ZETA, SECURITE ZETA | audits_skills, secur | (voir leur ETAT) | — |
+
+Structure d'un dossier : `ETAT_<X>_ZETA.md` à la racine + un sous-dossier par session `<préfixe>_<AAAAMMJJ>/` (RAPPORT .md/.pdf, HANDOFF, captures/, A_DEPOSER/). Skills : communs dans `.claude/skills/` (une seule copie de référence, D9) ; un skill personnalisé n'est créé dans le dossier d'un projet que s'il ne sert qu'à ce projet (aucun aujourd'hui). Le projet claude.ai liste ses skills dans sa section 8.
+
 ---
-Mis à jour le 2026-11-21 · 73 lignes
+Mis à jour le 2026-11-21 · 93 lignes
