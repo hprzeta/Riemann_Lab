@@ -44,15 +44,23 @@ Aucune copie autonome de `grill-me`, `grilling` ou `riemann-*` dans `~/.claude/s
 |---|---|---|
 | `/skills` | nouvelle session Claude Code depuis le dépôt : vérifier « 15 en project » (non vérifiable depuis la session courante) | hprzeta |
 | R21 | test `/grill-me` dans une conversation claude.ai (`grilling` chargé ? sous-agents ? questions par tour) | hprzeta |
-| R18 | fournir `POUR_SKILLS_ZETA_grill_me_20261122.md` | Claude Code (TELANDROID) |
 
-Fermés aujourd'hui : R19 (import des 3 nouveaux skills) et R9 sur le fond (comparaison sur 15, 0 ancien, 0 absent).
+Fermés aujourd'hui : R19 (import des 3 nouveaux skills) et R9 sur le fond (comparaison sur 15, 0 ancien, 0 absent) ; R18 abandonné (option B suivie, clone neuf de l'amont = référence).
+
+## Nettoyage du soir (D22 et R25)
+
+- **D22 :** la règle « non vérifié » est au § 4 de `claude/MODELE_INSTRUCTIONS_PROJET.md` (95 lignes). Commit `ebdc57a`, poussé sur `Riemann_Lab_IA` seule (`claude/` n'existe pas sur les 3 autres branches).
+- **codeburn déplacé, non supprimé** (option a, conforme à TEL-D16) : `~/outils/codeburn` (229 Mo, commit `c08d761`, construit). `--help` vérifié hors ligne sous `strace` : 0 connexion IP. Usage permis : `report` et `--help`, hors ligne, avec `CODEBURN_PRICING_SNAPSHOT_ONLY=1`, `CODEBURN_FX_NO_FETCH=1` et un `HOME` dédié. Jamais `quota`, `sync`, `share`, `web`, `mcp`, `menubar`, `guard`, `optimize`, `update`.
+- **Supprimé après « go suppression » :** 13 `.bak-20261122*` (racine, `pdf/archive/`, `pdf/audits_skills/`, `src/ia/prompts/`), le `.git/index.lock.perime-20261122-1749` (14 fichiers, 452 900 octets), puis le bac à sable `~/bac_a_sable/audit_skills_20261122` (44 Mo) et `~/bac_a_sable` (vide). R18 est abandonné.
+- **Gardés :** `claude/MODELE_INSTRUCTIONS_PROJET.md.bak-202611221802` (à traiter au prochain nettoyage) et 4 `.bak` de la session site (3 dans `pdf/site/maj_site_20261122/`, 1 dans `scripts/`), hors périmètre.
+- Rapport : `audit_skills_20261122_nettoyage.md` et `.pdf`.
 
 ## Local, non commité
 
-- `audit_skills_20261122_adoption.md` et `.pdf` (dossier `pdf/audits_skills/audit_skills_20261122/`), captures et zips.
-- Sauvegardes `.bak-AAAAMMJJHHMM` (racine du dépôt, `pdf/audits_skills/`, `src/ia/prompts/`), `pdf/archive/STACK.md.bak-*` et `JOURNAL.md.bak-*`.
-- Bac à sable de l'audit TELANDROID : `~/bac_a_sable/audit_skills_20261122/` (240 Mo plus cache npm).
+- Rapports `audit_skills_20261122_nettoyage.md` et `.pdf`, `audit_skills_20261122_adoption.pdf`, captures, zips (`A_DEPOSER/zips_compte/`) et le dossier `nettoyage/`.
+- Le présent handoff, modifié après son commit `69332e7` (section « Nettoyage du soir » ajoutée) : à commiter sur « go commit ».
+- Les `.bak` conservés cités ci-dessus, plus `HANDOFF_SKILLS_20261122.md.bak-202611221805` (sauvegarde de ce handoff avant sa modification, identique à la version commitée).
+
 
 ---
-<sub>HANDOFF_SKILLS_20261122.md · SKILLS ZETA · Mis à jour le 2026-11-22 · 58 lignes</sub>
+<sub>HANDOFF_SKILLS_20261122.md · SKILLS ZETA · Mis à jour le 2026-11-22 · 66 lignes</sub>
