@@ -9,7 +9,7 @@
 | `wg_auto.sh` | boucle « tunnel MORT » / « échec réparation » | 🔴 |
 | PC1 : `apt` depuis le 14/11 | rien touché côté WireGuard / réseau | 🟢 |
 | PC1 : IPv6 sortant sur le réseau distant | oui | 🟢 |
-| PC1 : pair WireGuard | `bikedJC3…` (bonne clé de PC4) | 🟢 |
+| PC1 : pair WireGuard | `[CLÉ]` (bonne clé de PC4) | 🟢 |
 | PC1 : endpoint utilisé | IPv6, égal à l'AAAA publié | 🟢 |
 | PC1 : handshake | jamais ; rx 0, tx 148 (une initiation sans réponse) | 🔴 |
 | DuckDNS | A : 0, AAAA : 1 | 🟢 |
@@ -27,7 +27,7 @@
 ## À faire sur place (console PC4, puis box)
 
 0. `ls -l /var/log/duckdns.log` : heure de modification récente (< 5 min) = PC4 et cron vivants.
-1. PC4 allumé ? Console : `ifconfig wg0` (interface présente, 2 pairs), `doas wg show` (clé publique `bikedJC3…`).
+1. PC4 allumé ? Console : `ifconfig wg0` (interface présente, 2 pairs), `doas wg show` (clé publique `[CLÉ]`).
 2. `ifconfig re0 | grep inet6` : relever l'adresse globale non temporaire et la comparer **à l'écran** à l'AAAA de DuckDNS et à la cible de la règle WireGuard du pare-feu IPv6 de la box.
 3. Si l'adresse diffère : corriger la règle de la box (une seule modification), puis tester avec le téléphone en 4G.
 4. `doas pfctl -sr | grep 51820` : règle UDP toujours présente.
@@ -44,4 +44,4 @@
 O1, O2, O3, O4, O5, O7, O9 (IP fixe box, à relier à O12), S4 (wiki), dossier `Pass/`, archive du 14/11 : voir `HANDOFF_SECURITE_20261115.md`. O11 (protection de PC1) proposé le 15/11, non confirmé.
 
 ---
-*claude/ETAT_SECURITE_ZETA_20261121.md · MAJ 2026-11-21 · 54 lignes*
+*pdf/secur/ETAT_SECURITE_ZETA.md · MAJ 2026-11-22 · 47 lignes*
