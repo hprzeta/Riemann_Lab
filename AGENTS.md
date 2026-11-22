@@ -18,6 +18,7 @@
 - **Jamais de secret en clair** (token, clé API) dans un commit, `.mcp.json` inclus — toujours via variable d'environnement. Passer par le skill `riemann-security-review` avant tout push touchant `scripts/`, `.mcp.json` ou `c_modules/`.
 - **`docs/`** sert GitHub Pages — ne jamais y déplacer ou renommer un fichier sans vérifier l'impact sur le site publié.
 - **Le RAG BrainVault** (`/mnt/vault_rag`) est une source de contexte, pas une source de vérité : toute valeur numérique qu'il retourne doit être recoupée avec le fichier source cité (voir `scripts/rag_query.py`, garde-fou `valeurs_non_ancrees()`).
+- **Réponses recommandées chiffrées (D20, 22/11/2026)** : toute réponse recommandée contenant un chiffre (estimation, durée, taille, coût…) qui n'a pas été mesuré ou vérifié porte la mention « *non vérifiée* ». Vaut pour tous les skills, en particulier `grilling` / `grill-me`, dont la copie reste identique à l'amont : la règle vit ici, pas dans le skill.
 
 ## 3. Protocole de passation (handoff)
 
@@ -41,4 +42,4 @@ Chaque fichier est réécrit à chaque passation (pas d'historique empilé — l
 | Interroger le RAG BrainVault | `python scripts/rag_query.py --k 8 "<question>"` (vérifier `mountpoint /mnt/vault_rag` avant) |
 
 ---
-*AGENTS.md créé le 27/09/2026 — Vague V1 du plan de mutualisation skills/MCP.*
+*AGENTS.md créé le 27/09/2026 — Vague V1 du plan de mutualisation skills/MCP. Mis à jour le 2026-11-22 (règle D20) — 45 lignes.*
