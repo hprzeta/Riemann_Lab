@@ -27,6 +27,7 @@ Pour toute valeur (nombre de zéros, version, performances…), vérifier toutes
 - Aucun secret publié : IP, MAC, clé, jeton, chemin personnel, e-mail autre que l'adresse publique.
 - Date de mise à jour et nombre de lignes en bas de chaque .md créé ou modifié.
 - Demander les compléments au lieu de supposer ; signaler ce qui n'a pas été vérifié.
+- Toute réponse recommandée contenant un chiffre non mesuré ni vérifié (skills `grilling` / `grill-me` compris) porte la mention « *non vérifié* » (D22).
 
 # 5. Livrables à chaque analyse
 - Rapport .md + .pdf avec un tableau de validation (🟢/🟡/🔴) et un tableau horodaté des changements.
@@ -91,4 +92,4 @@ Procédure « Mise à jour instructions » : `claude/PROMPT_MAJ_INSTRUCTIONS_MOD
 Structure d'un dossier : `ETAT_<X>_ZETA.md` à la racine + un sous-dossier par session `<préfixe>_<AAAAMMJJ>/` (RAPPORT .md/.pdf, HANDOFF, captures/, A_DEPOSER/). Skills : communs dans `.claude/skills/` (une seule copie de référence, D9) ; un skill personnalisé n'est créé dans le dossier d'un projet que s'il ne sert qu'à ce projet (aucun aujourd'hui). Le projet claude.ai liste ses skills dans sa section 8.
 
 ---
-Mis à jour le 2026-11-21 · 94 lignes
+Mis à jour le 2026-11-21 · 2026-11-22 (D22 : règle « non vérifié », § 4) · 95 lignes
