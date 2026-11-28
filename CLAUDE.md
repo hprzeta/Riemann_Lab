@@ -209,6 +209,7 @@ C0+C1 (précision max ~1e-3). Solution : wrapper `mpmath.siegelz`.
 - **`zeta-backup-status`** : « aucun fichier » signifie « rien de nouveau à copier », pas forcément une panne.
 - **Écriture des `.md`** : utiliser l'outil Write ou un heredoc protégé (`<<'EOF'`), jamais `<<EOF` : `$$` est développé en PID (bug du 14/11).
 - **Réponses recommandées chiffrées (D20, 22/11/2026)** : toute réponse recommandée contenant un chiffre (estimation, durée, taille, coût…) qui n'a pas été mesuré ou vérifié porte la mention « *non vérifiée* ». Vaut pour tous les skills, en particulier `grilling` / `grill-me`, dont la copie reste identique à l'amont : la règle vit ici, pas dans le skill.
+- **`using-superpowers` désactivé (28/11/2026, décision hprzeta)** : le skill `superpowers:using-superpowers` (injecté par le hook de démarrage du plugin) est ignoré dans ce projet. Ne pas invoquer un skill « avant toute réponse » ; les points d'arrêt (STOP, « go », « go commit », « go push ») priment. Autres skills superpowers retenus : `systematic-debugging`, `test-driven-development`, `verification-before-completion`, `writing-skills` ; `brainstorming` et `writing-plans` seulement sur demande explicite.
 
 ---
 
